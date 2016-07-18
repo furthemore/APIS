@@ -8,7 +8,7 @@ Proposed Stack:
   + Ubuntu 14.04 (LTS)
   + Apache2
   + Postgres 9.3
-  + Python 3.5
+  + Python 2.7.6
   + Django 1.9.7
   + Bootstrap 3.3.6
   + JQuery 3.1.0
