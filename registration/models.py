@@ -47,7 +47,7 @@ class Attendee(models.Model):
     badgePrinted = models.BooleanField(default=False)
     emailsOk = models.BooleanField(default=False)
     volunteerContact = models.BooleanField(default=False)
-    volunteerDepts = models.CharField(max_length=1000)
+    volunteerDepts = models.CharField(max_length=1000, blank=True)
     holdType = models.ForeignKey(HoldType, null=True, on_delete=models.SET_NULL)
     notes = models.TextField()
     parent = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
