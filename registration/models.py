@@ -11,6 +11,9 @@ from django.db import models
 class LookupTable(models.Model):
     name = models.CharField(max_length=200)
 
+    def __str__(self):
+      return self.name
+
     class Meta: 
         abstract = True
 
@@ -43,14 +46,14 @@ class Attendee(models.Model):
     email = models.CharField(max_length=200)
     birthdate = models.DateField()
     badgeName = models.CharField(max_length=200, blank=True)
-    badgeNumber = models.IntegerField(null=True)
+    badgeNumber = models.IntegerField(null=True, blank=True)
     badgePrinted = models.BooleanField(default=False)
     emailsOk = models.BooleanField(default=False)
     volunteerContact = models.BooleanField(default=False)
     volunteerDepts = models.CharField(max_length=1000, blank=True)
-    holdType = models.ForeignKey(HoldType, null=True, on_delete=models.SET_NULL)
-    notes = models.TextField()
-    parent = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
+    holdType = models.ForeignKey(HoldType, null=True, blank=True, on_delete=models.SET_NULL)
+    notes = models.TextField(blank=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
     parentFirstName = models.CharField(max_length=200, blank=True)
     parentLastName = models.CharField(max_length=200, blank=True)
     parentPhone = models.CharField(max_length=20, blank=True)
