@@ -9,3 +9,6 @@ admin.site.register(Event)
 
 admin.site.register(Attendee)
 
+
+admin.site.register(PriceLevel)
+admin.site.register(PriceLevelOption)
