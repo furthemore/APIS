@@ -81,11 +81,17 @@ class PriceLevel(models.Model):
     public = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
 
+    def __str__(self):
+      return self.name
+
 class PriceLevelOption(models.Model):
     priceLevel = models.ForeignKey(PriceLevel)
     optionName = models.CharField(max_length=200)
     optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
-    OptionExtraType = models.CharField(max_length=100)
+    OptionExtraType = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+      return '%s - %s' % (self.priceLevel, self.optionName)
 
 class Discount(models.Model):
     requiredPriceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
@@ -95,6 +101,9 @@ class Discount(models.Model):
     startDate = models.DateTimeField()
     endDate = models.DateTimeField()
     notes = models.TextField(blank=True)
+
+    def __str__(self):
+      return self.codeName
 
 class Order(models.Model):
     balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)
