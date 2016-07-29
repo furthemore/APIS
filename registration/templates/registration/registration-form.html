@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Furthemore 2016 Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
+	<link href="/static/css/bs-yeti.css" rel="stylesheet" media="screen">
+	<link href="/static/css/yuuki.css" rel="stylesheet" media="screen">
+	<link href="/static/css/bootstrap-formhelpers.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+
+<!-- Subhead
+================================================== -->
+<div class="artisan2">
+<div class="artisan">
+
+<div class="container">
+			<ul class="nav nav-tabs" role="tablist">
+			    <li role="presentation" class="active" id="personal-presentation"><a href="#personal" aria-controls="personal" role="tab" data-toggle="tab">Personal Details <span class="glyphicon glyphicon-asterisk" id="personal-glyph"></span></a></li>
+
+				<li role="presentation" class="active" id="registration-presentation"><a href="#registration" aria-controls="registration" role="tab" data-toggle="tab">Registration Details <span class="glyphicon glyphicon-asterisk success" id="registration-glyph"></span></a></li>
+				
+			    <li role="presentation" class="active" id="badge-presentation"><a href="#badge" aria-controls="badge" role="tab" data-toggle="tab">Badge Details <span class="glyphicon glyphicon-asterisk success" id="badge-glyph"></span></a></li>
+					
+			</ul>
+<div class="row">
+	<div class="col-md-4" id="image-holder">
+		<img src="images/segad.jpg" class="img-responsive hidden-sm hidden-xs">
+	</div>
+	
+	<div class="col-md-8" id="content-holder">
+	<form class="form-horizontal" role="form">
+	<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+		<h1>Pre-Register for Furthemore 2016!</h1>
+		<p>Welcome to the registration system. To continue, enter your information below.</p>
+		<hr>
+
+			
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus>
+                        
+                    </div>
+					<div class="col-sm-5">
+                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus>
+                        
+                    </div>
+					
+                </div>
+                <div class="form-group">
+                    <label for="email" class="col-sm-3 control-label">Email</label>
+                    <div class="col-sm-9">
+                        <input type="email" id="email" placeholder="Email" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="add1" class="col-sm-3 control-label">Address</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+					<div class="col-sm-4">
+						<input type="text" name="city" id="city" placeholder="City" class="form-control">
+					</div>
+                    <div class="col-sm-2">
+						<select class="form-control bfh-states" data-country="US" data-state="VA" name="state"></select>
+                    </div>
+					<div class="col-sm-3">
+						<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control">
+					</div>
+                </div>
+                <div class="form-group">
+                    <label for="country" class="col-sm-3 control-label">Country</label>
+                    <div class="col-sm-9">
+						<select class="form-control bfh-countries" data-country="US" name="country"></select>
+                    </div>
+                </div> <!-- /.form-group -->
+                <!-- <div class="form-group">
+                    <label class="control-label col-sm-3">Gender</label>
+                    <div class="col-sm-6">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label class="radio-inline">
+                                    <input type="radio" id="femaleRadio" value="Female">Female
+                                </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="radio-inline">
+                                    <input type="radio" id="maleRadio" value="Male">Male
+                                </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="radio-inline">
+                                    <input type="radio" id="uncknownRadio" value="Unknown">Unknown
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div> --> <!-- /.form-group -->
+				
+				<hr>
+
+                <div class="form-group">
+                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
+                    <div class="col-sm-9">
+                        <input type="date" id="birthDate" class="form-control">
+						<p><small><a href="#">Why do we need this?</a> | <a href="#">Under 18? Click here for the Parental Permission Form</a></small></p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+						<a href="#registration" class="btn btn-primary btn-block" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Continue to Registration Details</a>
+                        <button type="submit" class="btn btn-primary btn-block" aria-controls="profile" data-toggle="tab">Register</button>
+                    </div>
+                </div>
+            
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="badge">
+	<h1>Badge &amp; Registration</h1>
+		<p>Tell us about yourself. Type in your own custom badge name!</p>
+		<hr>
+
+			<div class="badge">
+				<p id="badge-text">Your Name Here..</p>
+			</div>
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Badge Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25">
+                    </div>
+					
+                </div>
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Selected Registration Level</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="regLevel" name="regLevel" placeholder="Please Return to the Previous Screen and Select a Registration" class="form-control form-control-text" maxlength="25" readonly>
+                    </div>
+					
+                </div>
+				<div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+						<a href="#additional" class="btn btn-primary btn-block" aria-controls="additional" role="tab" data-toggle="tab" id="next-badge">Continue to Additional Details</a>
+						<a href="#registration" class="btn btn-primary btn-block" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge">Return to Registration Details</a>
+                        <button type="submit" class="btn btn-primary btn-block" aria-controls="profile" data-toggle="tab">Register</button>
+                    </div>
+                </div>
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="registration">
+	<br>
+	<div class="row">
+    			<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
+				
+					<!-- PRICE ITEM -->
+					<div class="panel price panel-red">
+						<div class="panel-heading  text-center">
+						<h3>Raven God</h3>
+						</div>
+						<div class="panel-body text-center">
+							<p class="lead" style="font-size:40px"><strong>$450</strong></p>
+						</div>
+						<ul class="list-group list-group-flush text-center">
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> Personal use</li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> Unlimited projects</li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> 27/7 support</li>
+						</ul>
+						<div class="panel-footer">
+							<a class="btn btn-lg btn-block btn-danger" href="#" id="select-ravengod">Select Raven God</a>
+						</div>
+					</div>
+					<!-- /PRICE ITEM -->
+					
+					
+				</div>
+				
+				<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
+				
+					<!-- PRICE ITEM -->
+					<div class="panel price panel-blue">
+						<div class="panel-heading arrow_box text-center">
+						<h3>Super Sponsor</h3>
+						</div>
+						<div class="panel-body text-center">
+							<p class="lead" style="font-size:40px"><strong>$125</strong></p>
+						</div>
+						<ul class="list-group list-group-flush text-center">
+							<li class="list-group-item"><i class="icon-ok text-info"></i> Personal use</li>
+							<li class="list-group-item"><i class="icon-ok text-info"></i> Unlimited projects</li>
+							<li class="list-group-item"><i class="icon-ok text-info"></i> 27/7 support</li>
+						</ul>
+						<div class="panel-footer">
+							<a class="btn btn-lg btn-block btn-info" href="#" id="select-supersponsor">Select Super Sponsor</a>
+						</div>
+					</div>
+					<!-- /PRICE ITEM -->
+					
+					
+				</div>
+				
+				<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
+				
+					<!-- PRICE ITEM -->
+					<div class="panel price panel-green">
+						<div class="panel-heading arrow_box text-center">
+						<h3>Sponsor</h3>
+						</div>
+						<div class="panel-body text-center">
+							<p class="lead" style="font-size:40px"><strong>$75</strong></p>
+						</div>
+						<ul class="list-group list-group-flush text-center">
+							<li class="list-group-item"><i class="icon-ok text-success"></i> Personal use</li>
+							<li class="list-group-item"><i class="icon-ok text-success"></i> Unlimited projects</li>
+							<li class="list-group-item"><i class="icon-ok text-success"></i> 27/7 support</li>
+						</ul>
+						<div class="panel-footer">
+							<a class="btn btn-lg btn-block btn-success" href="#" id="select-sponsor">Select Sponsor</a>
+						</div>
+					</div>
+					<!-- /PRICE ITEM -->
+					
+					
+				</div>
+				
+				
+				<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
+				
+					<!-- PRICE ITEM -->
+					<div class="panel price panel-white">
+						<div class="panel-heading arrow_box text-center">
+						<h3>Attendee</h3>
+						</div>
+						<div class="panel-body text-center">
+							<p class="lead" style="font-size:40px"><strong>$45</strong></p>
+						</div>
+						<ul class="list-group list-group-flush text-center">
+							<li class="list-group-item"><i class="icon-ok text-success"></i> Personal use</li>
+							<li class="list-group-item"><i class="icon-ok text-success"></i> Unlimited projects</li>
+							<li class="list-group-item"><i class="icon-ok text-success"></i> 27/7 support</li>
+						</ul>
+						<div class="panel-footer">
+							<a class="btn btn-lg btn-block btn-default" href="#" id="select-attendee" aria-controls="badge" role="tab" data-toggle="tab">Select Attendee</a>
+						</div>
+					</div>
+					<!-- /PRICE ITEM -->
+					
+					
+				</div>
+				
+				
+			</div>
+				<div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+						<a href="#badge" class="btn btn-primary btn-block" aria-controls="badge" role="tab" data-toggle="tab" id="next-registration">Continue to Badge Details</a>
+						<a href="#personal" class="btn btn-primary btn-block" aria-controls="personal" role="tab" data-toggle="tab" id="back-registration">Return to Personal Details</a>
+                        <button type="submit" class="btn btn-primary btn-block" aria-controls="profile" data-toggle="tab">Register</button>
+                    </div>
+                </div>
+	</div>
+	</div>
+	</form>
+	</div>
+</div>
+</div>
+</div>
+</div>
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/bs.min.js"></script>
+<!---<script src="/static/js/386-load.js"></script>-->
+ <script src="/static/js/bootstrap-formhelpers.js"></script>
+ <script>
+	$( "#next-personal" ).click(function() {
+		$("#personal-glyph").attr("class", "glyphicon glyphicon-ok");
+		$("#content-holder").attr("class", "col-md-12");
+		$("#image-holder").attr("class", "hidden-sm hidden-xs hidden-md hidden-lg");
+	});
+	$( "#back-registration" ).click(function() {
+		$("#content-holder").attr("class", "col-md-8");
+		$("#image-holder").attr("class", "visible-md visible-lg col-md-4");
+	});
+	$( "#next-badge" ).click(function() {
+		$("#badge-glyph").attr("class", "glyphicon glyphicon-ok");
+	});
+	$( "#back-badge" ).click(function() {
+		$("#content-holder").attr("class", "col-md-12");
+		$("#image-holder").attr("class", "hidden-sm hidden-xs hidden-md hidden-lg");
+	});
+	$( "#next-registration" ).click(function() {
+		$("#content-holder").attr("class", "col-md-8");
+		$("#image-holder").attr("class", "visible-md visible-lg col-md-4");
+		$("#registration-glyph").attr("class", "glyphicon glyphicon-ok");
+	});
+
+	
+	$( "#select-attendee" ).click(function() {
+		$("#select-attendee").text("Selected!");
+		$("#select-sponsor").text("Select Sponsor");
+		$("#select-supersponsor").text("Select Super Sponsor");
+		$("#select-ravengod").text("Select Raven God");
+		$("#regLevel").val("Attendee");
+	});
+	
+	$( "#select-sponsor" ).click(function() {
+		$("#select-attendee").text("Select Attendee");
+		$("#select-sponsor").text("Selected!");
+		$("#select-supersponsor").text("Select Super Sponsor");
+		$("#select-ravengod").text("Select Raven God");
+		$("#regLevel").val("Sponsor");
+	});
+	
+	$( "#select-supersponsor" ).click(function() {
+		$("#select-attendee").text("Select Attendee");
+		$("#select-sponsor").text("Select Sponsor");
+		$("#select-supersponsor").text("Selected!");
+		$("#select-ravengod").text("Select Raven God");
+		$("#regLevel").val("Super Sponsor");
+	});
+	
+	$( "#select-ravengod" ).click(function() {
+		$("#select-attendee").text("Select Attendee");
+		$("#select-sponsor").text("Select Sponsor");
+		$("#select-supersponsor").text("Select Super Sponsor");
+		$("#select-ravengod").text("Thank you!! Selected!");
+		$("#regLevel").val("Raven God");
+	});
+	
+	$( "#badgeName" )
+		.keyup(function() {
+		var value = $( this ).val();
+		$( "#badge-text" ).text( value );
+	})
+	.keyup();
+ </script>
+  </body>
+</html>
