@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+from payments.models import BasePayment
+
 #######################################
-# As of Data Model version 23
+# As of Data Model version 24
 #######################################
 
 
@@ -27,7 +29,11 @@ class Event(LookupTable):
     pass
 
 class Department(models.Model):
-    pass
+    name = models.CharField(max_length=200, blank=True)
+    volunteerListOk = models.BooleanField(default=False)
+
+    def __str__(self):
+      return name
 
 #End lookup and supporting tables
 
@@ -105,13 +111,12 @@ class Discount(models.Model):
     def __str__(self):
       return self.codeName
 
-class Order(models.Model):
-    balance = models.DecimalField(max_digits=6, decimal_places=2, default=0.0)
-    authorizationCode = models.CharField(max_length=100)
-    transactionId = models.CharField(max_length=100)
-    createdDate = models.DateTimeField(auto_now_add=True)
-    settledDate = models.DateTimeField(null=True)
-    notes = models.TextField()
+class Order(BasePayment):
+    def get_failure_url(self):
+      return 'http://dawningbrooke.net/registration/failure/'
+
+    def get_success_url(self):
+      return 'http://dawningbrooke.net/registration/success/'
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order)
