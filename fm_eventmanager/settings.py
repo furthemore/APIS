@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'payments',
     'registration',
 ]
 
@@ -125,3 +127,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/root/projects/furthemore/static/'
+
+PAYMENT_HOST = 'dawningbrooke.net'
+PAYMENT_USES_SSL = False
+PAYMENT_MODEL = 'registration.Order'
+PAYMENT_VARIANTS = {
+    'default': ('payments.dummy.DummyProvider', {})}
