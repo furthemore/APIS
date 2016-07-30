@@ -33,7 +33,7 @@ class Department(models.Model):
     volunteerListOk = models.BooleanField(default=False)
 
     def __str__(self):
-      return name
+      return self.name
 
 #End lookup and supporting tables
 

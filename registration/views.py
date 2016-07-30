@@ -16,6 +16,11 @@ def index(request):
 # Utilities
 
 def getDepartments(request):
-    depts = Department.objects.get(volunteerListOk=True)
-    data = json.dumps(depts)
-    return HttpResponse(data, content_type='application/json')
+    depts = Department.objects.filter(volunteerListOk=True)
+    data = [{'name': item.name, 'id': item.id} for item in depts]
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+def getPriceLevels(request):
+    levels = PriceLevel.objects.filter(public=True)
+    data = [{'name': level.name, 'options': [{'name': option.optionName} for option in level.priceleveloption_set.all() ]} for level in levels]
+    return HttpResponse(json.dumps(data), content_type='application/json')
