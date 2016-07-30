@@ -12,3 +12,5 @@ admin.site.register(Attendee)
 
 admin.site.register(PriceLevel)
 admin.site.register(PriceLevelOption)
+
+admin.site.register(Department)
