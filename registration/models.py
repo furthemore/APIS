@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-
+import json
 from django.db import models
 
 from payments.models import BasePayment
@@ -121,7 +121,7 @@ class Order(BasePayment):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order)
     attendee = models.ForeignKey(Attendee)
-    priceLevel = models.ForeignKey(PriceLevel)
+    priceLevel = models.OneToOneField(PriceLevel)
     discount = models.ForeignKey(Discount, null=True)
     confirmationCode = models.CharField(max_length=100)
     enteredBy = models.CharField(max_length=100)
