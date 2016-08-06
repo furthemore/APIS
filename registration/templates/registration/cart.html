@@ -1,0 +1,9 @@
+<div>Cart Header</div>
+
+{% for orderItem in cart.orderItem_set %}
+  <div>{{orderItem.priceLevel}} : {{orderItem.priceLevel}}</div>
+{% empty %}
+  <div>No items in cart</div>
+{% endfor %}
+
+<div>Total: {{cart.total}}</div>
