@@ -116,9 +116,12 @@
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
                         <input type="date" id="birthDate" class="form-control">
-						<p><small><a href="#">Why do we need this?</a> | <a href="#">Under 18? Click here for the Parental Permission Form</a></small></p>
+						<p><small><a href="#">Why do we need this?</a></small></p>
                     </div>
                 </div>
+		<div class="well well-sm" id="test">
+
+		</div>
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
 						<a href="#registration" class="btn btn-primary btn-block" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Continue to Registration Details</a>
@@ -163,7 +166,7 @@
     			<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
 				
 					<!-- PRICE ITEM -->
-					<div class="panel price panel-red">
+					<div class="panel price panel-red" id="ravengod">
 						<div class="panel-heading  text-center">
 						<h3>Raven God</h3>
 						</div>
@@ -183,13 +186,37 @@
 					
 					
 				</div>
+
+    			<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
+				
+					<!-- PRICE ITEM -->
+					<div class="panel price panel-red" id="elitesponsor">
+						<div class="panel-heading  text-center">
+						<h3>Elite Sponsor</h3>
+						</div>
+						<div class="panel-body text-center">
+							<p class="lead price" style="font-size:40px"><strong>$450</strong></p>
+						</div>
+						<ul class="list-group list-group-flush text-center">
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> Personal use</li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> Unlimited projects</li>
+							<li class="list-group-item"><i class="icon-ok text-danger"></i> 27/7 support</li>
+						</ul>
+						<div class="panel-footer">
+							<a class="btn btn-lg btn-block btn-danger" href="#" id="select-elitesponsor">Select Raven God</a>
+						</div>
+					</div>
+					<!-- /PRICE ITEM -->
+					
+					
+				</div>
 				
 				<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
 				
 					<!-- PRICE ITEM -->
-					<div class="panel price panel-blue">
+					<div class="panel price panel-blue" id="supersponsor">
 						<div class="panel-heading arrow_box text-center">
-						<h3>Super Sponsor</h3>
+						<h3>Valu3</h3>
 						</div>
 						<div class="panel-body text-center">
 							<p class="lead" style="font-size:40px"><strong>$125</strong></p>
@@ -211,9 +238,9 @@
 				<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
 				
 					<!-- PRICE ITEM -->
-					<div class="panel price panel-green">
+					<div class="panel price panel-green" id="sponsor">
 						<div class="panel-heading arrow_box text-center">
-						<h3>Sponsor</h3>
+						<h3>Value2</h3>
 						</div>
 						<div class="panel-body text-center">
 							<p class="lead" style="font-size:40px"><strong>$75</strong></p>
@@ -236,9 +263,9 @@
 				<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3">
 				
 					<!-- PRICE ITEM -->
-					<div class="panel price panel-white">
+					<div class="panel price panel-white" id="attendee">
 						<div class="panel-heading arrow_box text-center">
-						<h3>Attendee</h3>
+						<h3>Value</h3>
 						</div>
 						<div class="panel-body text-center">
 							<p class="lead" style="font-size:40px"><strong>$45</strong></p>
@@ -278,7 +305,35 @@
 <script src="/static/js/bs.min.js"></script>
 <!---<script src="/static/js/386-load.js"></script>-->
  <script src="/static/js/bootstrap-formhelpers.js"></script>
- <script>
+ <script type="text/javascript">
+	$( "body" ).ready(function() {
+		$.getJSON("/registration/pricelevels", function(data) {
+			alert(data);
+			$.each( data, function( key, val ) {
+				if (key === 0) {
+				$( "#attendee h3" ).text(val.name) ;
+				$( "#attendee strong" ).text("$"+val.base_price) ;
+				}
+				if (key === 1) {
+				$( "#sponsor h3" ).text(val.name) ;
+				$( "#sponsor strong" ).text("$"+val.base_price) ;
+				}
+				if (key === 2) {
+				$( "#supersponsor h3" ).text(val.name) ;
+				$( "#supersponsor strong" ).text("$"+val.base_price) ;
+				}
+				if (key === 3) {
+				$( "#elitesponsor h3" ).text(val.name) ;
+				$( "#elitesponsor strong" ).text("$"+val.base_price) ;
+				}
+				if (key === 4) {
+				$( "#ravengod h3" ).text(val.name) ;
+				$( "#ravengod strong" ).text("$"+val.base_price) ;
+				}
+			});
+		});
+        });
+
 	$( "#next-personal" ).click(function() {
 		$("#personal-glyph").attr("class", "glyphicon glyphicon-ok");
 		$("#content-holder").attr("class", "col-md-12");
@@ -307,6 +362,7 @@
 		$("#select-sponsor").text("Select Sponsor");
 		$("#select-supersponsor").text("Select Super Sponsor");
 		$("#select-ravengod").text("Select Raven God");
+		$("#select-elitesponsor").text("Select Elite Sponsor");
 		$("#regLevel").val("Attendee");
 	});
 	
@@ -315,6 +371,7 @@
 		$("#select-sponsor").text("Selected!");
 		$("#select-supersponsor").text("Select Super Sponsor");
 		$("#select-ravengod").text("Select Raven God");
+		$("#select-elitesponsor").text("Select Elite Sponsor");
 		$("#regLevel").val("Sponsor");
 	});
 	
@@ -323,7 +380,22 @@
 		$("#select-sponsor").text("Select Sponsor");
 		$("#select-supersponsor").text("Selected!");
 		$("#select-ravengod").text("Select Raven God");
+		$("#select-elitesponsor").text("Select Elite Sponsor");
 		$("#regLevel").val("Super Sponsor");
+	});
+
+	$( "#select-elitesponsor" ).click(function() {
+		$("#select-attendee").text("Select Attendee");
+		$("#select-sponsor").text("Select Sponsor");
+		$("#select-supersponsor").text("Select Super Sponsor");
+		$("#select-elitesponsor").text("Selected!");
+		$("#select-ravengod").text("Select Raven God");
+		$("#regLevel").val("Elite Sponsor");
+	});
+
+	$( "#birthDate" ).change(function() {
+		var bd = $("#birthDate").val();
+		Date.parse(bd);
 	});
 	
 	$( "#select-ravengod" ).click(function() {
@@ -331,6 +403,7 @@
 		$("#select-sponsor").text("Select Sponsor");
 		$("#select-supersponsor").text("Select Super Sponsor");
 		$("#select-ravengod").text("Thank you!! Selected!");
+		$("#select-elitesponsor").text("Select Elite Sponsor");
 		$("#regLevel").val("Raven God");
 	});
 	
@@ -340,6 +413,11 @@
 		$( "#badge-text" ).text( value );
 	})
 	.keyup();
+
+
+</script>
+
+
  </script>
   </body>
 </html>
