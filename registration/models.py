@@ -5,7 +5,7 @@ from django.db import models
 from payments.models import BasePayment
 
 #######################################
-# As of Data Model version 24
+# As of Data Model version 26
 #######################################
 
 
@@ -94,7 +94,7 @@ class PriceLevelOption(models.Model):
     priceLevel = models.ForeignKey(PriceLevel)
     optionName = models.CharField(max_length=200)
     optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
-    OptionExtraType = models.CharField(max_length=100, blank=True)
+    optionExtraType = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
       return '%s - %s' % (self.priceLevel, self.optionName)
@@ -119,17 +119,16 @@ class Order(BasePayment):
       return 'http://dawningbrooke.net/registration/success/'
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order)
+    order = models.ForeignKey(Order, null=True)
     attendee = models.ForeignKey(Attendee)
-    priceLevel = models.OneToOneField(PriceLevel)
+    priceLevel = models.ForeignKey(PriceLevel)
     discount = models.ForeignKey(Discount, null=True)
     confirmationCode = models.CharField(max_length=100)
     enteredBy = models.CharField(max_length=100)
 
 class AttendeeOptions(models.Model):
-    attendee = models.ForeignKey(Attendee)
     option = models.ForeignKey(PriceLevelOption)
-    order = models.ForeignKey(Order)
-    optionExtraValue = models.CharField(max_length=200)
+    orderItem = models.ForeignKey(OrderItem)
+    optionValue = models.CharField(max_length=200)
 
  
