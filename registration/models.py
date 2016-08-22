@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import json
 from django.db import models
+from django.utils import timezone
 
 from payments.models import BasePayment
 
@@ -110,6 +111,14 @@ class Discount(models.Model):
 
     def __str__(self):
       return self.codeName
+
+    def isValid(self, requiredPriceId=None):
+        now = timezone.now()
+        if self.startDate > now or self.endDate < now:
+            return False
+        if requiredPriceId is not None and self.requiredPriceLevel is not None and self.requiredPriceLevel.id != requiredPriceId:
+            return False
+        return True
 
 class Order(BasePayment):
     def get_failure_url(self):

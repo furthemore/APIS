@@ -50,18 +50,19 @@ class OrdersTestCases(TestCase):
         special = [item for item in result if item['name'] == 'Special']
         self.assertEqual(special, [])
 
-    def test_singleorder(self):
+    def test_fullsingleorder(self):
         client = Client()
         priceLevel = PriceLevel.objects.first()
         option = priceLevel.priceleveloption_set.first()
         option2 = priceLevel.priceleveloption_set.last()
         shirt = ShirtSizes.objects.first()
+        discount = Discount.objects.first()
         postData = {'attendee': {'firstName': "Tester", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
                     'priceLevel': {'id': priceLevel.id, 'options': [{'id': option.id, 'value': "true"}, {'id': option2.id, 'value': shirt.id}]},
-                    'discount': ""}
+                    'discount': discount.codeName}
 	
         response = client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -74,6 +75,7 @@ class OrdersTestCases(TestCase):
         self.assertNotEqual(orderitem.confirmationCode, "")
         orderoption2 = orderitem.attendeeoptions_set.get(option__id=option2.id)
         self.assertEqual(orderoption2.optionValue, shirt.id.__str__())
+        self.assertEqual(orderitem.discount, discount)
 	
 
     def test_multipleorder(self):
