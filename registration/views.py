@@ -43,13 +43,18 @@ def addToCart(request):
     attendee.save()
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
-    #TODO: add price level options
-    #TODO: add discount handling
+
     ccode = getConfirmationCode()
     while OrderItem.objects.filter(confirmationCode=ccode).count() > 0:
         ccode = getConfirmationCode()
     orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB", confirmationCode=ccode)
     orderItem.save()
+
+    if pdd:
+        discount = Discount.objects.get(codeName=pdd)
+        if discount.isValid(priceLevel):
+            orderItem.discount = discount
+            orderItem.save()
 
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
