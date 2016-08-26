@@ -18,9 +18,27 @@ def index(request):
 ###################################
 # Payments
 
+def getTotal(orderItems):
+    total = 0
+    if not orderItems: return total
+    for item in orderItems:
+        itemTotal = item.priceLevel.basePrice
+        for option in item.attendeeoptions_set.all():
+            itemTotal += option.option.optionPrice
+        if item.discount:
+            if item.discount.amountOff:
+                itemTotal -= item.discount.amountOff
+            elif item.discount.percentOff:
+                itemTotal -= itemTotal * (item.discount.percentOff/100)
+        if itemTotal > 0:
+            total += itemTotal
+    return total
+
 def getCart(request):
-    cart = request.session.get('order', [])
-    context = {'cart': cart}
+    sessionItems = request.session.get('order_items', [])
+    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    total = getTotal(orderItems)
+    context = {'orderItems': orderItems, 'total': total}
     return render(request, 'registration/cart.html', context)
 
 def addToCart(request):

@@ -37,11 +37,11 @@ class OrdersTestCases(TestCase):
 
         event = Event(name="Test Event 2050!")
         event.save()
-
+       
+        self.client = Client()
 
     def test_getprices(self):
-        client = Client()
-        response = client.get(reverse('pricelevels'))
+        response = self.client.get(reverse('pricelevels'))
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result.__len__(), 2)
@@ -51,7 +51,6 @@ class OrdersTestCases(TestCase):
         self.assertEqual(special, [])
 
     def test_fullsingleorder(self):
-        client = Client()
         priceLevel = PriceLevel.objects.first()
         option = priceLevel.priceleveloption_set.first()
         option2 = priceLevel.priceleveloption_set.last()
@@ -64,7 +63,7 @@ class OrdersTestCases(TestCase):
                     'priceLevel': {'id': priceLevel.id, 'options': [{'id': option.id, 'value': "true"}, {'id': option2.id, 'value': shirt.id}]},
                     'discount': discount.codeName}
 	
-        response = client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
 	attendee = Attendee.objects.get(firstName="Tester")
@@ -76,7 +75,14 @@ class OrdersTestCases(TestCase):
         orderoption2 = orderitem.attendeeoptions_set.get(option__id=option2.id)
         self.assertEqual(orderoption2.optionValue, shirt.id.__str__())
         self.assertEqual(orderitem.discount, discount)
-	
+
+        response = self.client.get(reverse('cart'))
+	self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 1)
+        self.assertEqual(cart[0].id, orderitem.id)
+        total = response.context["total"]
+        self.assertEqual(total, 35.00)
 
     def test_multipleorder(self):
         pass
