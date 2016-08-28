@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 from datetime import datetime
+from decimal import *
 import json
 import random
 import string
@@ -18,27 +19,30 @@ def index(request):
 ###################################
 # Payments
 
-def getTotal(orderItems):
+def getTotal(orderItems, discount = None):
     total = 0
     if not orderItems: return total
     for item in orderItems:
         itemTotal = item.priceLevel.basePrice
         for option in item.attendeeoptions_set.all():
             itemTotal += option.option.optionPrice
-        if item.discount:
-            if item.discount.amountOff:
-                itemTotal -= item.discount.amountOff
-            elif item.discount.percentOff:
-                itemTotal -= itemTotal * (item.discount.percentOff/100)
+        if discount:
+            if discount.amountOff:
+                itemTotal -= discount.amountOff
+            elif discount.percentOff:
+                itemTotal -= Decimal(float(itemTotal) * float(discount.percentOff)/100)
         if itemTotal > 0:
             total += itemTotal
     return total
 
 def getCart(request):
     sessionItems = request.session.get('order_items', [])
-    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-    total = getTotal(orderItems)
-    context = {'orderItems': orderItems, 'total': total}
+    if not sessionItems:
+        context = {'orderItems': [], 'total': 0}
+    else:
+        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+        total = getTotal(orderItems)
+        context = {'orderItems': orderItems, 'total': total}
     return render(request, 'registration/cart.html', context)
 
 def addToCart(request):
@@ -46,7 +50,6 @@ def addToCart(request):
     postData = json.loads(request.body)
     pda = postData['attendee']
     pdp = postData['priceLevel']
-    pdd = postData['discount'].strip()    
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
@@ -68,12 +71,6 @@ def addToCart(request):
     orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB", confirmationCode=ccode)
     orderItem.save()
 
-    if pdd:
-        discount = Discount.objects.get(codeName=pdd)
-        if discount.isValid(priceLevel):
-            orderItem.discount = discount
-            orderItem.save()
-
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
         attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
@@ -87,25 +84,32 @@ def addToCart(request):
 
 def removeFromCart(request):
     #locate attendee in session order
-    order = request.session.get('order', [])
-    id = request.post['id']
+    order = request.session.get('order_items', [])
+    postData = json.loads(request.body)
+    id = postData['id']
     #remove attendee from session order
     for item in order:
-        if item.id == id: 
-            del cart[item]
-    request.session.set('order', cart)
+        if item == id:
+            deleteOrderItem(id) 
+            order.remove(item)
+    request.session['order_items'] = order
     return HttpResponse("Success")    
 
 def cancelOrder(request):
     #remove order from session
-    try:
-        del request.session['order']
-    except KeyError:
-        pass
+    order = request.session.get('order_items', [])
+    for item in order:
+        deleteOrderItem(item)
+    request.session['order_items'] = []
     return HttpResponse("Order Cancelled")
 
 def checkout(request):
     pass
+
+def deleteOrderItem(id):
+    orderItem = OrderItem.objects.get(id=id)
+    orderItem.attendee.delete()
+    orderItem.delete()
 
 
 

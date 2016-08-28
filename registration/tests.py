@@ -9,34 +9,33 @@ class OrdersTestCases(TestCase):
     def setUp(self):
         now = timezone.now()
         ten_days = timedelta(days=10)
-        price1 = PriceLevel(name='Basic', description='Some test description here', basePrice=40.00, 
+        self.price1 = PriceLevel(name='Basic', description='Some test description here', basePrice=40.00, 
                             startDate=now-ten_days, endDate=now+ten_days, public=True)
-        price2 = PriceLevel(name='Super', description='Woot!', basePrice=80.00, 
+        self.price2 = PriceLevel(name='Super', description='Woot!', basePrice=80.00, 
                             startDate=now-ten_days, endDate=now+ten_days, public=True)
-        price3 = PriceLevel(name='Later', description='In the future', basePrice=120.00, 
+        self.price3 = PriceLevel(name='Later', description='In the future', basePrice=120.00, 
                             startDate=now+ten_days, endDate=now+ten_days+ten_days, public=True)
-        price4 = PriceLevel(name='Special', description='ooOOOoooooo', basePrice=100.00, 
+        self.price4 = PriceLevel(name='Special', description='ooOOOoooooo', basePrice=100.00, 
                             startDate=now-ten_days, endDate=now+ten_days, public=False)
-        price1.save()
-        price2.save()
-        price3.save()
-        price4.save()
+        self.price1.save()
+        self.price2.save()
+        self.price3.save()
+        self.price4.save()
 
-        shirt1 = ShirtSizes(name='Test_Large')
-        shirt1.save()
+        self.shirt1 = ShirtSizes(name='Test_Large')
+        self.shirt1.save()
 
 	#TODO: shirt option type
-        option1 = PriceLevelOption(priceLevel=price1,optionName="Conbook",optionPrice=0.00)
-        option2 = PriceLevelOption(priceLevel=price1,optionName="Shirt Size",optionPrice=0.00,optionExtraType="ShirtSizes")
+        self.option1 = PriceLevelOption(priceLevel=self.price1,optionName="Conbook",optionPrice=0.00)
+        self.option2 = PriceLevelOption(priceLevel=self.price1,optionName="Shirt Size",optionPrice=0.00,optionExtraType="ShirtSizes")
+        self.option3 = PriceLevelOption(priceLevel=self.price2,optionName="Conbook",optionPrice=0.00)
 
-	option1.save()
-	option2.save()
+	self.option1.save()
+	self.option2.save()
+	self.option3.save()
 
-	discount = Discount(codeName='FiveOff', amountOff=5.00, startDate=now-ten_days, endDate=now+ten_days)
-	discount.save()
-
-        event = Event(name="Test Event 2050!")
-        event.save()
+        self.event = Event(name="Test Event 2050!")
+        self.event.save()
        
         self.client = Client()
 
@@ -51,17 +50,11 @@ class OrdersTestCases(TestCase):
         self.assertEqual(special, [])
 
     def test_fullsingleorder(self):
-        priceLevel = PriceLevel.objects.first()
-        option = priceLevel.priceleveloption_set.first()
-        option2 = priceLevel.priceleveloption_set.last()
-        shirt = ShirtSizes.objects.first()
-        discount = Discount.objects.first()
         postData = {'attendee': {'firstName': "Tester", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
-                    'priceLevel': {'id': priceLevel.id, 'options': [{'id': option.id, 'value': "true"}, {'id': option2.id, 'value': shirt.id}]},
-                    'discount': discount.codeName}
+                    'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]}}
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -69,12 +62,11 @@ class OrdersTestCases(TestCase):
 	attendee = Attendee.objects.get(firstName="Tester")
 	self.assertEqual(attendee.lastName, "Testerson")
 	orderitem = OrderItem.objects.get(attendee=attendee)
-	self.assertEqual(orderitem.priceLevel_id, priceLevel.id)
+	self.assertEqual(orderitem.priceLevel_id, self.price1.id)
 	self.assertEqual(orderitem.enteredBy, "WEB")
         self.assertNotEqual(orderitem.confirmationCode, "")
-        orderoption2 = orderitem.attendeeoptions_set.get(option__id=option2.id)
-        self.assertEqual(orderoption2.optionValue, shirt.id.__str__())
-        self.assertEqual(orderitem.discount, discount)
+        orderoption2 = orderitem.attendeeoptions_set.get(option__id=self.option2.id)
+        self.assertEqual(orderoption2.optionValue, self.shirt1.id.__str__())
 
         response = self.client.get(reverse('cart'))
 	self.assertEqual(response.status_code, 200)
@@ -82,13 +74,74 @@ class OrdersTestCases(TestCase):
         self.assertEqual(len(cart), 1)
         self.assertEqual(cart[0].id, orderitem.id)
         total = response.context["total"]
-        self.assertEqual(total, 35.00)
+        self.assertEqual(total, 40.00)
+
+	response = self.client.get(reverse('cancelOrder'))
+	self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('cart'))
+	self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 0)
+        self.assertEqual(Attendee.objects.filter(firstName="Tester").count(), 0)
+        self.assertEqual(OrderItem.objects.filter(id=orderitem.id).count(), 0)
+        self.assertEqual(AttendeeOptions.objects.filter(orderItem=orderitem).count(), 0)
+        self.assertEqual(PriceLevel.objects.filter(id=self.price1.id).count(), 1)
+
+        
 
     def test_multipleorder(self):
-        pass
+        postData = {'attendee': {'firstName': "Frank", 'lastName': "Testerson",
+                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                    'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]}}
+	
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        postData = {'attendee': {'firstName': "Felix", 'lastName': "Testerson",
+                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                    'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option3.id, 'value': "true"}]}}
+	
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        postData = {'attendee': {'firstName': "Julie", 'lastName': "Testerson",
+                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                    'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]}}
+	
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
 
-    def test_discount(self):
-        pass
+        response = self.client.get(reverse('cart'))
+	self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 3)
+        total = response.context["total"]
+        self.assertEqual(total, 160.00)
+
+	postData = {'id': Attendee.objects.get(firstName='Felix').id}
+        response = self.client.post(reverse('removeFromCart'), json.dumps(postData), content_type='application/json')
+	self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('cart'))
+	self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 2)
+        total = response.context["total"]
+        self.assertEqual(total, 80.00)
+        self.assertEqual(Attendee.objects.filter(firstName="Felix").count(), 0)
+
+        response = self.client.get(reverse('cancelOrder'))
+	self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('cart'))
+	self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 0)
+        self.assertEqual(Attendee.objects.filter(firstName="Frank").count(), 0)
+        self.assertEqual(Attendee.objects.filter(firstName="Julie").count(), 0)
         
 
 class LookupTestCases(TestCase):
