@@ -6,7 +6,7 @@ from django.utils import timezone
 from payments.models import BasePayment
 
 #######################################
-# As of Data Model version 26
+# As of Data Model version 27
 #######################################
 
 
@@ -121,6 +121,10 @@ class Discount(models.Model):
         return True
 
 class Order(BasePayment):
+    discount = models.ForeignKey(Discount, null=True, on_delete=models.SET_NULL)
+    orgDonation = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    charityDonation = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+
     def get_failure_url(self):
       return 'http://dawningbrooke.net/registration/failure/'
 
@@ -131,7 +135,6 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
     attendee = models.ForeignKey(Attendee)
     priceLevel = models.ForeignKey(PriceLevel)
-    discount = models.ForeignKey(Discount, null=True)
     confirmationCode = models.CharField(max_length=100)
     enteredBy = models.CharField(max_length=100)
 
