@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'payments',
     'registration',
 ]
 
@@ -129,8 +128,6 @@ SITE_ID = 1
 STATIC_URL = '/static/'
 STATIC_ROOT = '/root/projects/furthemore/static/'
 
-PAYMENT_HOST = 'dawningbrooke.net'
-PAYMENT_USES_SSL = False
-PAYMENT_MODEL = 'registration.Order'
-PAYMENT_VARIANTS = {
-    'default': ('payments.dummy.DummyProvider', {})}
+# Sandbox values - DO NOT check in production ids
+AUTHNET_NAME = '426rwVfr3G47'
+AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'

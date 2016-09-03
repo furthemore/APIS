@@ -22,6 +22,10 @@ class OrdersTestCases(TestCase):
         self.price3.save()
         self.price4.save()
 
+        self.discount = Discount(codeName="FiveOff", amountOff=5.00,
+                                 startDate=now, endDate=now+ten_days)
+        self.discount.save()
+
         self.shirt1 = ShirtSizes(name='Test_Large')
         self.shirt1.save()
 
@@ -142,7 +146,34 @@ class OrdersTestCases(TestCase):
         self.assertEqual(len(cart), 0)
         self.assertEqual(Attendee.objects.filter(firstName="Frank").count(), 0)
         self.assertEqual(Attendee.objects.filter(firstName="Julie").count(), 0)
-        
+
+    def test_checkout(self):
+        postData = {'attendee': {'firstName': "Bea", 'lastName': "Testerson",
+                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                    'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]}}
+	
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+	attendee = Attendee.objects.get(firstName='Bea')
+        postData = {'billingData': {'cc_name':attendee.firstName + " " + attendee.lastName, 'cc_number':"4111111111111111", 
+                    'cc_month':"12", 'cc_year':"2020", 'cc_security':"123", 'address1':attendee.address1,
+                    'address2':attendee.address2, 'city':attendee.city, 'state':attendee.state,
+                    'country':attendee.country, 'postal':attendee.postalCode, 'email':attendee.email},
+                    'discount':"FiveOff", 'orgDonation':'1.00', 'charityDonation':'10.00', 'eventId':self.event.id}
+        response = self.client.post(reverse('checkout'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        attendee = Attendee.objects.get(firstName='Bea')
+        self.assertNotEqual(attendee.registeredDate, None)
+        self.assertEqual(attendee.orderitem_set.count(), 1)
+        orderItem = attendee.orderitem_set.first()
+        self.assertNotEqual(orderItem.order, None)
+        order = orderItem.order
+        self.assertEqual(order.total, 46.00)
+        self.assertEqual(attendee.postalCode, order.billingPostal)
+        self.assertEqual(order.orgDonation, 1.00)
+        self.assertEqual(order.charityDonation, 10.00)
 
 class LookupTestCases(TestCase):
     def setUp(self):

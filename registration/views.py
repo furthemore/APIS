@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 from django.utils import timezone
 from datetime import datetime
 from decimal import *
@@ -8,6 +9,7 @@ import random
 import string
 
 from .models import *
+from .payments import chargePayment
 
 # Create your views here.
 
@@ -18,22 +20,6 @@ def index(request):
 
 ###################################
 # Payments
-
-def getTotal(orderItems, discount = None):
-    total = 0
-    if not orderItems: return total
-    for item in orderItems:
-        itemTotal = item.priceLevel.basePrice
-        for option in item.attendeeoptions_set.all():
-            itemTotal += option.option.optionPrice
-        if discount:
-            if discount.amountOff:
-                itemTotal -= discount.amountOff
-            elif discount.percentOff:
-                itemTotal -= Decimal(float(itemTotal) * float(discount.percentOff)/100)
-        if itemTotal > 0:
-            total += itemTotal
-    return total
 
 def getCart(request):
     sessionItems = request.session.get('order_items', [])
@@ -104,12 +90,49 @@ def cancelOrder(request):
     return HttpResponse("Order Cancelled")
 
 def checkout(request):
-    pass
+    sessionItems = request.session.get('order_items', [])
+    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    postData = json.loads(request.body)
+    pdisc = postData["discount"].strip()
+    porg = Decimal(postData["orgDonation"].strip() or 0.00)
+    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    pbill = postData["billingData"]
+    event = Event.objects.get(id=int(postData["eventId"]))
 
-def deleteOrderItem(id):
-    orderItem = OrderItem.objects.get(id=id)
-    orderItem.attendee.delete()
-    orderItem.delete()
+    if porg < 0: 
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+    discount = Discount.objects.get(codeName=pdisc)
+    if discount and discount.isValid():
+        subtotal = getTotal(orderItems, discount)
+    else: 
+        discount = None
+        subtotal = getTotal(orderItems)
+    total = subtotal + porg + pcharity
+
+    reference = getConfirmationCode()
+    while Order.objects.filter(reference=reference).count() > 0:
+        ccode = getConfirmationCode()
+
+    order = Order(total=Decimal(total), reference=reference, discount=discount,
+                  orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_name'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
+    order.save()
+
+    for oitem in orderItems:
+        oitem.order = order
+        oitem.save()
+    
+    result = chargePayment(order.id, pbill)
+    #TODO: redirect properly
+    if result:
+        #TODO: send success email
+        return HttpResponse(result)    
+    else:
+        return HttpResponse("Failure")    
 
 
 
@@ -139,3 +162,26 @@ def getShirtSizes(request):
 def getConfirmationCode():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(6))
         
+def deleteOrderItem(id):
+    orderItem = OrderItem.objects.get(id=id)
+    orderItem.attendee.delete()
+    orderItem.delete()
+
+def getTotal(orderItems, discount = None):
+    total = 0
+    if not orderItems: return total
+    for item in orderItems:
+        itemTotal = item.priceLevel.basePrice
+        for option in item.attendeeoptions_set.all():
+            itemTotal += option.option.optionPrice
+        if discount:
+            if discount.amountOff:
+                itemTotal -= discount.amountOff
+            elif discount.percentOff:
+                itemTotal -= Decimal(float(itemTotal) * float(discount.percentOff)/100)
+        if itemTotal > 0:
+            total += itemTotal
+    return total
+
+    def cleanupAbandons():
+        pass

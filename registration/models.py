@@ -3,7 +3,6 @@ import json
 from django.db import models
 from django.utils import timezone
 
-from payments.models import BasePayment
 
 #######################################
 # As of Data Model version 27
@@ -66,7 +65,7 @@ class Attendee(models.Model):
     parentPhone = models.CharField(max_length=20, blank=True)
     parentEmail = models.CharField(max_length=200, blank=True)
     event = models.ForeignKey(Event)    
-
+    registeredDate = models.DateTimeField(auto_now_add=True, null=True)
 
 class Dealer(models.Model):
     pass
@@ -101,7 +100,6 @@ class PriceLevelOption(models.Model):
       return '%s - %s' % (self.priceLevel, self.optionName)
 
 class Discount(models.Model):
-    requiredPriceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
     codeName = models.CharField(max_length=100)
     percentOff = models.IntegerField(null=True)
     amountOff = models.DecimalField(max_digits=6, decimal_places=2, null=True)
@@ -112,24 +110,30 @@ class Discount(models.Model):
     def __str__(self):
       return self.codeName
 
-    def isValid(self, requiredPriceId=None):
+    def isValid(self):
         now = timezone.now()
         if self.startDate > now or self.endDate < now:
             return False
-        if requiredPriceId is not None and self.requiredPriceLevel is not None and self.requiredPriceLevel.id != requiredPriceId:
-            return False
         return True
 
-class Order(BasePayment):
+#TODO: fix
+class Order(models.Model):
+    total = models.DecimalField(max_digits=6, decimal_places=2)
+    reference = models.CharField(max_length=50)
+    createdDate = models.DateTimeField(auto_now_add=True, null=True)
+    settledDate = models.DateTimeField(auto_now_add=True, null=True)
     discount = models.ForeignKey(Discount, null=True, on_delete=models.SET_NULL)
     orgDonation = models.DecimalField(max_digits=6, decimal_places=2, null=True)
     charityDonation = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-
-    def get_failure_url(self):
-      return 'http://dawningbrooke.net/registration/failure/'
-
-    def get_success_url(self):
-      return 'http://dawningbrooke.net/registration/success/'
+    notes = models.TextField(blank=True)
+    billingName = models.CharField(max_length=200)
+    billingAddress1 = models.CharField(max_length=200)
+    billingAddress2 = models.CharField(max_length=200, blank=True)
+    billingCity = models.CharField(max_length=200)
+    billingState = models.CharField(max_length=200)
+    billingCountry = models.CharField(max_length=200)
+    billingPostal = models.CharField(max_length=20)
+    billingEmail = models.CharField(max_length=200)
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
@@ -137,6 +141,7 @@ class OrderItem(models.Model):
     priceLevel = models.ForeignKey(PriceLevel)
     confirmationCode = models.CharField(max_length=100)
     enteredBy = models.CharField(max_length=100)
+    enteredDate = models.DateTimeField(auto_now_add=True, null=True)
 
 class AttendeeOptions(models.Model):
     option = models.ForeignKey(PriceLevelOption)
