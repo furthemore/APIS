@@ -1,0 +1,100 @@
+<html>
+<body>
+<head>
+<link href="/static/css/bs-yeti.css" rel="stylesheet" media="screen">
+<link href="/static/css/yuuki.css" rel="stylesheet" media="screen">
+<link href="/static/css/bootstrap-formhelpers.css" rel="stylesheet" media="screen">
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/bs.min.js"></script>
+ <script src="/static/js/bootstrap-formhelpers.js"></script>
+</head>
+
+<h2>Billing Information</h2>
+<div>Use 
+<select id="attendee_billing">
+<option selected>--pick one--</option>
+{% for oi in orderItems %}
+<option value="{{oi.attendee.id}}">{{oi.attendee}}</option>
+{% endfor %}
+</select>'s address as the billing address.
+</div>
+
+<div>
+Name: <input id="billing_name" /><br>
+Email: <input id="billing_email" /> <br>
+Address: <input id="billing_add1" /> <br>
+<input id="billing_add2" /> <br>
+City: <input id="billing_city" /> <br>
+State: <input id="billing_state" /> <br>
+Country: <input id="billing_country" /> <br>
+Postal Code: <input id="billing_postal" />
+</div>
+
+<div>
+Total Attendee Cost: {{total}}
+</div>
+<div>
+Discount Code: <input id="discount" /> <br>
+Organization Donation <input id="orgDonate" /> <br>
+Charity Donation <input id="charityDonate" /> <br>
+</div>
+
+<div>
+CC Number: <input id="cc_number" /> <br>
+CC Expiration: <input id="cc_month" /> <input id="cc_year" /><br>
+CVV: <input id="cc_cvv" />
+</div>
+
+<input type="button" id="checkout" value="Checkout" />
+
+<script>
+$( "body" ).ready(function() {
+    var orderData = {{orderItems}}
+
+    $("#attendee_billing").change(function() {
+        var attendeeId = $(this).val();
+        for (i =0; i < orderData.length; i++) {
+            if (orderData[i].attendee.id == attendeeId) {
+                var data = orderData[i].attendee;
+                $("billing_name").val(data.firstName + " " + data.lastName);
+                $("billing_email").val(data.email);
+                $("billing_add1").val(data.address1);
+                $("billing_add2").val(data.address2);
+                $("billing_city").val(data.city);
+                $("billing_state").val(data.state);
+                $("billing_country").val(data.country);
+                $("billing_postal").val(data.postal);
+            }
+        }
+    });
+
+    $("#checkout").click(function() {
+        var data = { 
+          'billingData': {
+              'cc_name': $("#billing_name"), 
+              'cc_number': $("#cc_number"), 
+              'cc_month': $("#cc_month"),
+              'cc_year': $("#cc_year"), 
+              'cc_security': $("#cc_cvv"),
+              'address1': $("#billing_address1"), 
+              'address2': $("#billing_address2"), 
+              'city': $("#billing_city"), 
+              'state': $("#billing_state"), 
+              'country': $("#billing_country"), 
+              'postal': $("#billing_postal"), 
+              'email': $("#billing_email")
+          }, 
+          'discount': $("#"), 'orgDonation': $("#"), 
+          'charityDonation': $("#"), 'eventId': 1 
+        }
+        $.postJSON("/registration/checkout/", data, function(response) {
+             alert(response);
+        }, 'json')
+    });
+
+});
+</script>
+
+
+</body>
+</html>

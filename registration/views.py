@@ -1,3 +1,4 @@
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.response import TemplateResponse
@@ -29,7 +30,7 @@ def getCart(request):
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
         total = getTotal(orderItems)
         context = {'orderItems': orderItems, 'total': total}
-    return render(request, 'registration/cart.html', context)
+    return render(request, 'registration/checkout.html', context)
 
 def addToCart(request):
     #create attendee from request post
@@ -147,8 +148,8 @@ def getDepartments(request):
 def getPriceLevels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now)
-    data = [{'name': level.name, 'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName} for option in level.priceleveloption_set.all() ]} for level in levels]
-    return HttpResponse(json.dumps(data), content_type='application/json')
+    data = [{'name': level.name, 'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice } for option in level.priceleveloption_set.all() ]} for level in levels]
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getShirtSizes(request):
     sizes = ShirtSizes.objects.all()
