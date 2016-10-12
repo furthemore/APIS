@@ -4,6 +4,10 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^staff/(?P<guid>)/?$', views.staff, name='staff'),
+    url(r'^dealer/?$', views.newDealer, name='newDealer'),
+    url(r'^dealer/(?P<guid>)/?$', views.dealers, name='dealers'),
+    
     url(r'^cart/?$', views.getCart, name='cart'),
     url(r'^cart/add/?$', views.addToCart, name='addToCart'),
     url(r'^cart/remove/?$', views.removeFromCart, name='removeFromCart'),

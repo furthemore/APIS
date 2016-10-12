@@ -28,6 +28,10 @@ class ShirtSizes(LookupTable):
 class Event(LookupTable):
     pass
 
+class TableSize(LookupTable):
+    pass
+
+
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
     volunteerListOk = models.BooleanField(default=False)
@@ -37,7 +41,13 @@ class Department(models.Model):
 
 #End lookup and supporting tables
 
+#Start CustomAddons
+class Jersey(models.Model):
+    shirtSize = models.ForeignKey(ShirtSizes)
+    name = models.CharField(max_length=50)
+    number = models.IntegerField()
 
+#End CustomAddons
 
 class Attendee(models.Model):
     firstName = models.CharField(max_length=200)
@@ -67,14 +77,44 @@ class Attendee(models.Model):
     event = models.ForeignKey(Event)    
     registeredDate = models.DateTimeField(auto_now_add=True, null=True)
 
-class Dealer(models.Model):
-    pass
+    def __str__(self):
+      return '%s %s' % (self.firstName, self.lastName)
 
 
 class Staff(models.Model):
-    pass
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    registrationToken = models.CharField(max_length=200)
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.SET_NULL)
+    supervisor = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
+    title = models.CharField(max_length=200, blank=True)
+    twitter = models.CharField(max_length=200, blank=True)
+    telegram = models.CharField(max_length=200, blank=True)
+    attendee = models.ForeignKey(ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL)    
+    timesheetAccess = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    specialSkills = models.TextField(blank=True)
+    specialFood = models.TextField(blank=True)
+    specialMedical = models.TextField(blank=True)
+    contactName = models.CharField(max_length=200, blank=True)
+    contactPhone = models.CharField(max_length=200, blank=True)
+    needRoom = models.BooleanField(default=False)
+    gender = models.CharField(max_length=50, blank=True)     
 
-
+class Dealer(models.Model):
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    registrationToken = models.CharField(max_length=200)
+    approved = models.BooleanField(default=False)
+    tableNumber = models.IntegerField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    businessName = models.CharField(max_length=200)
+    website = models.CharField(max_length=500)
+    description = models.TextField()
+    license = models.CharField(max_length=50)
+    needPower = models.BooleanField(default=False)
+    needWifi = models.BooleanField(default=False)
+    wallSpace = models.BooleanField(default=False)
+    nearTo = models.CharField(max_length=200, blank=True)
+    farFrom = models.CharField(max_length=200, blank=True)
 
 
 # Start order tables
@@ -95,9 +135,18 @@ class PriceLevelOption(models.Model):
     optionName = models.CharField(max_length=200)
     optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
     optionExtraType = models.CharField(max_length=100, blank=True)
+    required = models.BooleanField(default=False)
 
     def __str__(self):
       return '%s - %s' % (self.priceLevel, self.optionName)
+
+    def getList(self):
+	if self.optionExtraType in ["int", "bool", "string"]:
+            return []
+        elif self.optionExtraType == "ShirtSizes":
+            return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
+        else:
+            return []
 
 class Discount(models.Model):
     codeName = models.CharField(max_length=100)
@@ -116,7 +165,6 @@ class Discount(models.Model):
             return False
         return True
 
-#TODO: fix
 class Order(models.Model):
     total = models.DecimalField(max_digits=6, decimal_places=2)
     reference = models.CharField(max_length=50)

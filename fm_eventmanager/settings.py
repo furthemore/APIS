@@ -131,3 +131,4 @@ STATIC_ROOT = '/root/projects/furthemore/static/'
 # Sandbox values - DO NOT check in production ids
 AUTHNET_NAME = '426rwVfr3G47'
 AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
+
