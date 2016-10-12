@@ -2,7 +2,8 @@ from django.core.mail import send_mail
 from .models import *
 
 def sendRegistrationEmail(orderId):
-    pass
+    order = Order.objects.get(id=orderId)
+    sendEmail("registration@furthemore.org", order.attendee.email, "Registration Complete!", "Thanks!")
 
 
 def sendEmail(fromAddress, toAddress, subject, message):

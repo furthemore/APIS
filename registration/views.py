@@ -18,6 +18,15 @@ def index(request):
     context = {}
     return render(request, 'registration/registration-form.html', context)
 
+def staff(request, guid):
+    pass
+
+def dealers(request, guid):
+    pass
+
+def newDealer(request):
+    context = {}
+    return render(request, 'registration/dealer-form.html', context)
 
 ###################################
 # Payments
@@ -33,10 +42,11 @@ def getCart(request):
     return render(request, 'registration/checkout.html', context)
 
 def addToCart(request):
-    #create attendee from request post
     postData = json.loads(request.body)
+    #create attendee from request post
     pda = postData['attendee']
     pdp = postData['priceLevel']
+    jer = postData['jersey']
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
@@ -46,7 +56,7 @@ def addToCart(request):
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
-                        badgeName=pda['badgeName'], emailsOk=pda['emailsOk'], volunteerContact=pda['volunteer'], volunteerDepts=pda['volDepts'],
+                        badgeName=pda['badgeName'], emailsOk=pda['emailsOk'], volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
                         event=event )
     attendee.save()
 
@@ -62,6 +72,14 @@ def addToCart(request):
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
         attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
+
+    if jer:
+        jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+        jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
+        jersey.save()
+        jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
+        jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
+        jerseyOption.save()
 
     #add attendee to session order
     orderItems = request.session.get('order_items', [])
@@ -141,14 +159,14 @@ def checkout(request):
 # Utilities
 
 def getDepartments(request):
-    depts = Department.objects.filter(volunteerListOk=True)
+    depts = Department.objects.filter(volunteerListOk=True).order_by('name')
     data = [{'name': item.name, 'id': item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getPriceLevels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now)
-    data = [{'name': level.name, 'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice } for option in level.priceleveloption_set.all() ]} for level in levels]
+    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getShirtSizes(request):
