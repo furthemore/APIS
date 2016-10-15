@@ -6,6 +6,8 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^staff/(?P<guid>)/?$', views.staff, name='staff'),
     url(r'^dealer/?$', views.newDealer, name='newDealer'),
+    url(r'^dealer/add/?$', views.addDealer, name='addDealer'),
+    url(r'^dealer/thanks/?$', views.thanksDealer, name='thanksDealer'),
     url(r'^dealer/(?P<guid>)/?$', views.dealers, name='dealers'),
     
     url(r'^cart/?$', views.getCart, name='cart'),
@@ -13,8 +15,10 @@ urlpatterns = [
     url(r'^cart/remove/?$', views.removeFromCart, name='removeFromCart'),
     url(r'^cart/abandon/?$', views.cancelOrder, name='cancelOrder'),
     url(r'^cart/checkout/?$', views.checkout, name='checkout'),
+
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),
     url(r'^shirts/?$', views.getShirtSizes, name='shirtsizes'),
+    url(r'^tables/?$', views.getTableSizes, name='tablesizes'),
 
 ]

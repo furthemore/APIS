@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Furthemore 2016 Registration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
+	<link href="/static/css/bs-yeti.css" rel="stylesheet" media="screen">
+	<link href="/static/css/yuuki.css" rel="stylesheet" media="screen">
+	<link href="/static/css/bootstrap-formhelpers.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+
+<!-- Subhead
+================================================== -->
+<div class="artisan2">
+<div class="artisan">
+
+<div class="container">
+    <div class="row">
+	
+	<div class="col-md-8" id="content-holder">
+	<form class="form-horizontal" role="form" data-toggle="validator">
+	<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+		<h1>Dealer Registration - Furthemore 2016</h1>
+		<p>Welcome to the registration system. To continue, enter your information below.</p>
+		<hr>
+
+			
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
+                    </div>
+		    <div class="col-sm-5">
+                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="col-sm-3 control-label">Email</label>
+                    <div class="col-sm-9">
+                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="phone" class="col-sm-3 control-label">Phone Number</label>
+                    <div class="col-sm-9">
+                        <input type="phone" id="phone" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add1" class="col-sm-3 control-label">Address</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+		    <div class="col-sm-4">
+			<input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
+		    </div>
+                    <div class="col-sm-2">
+			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+                    </div>
+		    <div class="col-sm-3">
+			<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
+		    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="country" class="col-sm-3 control-label">Country</label>
+                    <div class="col-sm-9">
+			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+                    </div>
+                </div>
+				
+		<hr>
+
+                <div class="form-group">
+                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
+                    <div class="col-sm-9">
+                        <input type="date" id="birthDate" class="form-control" placeholder="mm/dd/yyyy" required data-error="Date of birth is required.">
+			<p><small><a href="#">Why do we need this?</a></small></p>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+                        <button type="submit" class="btn btn-primary col-sm-9" aria-controls="profile" id="register1" data-toggle="tab">Submit</button>
+			<a href="#profile" class="btn btn-primary col-sm-3" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+                    </div>
+                </div>
+            
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="profile">
+		<h2>Business Information</h2>
+		<p>Fill out the information related to your business below.</p>
+		<hr>
+                <div class="form-group">
+                    <label for="businessName" class="col-sm-3 control-label">Business Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="businessName" name="businessName" placeholder="Business Name" class="form-control form-control-text" required>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="license" class="col-sm-3 control-label">Business License</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="license" name="license" placeholder="Business License" class="form-control form-control-text" required>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="website" class="col-sm-3 control-label">Website</label>
+                    <div class="col-sm-9">
+                        <input type="url" id="website" name="website" placeholder="http://www.mysite.org" class="form-control form-control-text" required>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="description" class="col-sm-3 control-label">Description of Wares</label>
+                    <div class="col-sm-9">
+                        <textarea id="description" name="description" class="form-control form-control-textarea" required></textarea>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="reception" class="col-sm-3 control-label">I would like to attend the Dealer's Reception</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="reception" name="reception" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="artShow" class="col-sm-3 control-label">I would like to have items in the Art Show</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="artShow" name="artShow" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="charityRaffle" class="col-sm-3 control-label">I would like to donate these items to the Charity Raffle</label>
+                    <div class="col-sm-9">
+                        <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea"> </textarea>
+                    </div>
+                </div>
+
+		<hr/>
+		<p>The options below may limit where you can be placed in our dealer's room. If you need power or wifi, you will be charged an extra fee for these services if your application is accepted.</p>
+                <div class="form-group">
+                    <label for="power" class="col-sm-3 control-label">I do need power</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="power" name="power" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="wifi" class="col-sm-3 control-label">I do need wifi</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="wall" class="col-sm-3 control-label">I would like a wall space</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="wall" name="wall" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="tableSize" class="col-sm-3 control-label">Table Type</label>
+                    <div class="col-sm-9">
+                        <select id="tableSize" class="form-control form-control-select" ></select>
+			<div id="tableSizeDescription"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="chairs" class="col-sm-3 control-label">Chair Count</label>
+                    <div class="col-sm-9">
+                        <input type="number" id="chairs" name="chairs" class="form-control form-control-text" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="shareWith" class="col-sm-3 control-label">I would like to share a table with this person</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="shareWith" name="shareWith" placeholder="Business or Person" class="form-control form-control-text"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text" />
+                    </div>
+                </div>
+		<hr/>
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
+			I have read and understand the rules pertaining to both Furthemore and the Market Place. I agree to abide by these rules and by Furthemore's Code of Conduct.
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+
+		<div class="form-group">
+			<a href="#personal" class="btn btn-primary col-sm-3 col-sm-offset-3" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
+                        <button id="register" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit</button>
+                </div>
+	</div>
+	</div>
+	</form>
+	</div>
+</div>
+</div>
+</div>
+</div>
+<script src="/static/js/jquery.js"></script>
+ <script src="/static/js/jquery.loadTemplate.min.js"></script>
+<script src="/static/js/bs.min.js"></script>
+ <script src="/static/js/bootstrap-formhelpers.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.5/validator.js"></script>
+
+ <script type="text/javascript">
+	var tableSizes = [];
+	$( "body" ).ready(function() {
+                $.getJSON("/registration/tables", function(data) {
+                        tableSizes = data;
+			$.each(tableSizes, function (key, item) {
+				$("#tableSize").append("<option value='" + item.id + "'>" + item.name + "</option>");
+				if (key == 0) { 
+					$("#tableSizeDescription").text(item.description); 
+					setChairs(item.id);
+				}
+			});
+                });
+        });
+	$("#tableSize").on("change", function() {
+		var id = $(this).val();
+		$.each(tableSizes, function (key, item) {
+			if (item.id == id){	
+				$("#tableSizeDescription").text(item.description);
+				setChairs(key);
+			}
+		});		
+	});
+
+	function setChairs(id){
+		$.each(tableSizes, function (key, item) {
+			if (item.id == id){	
+				if (item.chairMin == item.chairMax){
+					$("#chairs").val(item.chairMin).attr("disabled", "disabled");
+				} else {
+					$("#chairs").val(item.chairMin).attr("min", item.chairMin).attr("max", item.chairMax).removeAttr("disabled");
+				}
+			}
+		});		
+	};
+
+	$("#register1").click(doRegister);
+
+	$("#register").click(doRegister);
+	
+	function getAge(birthdate) {
+ 		var curr  = new Date(2017, 4, 28);
+ 		var diff = curr.getTime() - birthdate.getTime();
+		return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+	}
+
+	function doRegister() {
+		$("form").validator('validate');
+		var errorCount = $(".has-error").length;
+		if (errorCount > 0) {return;}
+		var birthDate = new Date(Date.parse($("#birthDate").val()));
+		var age = getAge(birthDate);
+		if (age < 18){
+			alert("You must be 18 by the first day of Furthemore to be a dealer.");
+			return;
+		}
+
+		var data = {
+			'attendee': {
+				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
+				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
+				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+				'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': $("#birthDate").val(),
+				'emailsOk': $("#contact").val() 
+			}, 
+			'dealer': {
+				'businessName':$("#businessName").val(), 'website':$("#website").val(),
+				'license':$("#license").val(), 'power':$("#power").val(), 'wifi':$("#wifi").val(),
+                                'wall':$("#wall").val(), 'near':$("#near").val(), 'far':$("#far").val(),
+				'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
+				'chairs': $("#chairs").val(), 'shareWith': $("#shareWith").val(), 
+				'reception': $("#reception").val(), 'artShow': $("#artShow").val(), 
+				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").val()
+			}
+		};
+		$.ajax({
+		    "type": "POST",
+		    "dataType": "json",
+		    "url": "/registration/dealer/add/",
+		    "data": JSON.stringify(data),
+		    "beforeSend": function(xhr, settings) {
+		        console.log("Before Send");
+		        $.ajaxSettings.beforeSend(xhr, settings);
+		    },
+		    "error": function(result, status, error) {
+                        alert("An error has occurred. Please contact exhibitions@furthemore.org and we will correct the problem.")
+		    },
+                    "success": function () {
+                        window.location = "/registration/dealer/thanks";
+                    }
+		});
+	}
+
+
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    }
+});
+
+
+</script>
+
+
+ </script>
+  </body>
+</html>
