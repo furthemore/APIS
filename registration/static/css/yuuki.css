@@ -31,9 +31,9 @@ body { background: url('../img/fmbottom.png') repeat-x bottom center black; }
 	
 	min-width:500px;
 	min-height:250px;
-	background: black;
 	box-radius: 10px;
 	margin-bottom: 5%;
+	background-color: black; 
 }
 
 #badge-text{

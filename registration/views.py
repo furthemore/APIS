@@ -1,6 +1,6 @@
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseServerError, JsonResponse
+from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from datetime import datetime
@@ -27,6 +27,43 @@ def dealers(request, guid):
 def newDealer(request):
     context = {}
     return render(request, 'registration/dealer-form.html', context)
+
+def thanksDealer(request):
+    context = {}
+    return render(request, 'registration/dealer-thanks.html', context)
+
+###################################
+# Dealers
+
+def addDealer(request):
+  try:
+    postData = json.loads(request.body)
+    #create attendee from request post
+    pda = postData['attendee']
+    pdd = postData['dealer']
+
+    tz = timezone.get_current_timezone()
+    birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
+    #TODO: get correct event
+    event = Event.objects.first()
+
+    attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
+                        city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
+                        phone=pda['phone'], email=pda['email'], birthdate=birthdate,
+                        emailsOk=pda['emailsOk'], event=event )
+    attendee.save()
+
+    tablesize = TableSize.objects.get(id=pdd['tableSize'])
+    dealer = Dealer(attendee=attendee, registrationToken=getRegistrationToken(), businessName=pdd['businessName'], 
+                    website=pdd['website'], description=pdd['description'], license=pdd['license'], needPower=pdd['power'],
+                    needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
+                    chairs=pdd['chairs'], shareWith=pdd['shareWith'], reception=pdd['reception'],
+                    artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], agreeToRules=pdd['agreeToRules'])
+    dealer.save()
+    return JsonResponse({'success': True})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
 
 ###################################
 # Payments
@@ -174,9 +211,17 @@ def getShirtSizes(request):
     data = [{'name': size.name, 'id': size.id} for size in sizes]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
+def getTableSizes(request):
+    sizes = TableSize.objects.all()
+    data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax} for size in sizes]
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
 
 ##################################
 # Not Endpoints
+
+def getRegistrationToken():
+    return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(15))
 
 def getConfirmationCode():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(6))

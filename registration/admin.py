@@ -7,6 +7,9 @@ admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
 admin.site.register(Jersey)
+admin.site.register(TableSize)
+
+admin.site.register(Dealer)
 
 admin.site.register(Attendee)
 admin.site.register(AttendeeOptions)
