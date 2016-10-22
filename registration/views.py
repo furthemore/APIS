@@ -9,6 +9,7 @@ import json
 import random
 import string
 
+from .emails import *
 from .models import *
 from .payments import chargePayment
 
@@ -57,9 +58,11 @@ def addDealer(request):
     dealer = Dealer(attendee=attendee, registrationToken=getRegistrationToken(), businessName=pdd['businessName'], 
                     website=pdd['website'], description=pdd['description'], license=pdd['license'], needPower=pdd['power'],
                     needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
-                    chairs=pdd['chairs'], shareWith=pdd['shareWith'], reception=pdd['reception'],
-                    artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], agreeToRules=pdd['agreeToRules'])
+                    chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
+                    breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'], 
+                    agreeToRules=pdd['agreeToRules'], partners=pdd['partners'])
     dealer.save()
+    #sendDealerApplicationEmail(dealer.id)    
     return JsonResponse({'success': True})
   except Exception as e:
     return HttpResponseServerError(str(e))
@@ -213,7 +216,7 @@ def getShirtSizes(request):
 
 def getTableSizes(request):
     sizes = TableSize.objects.all()
-    data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax} for size in sizes]
+    data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax} for size in sizes]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
