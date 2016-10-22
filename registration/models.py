@@ -32,6 +32,10 @@ class TableSize(LookupTable):
     description = models.TextField()
     chairMin = models.IntegerField(default=1)
     chairMax = models.IntegerField(default=1)
+    tableMin = models.IntegerField(default=0)
+    tableMax = models.IntegerField(default=0)
+    partnerMin = models.IntegerField(default=1)
+    partnerMax = models.IntegerField(default=1)
 
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
@@ -118,11 +122,14 @@ class Dealer(models.Model):
     farFrom = models.CharField(max_length=200, blank=True)
     tableSize = models.ForeignKey(TableSize)
     chairs = models.IntegerField(default=0)
-    shareWith = models.CharField(max_length=200, blank=True)
+    tables = models.IntegerField(default=0)
     reception = models.BooleanField(default=False)
     artShow = models.BooleanField(default=False)
     charityRaffle = models.TextField(blank=True)
     agreeToRules = models.BooleanField(default=False)
+    breakfast = models.BooleanField(default=False)
+    willSwitch = models.BooleanField(default=False)
+    partners = models.TextField(blank=True)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
