@@ -1,25 +1,6 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Furthemore 2016 Registration</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
-	<link href="/static/css/bs-yeti.css" rel="stylesheet" media="screen">
-	<link href="/static/css/yuuki.css" rel="stylesheet" media="screen">
-	<link href="/static/css/bootstrap-formhelpers.css" rel="stylesheet" media="screen">
-  </head>
-  <body>
+{% extends "registration/master.html" %}
 
-<!-- Subhead
-================================================== -->
-<div class="artisan2">
-<div class="artisan">
-
-<div class="container">
-    <div class="row">
-	
-	<div class="col-md-8" id="content-holder">
+{% block content %}
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
@@ -247,19 +228,13 @@
                         <button id="register" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit</button>
                 </div>
 	</div>
-	</div>
 	{% csrf_token %}
-	</form>
 	</div>
-</div>
-</div>
-</div>
-</div>
-<script src="/static/js/jquery.js"></script>
- <script src="/static/js/jquery.loadTemplate.min.js"></script>
-<script src="/static/js/bs.min.js"></script>
- <script src="/static/js/bootstrap-formhelpers.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.5/validator.js"></script>
+	</form>
+
+{% endblock %}
+
+{% block javascript %}
 
  <script type="text/javascript">
 	var tableSizes = [];
@@ -419,9 +394,8 @@ $.ajaxSetup({
 });
 
 
-</script>
 
 
  </script>
-  </body>
-</html>
+
+{% endblock %}
