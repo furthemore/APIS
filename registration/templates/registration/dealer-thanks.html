@@ -1,25 +1,6 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Furthemore 2017 Registration</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
-	<link href="/static/css/bs-yeti.css" rel="stylesheet" media="screen">
-	<link href="/static/css/yuuki.css" rel="stylesheet" media="screen">
-	<link href="/static/css/bootstrap-formhelpers.css" rel="stylesheet" media="screen">
-  </head>
-  <body>
+{% extends "registration/master.html" %}
 
-<!-- Subhead
-================================================== -->
-<div class="artisan2">
-<div class="artisan">
-
-<div class="container">
-    <div class="row">
-	
-	<div class="col-md-8" id="content-holder">
+{% block content %}
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - Furthemore 2017</h1>
@@ -30,12 +11,4 @@
 		<p>Thank you and good luck!</p>
 	</div>
 	</div>
-	</div>
-</div>
-</div>
-</div>
-</div>
-<script src="/static/js/jquery.js"></script>
-
-  </body>
-</html>
+{% endblock %}
