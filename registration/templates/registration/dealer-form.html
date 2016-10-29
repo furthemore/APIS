@@ -241,7 +241,7 @@
  <script type="text/javascript">
 	var tableSizes = [];
 	$( "body" ).ready(function() {
-                $.getJSON("/registration/tables", function(data) {
+                $.getJSON("/apis/registration/tables", function(data) {
                         tableSizes = data;
 			$.each(tableSizes, function (key, item) {
 				$("#tableSize").append("<option value='" + item.id + "'>" + item.name + "</option>");
@@ -360,7 +360,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/registration/dealer/add/",
+		    "url": "/apis/registration/dealer/add/",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
