@@ -257,7 +257,7 @@
         var deptData = [];
 	var shirtSizes = [];
 	$( "body" ).ready(function() {
-		$.getJSON("/registration/pricelevels", function(data) {
+		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
 			$.each( data, function( key, val ) {
 				levelTemplateData.push({
@@ -271,13 +271,13 @@
 			$(".changeLevel").hide();
 			
 		});
-		$.getJSON("/registration/departments", function(data) {
+		$.getJSON("/apis/registration/departments", function(data) {
 			deptData = data;
 			$.each(data, function(key, val) {
 				$("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
 			});
 		});
-		$.getJSON("/registration/shirts", function(data) {
+		$.getJSON("/apis/registration/shirts", function(data) {
 			shirtSizes = data;
 		});
         });
@@ -445,7 +445,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/registration/cart/add/",
+		    "url": "/apis/registration/cart/add/",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
