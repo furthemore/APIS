@@ -125,7 +125,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="reception" class="col-sm-3 control-label">I would like the daily complimentary breakfast</label>
+                    <label for="reception" class="col-sm-3 control-label">I would like the daily complimentary continental breakfast</label>
                     <div class="col-sm-9">
                         <input type="checkbox" id="breakfast" name="breakfast" class="form-control form-control-checkbox" />
                     </div>
@@ -149,15 +149,17 @@
                     </div>
 		    <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity onsite for additional information and receipts.</div>
                 </div>
-
-		<hr/>
-		<p>The options below may limit where you can be placed in our dealer's room.</p>
                 <div class="form-group">
-                    <label for="power" class="col-sm-3 control-label">I do need power</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="power" name="power" class="form-control form-control-checkbox" />
+                    <div class="col-sm-9 col-sm-offset-3">
+			<a href="#personal" class="btn btn-primary col-sm-3" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal"><< Back</a>
+                        <button type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" id="register1" data-toggle="tab">Submit</button>
+			<a href="#options" class="btn btn-primary col-sm-3" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
                     </div>
                 </div>
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="options">
+		<h2>Placement Options</h2>
+		<p>The options below may limit where you can be placed in our dealer's room.</p>
                 <div class="form-group">
                     <label for="wifi" class="col-sm-3 control-label">I do need wifi</label>
                     <div class="col-sm-9">
@@ -170,6 +172,13 @@
                     <div class="col-sm-9">
                         <input type="checkbox" id="wall" name="wall" class="form-control form-control-checkbox" />
                     </div>
+                </div>
+                <div class="form-group">
+                    <label for="wall" class="col-sm-3 control-label">I will consider different table types</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
+                    </div>
+		    <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I am willing to be assigned a different spot type (Table to booth or booth to table). You can decide to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept, you will be responsible for any difference in price.</div>
                 </div>
                 <div class="form-group">
                     <label for="tableSize" class="col-sm-3 control-label">Table Type</label>
@@ -196,13 +205,6 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="wall" class="col-sm-3 control-label">I will consider different table types</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
-                    </div>
-		    <div class="col-sm-9 col-sm-offset-3 small">If a table type is no longer available, you may be assigned a different table type. You can decide to decline a dealer spot if you'd rather not have the table type assigned in this way. If you accept, you will be responsible for any difference in price.</div>
-                </div>
-                <div class="form-group">
                     <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
                     <div class="col-sm-9">
                         <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
@@ -224,7 +226,7 @@
                 </div>
 
 		<div class="form-group">
-			<a href="#personal" class="btn btn-primary col-sm-3 col-sm-offset-3" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
+			<a href="#profile" class="btn btn-primary col-sm-3 col-sm-offset-3" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
                         <button id="register" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit</button>
                 </div>
 	</div>
@@ -276,11 +278,14 @@
 				$("#partnerList").empty();
 				if (item.partnerMax > 0){
 					for (var i=item.partnerMin; i <= item.partnerMax; i++) {
-						var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" /> <input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />'
+						var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
+							      '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
+							      '<input type="text" id="license_' + i + '" placeholder="Partner Business License" class="form-control form-control-text" />' + 
+							      '<input type="checkbox" id="tempLicense_' + i + '" /> This partner needs a temporary license.<br/> '
 						$("#partnerList").append(partner);
 						if (i != item.partnerMax){$("#partnerList").append("<br/>");}
 					}
-					$("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or apply for a temporary license at the convention.</span>");
+					$("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
 				}
 			}
 		});		
@@ -313,7 +318,11 @@
 		var partners = "";
 		var partnerList = $("#partnerList input");
 		$.each(partnerList, function(key, item) {
-			partners += item.id + ": " + $(item).val() + ", " 
+			if ($(item).is(':checkbox')) {
+				partners += item.id + ": " + $(item).is(':checked') + ", "; 				
+			} else {
+				partners += item.id + ": " + $(item).val() + ", "; 
+			}
 		});
 		return partners;
 	}
@@ -339,7 +348,7 @@
 			}, 
 			'dealer': {
 				'businessName':$("#businessName").val(), 'website':$("#website").val(),
-				'license':$("#license").val(), 'power':$("#power").is(':checked'), 'wifi':$("#wifi").is(':checked'),
+				'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
                                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
 				'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
 				'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
