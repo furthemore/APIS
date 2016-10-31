@@ -105,7 +105,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="mm/dd/yyyy" required data-error="Date of birth is required.">
+                        <input type="text" id="birthDate" class="form-control" placeholder="Click to select your birthdate" />
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
@@ -276,6 +276,7 @@
  <script type="text/javascript">
 	var tableSizes = [];
 	$( "body" ).ready(function() {
+		$("#birthDate").datepicker();
                 $.getJSON("/apis/registration/tables", function(data) {
                         tableSizes = data;
 			$.each(tableSizes, function (key, item) {
@@ -385,6 +386,10 @@
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
+		if ($("#birthDate").val() == "") {
+			alert("You must enter your birthdate to submit your application.");
+			return;
+		} 
 		var birthDate = new Date(Date.parse($("#birthDate").val()));
 		var age = getAge(birthDate);
 		if (age < 18){
