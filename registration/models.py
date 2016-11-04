@@ -36,6 +36,7 @@ class TableSize(LookupTable):
     tableMax = models.IntegerField(default=0)
     partnerMin = models.IntegerField(default=1)
     partnerMax = models.IntegerField(default=1)
+    basePrice = models.DecimalField(max_digits=6, decimal_places=2, default=0)
 
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
@@ -85,6 +86,9 @@ class Attendee(models.Model):
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
 
+    def toJson(self):
+      pass
+
 
 class Staff(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -130,10 +134,13 @@ class Dealer(models.Model):
     breakfast = models.BooleanField(default=False)
     willSwitch = models.BooleanField(default=False)
     partners = models.TextField(blank=True)
+    buttonOffer = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
 
+    def toJson(self): 
+      pass
 
 # Start order tables
 class PriceLevel(models.Model):

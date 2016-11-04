@@ -36,68 +36,67 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - Furthemore 2017</h1>
-		<p>Welcome to the registration system. To continue, enter your information below.</p>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
 		<hr>
-
 			
                 <div class="form-group">
                     <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
                     <div class="col-sm-4">
-                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
+                        <input type="text" id="firstName" value="{{dealer.attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
                     </div>
 		    <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+                        <input type="text" id="lastName" value={{dealer.attendee.lastName}} placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="email" class="col-sm-3 control-label">Email</label>
                     <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
-                        <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        <input type="email" id="email" value="{{dealer.attendee.email}}" class="form-control" disabled />
+                        <input type="checkbox" id="contact"> <span class="control-label" >Please keep me up to date with convention related information.</span>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
+		</div>
                 <div class="form-group">
                     <label for="phone" class="col-sm-3 control-label">Phone Number</label>
                     <div class="col-sm-9">
-                        <input type="phone" id="phone" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
+                        <input type="phone" id="phone" value="{{dealer.attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Address</label>
                     <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
+                        <input type="text" name="add1" id="add1" value="{{dealer.attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
                     <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
+                        <input type="text" name="add2" id="add2" value="{{dealer.attendee.address2}}" placeholder="Address Line 2" class="form-control">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="city" class="col-sm-3 control-label">City/State</label>
 		    <div class="col-sm-4">
-			<input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
+			<input type="text" name="city" id="city" value="{{dealer.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
 		    </div>
                     <div class="col-sm-5">
 			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
 		    <div class="col-sm-3">
-			<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
+			<input type="text" name="zip" id="zip" value="{{dealer.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
 		    </div>
                     <div class="col-sm-6">
 			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 				
 		<hr>
@@ -105,7 +104,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="text" id="birthDate" class="form-control" placeholder="Click to select your birthdate" />
+                        <input type="text" id="birthDate" value="{{dealer.attendee.birthdate}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
@@ -118,20 +117,20 @@
             
 	</div>
 	<div role="tabpanel" class="tab-pane fade" id="profile">
-		<h2>Business Information</h2>
-		<p>Fill out the information related to your business below.</p>
+		<h1>Dealer Registration - Furthemore 2017</h1>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
 		<hr>
                 <div class="form-group">
                     <label for="businessName" class="col-sm-3 control-label">Business Name</label>
                     <div class="col-sm-9">
-                        <input type="text" id="businessName" name="businessName" placeholder="Business Name" class="form-control form-control-text" required>
+                        <input type="text" id="businessName" value="{{dealer.businessName}}" name="businessName" placeholder="Business Name" class="form-control form-control-text" required>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
                     <div class="col-sm-9">
-                        <input type="text" id="license" name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
+                        <input type="text" id="license" value="{{dealer.license}}"  name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
 			<input type="checkbox" id="tempLicense" /> <small>I need a temporary tax license for VA.</small> 
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -139,14 +138,14 @@
                 <div class="form-group">
                     <label for="website" class="col-sm-3 control-label">Website</label>
                     <div class="col-sm-9">
-                        <input type="url" id="website" name="website" placeholder="http://www.mysite.org" class="form-control form-control-text" required data-error="Please enter a full URL here. Ex: http://www.google.com" />
+                        <input type="url" id="website" value="{{dealer.website}}" name="website" placeholder="http://www.mysite.org" class="form-control form-control-text" required data-error="Please enter a full URL here. Ex: http://www.google.com" />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="description" class="col-sm-3 control-label">Description of Wares</label>
                     <div class="col-sm-9">
-                        <textarea id="description" name="description" class="form-control form-control-textarea" required></textarea>
+                        <textarea id="description" name="description" class="form-control form-control-textarea" required>{{dealer.description}}</textarea>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -172,14 +171,14 @@
                 <div class="form-group">
                     <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
                     <div class="col-sm-9">
-                        <input type="text" id="buttonOffer" name="buttonOffer" class="form-control form-control-checkbox" />
+                        <input type="text" id="buttonOffer" value="{{dealer.buttonOffer}}" name="buttonOffer" class="form-control form-control-checkbox" />
                     </div>
 		    <div class="col-sm-9 col-sm-offset-3 small"><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal" >What's this?</button></div>
                 </div>
                 <div class="form-group">
                     <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity Raffle</label>
                     <div class="col-sm-9">
-                        <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea"> </textarea>
+                        <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea">{{dealer.charityRaffle}}</textarea>
                     </div>
 		    <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity onsite for additional information and receipts.</div>
                 </div>
@@ -191,8 +190,8 @@
                 </div>
 	</div>
 	<div role="tabpanel" class="tab-pane fade" id="options">
-		<h2>Placement Options</h2>
-		<p>The options below may limit where you can be placed in our Marketplace.</p>
+		<h1>Dealer Registration - Furthemore 2017</h1>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
                 <div class="form-group">
                     <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
                     <div class="col-sm-9">
@@ -216,53 +215,104 @@
                 <div class="form-group">
                     <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
                     <div class="col-sm-9">
-                        <select id="tableSize" class="form-control form-control-select" ></select>
-			<div id="tableSizeDescription"></div>
+                        <input type="text" value="{{dealer.tableSize.name}} (${{dealer.tableSize.basePrice}})" class="form-control form-control-text" disabled />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="chairs" class="col-sm-3 control-label">Chair Count</label>
                     <div class="col-sm-9">
-                        <input type="number" id="chairs" name="chairs" class="form-control form-control-text" />
+                        <input type="number" value="{{dealer.chairs}}" name="chairs" class="form-control form-control-text" disabled />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="tables" class="col-sm-3 control-label">Table Count</label>
                     <div class="col-sm-9">
-                        <input type="number" id="tables" name="tables" class="form-control form-control-text" />
+                        <input type="number" value="{{dealer.tables}}" name="tables" class="form-control form-control-text" disabled />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="tables" class="col-sm-3 control-label">Partner Information</label>
                     <div class="col-sm-9" id="partnerList">
+                        <input type="text" value="{{dealer.partners}}" name="tables" class="form-control form-control-text" disabled />
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
                     <div class="col-sm-9">
-                        <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
+                        <input type="text" id="near" value="{{dealer.nearTo}}" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
                     <div class="col-sm-9">
-                        <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text" />
+                        <input type="text" id="far" value="{{dealer.farFrom}}" name="far" placeholder="Business or Person" class="form-control form-control-text" />
                     </div>
-                </div>
-		<hr/>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
-			I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
 
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
 			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
-                        <button id="register" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit</button>
-			</div>
+			<a href="#payment" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge">Next >></a>
+		    </div>
+                </div>
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="payment">
+		<h1>Dealer Registration - Furthemore 2017</h1>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
+                <div class="form-group">
+                    <label for="billing" class="col-sm-3 control-label">Use my application address as my billing address</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="billing" name="billing" class="form-control form-control-checkbox" checked="true" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="billingname" value="{{dealer.attendee.firstName}} {{dealer.attendee.lastName}}" placeholder="Billing Name" class="form-control" required data-error="Billing name is required. " disabled />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add1" class="col-sm-3 control-label">Billing Address</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="billingadd1" id="billingadd1" value="{{dealer.attendee.address1}}" placeholder="Billing Address Line 1" class="form-control" required data-error="Address is required." disabled />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="billingadd2" id="billingadd2" value="{{dealer.attendee.address2}}" placeholder=" Billing Address Line 2" class="form-control" disabled />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="col-sm-3 control-label">City/State</label>
+		    <div class="col-sm-4">
+			<input type="text" name="billingcity" id="billingcity" value="{{dealer.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. " disabled />
+		    </div>
+                    <div class="col-sm-5">
+			<select class="form-control bfh-states" id="billingstate" data-country="US" data-state="VA" name="billingstate" disabled></select>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
+		    <div class="col-sm-3">
+			<input type="text" name="billingzip" id="billingzip" value="{{dealer.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required." required disabled />
+		    </div>
+                    <div class="col-sm-6">
+			<select id="billingcountry" class="form-control bfh-countries" data-country="US" name="billingcountry" disabled></select>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+                </div>
+
+
+		<div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
+                        <button id="checkout" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit Payment</button>
+		    </div>
                 </div>
 	</div>
 	{% csrf_token %}
@@ -274,59 +324,22 @@
 {% block javascript %}
 
  <script type="text/javascript">
-	var tableSizes = [];
-	$( "body" ).ready(function() {
-		$("#birthDate").datepicker();
-                $.getJSON("/apis/registration/tables", function(data) {
-                        tableSizes = data;
-			$.each(tableSizes, function (key, item) {
-				$("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
-				if (key == 0) { 
-					$("#tableSizeDescription").text(item.description); 
-					setTableInfo(item.id);
-				}
-			});
-                });
-        });
-	$("#tableSize").on("change", function() {
-		var id = $(this).val();
-		$.each(tableSizes, function (key, item) {
-			if (item.id == id){	
-				$("#tableSizeDescription").text(item.description);
-				setTableInfo(id);
-			}
-		});		
-	});
+	var dealer = {{jsonDealer|safe}} ;
+	var attendee = {{jsonAttendee|safe}} ;
+	var table = {{jsonTable|safe}} ;
 
-	function setTableInfo(id){
-		$.each(tableSizes, function (key, item) {
-			if (item.id == id){
-				if (item.chairMin == item.chairMax){
-					$("#chairs").val(item.chairMin).attr("disabled", "disabled");
-				} else {
-					$("#chairs").val(item.chairMin).attr("min", item.chairMin).attr("max", item.chairMax).removeAttr("disabled");
-				}
-				if (item.tableMin == item.tableMax){
-					$("#tables").val(item.tableMin).attr("disabled", "disabled");
-				} else {
-					$("#tables").val(item.tableMin).attr("min", item.tableMin).attr("max", item.tableMax).removeAttr("disabled");
-				}
-				$("#partnerList").empty();
-				if (item.partnerMax > 0){
-					for (var i=item.partnerMin; i <= item.partnerMax; i++) {
-						var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
-							      '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
-							      '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
-							      '<input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.<br/> '
-						$("#partnerList").append(partner);
-						if (i != item.partnerMax){$("#partnerList").append("<br/>");}
-					}
-					$("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
-					$(".partnerLicense").click(partnerLicense);
-				}
-			}
-		});		
-	};
+	$("#contact").attr('checked', attendee.emailsOk);
+	$("#breakfast").attr('checked', dealer.breakfast);
+	$("#reception").attr('checked', dealer.reception);
+	$("#artShow").attr('checked', dealer.artShow);
+	$("#wifi").attr('checked', dealer.needWifi);
+	$("#wall").attr('checked', dealer.wallSpace);
+	$("#switch").attr('checked', dealer.willSwitch);
+
+	if (dealer.license == "temporary") {
+		$("#license").attr("disabled", "disabled")
+		$("#tempLicense").attr('checked', true);
+	}
 
 	$("#country").on("change", function() {
 		if ($(this).val() == "US"){
@@ -345,72 +358,63 @@
 			$("#license").val("").removeAttr("disabled");
 		}
 	});
-	function partnerLicense() {
-		var id = this.id.split('_')[1];
+
+	$("#billing").on("change", function() {		
 		if ($(this).is(":checked")) {
-			$("#license_" + id).val("temporary").attr("disabled", "disabled");
+			$("#billingname").val(attendee.firstName + "  " + attendee.lastName).attr("disabled", "disabled");
+			$("#billingadd1").val(attendee.address1).attr("disabled", "disabled");
+			$("#billingadd2").val(attendee.address2).attr("disabled", "disabled");
+			$("#billingcity").val(attendee.city).attr("disabled", "disabled");
+			$("#billingstate").val(attendee.state).attr("disabled", "disabled");
+			$("#billingzip").val(attendee.postalCode).attr("disabled", "disabled");
+			$("#billingcountry").val(attendee.country).attr("disabled", "disabled");
+			$("form").validator('validate');
 		} else {
-			$("#license_" + id).val("").removeAttr("disabled");
+			$("#billingname").val("").removeAttr("disabled");
+			$("#billingadd1").val("").removeAttr("disabled");
+			$("#billingadd2").val("").removeAttr("disabled");
+			$("#billingcity").val("").removeAttr("disabled");
+			$("#billingstate").val("VA").removeAttr("disabled");
+			$("#billingzip").val("").removeAttr("disabled");
+			$("#billingcountry").val("US").removeAttr("disabled");
 		}
-	}
+	});
 
-	$("#register1").click(doRegister);
+	$("#billingcountry").on("change", function() {
+		if ($(this).val() == "US"){
+			$("#billingstate").val("VA").removeAttr("disabled").attr("required", "required");
+			$("#billingzip").val("").removeAttr("disabled").attr("required", "required");
+		} else {
+			$("#billingstate").val("").attr("disabled", "disabled").removeAttr("required");
+			$("#billingzip").val("").attr("disabled", "disabled").removeAttr("required");
+		}
+	});
 
-	$("#register").click(doRegister);
+
+
+
+	$("#checkout").click(doRegister);
 	
-	function getAge(birthdate) {
- 		var curr  = new Date(2017, 4, 28);
- 		var diff = curr.getTime() - birthdate.getTime();
-		return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-	}
-	function toDateFormat(birthdate){
-		var month = birthdate.getMonth();
-		month = month + 1;
-		return month + "/" + birthdate.getDate() + "/" + birthdate.getFullYear();
-	}
-
-	function getPartners(){
-		var partners = "";
-		var partnerList = $("#partnerList input");
-		$.each(partnerList, function(key, item) {
-			if ($(item).is(':checkbox')) {
-				partners += item.id + ": " + $(item).is(':checked') + ", "; 				
-			} else {
-				partners += item.id + ": " + $(item).val() + ", "; 
-			}
-		});
-		return partners;
-	}
 
 	function doRegister() {
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
-		if ($("#birthDate").val() == "") {
-			alert("You must enter your birthdate to submit your application.");
-			return;
-		} 
-		var birthDate = new Date(Date.parse($("#birthDate").val()));
-		var age = getAge(birthDate);
-		if (age < 18){
-			alert("You must be 18 by the first day of Furthemore to be a dealer.");
-			return;
-		}
 
 		var data = {
 			'attendee': {
+				'id': attendee.id,
 				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
 				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthDate),
-				'emailsOk': $("#contact").is(':checked')
+				'phone': $("#phone").val(),'emailsOk': $("#contact").is(':checked')
 			}, 
 			'dealer': {
+				'id': dealer.id,
 				'businessName':$("#businessName").val(), 'website':$("#website").val(),
 				'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
                                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
-				'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
-				'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
+				'description': $("#description").val(),  
 				'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
 				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
@@ -420,7 +424,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/dealer/add/",
+		    "url": "/apis/registration/dealer/checkout/",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");

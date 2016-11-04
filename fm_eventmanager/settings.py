@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'registration',
+    'import_export',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -127,6 +128,10 @@ SITE_ID = 1
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/root/projects/furthemore/static/'
+
+# Session Management
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 60*60  # 1hr
 
 # Sandbox values - DO NOT check in production ids
 AUTHNET_NAME = '426rwVfr3G47'

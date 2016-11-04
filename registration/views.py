@@ -1,4 +1,5 @@
 from django.core.serializers.json import DjangoJSONEncoder
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
@@ -22,19 +23,50 @@ def index(request):
 def staff(request, guid):
     pass
 
+
+###################################
+# Dealers
+
 def dealers(request, guid):
-    pass
+    context = {'token': guid}
+    return render(request, 'registration/dealer-locate.html', context)
 
 def newDealer(request):
     context = {}
     return render(request, 'registration/dealer-form.html', context)
 
+def invoiceDealer(request):
+    context = {'dealer': None}
+    dealerId = request.session['dealer_id']
+    dealer = Dealer.objects.get(id=dealerId)
+    if dealer:
+	dealer_dict = model_to_dict(dealer)
+        attendee_dict = model_to_dict(dealer.attendee)
+        table_dict = model_to_dict(dealer.tableSize)
+        context = {'dealer': dealer, 'jsonDealer': json.dumps(dealer_dict), 
+                   'jsonAttendee': json.dumps(attendee_dict, default=handler), 
+                   'jsonTable': json.dumps(table_dict, default=handler)}
+    return render(request, 'registration/dealer-payment.html', context)
+
 def thanksDealer(request):
     context = {}
     return render(request, 'registration/dealer-thanks.html', context)
 
-###################################
-# Dealers
+def findDealer(request):
+  try:
+    postData = json.loads(request.body)
+    email = postData['email']
+    token = postData['token']
+
+    dealer = Dealer.objects.get(attendee__email=email, registrationToken=token)
+    if not dealer:     
+      return JsonResponse({'success': False, 'message':'NODEALER'}) 
+
+    request.session['dealer_id'] = dealer.id
+    return JsonResponse({'success': True, 'message':'DEALER'})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
 
 def addDealer(request):
   try:
@@ -60,7 +92,7 @@ def addDealer(request):
                     needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
                     chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
                     breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'], 
-                    agreeToRules=pdd['agreeToRules'], partners=pdd['partners'])
+                    agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'])
     dealer.save()
     #sendDealerApplicationEmail(dealer.id)    
     return JsonResponse({'success': True})
@@ -216,7 +248,7 @@ def getShirtSizes(request):
 
 def getTableSizes(request):
     sizes = TableSize.objects.all()
-    data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax} for size in sizes]
+    data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax, 'basePrice': str(size.basePrice)} for size in sizes]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
@@ -250,5 +282,13 @@ def getTotal(orderItems, discount = None):
             total += itemTotal
     return total
 
-    def cleanupAbandons():
-        pass
+def cleanupAbandons():
+    pass
+
+def handler(obj):
+    if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+    elif isinstance(obj, Decimal):
+        return str(obj)
+    else:
+        raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
