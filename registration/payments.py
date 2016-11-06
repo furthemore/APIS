@@ -16,6 +16,15 @@ def chargePayment(orderId, ccData):
     creditCard.cardNumber = ccData['cc_number']
     creditCard.expirationDate = ccData['cc_year'] + '-' + ccData['cc_month']
  
+    billTo = apicontractsv1.customerAddressType()
+    billTo.firstName = ccData['cc_firstname']
+    billTo.lastName = ccData['cc_lastname']
+    billTo.address = ccData['address1'] + " " + ccData['address2']
+    billTo.city = ccData['city']
+    billTo.state = ccData['state']
+    billTo.zip = ccData['postal']
+    billTo.country = ccData['country']
+
     payment = apicontractsv1.paymentType()
     payment.creditCard = creditCard
  
@@ -27,6 +36,10 @@ def chargePayment(orderId, ccData):
     createtransactionrequest = apicontractsv1.createTransactionRequest()
     createtransactionrequest.merchantAuthentication = merchantAuth
     createtransactionrequest.refId = order.reference
+
+    ordertype = apicontractsv1.orderType()
+    ordertype.invoiceNumber = order.reference
+    ordertype.description = "APIS"
  
     createtransactionrequest.transactionRequest = transactionrequest
     createtransactioncontroller = createTransactionController(createtransactionrequest)

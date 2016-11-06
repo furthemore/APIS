@@ -135,6 +135,8 @@ class Dealer(models.Model):
     willSwitch = models.BooleanField(default=False)
     partners = models.TextField(blank=True)
     buttonOffer = models.CharField(max_length=200, blank=True)
+    discount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+    discountReason = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)

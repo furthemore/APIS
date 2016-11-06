@@ -3,6 +3,13 @@
 {% block content %}
 
 
+{% if dealer and not dealer.approved%}
+
+<h1>Dealer Registration - Furthemore 2017</h1>
+<p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you feel this is in error or have any questions.</p>
+
+{% elif dealer and dealer.approved %}
+
 <div class="modal fade" id="buttonModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -99,16 +106,26 @@
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 				
-		<hr>
+		<hr/>
 
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="text" id="birthDate" value="{{dealer.attendee.birthdate}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
+                        <input type="text" id="birthDate" value="{{dealer.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
+
+		<hr/>
+                <div class="form-group">
+                    <label for="add1" class="col-sm-3 control-label">Badge Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="nadgeName" id="badgeName" value="{{dealer.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+                </div>
+
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
 			<a href="#profile" class="btn btn-primary col-sm-12" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
@@ -259,7 +276,51 @@
 	<div role="tabpanel" class="tab-pane fade" id="payment">
 		<h1>Dealer Registration - Furthemore 2017</h1>
 		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
-                <div class="form-group">
+
+		<hr/>
+		<h3>Invoice</h3>
+		<div class="form-group">
+                    <div class="col-sm-3 col-sm-offset-3">
+		    	{{dealer.tableSize.name}}
+                    </div>
+                    <div class="col-sm-2">
+		    	<span class="pull-right">${{dealer.tableSize.basePrice}}</span>
+                    </div>
+		    <div class="col-sm-4">&nbsp;</div>
+                </div>
+		<div class="form-group">
+                    <div class="col-sm-3 col-sm-offset-3">
+		    	Partners x<span id="partnerCount"></span>
+                    </div>
+                    <div class="col-sm-2">
+		    	<span id="partnerTotal" class="pull-right"></span>
+                    </div>
+		    <div class="col-sm-4">&nbsp;</div>
+                </div>
+		{% if dealer.discount > 0 %}
+		<div class="form-group">
+                    <div class="col-sm-3 col-sm-offset-3">
+		    	{{dealer.discountReason}}
+                    </div>
+                    <div class="col-sm-2">
+		    	<span class="pull-right">- ${{dealer.discount}}</span>
+                    </div>
+		    <div class="col-sm-4">&nbsp;</div>
+                </div>
+		{% endif %}
+		<div class="form-group">
+                    <div class="col-sm-3 col-sm-offset-3">
+		    	<b>Total</b>
+                    </div>
+                    <div class="col-sm-2">
+		    	<b><span id="total" class="pull-right"></span></b>
+                    </div>
+		    <div class="col-sm-4">&nbsp;</div>
+                </div>
+		
+		
+                <hr/>
+		<div class="form-group">
                     <label for="billing" class="col-sm-3 control-label">Use my application address as my billing address</label>
                     <div class="col-sm-9">
                         <input type="checkbox" id="billing" name="billing" class="form-control form-control-checkbox" checked="true" />
@@ -267,8 +328,11 @@
                 </div>
                 <div class="form-group">
                     <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
-                    <div class="col-sm-9">
-                        <input type="text" id="billingname" value="{{dealer.attendee.firstName}} {{dealer.attendee.lastName}}" placeholder="Billing Name" class="form-control" required data-error="Billing name is required. " disabled />
+                    <div class="col-sm-4">
+                        <input type="text" id="billingfirstname" value="{{dealer.attendee.firstName}}" placeholder="Billing First Name" class="form-control" required data-error="Billing name is required. " disabled />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" id="billinglastname" value="{{dealer.attendee.lastName}}" placeholder="Billing Last Name" class="form-control" required data-error="Billing name is required. " disabled />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -306,7 +370,28 @@
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
-
+		<hr/>
+                <div class="form-group">
+                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="ccNumber" id="ccNumber" placeholder="Credit Card Number" class="form-control" required/>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="ccNumber" class="col-sm-3 control-label">Expiration</label>
+                    <div class="col-sm-2">
+                        <input type="text" name="ccMonth" id="ccMonth" placeholder="MM" class="form-control" required/>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" name="ccYear" id="ccYear" placeholder="YYYY" class="form-control" required/>
+                    </div>
+                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
+                    <div class="col-sm-3">
+                        <input type="text" name="ccCVV" id="ccCVV" placeholder="CVV" class="form-control" required/>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
 
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
@@ -319,14 +404,36 @@
 	</div>
 	</form>
 
+{% else %}
+
+<h1>Dealer Registration - Furthemore 2017</h1>
+<p>Your session has expired. Please use the link in your application acceptance email again to start over.</p>
+
+{% endif %}
+
 {% endblock %}
 
 {% block javascript %}
 
  <script type="text/javascript">
-	var dealer = {{jsonDealer|safe}} ;
-	var attendee = {{jsonAttendee|safe}} ;
-	var table = {{jsonTable|safe}} ;
+	var dealer = {{ jsonDealer|safe }} 
+	var attendee = {{ jsonAttendee|safe }} 
+	var table = {{ jsonTable|safe }} 
+
+        var partners = dealer.partners.split(', ');
+	var partnerCount = 0;
+        $.each(partners, function(key, item) {
+		if (item.indexOf("name_1") > -1 && item.split(':')[1] != "") {
+			partnerCount = partnerCount + 1;
+		}
+		if (item.indexOf("name_2") > -1 && item.split(':')[1] != "") {
+			partnerCount = partnerCount + 1;
+		}
+	});
+	$("#partnerCount").text(partnerCount);
+	$("#partnerTotal").text("$" + partnerCount*40 + ".00");
+	var total = parseFloat(table.basePrice) + (partnerCount*40) - parseFloat(dealer.discount);
+	$("#total").text("$" + total + ".00");
 
 	$("#contact").attr('checked', attendee.emailsOk);
 	$("#breakfast").attr('checked', dealer.breakfast);
@@ -361,7 +468,8 @@
 
 	$("#billing").on("change", function() {		
 		if ($(this).is(":checked")) {
-			$("#billingname").val(attendee.firstName + "  " + attendee.lastName).attr("disabled", "disabled");
+			$("#billingfirstname").val(attendee.firstName).attr("disabled", "disabled");
+			$("#billinglastname").val(attendee.lastName).attr("disabled", "disabled");
 			$("#billingadd1").val(attendee.address1).attr("disabled", "disabled");
 			$("#billingadd2").val(attendee.address2).attr("disabled", "disabled");
 			$("#billingcity").val(attendee.city).attr("disabled", "disabled");
@@ -370,7 +478,8 @@
 			$("#billingcountry").val(attendee.country).attr("disabled", "disabled");
 			$("form").validator('validate');
 		} else {
-			$("#billingname").val("").removeAttr("disabled");
+			$("#billingfirstname").val("").removeAttr("disabled");
+			$("#billinglastname").val("").removeAttr("disabled");
 			$("#billingadd1").val("").removeAttr("disabled");
 			$("#billingadd2").val("").removeAttr("disabled");
 			$("#billingcity").val("").removeAttr("disabled");
@@ -407,7 +516,8 @@
 				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
 				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'phone': $("#phone").val(),'emailsOk': $("#contact").is(':checked')
+				'phone': $("#phone").val(),'emailsOk': $("#contact").is(':checked'),
+				'badgeName': $("#badgeName").val()
 			}, 
 			'dealer': {
 				'id': dealer.id,
@@ -419,6 +529,13 @@
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
 				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
 				'buttonOffer': $('#buttonOffer').val()
+			},
+			'billingData': {
+				'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
+				'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
+				'cc_firstname': $("#billingfirstname").val(), 'cc_lastname': $("#billinglastname").val(),
+                                'address1': $("#billingadd1").val(), 'address2': $("#billingadd2").val(), 'city': $("#billingcity").val(),
+                                'state': $("#billingstate").val(), 'country': $("#billingcountry").val(), 'postal': $("#billingzip").val(),
 			}
 		};
 		$.ajax({
@@ -434,7 +551,7 @@
                         alert("An error has occurred. Please contact exhibitions@furthemore.org and we will correct the problem.")
 		    },
                     "success": function () {
-                        window.location = "/apis/registration/dealer/thanks";
+                        window.location = "/apis/registration/dealer/done";
                     }
 		});
 	}

@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^dealer/?$', views.newDealer, name='newDealer'),
     url(r'^dealer/add/?$', views.addDealer, name='addDealer'),
     url(r'^dealer/thanks/?$', views.thanksDealer, name='thanksDealer'),
+    url(r'^dealer/done/?$', views.doneDealer, name='doneDealer'),
     url(r'^dealer/lookup/?$', views.findDealer, name='findDealer'),
     url(r'^dealer/invoice/?$', views.invoiceDealer, name='invoiceDealer'),
     url(r'^dealer/checkout/?$', views.checkoutDealer, name='checkoutDealer'),

@@ -37,13 +37,17 @@ def newDealer(request):
 
 def invoiceDealer(request):
     context = {'dealer': None}
-    dealerId = request.session['dealer_id']
+    try:
+      dealerId = request.session['dealer_id']
+    except Exception as e:
+      return render(request, 'registration/dealer-payment.html', context)
+
     dealer = Dealer.objects.get(id=dealerId)
     if dealer:
 	dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
         table_dict = model_to_dict(dealer.tableSize)
-        context = {'dealer': dealer, 'jsonDealer': json.dumps(dealer_dict), 
+        context = {'dealer': dealer, 'jsonDealer': json.dumps(dealer_dict, default=handler), 
                    'jsonAttendee': json.dumps(attendee_dict, default=handler), 
                    'jsonTable': json.dumps(table_dict, default=handler)}
     return render(request, 'registration/dealer-payment.html', context)
@@ -51,6 +55,10 @@ def invoiceDealer(request):
 def thanksDealer(request):
     context = {}
     return render(request, 'registration/dealer-thanks.html', context)
+
+def doneDealer(request):
+    context = {}
+    return render(request, 'registration/dealer-done.html', context)
 
 def findDealer(request):
   try:
@@ -67,6 +75,99 @@ def findDealer(request):
   except Exception as e:
     return HttpResponseServerError(str(e))
 
+def checkoutDealer(request):
+  try:
+    postData = json.loads(request.body)
+    pda = postData['attendee']
+    pdd = postData['dealer']
+    pbill = postData['billingData']
+
+    ## Update Dealer info
+    dealer = Dealer.objects.get(id=pdd['id'])
+    if not dealer:
+        return HttpResponseServerError("Dealer id not found")
+    
+    dealer.businessName=pdd['businessName'] 
+    dealer.website=pdd['website'] 
+    dealer.description=pdd['description'] 
+    dealer.license=pdd['license']    
+    dealer.needPower=pdd['power']
+    dealer.needWifi=pdd['wifi']
+    dealer.wallSpace=pdd['wall']
+    dealer.nearTo=pdd['near'] 
+    dealer.farFrom=pdd['far']
+    dealer.reception=pdd['reception']
+    dealer.artShow=pdd['artShow']
+    dealer.charityRaffle=pdd['charityRaffle'] 
+    dealer.breakfast=pdd['breakfast']
+    dealer.willSwitch=pdd['switch']  
+    dealer.buttonOffer=pdd['buttonOffer']
+
+    try:
+        dealer.save()
+    except Exception as e:
+        return HttpResponseServerError(str(e))
+
+    ## Update Attendee info
+    attendee = Attendee.objects.get(id=pda['id'])
+    if not attendee:
+        return HttpResponseServerError("Dealer id not found")
+
+    attendee.firstName=pda['firstName']
+    attendee.lastName=pda['lastName']
+    attendee.address1=pda['address1']
+    attendee.address2=pda['address2']
+    attendee.city=pda['city']
+    attendee.state=pda['state']
+    attendee.country=pda['country']
+    attendee.postalCode=pda['postal']
+    attendee.phone=pda['phone']
+    attendee.badgeName=pda['badgeName']
+
+    try:
+        attendee.save()
+    except Exception as e:
+        return HttpResponseServerError(str(e))
+
+    basePrice = dealer.tableSize.basePrice
+    partners = dealer.partners.split(', ')
+    partnerCount = 0
+    for part in partners:
+        if part.find("name") > -1 and part.split(':')[1] != "":
+            partnerCount = partnerCount + 1
+
+    total = 40*partnerCount + basePrice - dealer.discount
+
+    priceLevel = PriceLevel.objects.get(name='Dealer')
+
+    ccode = getConfirmationCode()
+    while OrderItem.objects.filter(confirmationCode=ccode).count() > 0:
+        ccode = getConfirmationCode()
+
+    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB", confirmationCode=ccode)
+    orderItem.save()
+
+    reference = getConfirmationCode()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationCode()
+
+    order = Order(total=Decimal(total), reference=reference,
+                  billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'])
+    order.save()
+
+    orderItem.order = order
+    orderItem.save()
+    result = chargePayment(order.id, pbill)
+
+    del request.session['dealer_id']
+
+    return JsonResponse({'success': True})
+    
+  except Exception as e:
+    return HttpResponseServerError(str(e))
 
 def addDealer(request):
   try:
@@ -159,6 +260,7 @@ def addToCart(request):
     request.session['order_items'] = orderItems
     return HttpResponse("Success")
 
+
 def removeFromCart(request):
     #locate attendee in session order
     order = request.session.get('order_items', [])
@@ -204,7 +306,7 @@ def checkout(request):
 
     reference = getConfirmationCode()
     while Order.objects.filter(reference=reference).count() > 0:
-        ccode = getConfirmationCode()
+        reference = getConfirmationCode()
 
     order = Order(total=Decimal(total), reference=reference, discount=discount,
                   orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_name'],
