@@ -14,7 +14,7 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="paidModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -83,7 +83,11 @@
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-			$("#errorModal").modal('show');
+			if (result.responseText.indexOf('Paid') > -1) {
+				$("#paidModal").modal('show');
+			} else {
+				$("#errorModal").modal('show');
+			}
 		    },
                     "success": function () {
                         window.location = "/apis/registration/dealer/invoice/";
