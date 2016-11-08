@@ -250,7 +250,8 @@
                 <div class="form-group">
                     <label for="tables" class="col-sm-3 control-label">Partner Information</label>
                     <div class="col-sm-9" id="partnerList">
-                        <input type="text" value="{{dealer.partners}}" name="tables" class="form-control form-control-text" disabled />
+                        <input type="text" id="partner1" name="tables" class="form-control form-control-text" disabled />
+                        <input type="text" id="partner2" name="tables" class="form-control form-control-text" disabled />
                     </div>
                 </div>
                 <div class="form-group">
@@ -381,10 +382,30 @@
                 <div class="form-group">
                     <label for="ccNumber" class="col-sm-3 control-label">Expiration</label>
                     <div class="col-sm-2">
-                        <input type="text" name="ccMonth" id="ccMonth" placeholder="MM" class="form-control" required/>
+			<select id="ccMonth" class="form-control" required>
+				<option value="01">01</option>
+				<option value="02">02</option>
+				<option value="03">03</option>
+				<option value="04">04</option>
+				<option value="05">05</option>
+				<option value="06">06</option>
+				<option value="07">07</option>
+				<option value="08">08</option>
+				<option value="09">09</option>
+				<option value="10">10</option>
+				<option value="11">11</option>
+				<option value="12">12</option>
+			</select>
                     </div>
                     <div class="col-sm-2">
-                        <input type="text" name="ccYear" id="ccYear" placeholder="YYYY" class="form-control" required/>
+			<select id="ccYear" class="form-control" required>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+				<option value="2019">2019</option>
+				<option value="2020">2020</option>
+				<option value="2021">2021</option>
+			</select>
                     </div>
                     <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
                     <div class="col-sm-3">
@@ -395,7 +416,7 @@
 
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
+			<a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
                         <button id="checkout" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit Payment</button>
 		    </div>
                 </div>
@@ -422,6 +443,8 @@
 
         var partners = dealer.partners.split(', ');
 	var partnerCount = 0;
+        var partner1 = "";
+	var partner2 = "";
         $.each(partners, function(key, item) {
 		if (item.indexOf("name_1") > -1 && item.split(':')[1] != "") {
 			partnerCount = partnerCount + 1;
@@ -429,7 +452,18 @@
 		if (item.indexOf("name_2") > -1 && item.split(':')[1] != "") {
 			partnerCount = partnerCount + 1;
 		}
+		if (item.indexOf("_1") > -1) {
+			var p1 = item.split(':');
+			partner1 = partner1 + " " + p1[0] + ": " + p1[1];
+		}
+		if (item.indexOf("_2") > -1) {
+			var p2 = item.split(':');
+			partner2 = partner2 + " " + p2[0] + ": " + p2[1];
+		}
+
 	});
+	$("#partner1").val(partner1);
+	$("#partner2").val(partner2);			
 	$("#partnerCount").text(partnerCount);
 	$("#partnerTotal").text("$" + partnerCount*40 + ".00");
 	var total = parseFloat(table.basePrice) + (partnerCount*40) - parseFloat(dealer.discount);

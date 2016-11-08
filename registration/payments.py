@@ -25,6 +25,10 @@ def chargePayment(orderId, ccData):
     billTo.zip = ccData['postal']
     billTo.country = ccData['country']
 
+    ordertype = apicontractsv1.orderType()
+    ordertype.invoiceNumber = order.reference
+    ordertype.description = "APIS"
+ 
     payment = apicontractsv1.paymentType()
     payment.creditCard = creditCard
  
@@ -32,15 +36,13 @@ def chargePayment(orderId, ccData):
     transactionrequest.transactionType ="authCaptureTransaction"
     transactionrequest.amount = order.total
     transactionrequest.payment = payment
+    transactionrequest.billTo = billTo
+    transactionrequest.order = ordertype
  
     createtransactionrequest = apicontractsv1.createTransactionRequest()
     createtransactionrequest.merchantAuthentication = merchantAuth
     createtransactionrequest.refId = order.reference
 
-    ordertype = apicontractsv1.orderType()
-    ordertype.invoiceNumber = order.reference
-    ordertype.description = "APIS"
- 
     createtransactionrequest.transactionRequest = transactionrequest
     createtransactioncontroller = createTransactionController(createtransactionrequest)
     createtransactioncontroller.execute()
