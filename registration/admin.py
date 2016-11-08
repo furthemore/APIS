@@ -29,7 +29,10 @@ admin.site.register(AttendeeOptions)
 admin.site.register(OrderItem)
 admin.site.register(Order)
 
-admin.site.register(PriceLevel)
+class PriceLevelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'basePrice', 'startDate', 'endDate', 'public')
+
+admin.site.register(PriceLevel, PriceLevelAdmin)
 admin.site.register(PriceLevelOption)
 
 admin.site.register(Department)

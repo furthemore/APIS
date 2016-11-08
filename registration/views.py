@@ -68,7 +68,13 @@ def findDealer(request):
 
     dealer = Dealer.objects.get(attendee__email=email, registrationToken=token)
     if not dealer:     
-      return JsonResponse({'success': False, 'message':'NODEALER'}) 
+      return HttpResponseServerError("No Dealer Found")
+
+    # Check if they've already paid
+    priceLevel = PriceLevel.objects.get(name='Dealer')
+    orderItems = OrderItem.objects.filter(attendee=dealer.attendee, priceLevel=priceLevel)
+    if orderItems.count > 0:
+      return HttpResponseServerError("Dealer Paid")
 
     request.session['dealer_id'] = dealer.id
     return JsonResponse({'success': True, 'message':'DEALER'})
