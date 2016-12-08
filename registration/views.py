@@ -71,9 +71,7 @@ def findDealer(request):
       return HttpResponseServerError("No Dealer Found")
 
     # Check if they've already paid
-    priceLevel = PriceLevel.objects.get(name='Dealer')
-    orderItems = OrderItem.objects.filter(attendee=dealer.attendee, priceLevel=priceLevel)
-    if orderItems.count > 0:
+    if dealer.paid():
       return HttpResponseServerError("Dealer Paid")
 
     request.session['dealer_id'] = dealer.id
@@ -88,8 +86,15 @@ def checkoutDealer(request):
     pdd = postData['dealer']
     pbill = postData['billingData']
 
-    ## Update Dealer info
     dealer = Dealer.objects.get(id=pdd['id'])
+    
+    if dealer.paid():
+        return HttpResponseServerError("Paid")
+
+    if 'dealer_id' not in request.session:
+        return HttpResponseServerError("Session expired")
+
+    ## Update Dealer info
     if not dealer:
         return HttpResponseServerError("Dealer id not found")
     
@@ -117,7 +122,7 @@ def checkoutDealer(request):
     ## Update Attendee info
     attendee = Attendee.objects.get(id=pda['id'])
     if not attendee:
-        return HttpResponseServerError("Dealer id not found")
+        return HttpResponseServerError("Attendee id not found")
 
     attendee.firstName=pda['firstName']
     attendee.lastName=pda['lastName']
@@ -166,12 +171,32 @@ def checkoutDealer(request):
 
     orderItem.order = order
     orderItem.save()
-    result = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill)
 
-    del request.session['dealer_id']
-
-    return JsonResponse({'success': True})
-    
+    if response is not None:
+        if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                del request.session['dealer_id']
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    order.delete()
+                    orderItem.delete()
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+        else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                order.delete()
+                orderItem.delete()
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                order.delete()
+                orderItem.delete()
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    else:
+        order.delete()
+        orderItem.delete()
+        return JsonResponse({'success': False, 'message': "Unknown Error"})
+        
   except Exception as e:
     return HttpResponseServerError(str(e))
 
