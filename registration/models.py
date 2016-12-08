@@ -144,6 +144,12 @@ class Dealer(models.Model):
     def toJson(self): 
       pass
 
+    def paid(self):
+      priceLevel = PriceLevel.objects.get(name='Dealer')
+      orderItems = OrderItem.objects.filter(attendee=self.attendee, priceLevel=priceLevel)
+      return orderItems.count() > 0
+
+
 # Start order tables
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
@@ -194,6 +200,7 @@ class Discount(models.Model):
 
 class Order(models.Model):
     total = models.DecimalField(max_digits=6, decimal_places=2)
+    status = models.CharField(max_length=50, default='Pending')
     reference = models.CharField(max_length=50)
     createdDate = models.DateTimeField(auto_now_add=True, null=True)
     settledDate = models.DateTimeField(auto_now_add=True, null=True)

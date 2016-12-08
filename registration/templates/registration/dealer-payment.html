@@ -8,6 +8,11 @@
 <h1>Dealer Registration - Furthemore 2017</h1>
 <p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you feel this is in error or have any questions.</p>
 
+{% elif dealer and dealer.paid %}
+
+<h1>Dealer Registration - Furthemore 2017</h1>
+<p>Your dealer application has already been paid. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you have any questions.</p>
+
 {% elif dealer and dealer.approved %}
 
 <div class="modal fade" id="buttonModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -375,7 +380,7 @@
                 <div class="form-group">
                     <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
                     <div class="col-sm-9">
-                        <input type="text" name="ccNumber" id="ccNumber" placeholder="Credit Card Number" class="form-control" required/>
+                        <input type="text" name="ccNumber" id="ccNumber" placeholder="Credit Card Number" class="form-control" maxlength="16" required/>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -409,9 +414,9 @@
                     </div>
                     <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
                     <div class="col-sm-3">
-                        <input type="text" name="ccCVV" id="ccCVV" placeholder="CVV" class="form-control" required/>
+                        <input type="text" name="ccCVV" id="ccCVV" placeholder="CVV" class="form-control" maxlength="4" required/>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 
 		<div class="form-group">
@@ -539,10 +544,13 @@
 	$("#checkout").click(doRegister);
 	
 
-	function doRegister() {
+	function doRegister(e) {
+		e.preventDefault();
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
+
+		$("#checkout").attr("disabled", "disabled");
 
 		var data = {
 			'attendee': {
@@ -582,10 +590,21 @@
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. Please contact exhibitions@furthemore.org and we will correct the problem.")
+			if (result.responseText == "") {
+				alert("Your session has expired.");
+			} else {
+                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.")
+			}
+			$("#checkout").removeAttr("disabled");
 		    },
-                    "success": function () {
-                        window.location = "/apis/registration/dealer/done";
+                    "success": function (result, status) {
+                        if (result.success)
+                        {
+                            window.location = "/apis/registration/dealer/done";
+                        } else {
+			    $("#checkout").removeAttr("disabled");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
+			}
                     }
 		});
 	}

@@ -17,7 +17,7 @@ class DealerResource(resources.ModelResource):
         model = Dealer
 
 class DealerAdmin(ImportExportModelAdmin):
-    list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber')
+    list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'paid')
     resource_class = DealerResource
 
 admin.site.register(Dealer, DealerAdmin)
