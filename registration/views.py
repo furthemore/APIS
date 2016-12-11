@@ -176,7 +176,7 @@ def checkoutDealer(request):
       
 
     order = Order(total=Decimal(total), reference=reference,
-                  billingName=pbill['firstname'] + " " + pbill['cc_lastname'],
+                  billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
                   billingPostal=pbill['postal'])
