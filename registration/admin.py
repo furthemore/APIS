@@ -19,6 +19,37 @@ class DealerResource(resources.ModelResource):
 class DealerAdmin(ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'paid')
     resource_class = DealerResource
+    fieldsets = (
+        (
+	    None, 
+            {'fields':(
+                ('attendee', 'approved'), 
+                'registrationToken', 'tableNumber',
+                ('discount','discountReason'), 'notes'
+            )}
+        ),
+        (
+            'Business Info', 
+            {'fields': (
+                'businessName', 'license', 'website', 'description', 'partners'
+            )}
+        ),
+        (
+            'Table Request', 
+            {'fields':(
+                'tableSize', 
+                ('willSwitch', 'needPower', 'needWifi', 'wallSpace', 'reception', 'breakfast'),
+                ('nearTo', 'farFrom'),
+                ('tables', 'chairs'), 'partners'
+            )}
+        ),
+        (
+            'Contributions', 
+            {'fields':(
+                'buttonOffer', 'charityRaffle'
+            )}
+        )
+    )
 
 admin.site.register(Dealer, DealerAdmin)
 
