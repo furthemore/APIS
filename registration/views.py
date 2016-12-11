@@ -162,8 +162,21 @@ def checkoutDealer(request):
     while Order.objects.filter(reference=reference).count() > 0:
         reference = getConfirmationCode()
 
+    if total == 0:
+        order = Order(total=0, reference=reference,
+                  billingName=pda['firstName'] + " " + pda['lastName'],
+                  billingAddress1=pda['address1'], billingAddress2=pda['address2'],
+                  billingCity=pda['city'], billingState=pda['state'], billingCountry=pda['country'],
+                  billingPostal=pda['postal'], status="Complete")
+        order.save()
+
+        orderItem.order = order
+        orderItem.save()
+        return JsonResponse({'success': True})
+      
+
     order = Order(total=Decimal(total), reference=reference,
-                  billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingName=pbill['firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
                   billingPostal=pbill['postal'])
@@ -171,6 +184,8 @@ def checkoutDealer(request):
 
     orderItem.order = order
     orderItem.save()
+    
+
     response = chargePayment(order.id, pbill)
 
     if response is not None:
