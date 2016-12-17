@@ -137,3 +137,7 @@ SESSION_COOKIE_AGE = 60*60  # 1hr
 AUTHNET_NAME = '426rwVfr3G47'
 AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
 
+# Sandbox values - DO NOT check in production credentials
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_HOST_USER = 'postmaster@sandboxcdfc4543b9e84e0ea21d82a527e714fc.mailgun.org'
+EMAIL_HOST_PASSWORD = '8aee7562e054466c362ebd84e7227703'
