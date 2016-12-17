@@ -137,6 +137,7 @@ class Dealer(models.Model):
     buttonOffer = models.CharField(max_length=200, blank=True)
     discount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discountReason = models.CharField(max_length=200, blank=True)
+    emailed = models.BooleanField(default=False)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)

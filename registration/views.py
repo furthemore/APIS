@@ -172,6 +172,7 @@ def checkoutDealer(request):
 
         orderItem.order = order
         orderItem.save()
+        sendDealerPaymentEmail(dealer.id, reference)
         return JsonResponse({'success': True})
       
 
@@ -192,6 +193,7 @@ def checkoutDealer(request):
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
                 del request.session['dealer_id']
+                sendDealerPaymentEmail(dealer.id, reference)
                 return JsonResponse({'success': True})
             else:
                 if hasattr(response.transactionResponse, 'errors') == True:
@@ -241,7 +243,7 @@ def addDealer(request):
                     breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'], 
                     agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'])
     dealer.save()
-    #sendDealerApplicationEmail(dealer.id)    
+    sendDealerApplicationEmail(dealer.id)    
     return JsonResponse({'success': True})
   except Exception as e:
     return HttpResponseServerError(str(e))
@@ -304,7 +306,7 @@ def addToCart(request):
     orderItems = request.session.get('order_items', [])
     orderItems.append(orderItem.id)
     request.session['order_items'] = orderItems
-    return HttpResponse("Success")
+    return JsonResponse({'success': True})
 
 
 def removeFromCart(request):
