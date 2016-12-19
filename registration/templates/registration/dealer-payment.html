@@ -8,11 +8,6 @@
 <h1>Dealer Registration - Furthemore 2017</h1>
 <p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you feel this is in error or have any questions.</p>
 
-{% elif dealer and dealer.paid %}
-
-<h1>Dealer Registration - Furthemore 2017</h1>
-<p>Your dealer application has already been paid. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you have any questions.</p>
-
 {% elif dealer and dealer.approved %}
 
 <div class="modal fade" id="buttonModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -48,7 +43,14 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
+
+		{% if dealer.paid %}
+			<p>Your application has already been paid for. You may update some of the information below. If you need to change a selection that is now disabled, please contact <a href='mailto:exhibitions@furthemore.org'></a>.</p>
+			<p>Thank you for joining us this year!</p>
+		{% else %}
+			<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
+		{% endif %}
+
 		<hr>
 			
                 <div class="form-group">
@@ -126,7 +128,7 @@
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Badge Name</label>
                     <div class="col-sm-9">
-                        <input type="text" name="nadgeName" id="badgeName" value="{{dealer.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
+                        <input type="text" name="badgeName" id="badgeName" value="{{dealer.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
@@ -323,7 +325,17 @@
                     </div>
 		    <div class="col-sm-4">&nbsp;</div>
                 </div>
-		
+
+	{% if dealer.paid %}
+		<div class="form-group">
+                    <div class="col-sm-3 col-sm-offset-3">
+		    	<b>Paid</b>
+                    </div>
+                    <div class="col-sm-2"><b><span class="pull-right">Thank you!</span></b></div>
+		    <div class="col-sm-4">&nbsp;</div>
+                </div>
+
+	{% else %}		
                 <hr/>
 		<div id="billingData">
 		<div class="form-group" id="billing">
@@ -420,6 +432,8 @@
                 </div>
 		</div>
 
+	{% endif %}
+
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
 			<a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
@@ -488,8 +502,26 @@
 	$("#wall").attr('checked', dealer.wallSpace);
 	$("#switch").attr('checked', dealer.willSwitch);
 
+	{% if dealer.paid %}
+		$("#badgeName").attr("disabled", "disabled");
+		$("#businessName").attr("disabled", "disabled");
+		$("#tempLicense").attr("disabled", "disabled");
+		$("#").attr("disabled", "disabled");
+		$("#description").attr("disabled", "disabled");
+		$("#breakfast").attr("disabled", "disabled");
+		$("#reception").attr("disabled", "disabled");
+		$("#artShow").attr("disabled", "disabled");
+		$("#buttonOffer").attr("disabled", "disabled");
+		$("#charityRaffle").attr("disabled", "disabled");
+		$("#wall").attr("disabled", "disabled");
+		$("#switch").attr("disabled", "disabled");
+		$("#near").attr("disabled", "disabled");
+		$("#far").attr("disabled", "disabled");
+		$("#checkout").text("Update Information");
+	{% endif %}
+
 	if (dealer.license == "temporary") {
-		$("#license").attr("disabled", "disabled")
+		$("#license").attr("disabled", "disabled");
 		$("#tempLicense").attr('checked', true);
 	}
 
@@ -577,15 +609,19 @@
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
 				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
 				'buttonOffer': $('#buttonOffer').val()
-			},
-			'billingData': {
+			}
+		};
+		
+		{% if not dealer.paid %}
+			data.billingData = {
 				'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
 				'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
 				'cc_firstname': $("#billingfirstname").val(), 'cc_lastname': $("#billinglastname").val(),
                                 'address1': $("#billingadd1").val(), 'address2': $("#billingadd2").val(), 'city': $("#billingcity").val(),
                                 'state': $("#billingstate").val(), 'country': $("#billingcountry").val(), 'postal': $("#billingzip").val(),
 			}
-		};
+
+		{% endif %}
 
 		$.ajax({
 		    "type": "POST",
@@ -607,7 +643,11 @@
                     "success": function (result, status) {
                         if (result.success)
                         {
-                            window.location = "/apis/registration/dealer/done";
+			    {% if dealer.paid %}
+                                window.location = "/apis/registration/dealer/update";
+			    {% else %}
+                                window.location = "/apis/registration/dealer/done";
+			    {% endif %}
                         } else {
 			    $("#checkout").removeAttr("disabled");
                             alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");

@@ -35,6 +35,18 @@ def sendDealerPaymentEmail(dealerId, confirmation):
               "<p>If you have listed any partners, they will receive an email with instructions about how to register.</p>"
     )
 
+def sendDealerUpdateEmail(dealerId):
+    dealer = Dealer.objects.get(id=dealerId)
+
+    sendEmail("exhibitions@furthemore.org", [dealer.attendee.email],
+              "Fur The More 2017 Dealer Information Udate",
+              "Your information has been updated in our database" + 
+              "\r\nIf you did not do this, please contact exhibitions@furthemore.org ASAP to correct your information.",
+              "<h3>Your information has been updated</h3><p>Your information has been updated in our database.</p>" + 
+              "<p>If you did not do this, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a> ASAP to correct your information.</p>"
+    )
+    
+
 def sendApprovalEmail(dealerQueryset):
     for dealer in dealerQueryset:
         if not dealer.emailed:

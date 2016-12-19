@@ -226,6 +226,9 @@ class OrderItem(models.Model):
     enteredBy = models.CharField(max_length=100)
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
 
+    def getOptions(self):
+      return list(AttendeeOptions.objects.filter(orderItem=self))
+
 class AttendeeOptions(models.Model):
     option = models.ForeignKey(PriceLevelOption)
     orderItem = models.ForeignKey(OrderItem)
