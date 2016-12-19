@@ -56,6 +56,10 @@ def thanksDealer(request):
     context = {}
     return render(request, 'registration/dealer-thanks.html', context)
 
+def updateDealer(request):
+    context = {}
+    return render(request, 'registration/dealer-update.html', context)
+
 def doneDealer(request):
     context = {}
     return render(request, 'registration/dealer-done.html', context)
@@ -70,10 +74,6 @@ def findDealer(request):
     if not dealer:     
       return HttpResponseServerError("No Dealer Found")
 
-    # Check if they've already paid
-    if dealer.paid():
-      return HttpResponseServerError("Dealer Paid")
-
     request.session['dealer_id'] = dealer.id
     return JsonResponse({'success': True, 'message':'DEALER'})
   except Exception as e:
@@ -84,13 +84,9 @@ def checkoutDealer(request):
     postData = json.loads(request.body)
     pda = postData['attendee']
     pdd = postData['dealer']
-    pbill = postData['billingData']
 
     dealer = Dealer.objects.get(id=pdd['id'])
     
-    if dealer.paid():
-        return HttpResponseServerError("Paid")
-
     if 'dealer_id' not in request.session:
         return HttpResponseServerError("Session expired")
 
@@ -139,6 +135,12 @@ def checkoutDealer(request):
         attendee.save()
     except Exception as e:
         return HttpResponseServerError(str(e))
+
+    if dealer.paid():
+        sendDealerUpdateEmail(dealer.id)
+        return JsonResponse({'success': True})
+
+    pbill = postData['billingData']
 
     basePrice = dealer.tableSize.basePrice
     partners = dealer.partners.split(', ')
@@ -250,7 +252,7 @@ def addDealer(request):
 
 
 ###################################
-# Payments
+# Attendees
 
 def getCart(request):
     sessionItems = request.session.get('order_items', [])
@@ -261,6 +263,18 @@ def getCart(request):
         total = getTotal(orderItems)
         context = {'orderItems': orderItems, 'total': total}
     return render(request, 'registration/checkout.html', context)
+
+def getCartAddresses(request):
+    sessionItems = request.session.get('order_items', [])
+    if not sessionItems:
+        data = {}
+    else:
+        orderItems = OrderItem.objects.filter(id__in=sessionItems)
+        for oi in orderItems: 
+            pass
+        context = {'orderItems': orderItems, 'total': total}
+    return HttpResponse(json.dumps(data), content_type='application/json')
+    
 
 def addToCart(request):
     postData = json.loads(request.body)
