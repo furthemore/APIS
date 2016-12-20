@@ -25,6 +25,9 @@ SECRET_KEY = '#4jb6($!lns7dm@0$%80q&sk2_d7(qy*f^$ky!4z@1c-gonv8_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ADMINS = [('Carissa Brittain', 'carissa.brittain@gmail.com'),]
+SERVER_EMAIL = "it_errors@furthemore.org"
+
 ALLOWED_HOSTS = []
 
 
