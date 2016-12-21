@@ -160,6 +160,7 @@ class PriceLevel(models.Model):
     endDate = models.DateTimeField()
     public = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
+    group = models.TextField(blank=True)
 
     def __str__(self):
       return self.name
@@ -222,7 +223,6 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
     attendee = models.ForeignKey(Attendee)
     priceLevel = models.ForeignKey(PriceLevel)
-    confirmationCode = models.CharField(max_length=100)
     enteredBy = models.CharField(max_length=100)
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
 

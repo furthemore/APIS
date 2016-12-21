@@ -153,11 +153,7 @@ def checkoutDealer(request):
 
     priceLevel = PriceLevel.objects.get(name='Dealer')
 
-    ccode = getConfirmationCode()
-    while OrderItem.objects.filter(confirmationCode=ccode).count() > 0:
-        ccode = getConfirmationCode()
-
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB", confirmationCode=ccode)
+    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     reference = getConfirmationCode()
@@ -297,10 +293,7 @@ def addToCart(request):
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    ccode = getConfirmationCode()
-    while OrderItem.objects.filter(confirmationCode=ccode).count() > 0:
-        ccode = getConfirmationCode()
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB", confirmationCode=ccode)
+    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
