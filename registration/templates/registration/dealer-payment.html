@@ -466,10 +466,10 @@
         var partner1 = "";
 	var partner2 = "";
         $.each(partners, function(key, item) {
-		if (item.indexOf("name_1") > -1 && item.split(':')[1] != "") {
+		if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
 			partnerCount = partnerCount + 1;
 		}
-		if (item.indexOf("name_2") > -1 && item.split(':')[1] != "") {
+		if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
 			partnerCount = partnerCount + 1;
 		}
 		if (item.indexOf("_1") > -1) {
