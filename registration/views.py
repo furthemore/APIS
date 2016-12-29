@@ -20,9 +20,48 @@ def index(request):
     context = {}
     return render(request, 'registration/registration-form.html', context)
 
-def staff(request, guid):
-    pass
 
+
+###################################
+# Staff
+
+def staff(request, guid):
+    context = {'token': guid}
+    return render(request, 'registration/staff-locate.html', context)
+
+
+def findStaff(request):
+  try:
+    postData = json.loads(request.body)
+    email = postData['email']
+    token = postData['token']
+
+    staff = Staff.objects.get(attendee__email=email, registrationToken=token)
+    if not staff:     
+      return HttpResponseServerError("No Staff Found")
+
+    request.session['staff_id'] = staff.id
+    return JsonResponse({'success': True, 'message':'STAFF'})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
+def infoStaff(request):
+    context = {'staff': None}
+    try:
+      staffId = request.session['staff_id']
+    except Exception as e:
+      return render(request, 'registration/staff-payment.html', context)
+
+    staff = Staff.objects.get(id=staffId)
+    if staff:
+	staff_dict = model_to_dict(staff)
+        attendee_dict = model_to_dict(staff.attendee)
+        context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler), 
+                   'jsonAttendee': json.dumps(attendee_dict, default=handler)}
+    return render(request, 'registration/staff-payment.html', context)
+
+def checkoutStaff(request):
+    pass
 
 ###################################
 # Dealers
@@ -149,9 +188,13 @@ def checkoutDealer(request):
         if part.find("name") > -1 and part.split(':')[1] != "":
             partnerCount = partnerCount + 1
 
-    total = 40*partnerCount + basePrice - dealer.discount
+    tabletotal = 40*partnerCount + basePrice - dealer.discount
 
-    priceLevel = PriceLevel.objects.get(name='Dealer')
+    #Todo: get price level from post
+    priceLevel = PriceLevel.objects.get(name='Attendee')
+    discount = Discount.objects.get(codeName="DealerDiscount")
+
+    total = tabletotal + priceLevel.basePrice - discount.amountOff   
 
     orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
@@ -234,7 +277,7 @@ def addDealer(request):
     attendee.save()
 
     tablesize = TableSize.objects.get(id=pdd['tableSize'])
-    dealer = Dealer(attendee=attendee, registrationToken=getRegistrationToken(), businessName=pdd['businessName'], 
+    dealer = Dealer(attendee=attendee, businessName=pdd['businessName'], 
                     website=pdd['website'], description=pdd['description'], license=pdd['license'], needPower=pdd['power'],
                     needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
                     chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
@@ -252,23 +295,47 @@ def addDealer(request):
 
 def getCart(request):
     sessionItems = request.session.get('order_items', [])
+    discount = request.session.get('discount', "")
     if not sessionItems:
-        context = {'orderItems': [], 'total': 0}
+        context = {'orderItems': [], 'total': 0, 'discount': {}}
+        request.session.flush()
     else:
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        total = getTotal(orderItems)
-        context = {'orderItems': orderItems, 'total': total}
+        if discount:
+	    discount = Discount.objects.filter(codeName=discount)
+            if discount.count() > 0: discount = discount.first()
+        total = getTotal(orderItems, discount)
+        context = {'orderItems': orderItems, 'total': total, 'discount': discount}
     return render(request, 'registration/checkout.html', context)
 
-def getCartAddresses(request):
+def applyDiscount(request):
+    dis = request.session.get('discount', "")
+    if dis: 
+      return JsonResponse({'success': False, 'message': 'Only one discount is allowed per order.'})
+
+    postData = json.loads(request.body)
+    #create attendee from request post
+    dis = postData['discount']
+    
+    discount = Discount.objects.filter(codeName=dis)
+    if discount.count() == 0:
+      return JsonResponse({'success': False, 'message': 'That discount is not valid.'})
+    discount = discount.first()
+    if not discount.isValid():
+      return JsonResponse({'success': False, 'message': 'That discount is not valid.'})
+    
+    request.session["discount"] = discount.codeName
+    return JsonResponse({'success': True})
+    
+
+def getSessionAddresses(request):
     sessionItems = request.session.get('order_items', [])
     if not sessionItems:
         data = {}
     else:
         orderItems = OrderItem.objects.filter(id__in=sessionItems)
-        for oi in orderItems: 
-            pass
-        context = {'orderItems': orderItems, 'total': total}
+        data = [{'id': oi.attendee.id, 'email': oi.attendee.email, 'address1': oi.attendee.address1, 'address2': oi.attendee.address2, 'city': oi.attendee.city, 'state': oi.attendee.state, 'country': oi.attendee.country, 'postalCode': oi.attendee.postalCode} for oi in orderItems]
+        context = {'addresses': data}
     return HttpResponse(json.dumps(data), content_type='application/json')
     
 
@@ -323,11 +390,11 @@ def removeFromCart(request):
     id = postData['id']
     #remove attendee from session order
     for item in order:
-        if item == id:
-            deleteOrderItem(id) 
+        if str(item) == str(id):
+            deleteOrderItem(item) 
             order.remove(item)
     request.session['order_items'] = order
-    return HttpResponse("Success")    
+    return JsonResponse({'success': True})
 
 def cancelOrder(request):
     #remove order from session
@@ -335,36 +402,39 @@ def cancelOrder(request):
     for item in order:
         deleteOrderItem(item)
     request.session['order_items'] = []
-    return HttpResponse("Order Cancelled")
+    return JsonResponse({'success': True})
 
 def checkout(request):
     sessionItems = request.session.get('order_items', [])
+    pdisc = request.session.get('discount', "")
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
-    pdisc = postData["discount"].strip()
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
     pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
     pbill = postData["billingData"]
-    event = Event.objects.get(id=int(postData["eventId"]))
+    event = Event.objects.first()
+   
+    #todo: event = Event.objects.get(id=int(postData["eventId"]))
 
     if porg < 0: 
         porg = 0
     if pcharity < 0:
         pcharity = 0
-    discount = Discount.objects.get(codeName=pdisc)
-    if discount and discount.isValid():
-        subtotal = getTotal(orderItems, discount)
+    discount = Discount.objects.filter(codeName=pdisc)
+    if discount.count() > 0 and discount.first().isValid():
+        subtotal = getTotal(orderItems, discount.first())
+        discount = discount.first()
     else: 
         discount = None
         subtotal = getTotal(orderItems)
     total = subtotal + porg + pcharity
 
-    reference = getConfirmationCode()
+    reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
-        reference = getConfirmationCode()
+        reference = getConfirmationToken()
 
     order = Order(total=Decimal(total), reference=reference, discount=discount,
-                  orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_name'],
+                  orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
@@ -374,13 +444,27 @@ def checkout(request):
         oitem.order = order
         oitem.save()
     
-    result = chargePayment(order.id, pbill)
-    #TODO: redirect properly
-    if result:
-        #TODO: send success email
-        return HttpResponse(result)    
+    if total > 0:
+        result = chargePayment(order.id, pbill)
     else:
-        return HttpResponse("Failure")    
+        order.status = "Paid"
+        result = True
+    try:
+      if result:
+        if discount:
+	  discount.uses = discount.uses + 1
+          discount.save()
+
+        sendRegistrationEmail(order.id, pbill['email'])
+    except:
+        pass  #none of this should return a failure to the user
+        #todo: send an error email?
+
+    return JsonResponse({'success': True})
+
+def cartDone(request):
+    context = {}
+    return render(request, 'registration/done.html', context)
 
 
 
@@ -389,6 +473,11 @@ def checkout(request):
 
 def getDepartments(request):
     depts = Department.objects.filter(volunteerListOk=True).order_by('name')
+    data = [{'name': item.name, 'id': item.id} for item in depts]
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+def getAllDepartments(request):
+    depts = Department.objects.order_by('name')
     data = [{'name': item.name, 'id': item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -412,29 +501,34 @@ def getTableSizes(request):
 ##################################
 # Not Endpoints
 
-def getRegistrationToken():
-    return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(15))
-
-def getConfirmationCode():
+def getConfirmationToken():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(6))
-        
+
 def deleteOrderItem(id):
     orderItem = OrderItem.objects.get(id=id)
     orderItem.attendee.delete()
     orderItem.delete()
 
-def getTotal(orderItems, discount = None):
+def getTotal(orderItems, disc = ""):
     total = 0
     if not orderItems: return total
     for item in orderItems:
         itemTotal = item.priceLevel.basePrice
+
         for option in item.attendeeoptions_set.all():
-            itemTotal += option.option.optionPrice
-        if discount:
-            if discount.amountOff:
+            if option.option.optionExtraType == 'int':
+                itemTotal += (option.option.optionPrice*Decimal(option.optionValue))
+            else:
+                itemTotal += option.option.optionPrice
+
+        if disc:
+            discount = Discount.objects.get(codeName=disc)
+            if discount.isValid():
+              if discount.amountOff:
                 itemTotal -= discount.amountOff
-            elif discount.percentOff:
+              elif discount.percentOff:
                 itemTotal -= Decimal(float(itemTotal) * float(discount.percentOff)/100)
+
         if itemTotal > 0:
             total += itemTotal
     return total

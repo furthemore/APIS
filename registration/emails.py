@@ -1,9 +1,12 @@
 from django.core.mail import send_mail
 from .models import *
 
-def sendRegistrationEmail(orderId):
+def sendRegistrationEmail(orderId, email):
     order = Order.objects.get(id=orderId)
-    sendEmail("registration@furthemore.org", [order.attendee.email], "Registration Complete!", "Thanks!")
+    sendEmail("registration@furthemore.org", [email], "Payment Complete!", "Thanks!", "Thanks!")
+    orderItems = OrderItem.objects.filter(order=order)
+    for oi in orderItems:
+        sendEmail("registration@furthemore.org", [oi.attendee.email], "Registration Complete!", "Thanks!", "Thanks!")
 
 def sendDealerApplicationEmail(dealerId):
     dealer = Dealer.objects.get(id=dealerId)
