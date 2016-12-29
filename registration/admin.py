@@ -62,16 +62,42 @@ class DealerAdmin(ImportExportModelAdmin):
 admin.site.register(Dealer, DealerAdmin)
 
 
+class StaffAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = ('attendee', 'department')
 
-admin.site.register(Attendee)
+admin.site.register(Staff, StaffAdmin)
+
+def make_staff(modeladmin, request, queryset):
+    for att in queryset:
+        staff = Staff(attendee=att)
+        staff.save()
+        #todo: send staff reg link
+send_approval_email.short_description = "Add to Staff"
+
+class AttendeeAdmin(admin.ModelAdmin):
+    save_on_top = True
+    actions = [make_staff]
+
+admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
 admin.site.register(OrderItem)
 admin.site.register(Order)
 
 class PriceLevelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'basePrice', 'startDate', 'endDate', 'public')
+    list_display = ('name', 'basePrice', 'startDate', 'endDate', 'public', 'group')
 
 admin.site.register(PriceLevel, PriceLevelAdmin)
-admin.site.register(PriceLevelOption)
+
+class PriceLevelOptionAdmin(admin.ModelAdmin):
+    list_display = ('optionName', 'priceLevel', 'optionPrice', 'optionExtraType', 'required')
+
+admin.site.register(PriceLevelOption, PriceLevelOptionAdmin)
+
+class DiscountAdmin(admin.ModelAdmin):
+    list_display = ('codeName', 'amountOff', 'percentOff', 'oneTime', 'used')
+    save_on_top = True
+
+admin.site.register(Discount, DiscountAdmin)
 
 admin.site.register(Department)
