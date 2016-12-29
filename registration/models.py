@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 import json
+import random
+import string
 from django.db import models
 from django.utils import timezone
 
@@ -26,7 +28,14 @@ class ShirtSizes(LookupTable):
     pass
 
 class Event(LookupTable):
-    pass
+    dealerRegStart = models.DateTimeField()
+    dealerRegEnd = models.DateTimeField()
+    staffRegStart = models.DateTimeField()
+    staffRegEnd = models.DateTimeField()
+    attendeeRegStart = models.DateTimeField()
+    attendeeRegEnd = models.DateTimeField()
+    onlineRegStart = models.DateTimeField()
+    onlineRegEnd = models.DateTimeField()
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -55,6 +64,9 @@ class Jersey(models.Model):
 
 #End CustomAddons
 
+def getRegistrationToken():
+    return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(15))
+
 class Attendee(models.Model):
     firstName = models.CharField(max_length=200)
     lastName = models.CharField(max_length=200)
@@ -82,23 +94,21 @@ class Attendee(models.Model):
     parentEmail = models.CharField(max_length=200, blank=True)
     event = models.ForeignKey(Event)    
     registeredDate = models.DateTimeField(auto_now_add=True, null=True)
+    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
 
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
 
-    def toJson(self):
-      pass
-
 
 class Staff(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
-    registrationToken = models.CharField(max_length=200)
+    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
     department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.SET_NULL)
     supervisor = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
     title = models.CharField(max_length=200, blank=True)
     twitter = models.CharField(max_length=200, blank=True)
     telegram = models.CharField(max_length=200, blank=True)
-    attendee = models.ForeignKey(ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL)    
+    shirtsize = models.ForeignKey(ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL)    
     timesheetAccess = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
     specialSkills = models.TextField(blank=True)
@@ -106,12 +116,21 @@ class Staff(models.Model):
     specialMedical = models.TextField(blank=True)
     contactName = models.CharField(max_length=200, blank=True)
     contactPhone = models.CharField(max_length=200, blank=True)
+    contactRelation = models.CharField(max_length=200, blank=True)
     needRoom = models.BooleanField(default=False)
     gender = models.CharField(max_length=50, blank=True)     
 
+    def __str__(self):
+      return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
+
+    def paid(self):
+      orderItems = OrderItem.objects.filter(attendee=self.attendee)
+      return orderItems.count() > 0
+
+
 class Dealer(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
-    registrationToken = models.CharField(max_length=200)
+    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
     approved = models.BooleanField(default=False)
     tableNumber = models.IntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
@@ -142,12 +161,8 @@ class Dealer(models.Model):
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
 
-    def toJson(self): 
-      pass
-
     def paid(self):
-      priceLevel = PriceLevel.objects.get(name='Dealer')
-      orderItems = OrderItem.objects.filter(attendee=self.attendee, priceLevel=priceLevel)
+      orderItems = OrderItem.objects.filter(attendee=self.attendee)
       return orderItems.count() > 0
 
 
@@ -190,6 +205,9 @@ class Discount(models.Model):
     startDate = models.DateTimeField()
     endDate = models.DateTimeField()
     notes = models.TextField(blank=True)
+    oneTime = models.BooleanField(default=False)
+    used = models.IntegerField(default=0)
+    reason = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
       return self.codeName
@@ -197,6 +215,8 @@ class Discount(models.Model):
     def isValid(self):
         now = timezone.now()
         if self.startDate > now or self.endDate < now:
+            return False
+        if self.oneTime and self.used > 0:
             return False
         return True
 
