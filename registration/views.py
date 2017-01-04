@@ -29,6 +29,9 @@ def staff(request, guid):
     context = {'token': guid}
     return render(request, 'registration/staff-locate.html', context)
 
+def staffDone(request):
+    context = {}
+    return render(request, 'registration/staff-done.html', context)
 
 def findStaff(request):
   try:
@@ -60,8 +63,185 @@ def infoStaff(request):
                    'jsonAttendee': json.dumps(attendee_dict, default=handler)}
     return render(request, 'registration/staff-payment.html', context)
 
+def invoiceStaff(request):
+    sessionItems = request.session.get('order_items', [])
+    sessionDiscount = request.session.get('discount', "")
+    if not sessionItems:
+        context = {'orderItems': [], 'total': 0, 'discount': {}}
+        request.session.flush()
+    else:
+        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+        discount = Discount.objects.get(codeName=sessionDiscount)
+        total = getTotal(orderItems, discount)
+        context = {'orderItems': orderItems, 'total': total, 'discount': discount}
+    return render(request, 'registration/staff-checkout.html', context)
+
+
+def addStaff(request):
+    postData = json.loads(request.body)
+    #create attendee from request post
+    pda = postData['attendee']
+    pdp = postData['priceLevel']
+    jer = postData['jersey']
+    sjer = postData['staffjersey']
+    pds = postData['staff']
+
+    #TODO: get correct event
+    event = Event.objects.first()
+
+    attendee = Attendee.objects.get(id=pda['id'])
+    if not attendee:
+        return JsonResponse({'success': False, 'message': 'Attendee not found'})
+
+    attendee.firstName=pda['firstName']
+    attendee.lastName=pda['lastName']
+    attendee.address1=pda['address1']
+    attendee.address2=pda['address2']
+    attendee.city=pda['city']
+    attendee.state=pda['state']
+    attendee.country=pda['country']
+    attendee.postalCode=pda['postal']
+    attendee.phone=pda['phone']
+    attendee.badgeName=pda['badgeName']
+    attendee.emailsOk=True
+
+    try:
+        attendee.save()
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Attendee not saved: ' + e})
+
+    staff = Staff.objects.get(id=pds['id'])
+    if 'staff_id' not in request.session:
+        return JsonResponse({'success': False, 'message': 'Staff record not found'})
+
+    ## Update Dealer info
+    if not staff:
+        return JsonResponse({'success': False, 'message': 'Staff record not found'})
+
+    dept = Department.objects.get(id=pds['department'])
+    shirt = ShirtSizes.objects.get(id=pds['shirtsize'])    
+    staff.department = dept
+    staff.title = pds['title']
+    staff.twitter = pds['twitter']
+    staff.telegram = pds['telegram']
+    staff.shirtsize = shirt
+    staff.specialSkills = pds['specialSkills']
+    staff.specialFood = pds['specialFood']
+    staff.specialMedical = pds['specialMedical']
+    staff.contactName = pds['contactName']
+    staff.contactPhone = pds['contactPhone']
+    staff.contactRelation = pds['contactRelation']
+
+    try:
+        staff.save()
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Staff not saved: ' + e})
+
+    priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
+
+    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem.save()
+
+    for option in pdp['options']:
+        plOption = PriceLevelOption.objects.get(id=int(option['id']))
+        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
+        attendeeOption.save()
+
+    if jer:
+        jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+        jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
+        jersey.save()
+        jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
+        jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
+        jerseyOption.save()
+    if sjer:
+        sjerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+        sjersey = StaffJersey(name=sjer['name'], number=sjer['number'], shirtSize=sjerseySize)
+        sjersey.save()
+        sjOption = PriceLevelOption.objects.get(id=int(sjer['optionId']))
+        sjerseyOption = AttendeeOptions(option=sjOption, orderItem=orderItem, optionValue=sjersey.id)
+        sjerseyOption.save()
+
+    #add attendee to session order
+    orderItems = request.session.get('order_items', [])
+    orderItems.append(orderItem.id)
+    request.session['order_items'] = orderItems
+    request.session["discount"] = "StaffDiscount"
+
+    return JsonResponse({'success': True})
+
+
 def checkoutStaff(request):
-    pass
+    sessionItems = request.session.get('order_items', [])
+    pdisc = request.session.get('discount', "")
+    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    postData = json.loads(request.body)
+    event = Event.objects.first()
+   
+    #todo: event = Event.objects.get(id=int(postData["eventId"]))
+
+    discount = Discount.objects.get(codeName="StaffDiscount")
+    subtotal = getTotal(orderItems, discount)
+
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationToken()
+
+    email = ''
+    total = 0
+    if subtotal == 0:
+      att = orderItems[0].attendee
+      order = Order(total=0, reference=reference, discount=discount,
+                  orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
+                  billingAddress1=att.address1, billingAddress2=att.address2,
+                  billingCity=att.city, billingState=att.state, billingCountry=att.country,
+                  billingPostal=att.postalCode, billingEmail=att.email)
+      order.save()
+      email = att.email
+
+    else:
+      pbill = postData["billingData"]
+      porg = Decimal(postData["orgDonation"].strip() or 0.00)
+      pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+      if porg < 0: 
+        porg = 0
+      if pcharity < 0:
+        pcharity = 0 
+
+      total = subtotal + porg + pcharity
+
+      order = Order(total=Decimal(total), reference=reference, discount=discount,
+                  orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
+      order.save()
+      email = order.billingEmail
+
+    for oitem in orderItems:
+        oitem.order = order
+        oitem.save()
+    
+    if total > 0:
+        result = chargePayment(order.id, pbill)
+    else:
+        order.status = "Paid"
+        result = True
+    try:
+      if result:
+        if discount:
+	  discount.used = discount.used + 1
+          discount.save()
+        sendStaffRegistrationEmail(order.id, email)
+        request.session.flush()
+    except Exception as e:
+        #none of this should return a failure to the user
+        print e
+        #todo: send an error email?
+
+    return JsonResponse({'success': True})
+
+
 
 ###################################
 # Dealers
@@ -71,8 +251,14 @@ def dealers(request, guid):
     return render(request, 'registration/dealer-locate.html', context)
 
 def newDealer(request):
+    event = Event.objects.first()
+    tz = timezone.get_current_timezone()
+    today = tz.localize(datetime.now())
     context = {}
-    return render(request, 'registration/dealer-form.html', context)
+    if event.dealerRegStart <= today <= event.dealerRegEnd:
+        return render(request, 'registration/dealer-form.html', context)
+    return render(request, 'registration/dealer-closed.html', context)
+
 
 def invoiceDealer(request):
     context = {'dealer': None}
@@ -328,16 +514,6 @@ def applyDiscount(request):
     return JsonResponse({'success': True})
     
 
-def getSessionAddresses(request):
-    sessionItems = request.session.get('order_items', [])
-    if not sessionItems:
-        data = {}
-    else:
-        orderItems = OrderItem.objects.filter(id__in=sessionItems)
-        data = [{'id': oi.attendee.id, 'email': oi.attendee.email, 'address1': oi.attendee.address1, 'address2': oi.attendee.address2, 'city': oi.attendee.city, 'state': oi.attendee.state, 'country': oi.attendee.country, 'postalCode': oi.attendee.postalCode} for oi in orderItems]
-        context = {'addresses': data}
-    return HttpResponse(json.dumps(data), content_type='application/json')
-    
 
 def addToCart(request):
     postData = json.loads(request.body)
@@ -401,7 +577,7 @@ def cancelOrder(request):
     order = request.session.get('order_items', [])
     for item in order:
         deleteOrderItem(item)
-    request.session['order_items'] = []
+    request.session.flush()
     return JsonResponse({'success': True})
 
 def checkout(request):
@@ -452,7 +628,7 @@ def checkout(request):
     try:
       if result:
         if discount:
-	  discount.uses = discount.uses + 1
+	  discount.used = discount.used + 1
           discount.save()
 
         sendRegistrationEmail(order.id, pbill['email'])
@@ -460,6 +636,7 @@ def checkout(request):
         pass  #none of this should return a failure to the user
         #todo: send an error email?
 
+    request.session.flush()
     return JsonResponse({'success': True})
 
 def cartDone(request):
@@ -470,6 +647,11 @@ def cartDone(request):
 
 ###################################
 # Utilities
+
+def getEvents(request):
+    events = Event.objects.all()
+    data = [{'name': ev.name, 'id': ev.id, 'dealerStart': ev.dealerRegStart, 'dealerEnd': ev.dealerRegEnd, 'staffStart': ev.staffRegStart, 'staffEnd': ev.staffRegEnd, 'attendeeStart': ev.attendeeRegStart, 'attendeeEnd': ev.attendeeRegEnd} for ev in events]
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getDepartments(request):
     depts = Department.objects.filter(volunteerListOk=True).order_by('name')
@@ -497,6 +679,26 @@ def getTableSizes(request):
     data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax, 'basePrice': str(size.basePrice)} for size in sizes]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
+def getJerseyNumbers(request):
+    jerseys = Jersey.objects.all()
+    data = [str(jersey.number) for jersey in jerseys]
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+def getStaffJerseyNumbers(request):
+    jerseys = StaffJersey.objects.all()
+    data = [str(jersey.number) for jersey in jerseys]
+    return HttpResponse(json.dumps(data), content_type='application/json')
+
+def getSessionAddresses(request):
+    sessionItems = request.session.get('order_items', [])
+    if not sessionItems:
+        data = {}
+    else:
+        orderItems = OrderItem.objects.filter(id__in=sessionItems)
+        data = [{'id': oi.attendee.id, 'fname': oi.attendee.firstName, 'lname': oi.attendee.lastName, 'email': oi.attendee.email, 'address1': oi.attendee.address1, 'address2': oi.attendee.address2, 'city': oi.attendee.city, 'state': oi.attendee.state, 'country': oi.attendee.country, 'postalCode': oi.attendee.postalCode} for oi in orderItems]
+        context = {'addresses': data}
+    return HttpResponse(json.dumps(data), content_type='application/json')    
+
 
 ##################################
 # Not Endpoints
@@ -506,6 +708,11 @@ def getConfirmationToken():
 
 def deleteOrderItem(id):
     orderItem = OrderItem.objects.get(id=id)
+    #Delete any jerseys. Other options will cascade delete properly.
+    jerseyOptions = AttendeeOption.objects.filter(attendee=orderItem.attendee, optionExtraType='Jersey')
+    for jerOpt in jerseyOptions:
+      jersey = Jersey.objects.get(id=jerOpt.optionValue)
+      jersey.delete()
     orderItem.attendee.delete()
     orderItem.delete()
 
@@ -533,8 +740,6 @@ def getTotal(orderItems, disc = ""):
             total += itemTotal
     return total
 
-def cleanupAbandons():
-    pass
 
 def handler(obj):
     if hasattr(obj, 'isoformat'):

@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import json
 import random
 import string
+from decimal import *
 from django.db import models
 from django.utils import timezone
 
@@ -62,6 +63,9 @@ class Jersey(models.Model):
     name = models.CharField(max_length=50)
     number = models.IntegerField()
 
+class StaffJersey(Jersey):
+    pass
+
 #End CustomAddons
 
 def getRegistrationToken():
@@ -99,6 +103,34 @@ class Attendee(models.Model):
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
 
+    def paid(self):
+      orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
+      return orderItems.count() > 0
+
+    def paidTotal(self):
+      if self.paid():
+          total = 0
+          orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
+          for oi in orderItems: 
+              total += oi.order.total
+          return Decimal(total)
+      return Decimal(0)
+
+    def abandoned(self):
+        if Staff.objects.filter(attendee=self).exists() or Dealer.objects.filter(attendee=self).exists():
+            return 'Assc'
+        if self.paid(): 
+            return 'Paid'
+        return True
+
+    def effectiveLevel(self):
+        level = None
+        orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
+        for oi in orderItems:
+            if not level: level = oi.priceLevel
+            elif oi.priceLevel.basePrice > level.basePrice:
+                level = oi.priceLevel
+        return level
 
 class Staff(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -122,11 +154,6 @@ class Staff(models.Model):
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
-
-    def paid(self):
-      orderItems = OrderItem.objects.filter(attendee=self.attendee)
-      return orderItems.count() > 0
-
 
 class Dealer(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -164,6 +191,16 @@ class Dealer(models.Model):
     def paid(self):
       orderItems = OrderItem.objects.filter(attendee=self.attendee)
       return orderItems.count() > 0
+
+    def paidTotal(self):
+      if self.paid():
+          total = 0
+          orderItems = OrderItem.objects.filter(attendee=self.attendee)
+          for oi in orderItems: 
+              if oi.order:
+                  total += oi.order.total
+          return Decimal(total)
+      return Decimal(0)
 
 
 # Start order tables
@@ -221,14 +258,14 @@ class Discount(models.Model):
         return True
 
 class Order(models.Model):
-    total = models.DecimalField(max_digits=6, decimal_places=2)
+    total = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=50, default='Pending')
     reference = models.CharField(max_length=50)
     createdDate = models.DateTimeField(auto_now_add=True, null=True)
     settledDate = models.DateTimeField(auto_now_add=True, null=True)
     discount = models.ForeignKey(Discount, null=True, on_delete=models.SET_NULL)
-    orgDonation = models.DecimalField(max_digits=6, decimal_places=2, null=True)
-    charityDonation = models.DecimalField(max_digits=6, decimal_places=2, null=True)
+    orgDonation = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    charityDonation = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     notes = models.TextField(blank=True)
     billingName = models.CharField(max_length=200)
     billingAddress1 = models.CharField(max_length=200)

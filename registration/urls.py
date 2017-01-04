@@ -4,8 +4,11 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^staff/done/?$', views.staffDone, name='staff'),
     url(r'^staff/lookup/?$', views.findStaff, name='findStaff'),
+    url(r'^staff/add/?$', views.addStaff, name='addStaff'),
     url(r'^staff/info/?$', views.infoStaff, name='infoStaff'),
+    url(r'^staff/invoice/?$', views.invoiceStaff, name='invoiceStaff'),
     url(r'^staff/checkout/?$', views.checkoutStaff, name='checkoutStaff'),
     url(r'^staff/(?P<guid>\w+)/?$', views.staff, name='staff'),
 
@@ -27,11 +30,14 @@ urlpatterns = [
     url(r'^cart/checkout/?$', views.checkout, name='checkout'),
     url(r'^cart/done/?$', views.cartDone, name='done'),
 
+    url(r'^events/?$', views.getEvents, name='events'),
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),
     url(r'^shirts/?$', views.getShirtSizes, name='shirtsizes'),
     url(r'^tables/?$', views.getTableSizes, name='tablesizes'),
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),
+    url(r'^takenJerseys/?$', views.getJerseyNumbers, name='takenJerseys'),
+    url(r'^takenStaffJerseys/?$', views.getJerseyNumbers, name='takenStaffJerseys'),
 
 ]

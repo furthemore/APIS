@@ -3,10 +3,46 @@ from .models import *
 
 def sendRegistrationEmail(orderId, email):
     order = Order.objects.get(id=orderId)
-    sendEmail("registration@furthemore.org", [email], "Payment Complete!", "Thanks!", "Thanks!")
+    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Registration Payment", 
+              "Thank you for your payment." +
+              "\r\nYour payment confirmation is: " + order.reference +
+              "\r\nIf you have any questions about your order, please contact us at registration@furthemore.org." +
+              "\r\nThank you! \r\n \r\n'Kiric \r\nHead of Registration", 
+              "<h3>Thank you for your payment.</h3>" + 
+              "<p>Your payment confirmation number is: " + order.reference + "</p>" + 
+              "<p>If you have any questions about your order, please contact us at <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>.</p>" + 
+              "<p>Thank you!</p><p>'Kiric<br/>Head of Registration</p>")
     orderItems = OrderItem.objects.filter(order=order)
     for oi in orderItems:
-        sendEmail("registration@furthemore.org", [oi.attendee.email], "Registration Complete!", "Thanks!", "Thanks!")
+        sendEmail("registration@furthemore.org", [oi.attendee.email], "Furthemore 2017 Registration Confirmation", 
+                  "Thank you for registering." + 
+                  "\r\nYour registration confirmation is: " + order.reference +  
+                  "\r\nYou my pick up your badge from the pre-reg line at the convention. If you have any questions regarding your registration, please contact registration@furthemore.org." + 
+                  "\r\nSee you at the convention!" + 
+                  "\r\n \r\nKiric \r\nHead of Registration", 
+                  "<h3>Thank you for registering</h3>" + 
+                  "<p>Your registration confirmation is: " + order.reference + "</p>" + 
+                  "<p>You my pick up your badge from the pre-reg line at the convention. If you have any questions regarding your registration, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>.</p>" + 
+                  "<p>See you at the convention!</p>" + 
+                  "<p>&nbsp;</p>" + 
+                  "<p>Kiric<br/> Head of Registration</p>")
+
+def sendStaffRegistrationEmail(orderId, email):
+    order = Order.objects.get(id=orderId)
+    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Staff Registration", 
+              "Thank you for registering as staff." +
+              "\r\nYour registration confirmation number is: " + order.reference + 
+              "\r\nIf you have any questions about your registration, please contact your supervisor or registration@furthemore.org." +
+              "\r\nThank you! \r\n \r\nKiric \r\nHead of Registration", 
+              "<h3>Thank you for registering as staff</h3>" +
+              "<p>Your registration confirmation number is: " + order.reference + "</p>" + 
+              "<p>If you have any questions about your order, please contact your supervisor or <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>.</p>" + 
+              "<p>Thank you!</p><p>Kiric<br/>Head of Registration</p>")
+
+def sendStaffPromotionEmail(staff):
+    sendEmail("registration@furthemore.org", [staff.attendee.email], "Welcome to Furthemore Staff!", 
+              "Use this link to register as staff: http://dawningbrooke.net/apis/registration/staff/" + staff.registrationToken, 
+              "<p>Use this link to register as staff: <a href='http://dawningbrooke.net/apis/registration/staff/" + staff.registrationToken + "'>http://dawningbrooke.net/apis/registration/staff/" + staff.registrationToken + "</a></p>")
 
 def sendDealerApplicationEmail(dealerId):
     dealer = Dealer.objects.get(id=dealerId)
