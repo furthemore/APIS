@@ -7,7 +7,6 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Checkout</h1>
-		<h3>Add another attendee to your order, or checkout</h3>
 		<hr>
 
 		<h3>Your Order</h3>
@@ -22,7 +21,6 @@
 				<div class="col-sm-5 col-sm-offset-1">{{item.attendee}} - {{item.priceLevel}}</div>
 				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
 				<div class="col-sm-2">
-					<a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
 				</div>
 			</div>
 			{% for option in item.getOptions %}
@@ -65,24 +63,10 @@
 				<div class="col-sm-2"><h4>${{total}}</h4></div>   
 			</div>
 
-	
-		<br/>
-		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registraiton</a>
-
-		<hr/>
 		{% if total > 0%}
 
-		{% if not discount %}
-
-		<h3>Discount</h3>
-		<div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount code, enter it below:</div>
-		<div class="row">
-			<div class="col-sm-4 col-sm-offset-1"><input type="text" id="discount" class="form-control" /></div>
-			<button class="btn btn-primary" id="applyDiscount">Apply</button>
-		</div>
 		<hr/>
-		
-		{% endif %}
+
 		<form class="form-horizontal" role="form" data-toggle="validator">
 		
 		<h3>Extra Donations</h3>
@@ -104,17 +88,6 @@
 
 		<h3>Billing Information</h3>
 
-
-		<div class="form-group">
-                    <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
-                    <div class="col-sm-9">
-                        <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
-			{% for oi in orderItems %}
-			    <option value="{{oi.attendee.id}}">{{oi.attendee}}</option>
-			{% endfor %}
-			</select>
-                    </div>
-		</div>
 		<div class="form-group">
                     <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
                     <div class="col-sm-4">
@@ -231,10 +204,9 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Checkout</h1>
-		<h3>There are no attendees in your order</h3>
+		<h3>There are no staff entries in your order</h3>
 		<hr>
-		<a class="btn btn-primary" href="/apis/registration/">Add Attendee</a>
-
+		<div>Your session has expired. Please check your email for your registration link.</div>
 
 	</div>
 	</div>
@@ -246,102 +218,11 @@
 
 {% block javascript %}
 <script type="text/javascript">
-	var addresses = [];
 	$( "body" ).ready(function() {
                 $.getJSON("/apis/registration/addresses", function(data) {
-		addresses = data;
-                });		
-	});
-
-	$(".deleteAttendee").click(function(e) {
-		var id = this.id.split('_')[1];
-		var data = {'id': id}
-		$.ajax({
-		    "type": "POST",
-		    "dataType": "json",
-		    "url": "/apis/registration/cart/remove/",
-		    "data": JSON.stringify(data),
-		    "beforeSend": function(xhr, settings) {
-		        console.log("Before Send");
-		        $.ajaxSettings.beforeSend(xhr, settings);
-		    },
-		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
-		    },
-                    "success": function (result, status) {
-                        if (result.success) {
-				window.location.reload();
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
-			}
-                    }
-		});
-	});
-
-	$("#addAnother").click(function() {
-		window.location = "/apis/registration";
-	});
-
-	$("#cancel").click(function() {
-		var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
-		if (cancel == false) { return;}
-		
-                $.getJSON("/apis/registration/cart/abandon", function(data) {
-			window.location = "/apis/registration";
-                });
-	});
-
-	$("#applyDiscount").click(function(e) {
-		var discount = $("#discount").val();
-		if (discount == '') {
-			alert("You must enter a discount to apply.");
-			return;
-		}
-		var data = {'discount': discount}
-		$.ajax({
-		    "type": "POST",
-		    "dataType": "json",
-		    "url": "/apis/registration/cart/discount/",
-		    "data": JSON.stringify(data),
-		    "beforeSend": function(xhr, settings) {
-		        console.log("Before Send");
-		        $.ajaxSettings.beforeSend(xhr, settings);
-		    },
-		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
-		    },
-                    "success": function (result, status) {
-                        if (result.success) {
-				window.location.reload();
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
-			}
-                    }
-		});
-
-		
-	});
-
-	$("#useFrom").on("change", function(e) {
-		var userId = $(this).val();
-		if (userId == ""){
-			$("#fname").val("");
-			$("#lname").val("");
-			$("#email").val("");
-			$("#add1").val("");
-			$("#add2").val("");
-			$("#city").val("");
-			$("#state").val("");
-			$("#country").val("");
-			$("#zip").val("");
-			return;
-		}
-
-		var userName = $("#useFrom option[value='" + userId + "']").text();
-		$("#fname").val(userName.split(' ')[0]);
-		$("#lname").val(userName.split(' ')[1]);
-		$.each(addresses, function (key, item) {
-			if (item.id != userId) { return; }
+			var item = data[0];
+			$("#fname").val(item.fname);
+			$("#lname").val(item.lname);
 			$("#email").val(item.email);
 			$("#add1").val(item.address1);
 			$("#add2").val(item.address2);
@@ -349,8 +230,23 @@
 			$("#state").val(item.state);
 			$("#country").val(item.country);
 			$("#zip").val(item.postalCode);
-		});
+
+                });		
 	});
+
+	$("#cancel").click(function() {
+		var cancel = window.confirm("Are you sure you want to cancel your registration? This will clear everything from your order.")
+		if (cancel == false) { return;}
+		
+                $.getJSON("/apis/registration/cart/abandon", function(data) {
+			window.location = "www.furthemore.org";
+                });
+	});
+	
+	{% if total = 0 %}
+		$("#checkout").text("Finish");
+	{% endif %}
+
 
 	$("#checkout").click(function (e) {
 		e.preventDefault();
@@ -380,7 +276,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/cart/checkout/",
+		    "url": "/apis/registration/staff/checkout/",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -392,7 +288,7 @@
 		    },
                     "success": function (result, status) {
                         if (result.success) {
-				window.location = "/apis/registration/cart/done/";
+				window.location = "/apis/registration/staff/done/";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
 			    $("#checkout").removeAttr("disabled");

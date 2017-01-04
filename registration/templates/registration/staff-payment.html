@@ -1,6 +1,7 @@
 {% extends "registration/master.html" %}
 
 {% block content %}
+
 <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -9,8 +10,6 @@
         <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
       </div>
       <div class="modal-body">
-	<p>Only those over the age of 18 (by the start of the convention) may register online.</p>
-        <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 28, 1999). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 28, 2004).</p>
 	<p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
       </div>
     </div>
@@ -29,117 +28,213 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="jerseyStaffModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Year 5 Jersey</h4>
+      </div>
+      <div class="modal-body">
+	<img width="400" src="/static/img/staff_jersey.jpg"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+	{% if not staff %}
+		<h1>Staff Registration - Furthemore 2017</h1>
+		<p>Your session has expired. Please use the link in your registration email again to start over.</p>
+	{% else %}
 
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Pre-Register for Furthemore 2016!</h1>
-		<p>Welcome to the registration system. To continue, enter your information below.</p>
-		<hr>
+		<h1>Staff Registration - Furthemore 2017</h1>
 
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
+
+		<hr>
 			
                 <div class="form-group">
                     <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
                     <div class="col-sm-4">
-                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
+                        <input type="text" id="firstName" value="{{staff.attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
                     </div>
 		    <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+                        <input type="text" id="lastName" value={{staff.attendee.lastName}} placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="email" class="col-sm-3 control-label">Email</label>
                     <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
+                        <input type="email" id="email" value="{{staff.attendee.email}}" class="form-control" disabled />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-3">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
-                    </div>
-                </div>
+		</div>
                 <div class="form-group">
                     <label for="phone" class="col-sm-3 control-label">Phone Number</label>
                     <div class="col-sm-9">
-                        <input type="text" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9]{1,}$" data-minlength="10" maxlength=10 data-error="A 10-digit phone number is required. Please enter only numbers.">
+                        <input type="phone" id="phone" value="{{staff.attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Address</label>
                     <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
+                        <input type="text" name="add1" id="add1" value="{{staff.attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
                     <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
+                        <input type="text" name="add2" id="add2" value="{{staff.attendee.address2}}" placeholder="Address Line 2" class="form-control">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+                    <label for="city" class="col-sm-3 control-label">City/State</label>
 		    <div class="col-sm-4">
-			<input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
+			<input type="text" name="city" id="city" value="{{staff.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
 		    </div>
-                    <div class="col-sm-2">
+                    <div class="col-sm-5">
 			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
                     </div>
-		    <div class="col-sm-3">
-			<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
-		    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country</label>
-                    <div class="col-sm-9">
+                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
+		    <div class="col-sm-3">
+			<input type="text" name="zip" id="zip" value="{{staff.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
+		    </div>
+                    <div class="col-sm-6">
 			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
                     </div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 				
-		<hr>
+		<hr/>
 
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="text" id="birthDate" class="form-control" placeholder="Click to select your birthdate" required data-error="Date of birth is required.">
-			<p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
+                        <input type="text" id="birthDate" value="{{staff.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
+			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
+
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-			<a href="#registration" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+			<a href="#profile" class="btn btn-primary col-sm-12" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
                     </div>
                 </div>
             
 	</div>
-	<div role="tabpanel" class="tab-pane fade" id="registration">
-		<h2>Registration Info</h2>
-		<p>Select your registration options and level.</p>
+	<div role="tabpanel" class="tab-pane fade" id="profile">
+		<h1>Staff Registration - Furthemore 2017</h1>
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
 		<hr>
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Badge Name</label>
+                    <label for="add1" class="col-sm-3 control-label">Badge Name</label>
                     <div class="col-sm-9">
-                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
+                        <input type="text" name="badgeName" id="badgeName" value="{{staff.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="department" class="col-sm-3 control-label">Department</label>
+                    <div class="col-sm-9">
+                        <select id="department" name="department"class="form-control" required></select>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Are you interested in volunteering?</label>
+                    <label for="title" class="col-sm-3 control-label">Title</label>
                     <div class="col-sm-9">
-                        <select id="volunteer" name="volunteer"  class="form-control form-control-select" ><option value="">No Thanks</option></select>
+                        <input type="text" id="title" name="title" value="{{staff.title}}" placeholder="Title" class="form-control form-control-text" required>
                     </div>
-					
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="shirt" class="col-sm-3 control-label">Shirt Size</label>
+                    <div class="col-sm-9">
+                        <select id="shirt" name="department" class="form-control" required></select>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
 		<hr/>
+		<h3>Emergency Contact Info</h3>
+                <div class="form-group">
+                    <label for="contactName" class="col-sm-3 control-label">Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="contactName" name="contactName" value="{{staff.contactName}}" placeholder="Contact Name" class="form-control form-control-text" required>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="contactRel" class="col-sm-3 control-label">Relationship</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="contactRel" name="contactRel" value="{{staff.contactRelation}}" placeholder="Relationship To You" class="form-control form-control-text" required>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="contactPhone" class="col-sm-3 control-label">Phone Number</label>
+                    <div class="col-sm-9">
+                        <input type="phone" id="contactPhone" name="contactPhone" value="{{staff.contactPhone}}" placeholder="Phone Number" class="form-control form-control-text" required>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+
+		<hr/>
+		<h3>Optional Info</h3>
+                <div class="form-group">
+                    <label for="twitter" class="col-sm-3 control-label">Twitter Handle</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="twitter" value="{{staff.twitter}}" name="twitter" placeholder="@somefurry" class="form-control form-control-text" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="telegram" class="col-sm-3 control-label">Telegram Handle</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="telegram" value="{{staff.telegram}}" name="telegram" placeholder="@somefurry" class="form-control form-control-text" />
+                    </div>
+                </div>
+		<div class="form-group">
+                    <label for="medical" class="col-sm-3 control-label">Medical Needs</label>
+                    <div class="col-sm-9">
+                        <textarea id="medical" name="medical" class="form-control form-control-textarea" >{{staff.specialMedical}}</textarea>
+                    </div>
+		</div>
+		<div class="form-group">
+                    <label for="food" class="col-sm-3 control-label">Dietary Needs</label>
+                    <div class="col-sm-9">
+                        <textarea id="food" name="food" class="form-control form-control-textarea" >{{staff.specialFood}}</textarea>
+                    </div>
+		</div>
+		<div class="form-group">
+                    <label for="skills" class="col-sm-3 control-label">Additional Skills</label>
+                    <div class="col-sm-9">
+                        <textarea id="skills" name="skills" class="form-control form-control-textarea" >{{staff.specialSkills}}</textarea>
+                    </div>
+		</div>
+
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+			<a href="#personal" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal"><< Back</a>
+			<a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+                    </div>
+                </div>
+	</div>
+	<div role="tabpanel" class="tab-pane fade" id="options">
+		<h1>Staff Registration - Furthemore 2017</h1>
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
+
 		<div class="row" id="levelContainer"></div>
-		<br/>
 		<hr/>
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
@@ -149,18 +244,22 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
-			<a href="#personal" class="btn btn-primary col-sm-6" aria-controls="personal" role="tab" data-toggle="tab" id="back-registration"><< Back</a>
-       	        	<button type="submit" class="btn btn-primary col-sm-6" id="register">Register</button>
-        	</div>
+                    <div class="col-sm-9 col-sm-offset-3">
+			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
+                        <button id="checkout" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Register</button>
+		    </div>
+                </div>
 	</div>
 	</div>
 	{% csrf_token %}
+	</div>
 	</form>
+
+	{% endif %}
 
 {% endblock %}
 
 {% block javascript %}
-
 <script type="text/html" id="levelTemplate">
 	<div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
 	<div class="panel price">
@@ -243,14 +342,15 @@
 </script>
 <script type="text/html" id="optionJerseyTemplate">
 	<br/>
-	<h4>Year 5 Jersey</h4>
-	<hr/>
-        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore! 
-		<br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures and more information.</div>
+        <h4>Year 5 Jersey</h4>
+        <hr/>
+        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore!
+                <br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures a$
+   	<hr/>
 	<div class="form-group">
 		<label class="col-sm-3 control-label">Jersey Name</label>
 		<div class="col-sm-9">
-			<input type="text" id="jerseyName" maxlength=15 class="form-control form-control-text" />
+			<input type="text" id="jerseyName" max-length=15 class="form-control form-control-text" />
 			<input type="hidden" id="optionId" data-value="optionId" />
 		</div>
 	</div>
@@ -268,43 +368,76 @@
 		</div>
 	</div>
 </script>
+<script type="text/html" id="optionStaffJerseyTemplate">
+	<br/>
+	<h4>Year 5 Jersey</h4>
+	<hr/>
+        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore! 
+		<br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures and more information.</div>
+ 	<hr/>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Staff Jersey Name</label>
+		<div class="col-sm-9">
+			<input type="text" id="sjerseyName" max-length=15 class="form-control form-control-text" />
+			<input type="hidden" id="soptionId" data-value="optionId" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Staff Jersey Number</label>
+		<div class="col-sm-9">
+			<input type="text" id="sjerseyNumber" maxlength=2 class="form-control form-control-text" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Staff Jersey Size</label>
+		<div class="col-sm-9">
+			<select id="sjerseySize" class="form-control form-control-select" 
+			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+		</div>
+	</div>
+</script>
+
 
  <script type="text/javascript">
 	var levelTemplateData = [];
-	var levelData = [];
-        var deptData = [];
-	var shirtSizes = [];
+	var staff = {{ jsonStaff|safe }} 
+	var attendee = {{ jsonAttendee|safe }} 
 	var takenJerseys = [];
+	var takenStaffJerseys = [];
+
 	$( "body" ).ready(function() {
-		$("#birthDate").datepicker({changeMonth: true, changeYear: true});
 		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
 			$.each( data, function( key, val ) {
 				levelTemplateData.push({
 					name: val.name,
-					price: "$" + val.base_price,
+					price: "$" + (val.base_price - 45),
 					levelId: "level_" + val.id,
-					selectText: "Select " + val.name
 				});
 			});
 			$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
 			$(".changeLevel").hide();
 			
 		});
-		$.getJSON("/apis/registration/departments", function(data) {
+		$.getJSON("/apis/registration/alldepartments", function(data) {
 			deptData = data;
 			$.each(data, function(key, val) {
-				$("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
+				$("#department").append("<option value='" + val.id + "'>" + val.name + "</option>");
 			});
 		});
 		$.getJSON("/apis/registration/shirts", function(data) {
+			$.each(data, function(key, val) {
+				$("#shirt").append("<option value='" + val.id + "'>" + val.name + "</option>");
+			});
 			shirtSizes = data;
 		});
 		$.getJSON("/apis/registration/takenJerseys", function(data) {
 			takenJerseys = data;
 		});
+		$.getJSON("/apis/registration/takenStaffJerseys", function(data) {
+			takenStaffJerseys = data;
+		});
         });
-
 
 	$("#levelContainer").on('click', 'a.selectLevel', function(){
 		clearLevels();
@@ -321,13 +454,11 @@
 			}
 		});
 	});
-
 	$("#levelContainer").on('click', 'a.changeLevel', function() {
 		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
 		$("#regLevel").val("");
 		$(".changeLevel").hide();
 	});
-
 	var clearLevels = function(){
 		$.each( levelTemplateData, function( key, val ) {
 			$("#"+val.levelId).text("Select " + val.name);
@@ -392,6 +523,15 @@
 					}, {append: true});
 					break;
 				case "StaffJersey":
+					var options = [];
+					$.each(shirtSizes, function (key, item) {
+						options.push({"content": item.name, "value": item.id})
+					});
+					$("#optionsContainer").loadTemplate($("#optionStaffJerseyTemplate"), {
+						'name': val.name + " " + price,
+						'optionId': val.id,
+						'options': options
+					}, {append: true});
 					break;
 				default:
 					if (val.list == []){break;}
@@ -411,7 +551,6 @@
 		
 		$("form").validator('update');
 	};
-
 	var getJersey = function() {
 		var jersey = {};
 		if ($("#jerseyName").val() == "") {return jersey;}
@@ -423,89 +562,102 @@
 		};
 		return jersey;
 	};
-
+	var getStaffJersey = function() {
+		var jersey = {};
+		if ($("#sjerseyName").val() == "") {return jersey;}
+		jersey = {
+			'name': $("#sjerseyName").val(),
+			'number': $("#sjerseyNumber").val(),
+			'size': $("#sjerseySize").val(),
+			'optionId': $("#soptionId").val()
+		};
+		return jersey;
+	};
 	var getOptions = function() {
 		var options = $(".levelOptions");
                 var data = [];
 		$.each(options, function(key, option) {
-			if ($(option).is(':checkbox')) {
-				if ($(option).is(':checked')) {
-					data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
-				}
-			} else {
-				data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-			}
+			data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
 		});
 		return data;
 	};
 
-	function getAge(birthdate) {
- 		var curr  = new Date(2017, 4, 28);
- 		var diff = curr.getTime() - birthdate.getTime();
-		return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-	}
-	function toDateFormat(birthdate){
-		var month = birthdate.getMonth();
-		month = month + 1;
-		return month + "/" + birthdate.getDate() + "/" + birthdate.getFullYear();
-	}
 
-	$( "#badgeName" )
-		.keyup(function() {
-		var value = $( this ).val();
-		$( "#badge-text" ).text( value );
-	})
-	.keyup();
+	$("#country").on("change", function() {
+		if ($(this).val() == "US"){
+			$("#state").val("VA").removeAttr("disabled").attr("required", "required");
+			$("#zip").val("").removeAttr("disabled").attr("required", "required");
+		} else {
+			$("#state").val("").attr("disabled", "disabled").removeAttr("required");
+			$("#zip").val("").attr("disabled", "disabled").removeAttr("required");
+		}
+	});
 
-	$("#register").click(function(e) {
+
+	$("#checkout").click(doRegister);
+	
+
+	function doRegister(e) {
 		e.preventDefault();
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
-		if ($("#birthDate").val() == "") {
-			alert("You must enter your birthdate to submit your registration.");
-			return;
-		}
-		if ($.inArray($("#jerseyNumber").val(), takenJerseys) > -1) {
-			alert("That jersey number has already been claimed. Please choose another.");
-			return;
-		}
-		var birthdate = new Date(Date.parse($("#birthDate").val()));
-		var age = getAge(birthdate);
-		if (age < 18) {
-			alert("You must be 18 by the first day of Furthemore to register online.")
-			return;
-		}
+
+		$("#checkout").attr("disabled", "disabled");
+
 		var data = {
 			'attendee': {
+				'id': attendee.id,
 				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
 				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
-				'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
-				'volDepts': $("#volunteer").val(),
+				'phone': $("#phone").val(), 'badgeName': $("#badgeName").val()
 			}, 
+			'staff': {
+				'id': staff.id, 
+				'department': $("#department").val(), 'title': $("#title").val(),
+				'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
+				'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
+				'specialFood': $("#food").val(), 'specialMedical': $("#medical").val(),
+				'contactPhone': $("#contactPhone").val(), 'contactName': $("#contactName").val(),
+				'contactRelation': $("#contactRel").val(),
+			},
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-			'jersey': getJersey()
+			'jersey': getJersey(),
+			'staffjersey': getStaffJersey()
 		};
+		
+
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/cart/add/",
+		    "url": "/apis/registration/staff/add/",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
-		    "success": function(result) {
-		        window.location = "/apis/registration/cart";
+		    "error": function(result, status, error) {
+			if (result.responseText == "") {
+				alert("Your session has expired.");
+			} else {
+                        	alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
+			}
+			$("#checkout").removeAttr("disabled");
 		    },
-		    "error": function(result, status) {
-			alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
-		    }
-		})
+                    "success": function (result, status) {
+                        if (result.success)
+                        {
+ 	                    window.location = "/apis/registration/staff/invoice";
+                        } else {
+			    $("#checkout").removeAttr("disabled");
+                    	    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
+			}
+                    }
+		});
+	}
 
-	});
+
 
 function getCookie(name) {
     var cookieValue = null;
@@ -533,7 +685,8 @@ $.ajaxSetup({
 });
 
 
-</script>
 
+
+ </script>
 
 {% endblock %}
