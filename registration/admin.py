@@ -24,7 +24,7 @@ class DealerResource(resources.ModelResource):
         model = Dealer
 
 class DealerAdmin(ImportExportModelAdmin):
-    list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paid', 'paidTotal')
+    list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal')
     save_on_top = True
     resource_class = DealerResource
     actions = [send_approval_email]
@@ -110,7 +110,7 @@ def make_staff(modeladmin, request, queryset):
     for att in queryset:
         staff = Staff(attendee=att)
         staff.save()
-send_approval_email.short_description = "Add to Staff"
+make_staff.short_description = "Add to Staff"
 
 def clear_abandons(modeladmin, request, queryset):
     for att in queryset:
@@ -126,7 +126,7 @@ clear_abandons.short_description = "***Delete Abandoned Orders***"
 class AttendeeAdmin(admin.ModelAdmin):
     save_on_top = True
     actions = [make_staff, clear_abandons]
-    list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paid', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
+    list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
     fieldsets = (
         (
 	    None, 

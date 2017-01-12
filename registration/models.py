@@ -103,18 +103,12 @@ class Attendee(models.Model):
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
 
-    def paid(self):
-      orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
-      return orderItems.count() > 0
-
     def paidTotal(self):
-      if self.paid():
-          total = 0
-          orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
-          for oi in orderItems: 
-              total += oi.order.total
-          return Decimal(total)
-      return Decimal(0)
+      total = 0
+      orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
+      for oi in orderItems: 
+          total += oi.order.total
+      return Decimal(total)
 
     def abandoned(self):
         if Staff.objects.filter(attendee=self).exists() or Dealer.objects.filter(attendee=self).exists():
@@ -188,19 +182,30 @@ class Dealer(models.Model):
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
 
-    def paid(self):
-      orderItems = OrderItem.objects.filter(attendee=self.attendee)
-      return orderItems.count() > 0
+    def getPartnerCount(self):
+      partners = self.partners.split(', ')
+      partnerCount = 0
+      for part in partners:
+        if part.find("name") > -1 and part.split(':')[1].strip() != "":
+            partnerCount = partnerCount + 1
+      return partnerCount
+
+    def effectiveLevel(self):
+        level = None
+        orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
+        for oi in orderItems:
+            if not level: level = oi.priceLevel
+            elif oi.priceLevel.basePrice > level.basePrice:
+                level = oi.priceLevel
+        return level
 
     def paidTotal(self):
-      if self.paid():
           total = 0
           orderItems = OrderItem.objects.filter(attendee=self.attendee)
           for oi in orderItems: 
               if oi.order:
                   total += oi.order.total
           return Decimal(total)
-      return Decimal(0)
 
 
 # Start order tables

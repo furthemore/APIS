@@ -1,0 +1,2 @@
+Welcome to Furthemore Staff! 
+Use this link to register as staff: http://dawningbrooke.net/apis/registration/staff/{{registrationToken}}

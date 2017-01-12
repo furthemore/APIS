@@ -1,0 +1,41 @@
+{% load mathfilters %}
+<h3>Greetings Player 1,</h3>
+
+<p>Thank you for participating in Fur The More's 8-Bit Adventure! We look forward to being your
+player 2 on April 28-30th. If you have any questions or concerns, please email
+<a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>.</p>
+
+<p>Your confirmation number is: {{order.reference}}</p>
+<p><b>Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}</b></p>
+<hr/>
+<table>
+
+<tr><td>Table Type - {{dealer.tableSize}}</td><td> ${{dealer.tableSize.basePrice}}</td></tr>
+<tr><td>Continental Breakfast</td><td>{{dealer.breakfast|yesno:"Yes,No"}}</td></tr>
+<tr><td>Friday Reception</td><td>{{dealer.reception|yesno:"Yes,No"}}</td></tr>
+{% if dealer.getPartnerCount > 0%}
+<tr><td>Partners x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:40}}.00</td></tr>
+{% endif %}
+<tr><td>Attendee Level - {{orderItem.priceLevel}}</td><td>${{orderItem.priceLevel.basePrice}}</td></tr>
+<tr><td>Dealer Discount</td><td>-${{order.discount.amountOff}}</td></tr>
+
+{% for option in options %}
+  {% if option.option.optionExtraType == 'int'%}
+<tr><td>{{option.option.optionName}} x{{option.optionValue}}</td><td>${{option.option.optionPrice|mul:option.optionValue}}</td></tr>
+  {% else %}
+<tr><td>{{option.option.optionName}}</td><td>${{option.option.optionPrice}}</td></tr>
+  {% endif %}
+{% endfor %}
+
+{% if order.charityDonation > 0 %}
+<tr><td>Charity Donation</td><td>${{order.charityDonation}}</td></tr>
+{% endif %}
+{% if order.orgDonation > 0 %}
+<tr><td>Furthemore Donation</td><td>${{order.orgDonation}}</td></tr>
+{% endif %}
+
+<tr><td><b>Total</b></td><td><b>${{order.total}}</b></td></tr>
+</table>
+<hr/>
+
+<p>If you have listed any partners, they will receive an email with instructions about how to register.</p>
