@@ -113,7 +113,7 @@ class Attendee(models.Model):
     def abandoned(self):
         if Staff.objects.filter(attendee=self).exists() or Dealer.objects.filter(attendee=self).exists():
             return 'Assc'
-        if self.paid(): 
+        if self.paidTotal() > 0: 
             return 'Paid'
         return True
 
