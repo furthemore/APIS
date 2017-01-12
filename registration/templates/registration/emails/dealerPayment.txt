@@ -1,0 +1,38 @@
+{% load mathfilters %}
+Greetings Player 1,
+
+Thank you for participating in Fur The More's 8-Bit Adventure! We look forward to being your
+player 2 on April 28-30th. If you have any questions or concerns, please email
+exhibitions@furthemore.org.
+
+Your confirmation number is: {{order.reference}}
+Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}
+-------------------------------------------
+Table Type - {{dealer.tableSize}}: ${{dealer.tableSize.basePrice}}
+Continental Breakfast: {{dealer.breakfast|yesno:"Yes,No"}}
+Friday Reception: {{dealer.reception|yesno:"Yes,No"}}
+{% if dealer.getPartnerCount > 0%}
+Partners x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:40}}.00
+{% endif %}
+Attendee Level - {{orderItem.priceLevel}}: ${{orderItem.priceLevel.basePrice}}
+Dealer Discount: -${{order.discount.amountOff}}
+
+{% for option in options %}
+  {% if option.option.optionExtraType == 'int'%}
+{{option.option.optionName}} x{{option.optionValue}}: ${{option.option.optionPrice|mul:option.optionValue}}
+  {% else %}
+{{option.option.optionName}}: ${{option.option.optionPrice}}
+  {% endif %}
+{% endfor %}
+
+{% if order.charityDonation > 0 %}
+Charity Donation: ${{order.charityDonation}}
+{% endif %}
+{% if order.orgDonation > 0 %}
+Furthemore Donation: ${{order.orgDonation}}
+{% endif %}
+
+Total: ${{order.total}}
+-------------------------------------------
+
+If you have listed any partners, they will receive an email with instructions about how to register.

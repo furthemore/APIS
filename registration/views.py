@@ -20,6 +20,10 @@ def index(request):
     context = {}
     return render(request, 'registration/registration-form.html', context)
 
+def flush(request):
+    request.session.flush()
+    return JsonResponse({'success': True})
+
 
 
 ###################################
@@ -259,8 +263,7 @@ def newDealer(request):
         return render(request, 'registration/dealer-form.html', context)
     return render(request, 'registration/dealer-closed.html', context)
 
-
-def invoiceDealer(request):
+def infoDealer(request):
     context = {'dealer': None}
     try:
       dealerId = request.session['dealer_id']
@@ -271,11 +274,44 @@ def invoiceDealer(request):
     if dealer:
 	dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
-        table_dict = model_to_dict(dealer.tableSize)
+        table_dict = model_to_dict(dealer.tableSize)        
+        if dealer.attendee.effectiveLevel():
+            lvl_dict = model_to_dict(dealer.attendee.effectiveLevel())
+        else:
+            lvl_dict = {}
         context = {'dealer': dealer, 'jsonDealer': json.dumps(dealer_dict, default=handler), 
-                   'jsonAttendee': json.dumps(attendee_dict, default=handler), 
-                   'jsonTable': json.dumps(table_dict, default=handler)}
+                   'jsonTable': json.dumps(table_dict, default=handler),
+                   'jsonAttendee': json.dumps(attendee_dict, default=handler),
+                   'jsonLevel': json.dumps(lvl_dict, default=handler)}
     return render(request, 'registration/dealer-payment.html', context)
+
+def getDealerTotal(orderItems, discount, dealer):
+    subTotal = getTotal(orderItems, discount)
+    alreadyPaid = dealer.paidTotal()
+    partnerCount = dealer.getPartnerCount()
+    total = subTotal + 40*partnerCount + dealer.tableSize.basePrice - dealer.discount - alreadyPaid
+    if total < 0: 
+      return 0
+    return total
+
+def invoiceDealer(request):
+    sessionItems = request.session.get('order_items', [])
+    sessionDiscount = request.session.get('discount', "")
+    if not sessionItems:
+        context = {'orderItems': [], 'total': 0, 'discount': {}}
+        request.session.flush()
+    else:
+        dealerId = request.session.get('dealer_id', -1)
+        if dealerId == -1: 
+            context = {'orderItems': [], 'total': 0, 'discount': {}}
+            request.session.flush()
+        else:
+            dealer = Dealer.objects.get(id=dealerId)
+            orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+            discount = Discount.objects.get(codeName=sessionDiscount)
+            total = getDealerTotal(orderItems, discount, dealer)
+            context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'dealer': dealer}
+    return render(request, 'registration/dealer-checkout.html', context)
 
 def thanksDealer(request):
     context = {}
@@ -304,17 +340,18 @@ def findDealer(request):
   except Exception as e:
     return HttpResponseServerError(str(e))
 
-def checkoutDealer(request):
-  try:
+def addDealer(request):
     postData = json.loads(request.body)
     pda = postData['attendee']
     pdd = postData['dealer']
+    pdp = postData['priceLevel']
+    jer = postData['jersey']
 
-    dealer = Dealer.objects.get(id=pdd['id'])
-    
     if 'dealer_id' not in request.session:
         return HttpResponseServerError("Session expired")
 
+    dealer = Dealer.objects.get(id=pdd['id'])
+    
     ## Update Dealer info
     if not dealer:
         return HttpResponseServerError("Dealer id not found")
@@ -361,36 +398,65 @@ def checkoutDealer(request):
     except Exception as e:
         return HttpResponseServerError(str(e))
 
-    if dealer.paid():
-        sendDealerUpdateEmail(dealer.id)
-        return JsonResponse({'success': True})
-
-    pbill = postData['billingData']
-
-    basePrice = dealer.tableSize.basePrice
-    partners = dealer.partners.split(', ')
-    partnerCount = 0
-    for part in partners:
-        if part.find("name") > -1 and part.split(':')[1] != "":
-            partnerCount = partnerCount + 1
-
-    tabletotal = 40*partnerCount + basePrice - dealer.discount
-
     #Todo: get price level from post
-    priceLevel = PriceLevel.objects.get(name='Attendee')
-    discount = Discount.objects.get(codeName="DealerDiscount")
-
-    total = tabletotal + priceLevel.basePrice - discount.amountOff   
+    priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
     orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
-    reference = getConfirmationCode()
+    for option in pdp['options']:
+        plOption = PriceLevelOption.objects.get(id=int(option['id']))
+        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
+        attendeeOption.save()
+
+    if jer:
+        jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+        jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
+        jersey.save()
+        jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
+        jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
+        jerseyOption.save()
+
+
+    orderItems = request.session.get('order_items', [])
+    orderItems.append(orderItem.id)
+    request.session['order_items'] = orderItems
+    request.session["discount"] = "DealerDiscount"
+
+    return JsonResponse({'success': True})
+
+
+def checkoutDealer(request):
+  try:
+    sessionItems = request.session.get('order_items', [])
+    pdisc = request.session.get('discount', "")
+    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    orderItem = orderItems[0]
+    if 'dealer_id' not in request.session:
+        return HttpResponseServerError("Session expired")
+
+    dealer = Dealer.objects.get(id=request.session.get('dealer_id'))
+    postData = json.loads(request.body)
+    porg = Decimal(postData["orgDonation"].strip() or 0.00)
+    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    event = Event.objects.first()
+
+    reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
-        reference = getConfirmationCode()
+        reference = getConfirmationToken()
+
+    if porg < 0: 
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+
+    discount = Discount.objects.get(codeName=pdisc)
+    subtotal = getDealerTotal(orderItems, discount, dealer)
+    total = subtotal + porg + pcharity
 
     if total == 0:
-        order = Order(total=0, reference=reference,
+        order = Order(total=0, reference=reference, discount=discount,
+                  orgDonation=porg, charityDonation=pcharity,
                   billingName=pda['firstName'] + " " + pda['lastName'],
                   billingAddress1=pda['address1'], billingAddress2=pda['address2'],
                   billingCity=pda['city'], billingState=pda['state'], billingCountry=pda['country'],
@@ -399,11 +465,12 @@ def checkoutDealer(request):
 
         orderItem.order = order
         orderItem.save()
-        sendDealerPaymentEmail(dealer.id, reference)
+        sendDealerPaymentEmail(dealer, order)
         return JsonResponse({'success': True})
       
-
-    order = Order(total=Decimal(total), reference=reference,
+    pbill = postData['billingData']
+    order = Order(total=Decimal(total), reference=reference, discount=discount,
+                  orgDonation=porg, charityDonation=pcharity,
                   billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
@@ -411,8 +478,7 @@ def checkoutDealer(request):
     order.save()
 
     orderItem.order = order
-    orderItem.save()
-    
+    orderItem.save()    
 
     response = chargePayment(order.id, pbill)
 
@@ -420,7 +486,7 @@ def checkoutDealer(request):
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
                 del request.session['dealer_id']
-                sendDealerPaymentEmail(dealer.id, reference)
+                sendDealerPaymentEmail(dealer, order)
                 return JsonResponse({'success': True})
             else:
                 if hasattr(response.transactionResponse, 'errors') == True:
@@ -444,7 +510,7 @@ def checkoutDealer(request):
   except Exception as e:
     return HttpResponseServerError(str(e))
 
-def addDealer(request):
+def addNewDealer(request):
   try:
     postData = json.loads(request.body)
     #create attendee from request post
@@ -664,8 +730,18 @@ def getAllDepartments(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getPriceLevels(request):
+    dealer = request.session.get('dealer_id', -1)
+    staff = request.session.get('staff_id', -1)
+    #hide any irrelevant price levels if something in session
+    att = None
+    if dealer > 0: 
+        att = Dealer.objects.get(id=dealer).attendee
+    if staff > 0:
+        att = Staff.objects.get(id=staff).attendee
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now)
+    if att and att.effectiveLevel():
+        levels = levels.exclude(basePrice__lt=att.effectiveLevel().basePrice)
     data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
@@ -707,9 +783,12 @@ def getConfirmationToken():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(6))
 
 def deleteOrderItem(id):
-    orderItem = OrderItem.objects.get(id=id)
+    orderItems = OrderItem.objects.filter(id=id)
+    if orderItems.count() == 0: 
+      return
+    orderItem = orderItems.first()
     #Delete any jerseys. Other options will cascade delete properly.
-    jerseyOptions = AttendeeOption.objects.filter(attendee=orderItem.attendee, optionExtraType='Jersey')
+    jerseyOptions = AttendeeOptions.objects.filter(orderItem__attendee=orderItem.attendee, option__optionExtraType='Jersey')
     for jerOpt in jerseyOptions:
       jersey = Jersey.objects.get(id=jerOpt.optionValue)
       jersey.delete()
@@ -720,7 +799,12 @@ def getTotal(orderItems, disc = ""):
     total = 0
     if not orderItems: return total
     for item in orderItems:
-        itemTotal = item.priceLevel.basePrice
+        itemSubTotal = item.priceLevel.basePrice
+        effLevel = item.attendee.effectiveLevel()
+        if effLevel:
+            itemTotal = itemSubTotal - effLevel.basePrice
+        else: 
+            itemTotal = itemSubTotal
 
         for option in item.attendeeoptions_set.all():
             if option.option.optionExtraType == 'int':

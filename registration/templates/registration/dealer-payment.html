@@ -44,12 +44,7 @@
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - Furthemore 2017</h1>
 
-		{% if dealer.paid %}
-			<p>Your application has already been paid for. You may update some of the information below. If you need to change a selection that is now disabled, please contact <a href='mailto:exhibitions@furthemore.org'></a>.</p>
-			<p>Thank you for joining us this year!</p>
-		{% else %}
-			<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
-		{% endif %}
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
 
 		<hr>
 			
@@ -273,175 +268,21 @@
                         <input type="text" id="far" value="{{dealer.farFrom}}" name="far" placeholder="Business or Person" class="form-control form-control-text" />
                     </div>
                 </div>
+                <hr/>
+		<h3>Choose a different attendee level</h3>
+		<div>If you would like to choose a higher badge level, and receive the extra perks that go along with it, please select one here:</div>
+
+		<div class="row" id="levelContainer"></div>
 
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
 			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
-			<a href="#payment" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge">Next >></a>
-		    </div>
-                </div>
-	</div>
-	<div role="tabpanel" class="tab-pane fade" id="payment">
-		<h1>Dealer Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
-
-		<hr/>
-		<h3>Invoice</h3>
-		<div class="form-group">
-                    <div class="col-sm-3 col-sm-offset-3">
-		    	{{dealer.tableSize.name}}
-                    </div>
-                    <div class="col-sm-2">
-		    	<span class="pull-right">${{dealer.tableSize.basePrice}}</span>
-                    </div>
-		    <div class="col-sm-4">&nbsp;</div>
-                </div>
-		<div class="form-group">
-                    <div class="col-sm-3 col-sm-offset-3">
-		    	Partners x<span id="partnerCount"></span>
-                    </div>
-                    <div class="col-sm-2">
-		    	<span id="partnerTotal" class="pull-right"></span>
-                    </div>
-		    <div class="col-sm-4">&nbsp;</div>
-                </div>
-		{% if dealer.discount > 0 %}
-		<div class="form-group">
-                    <div class="col-sm-3 col-sm-offset-3">
-		    	{{dealer.discountReason}}
-                    </div>
-                    <div class="col-sm-2">
-		    	<span class="pull-right">- ${{dealer.discount}}</span>
-                    </div>
-		    <div class="col-sm-4">&nbsp;</div>
-                </div>
-		{% endif %}
-		<div class="form-group">
-                    <div class="col-sm-3 col-sm-offset-3">
-		    	<b>Total</b>
-                    </div>
-                    <div class="col-sm-2">
-		    	<b><span id="total" class="pull-right"></span></b>
-                    </div>
-		    <div class="col-sm-4">&nbsp;</div>
-                </div>
-
-	{% if dealer.paid %}
-		<div class="form-group">
-                    <div class="col-sm-3 col-sm-offset-3">
-		    	<b>Paid</b>
-                    </div>
-                    <div class="col-sm-2"><b><span class="pull-right">Thank you!</span></b></div>
-		    <div class="col-sm-4">&nbsp;</div>
-                </div>
-
-	{% else %}		
-                <hr/>
-		<div id="billingData">
-		<div class="form-group" id="billing">
-                    <label for="billing" class="col-sm-3 control-label">Use my application address as my billing address</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="billing" name="billing" class="form-control form-control-checkbox" checked="true" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
-                    <div class="col-sm-4">
-                        <input type="text" id="billingfirstname" value="{{dealer.attendee.firstName}}" placeholder="Billing First Name" class="form-control" required data-error="Billing name is required. " disabled />
-                    </div>
-                    <div class="col-sm-5">
-                        <input type="text" id="billinglastname" value="{{dealer.attendee.lastName}}" placeholder="Billing Last Name" class="form-control" required data-error="Billing name is required. " disabled />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Billing Address</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="billingadd1" id="billingadd1" value="{{dealer.attendee.address1}}" placeholder="Billing Address Line 1" class="form-control" required data-error="Address is required." disabled />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="billingadd2" id="billingadd2" value="{{dealer.attendee.address2}}" placeholder=" Billing Address Line 2" class="form-control" disabled />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State</label>
-		    <div class="col-sm-4">
-			<input type="text" name="billingcity" id="billingcity" value="{{dealer.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. " disabled />
-		    </div>
-                    <div class="col-sm-5">
-			<select class="form-control bfh-states" id="billingstate" data-country="US" data-state="VA" name="billingstate" disabled></select>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
-		    <div class="col-sm-3">
-			<input type="text" name="billingzip" id="billingzip" value="{{dealer.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required." required disabled />
-		    </div>
-                    <div class="col-sm-6">
-			<select id="billingcountry" class="form-control bfh-countries" data-country="US" name="billingcountry" disabled></select>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
-		<hr/>
-                <div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="ccNumber" id="ccNumber" placeholder="Credit Card Number" class="form-control" maxlength="16" required/>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Expiration</label>
-                    <div class="col-sm-2">
-			<select id="ccMonth" class="form-control" required>
-				<option value="01">01</option>
-				<option value="02">02</option>
-				<option value="03">03</option>
-				<option value="04">04</option>
-				<option value="05">05</option>
-				<option value="06">06</option>
-				<option value="07">07</option>
-				<option value="08">08</option>
-				<option value="09">09</option>
-				<option value="10">10</option>
-				<option value="11">11</option>
-				<option value="12">12</option>
-			</select>
-                    </div>
-                    <div class="col-sm-2">
-			<select id="ccYear" class="form-control" required>
-				<option value="2017">2017</option>
-				<option value="2018">2018</option>
-				<option value="2019">2019</option>
-				<option value="2020">2020</option>
-				<option value="2021">2021</option>
-				<option value="2021">2022</option>
-			</select>
-                    </div>
-                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
-                    <div class="col-sm-3">
-                        <input type="text" name="ccCVV" id="ccCVV" placeholder="CVV" class="form-control" maxlength="4" required/>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
-		</div>
-
-	{% endif %}
-
-		<div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
                         <button id="checkout" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit Payment</button>
 		    </div>
                 </div>
 	</div>
 	{% csrf_token %}
+
 	</div>
 	</form>
 
@@ -455,11 +296,154 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/html" id="levelTemplate">
+	<div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
+	<div class="panel price">
+		<div class="panel-heading  text-center">
+		<h3 data-content="name"></h3>
+		</div>
+		<div class="panel-body text-center">
+			<p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+		</div>
+		<div class="panel-footer">
+			<a class="btn btn-lg btn-block btn-danger selectLevel" href="#" data-id="levelId">Select</a>
+			<a class="btn btn-default btn-block changeLevel" href="#">Change Level?</a>
+		</div>
+	</div>
+	</div>
+</script>
 
+<script type="text/html" id="optionBoolTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
+		</div>
+	</div>
+<div>
+<script type="text/html" id="optionBoolReqTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
+		</div>
+	</div>
+<div>
+
+</script>
+<script type="text/html" id="optionIntTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
+		</div>
+	</div>
+
+</script>
+<script type="text/html" id="optionIntReqTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
+		</div>
+	</div>
+
+</script>
+<script type="text/html" id="optionStringTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+		</div>
+	</div>
+</script>
+<script type="text/html" id="optionStringReqTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+		</div>
+	</div>
+</script>
+<script type="text/html" id="optionListTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<select data-id="id" class="form-control form-control-select levelOptions" 
+			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+		</div>
+	</div>
+</script>
+<script type="text/html" id="optionJerseyTemplate">
+	<br/>
+        <h4>Year 5 Jersey</h4>
+        <hr/>
+        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore!
+                <br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures and more information. Fill in the desired name and number to reserve a jersey.
+   	<hr/>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Jersey Name</label>
+		<div class="col-sm-9">
+			<input type="text" id="jerseyName" max-length=15 class="form-control form-control-text" />
+			<input type="hidden" id="optionId" data-value="optionId" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Jersey Number</label>
+		<div class="col-sm-9">
+			<input type="text" id="jerseyNumber" maxlength=2 class="form-control form-control-text" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="col-sm-3 control-label">Jersey Size</label>
+		<div class="col-sm-9">
+			<select id="jerseySize" class="form-control form-control-select" 
+			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+		</div>
+	</div>
+</script>
  <script type="text/javascript">
 	var dealer = {{ jsonDealer|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
 	var table = {{ jsonTable|safe }} 
+	var currentLevel = {{ jsonLevel|safe }}
+	var levelTemplateData = [];
+        var shirtSizes = [];
+	var takenJerseys = [];
+
+	$( "body" ).ready(function() {
+		$.getJSON("/apis/registration/pricelevels", function(data) {
+			levelData = data;
+			var prevLevel = 45;
+			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
+				prevLevel = parseFloat(currentLevel.basePrice);
+			}
+			$.each( data, function( key, val ) {
+				levelTemplateData.push({
+					name: val.name,
+					price: "$" + (val.base_price - prevLevel),
+					levelId: "level_" + val.id,
+				});
+			});
+			$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+			$(".changeLevel").hide();
+			if (shirtSizes.length > 0){
+				$(".selectLevel")[0].click();
+			}
+
+		});
+		$.getJSON("/apis/registration/shirts", function(data) {
+			shirtSizes = data;
+			if (levelTemplateData.length > 0){
+				$(".selectLevel")[0].click();
+			}
+		});
+		$.getJSON("/apis/registration/takenJerseys", function(data) {
+			takenJerseys = data;
+		});
+	});
 
         var partners = dealer.partners.split(', ');
 	var partnerCount = 0;
@@ -486,14 +470,6 @@
 	$("#partner2").val(partner2);			
 	$("#partnerCount").text(partnerCount);
 	$("#partnerTotal").text("$" + partnerCount*40 + ".00");
-	var total = parseFloat(table.basePrice) + (partnerCount*40) - parseFloat(dealer.discount);
-	$("#total").text("$" + total + ".00");
-
-	if (total <= 0){
-	    $("#billingData").empty();
-            $("#checkout").text("Complete");
-	}
-
 	$("#contact").attr('checked', attendee.emailsOk);
 	$("#breakfast").attr('checked', dealer.breakfast);
 	$("#reception").attr('checked', dealer.reception);
@@ -502,11 +478,10 @@
 	$("#wall").attr('checked', dealer.wallSpace);
 	$("#switch").attr('checked', dealer.willSwitch);
 
-	{% if dealer.paid %}
+	{% if dealer.paidTotal > 0 %}
 		$("#badgeName").attr("disabled", "disabled");
 		$("#businessName").attr("disabled", "disabled");
 		$("#tempLicense").attr("disabled", "disabled");
-		$("#").attr("disabled", "disabled");
 		$("#description").attr("disabled", "disabled");
 		$("#breakfast").attr("disabled", "disabled");
 		$("#reception").attr("disabled", "disabled");
@@ -577,6 +552,133 @@
 	});
 
 
+	$("#levelContainer").on('click', 'a.selectLevel', function(){
+		clearLevels();
+		var levelId = $(this).attr('id').split('_')[1];
+		$.each( levelTemplateData, function( key, val ) {
+			var id = val.levelId.split('_')[1];
+			if (id == levelId){
+				$("#regLevel").val(val.name);
+				$("#levelContainer").loadTemplate($("#levelTemplate"), val);
+				$(".changeLevel").show();
+				$(".selectLevel").text("Selected!");
+				generateOptions(id);
+				return false;
+			}
+		});
+	});
+	$("#levelContainer").on('click', 'a.changeLevel', function() {
+		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
+		$("#regLevel").val("");
+		$(".changeLevel").hide();
+	});
+	var clearLevels = function(){
+		$.each( levelTemplateData, function( key, val ) {
+			$("#"+val.levelId).text("Select " + val.name);
+		});
+		$("form").validator('update');
+	};
+	var generateOptions = function(levelId){
+		var data = [];
+		$.each(levelData, function(key, thing){
+			if (thing.id == levelId){
+				data = thing.options;
+				return false;
+			}
+		});
+		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+		$("#levelContainer").append(container);
+		$.each( data, function(key, val) {
+			if (val.value == "0.00"){
+				var price = " (Free) ";
+			} else {
+				var price = " (+$" + val.value + ") "
+			}
+			var required = "";
+			if (val.required) {required = "required";}
+			switch (val.type){
+				case "bool":
+					var template = $("#optionBoolTemplate");
+					if (val.required) {template = $("#optionBoolReqTemplate");}
+					$("#optionsContainer").loadTemplate(template, {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id
+					}, {append: true});
+					break;
+				case "int":
+					var template = $("#optionIntTemplate");
+					if (val.required) {template = $("#optionIntReqTemplate");}
+					$("#optionsContainer").loadTemplate(template, {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id
+					}, {append: true});
+					break;
+				case "string":
+					var template = $("#optionStringTemplate");
+					if (val.required) {template = $("#optionStringReqTemplate");}
+					var placeholder = val.name;
+					$("#optionsContainer").loadTemplate(template, {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id,
+						'placeholder': placeholder,
+					}, {append: true});
+					break;
+				case "Jersey":
+					var options = [];
+					$.each(shirtSizes, function (key, item) {
+						options.push({"content": item.name, "value": item.id})
+					});
+					$("#optionsContainer").loadTemplate($("#optionJerseyTemplate"), {
+						'name': val.name + " " + price,
+						'optionId': val.id,
+						'options': options
+					}, {append: true});
+					break;
+				case "StaffJersey":
+					break;
+				default:
+					if (val.list == []){break;}
+					var options = [];
+					if (!val.required) {options.push({"content": "Select One...", "value": ""});}
+					$.each(val.list, function (key, item) {
+						options.push({"content": item.name, "value": item.id})
+					});
+					$("#optionsContainer").loadTemplate($("#optionListTemplate"), {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id,
+						'options': options
+					}, {append: true});
+					break;
+			}
+		});
+		
+		$("form").validator('update');
+	};
+	var getJersey = function() {
+		var jersey = {};
+		if ($("#jerseyName").val() == "") {return jersey;}
+		jersey = {
+			'name': $("#jerseyName").val(),
+			'number': $("#jerseyNumber").val(),
+			'size': $("#jerseySize").val(),
+			'optionId': $("#optionId").val()
+		};
+		return jersey;
+	};
+	var getOptions = function() {
+		var options = $(".levelOptions");
+                var data = [];
+		$.each(options, function(key, option) {
+			if ($(option).is(':checkbox')){
+				data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
+			} else if($(option).val() == "") {
+				
+			} else {
+				data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+			}
+		});
+		return data;
+	};
 
 
 	$("#checkout").click(doRegister);
@@ -587,6 +689,11 @@
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
+		
+		if ($.inArray($("#jerseyNumber").val(), takenJerseys) > -1) {
+                        alert("That jersey number has already been claimed. Please choose another.");
+                        return;
+                }
 
 		$("#checkout").attr("disabled", "disabled");
 
@@ -609,24 +716,16 @@
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
 				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
 				'buttonOffer': $('#buttonOffer').val()
-			}
+			},
+			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
+			'jersey': getJersey()
 		};
 		
-		{% if not dealer.paid %}
-			data.billingData = {
-				'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
-				'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
-				'cc_firstname': $("#billingfirstname").val(), 'cc_lastname': $("#billinglastname").val(),
-                                'address1': $("#billingadd1").val(), 'address2': $("#billingadd2").val(), 'city': $("#billingcity").val(),
-                                'state': $("#billingstate").val(), 'country': $("#billingcountry").val(), 'postal': $("#billingzip").val(),
-			}
-
-		{% endif %}
 
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/dealer/checkout/",
+		    "url": "/apis/registration/dealer/add/",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -643,11 +742,7 @@
                     "success": function (result, status) {
                         if (result.success)
                         {
-			    {% if dealer.paid %}
-                                window.location = "/apis/registration/dealer/update";
-			    {% else %}
-                                window.location = "/apis/registration/dealer/done";
-			    {% endif %}
+                            window.location = "/apis/registration/dealer/invoice";
                         } else {
 			    $("#checkout").removeAttr("disabled");
                             alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");

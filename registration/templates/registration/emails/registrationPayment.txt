@@ -1,0 +1,9 @@
+Thank you for your payment.
+
+Your payment confirmation is: {{reference}}
+If you have any questions about your order, please contact us at registration@furthemore.org.
+
+Thank you! 
+
+'Kiric 
+Head of Registration

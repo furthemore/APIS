@@ -207,19 +207,19 @@
 		<div class="form-group">
                     <label for="medical" class="col-sm-3 control-label">Medical Needs</label>
                     <div class="col-sm-9">
-                        <textarea id="medical" name="medical" class="form-control form-control-textarea" >{{staff.specialMedical}}</textarea>
+                        <input type="text" id="medical" name="medical" value="{{staff.specialMedical}}" class="form-control form-control-text" required />
                     </div>
 		</div>
 		<div class="form-group">
                     <label for="food" class="col-sm-3 control-label">Dietary Needs</label>
                     <div class="col-sm-9">
-                        <textarea id="food" name="food" class="form-control form-control-textarea" >{{staff.specialFood}}</textarea>
+                        <input type="text" id="food" name="food" value="{{staff.specialFood}}" class="form-control form-control-text" required />
                     </div>
 		</div>
 		<div class="form-group">
                     <label for="skills" class="col-sm-3 control-label">Additional Skills</label>
                     <div class="col-sm-9">
-                        <textarea id="skills" name="skills" class="form-control form-control-textarea" >{{staff.specialSkills}}</textarea>
+                        <input type="text" id="skills" name="skills" value="{{staff.specialSkills}}" class="form-control form-control-text" required />
                     </div>
 		</div>
 

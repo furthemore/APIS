@@ -13,11 +13,13 @@ urlpatterns = [
     url(r'^staff/(?P<guid>\w+)/?$', views.staff, name='staff'),
 
     url(r'^dealer/?$', views.newDealer, name='newDealer'),
-    url(r'^dealer/add/?$', views.addDealer, name='addDealer'),
+    url(r'^dealer/addNew/?$', views.addNewDealer, name='addNewDealer'),
+    url(r'^dealer/done/?$', views.doneDealer, name='doneDealer'),
     url(r'^dealer/thanks/?$', views.thanksDealer, name='thanksDealer'),
     url(r'^dealer/update/?$', views.updateDealer, name='updateDealer'),
-    url(r'^dealer/done/?$', views.doneDealer, name='doneDealer'),
     url(r'^dealer/lookup/?$', views.findDealer, name='findDealer'),
+    url(r'^dealer/add/?$', views.addDealer, name='addDealer'),
+    url(r'^dealer/info/?$', views.infoDealer, name='infoDealer'),
     url(r'^dealer/invoice/?$', views.invoiceDealer, name='invoiceDealer'),
     url(r'^dealer/checkout/?$', views.checkoutDealer, name='checkoutDealer'),
     url(r'^dealer/(?P<guid>\w+)/?$', views.dealers, name='dealers'),
@@ -39,5 +41,7 @@ urlpatterns = [
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),
     url(r'^takenJerseys/?$', views.getJerseyNumbers, name='takenJerseys'),
     url(r'^takenStaffJerseys/?$', views.getJerseyNumbers, name='takenStaffJerseys'),
+
+    url(r'^flush/?$', views.flush, name='flush'),
 
 ]
