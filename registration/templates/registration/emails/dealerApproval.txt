@@ -1,7 +1,7 @@
 Your dealer application for Furthemore 2017 has been approved! 
 
 Please go to the url below and enter the email address you used to register.
-http://www.furthemore.org/apis/registration/dealer/{{registrationToken}} 
+https://www.furthemore.org/apis/registration/dealer/{{dealer.registrationToken}} 
 
 **Due to a bug in the dealer application form, we did not record BADGE NAMES 
 or save your BUTTONS FOR A CAUSE offer. Please enter the required Badge Name 
