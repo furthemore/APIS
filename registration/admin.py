@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
+from nested_inline.admin import NestedTabularInline, NestedModelAdmin
 from .models import *
 from .emails import *
 
@@ -123,7 +124,19 @@ def clear_abandons(modeladmin, request, queryset):
            att.delete()
 clear_abandons.short_description = "***Delete Abandoned Orders***"
 
-class AttendeeAdmin(admin.ModelAdmin):
+class AttendeeOptionInline(NestedTabularInline):
+    model=AttendeeOptions
+    extra=1
+
+class OrderItemInline(NestedTabularInline):
+    model=OrderItem
+    extra=0
+    inlines = [AttendeeOptionInline]
+
+
+
+class AttendeeAdmin(NestedModelAdmin):
+    inlines = [OrderItemInline]
     save_on_top = True
     actions = [make_staff, clear_abandons]
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')

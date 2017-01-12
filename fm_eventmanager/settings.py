@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'mathfilters',
+    'nested_inline',
     'registration',
     'import_export',
 ]
