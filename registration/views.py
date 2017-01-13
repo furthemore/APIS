@@ -437,29 +437,21 @@ def checkoutDealer(request):
 
     dealer = Dealer.objects.get(id=request.session.get('dealer_id'))
     postData = json.loads(request.body)
-    porg = Decimal(postData["orgDonation"].strip() or 0.00)
-    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
     event = Event.objects.first()
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
         reference = getConfirmationToken()
 
-    if porg < 0: 
-        porg = 0
-    if pcharity < 0:
-        pcharity = 0
-
     discount = Discount.objects.get(codeName=pdisc)
     subtotal = getDealerTotal(orderItems, discount, dealer)
-    total = subtotal + porg + pcharity
 
-    if total == 0:
+    if subtotal == 0:
         att = dealer.attendee
         order = Order(total=0, reference=reference, discount=discount,
-                  orgDonation=porg, charityDonation=pcharity,
+                  orgDonation=0, charityDonation=0,
                   billingName=att.firstName + " " + att.lastName,
-                  billingAddress1=att.address1, billingAddress2=att.address,
+                  billingAddress1=att.address1, billingAddress2=att.address2,
                   billingCity=att.city, billingState=att.state, billingCountry=att.country,
                   billingPostal=att.postalCode, status="Complete")
         order.save()
@@ -469,6 +461,15 @@ def checkoutDealer(request):
         sendDealerPaymentEmail(dealer, order)
         return JsonResponse({'success': True})
       
+    porg = Decimal(postData["orgDonation"].strip() or 0.00)
+    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    if porg < 0: 
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+
+    total = subtotal + porg + pcharity
+
     pbill = postData['billingData']
     order = Order(total=Decimal(total), reference=reference, discount=discount,
                   orgDonation=porg, charityDonation=pcharity,
