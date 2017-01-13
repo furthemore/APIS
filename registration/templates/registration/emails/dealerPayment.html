@@ -22,7 +22,9 @@ player 2 on April 28-30th. If you have any questions or concerns, please email
 {% if dealer.discount > 0 %}
 <tr><td>Other Discount {{dealer.discountReason}}</td><td>-${{dealer.discount}}</td></tr>
 {% endif %}
-
+{% if dealer.attendee.effectiveLevel %}
+<tr><td>Previous Level {{dealer.attendee.effectiveLevel}}</td><td>-${{dealer.attendee.effectiveLevel.basePrice}}</td></tr>
+{% endif %}
 {% for option in options %}
   {% if option.option.optionExtraType == 'int'%}
 <tr><td>{{option.option.optionName}} x{{option.optionValue}}</td><td>${{option.option.optionPrice|mul:option.optionValue}}</td></tr>
