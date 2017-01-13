@@ -20,15 +20,36 @@ def send_approval_email(modeladmin, request, queryset):
     queryset.update(emailed=True)
 send_approval_email.short_description = "Send approval email and payment instructions"
 
+def send_payment_email(modeladmin, request, queryset):
+    for dealer in queryset:
+        oi = OrderItem.objects.filter(attendee=dealer.attendee).first()
+        if oi and oi.order: 
+            sendDealerPaymentEmail(dealer,oi.order)
+send_payment_email.short_description = "Resend payment confirmation email"
+
 class DealerResource(resources.ModelResource):
     class Meta:
         model = Dealer
+        fields = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+                  'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
+                  'businessName', 'approved', 'website', 'description', 'license', 'needPower', 'needWifi',
+                  'wallSpace', 'nearTo', 'farFrom', 'tableSize__name', 'reception', 'artShow',
+                  'charityRaffle', 'breakfast', 'willSwitch', 'partners', 'buttonOffer', 'discount',
+                  'discountReason', 'emailed')
+        export_order = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+                  'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
+                  'businessName', 'approved', 'website', 'description', 'license', 'needPower', 'needWifi',
+                  'wallSpace', 'nearTo', 'farFrom', 'tableSize__name', 'reception', 'artShow',
+                  'charityRaffle', 'breakfast', 'willSwitch', 'partners', 'buttonOffer', 'discount',
+                  'discountReason', 'emailed')
 
 class DealerAdmin(ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal')
     save_on_top = True
     resource_class = DealerResource
-    actions = [send_approval_email]
+    actions = [send_approval_email, send_payment_email]
     fieldsets = (
         (
 	    None, 
