@@ -455,12 +455,13 @@ def checkoutDealer(request):
     total = subtotal + porg + pcharity
 
     if total == 0:
+        att = dealer.attendee
         order = Order(total=0, reference=reference, discount=discount,
                   orgDonation=porg, charityDonation=pcharity,
-                  billingName=pda['firstName'] + " " + pda['lastName'],
-                  billingAddress1=pda['address1'], billingAddress2=pda['address2'],
-                  billingCity=pda['city'], billingState=pda['state'], billingCountry=pda['country'],
-                  billingPostal=pda['postal'], status="Complete")
+                  billingName=att.firstName + " " + att.lastName,
+                  billingAddress1=att.address1, billingAddress2=att.address,
+                  billingCity=att.city, billingState=att.state, billingCountry=att.country,
+                  billingPostal=att.postalCode, status="Complete")
         order.save()
 
         orderItem.order = order

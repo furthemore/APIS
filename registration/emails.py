@@ -65,12 +65,11 @@ def sendDealerUpdateEmail(dealerId):
 
 def sendApprovalEmail(dealerQueryset):
     for dealer in dealerQueryset:
-        if not dealer.emailed:
-            data = {'registrationToken': dealer.registrationToken}
-            msgTxt = render_to_string('registration/emails/dealerApproval.txt', data)
-            msgHtml = render_to_string('registration/emails/dealerApproval.html', data)
-            sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
-                      "Fur The More 2017 Dealer Application", msgTxt, msgHtml)
+        data = {'dealer': dealer}
+        msgTxt = render_to_string('registration/emails/dealerApproval.txt', data)
+        msgHtml = render_to_string('registration/emails/dealerApproval.html', data)
+        sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
+                  "Fur The More 2017 Dealer Application", msgTxt, msgHtml)
 
 
 def sendEmail(fromAddress, toAddressList, subject, message, htmlMessage):
