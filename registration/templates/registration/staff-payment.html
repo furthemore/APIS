@@ -33,7 +33,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Year 5 Jersey</h4>
+        <h4 class="modal-title" id="myModalLabel">Year 5 Staff Jersey</h4>
       </div>
       <div class="modal-body">
 	<img width="400" src="/static/img/staff_jersey.jpg"/>
@@ -209,18 +209,21 @@
                     <div class="col-sm-9">
                         <input type="text" id="medical" name="medical" value="{{staff.specialMedical}}" class="form-control form-control-text" required />
                     </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
                     <label for="food" class="col-sm-3 control-label">Dietary Needs</label>
                     <div class="col-sm-9">
                         <input type="text" id="food" name="food" value="{{staff.specialFood}}" class="form-control form-control-text" required />
                     </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
                     <label for="skills" class="col-sm-3 control-label">Additional Skills</label>
                     <div class="col-sm-9">
                         <input type="text" id="skills" name="skills" value="{{staff.specialSkills}}" class="form-control form-control-text" required />
                     </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 
                 <div class="form-group">
@@ -370,10 +373,10 @@
 </script>
 <script type="text/html" id="optionStaffJerseyTemplate">
 	<br/>
-	<h4>Year 5 Jersey</h4>
+	<h4>Year 5 Staff Jersey</h4>
 	<hr/>
         <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore! 
-		<br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures and more information.</div>
+		<br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyStaffModal">here</button> for pictures and more information.</div>
  	<hr/>
 	<div class="form-group">
 		<label class="col-sm-3 control-label">Staff Jersey Name</label>
@@ -402,16 +405,22 @@
 	var levelTemplateData = [];
 	var staff = {{ jsonStaff|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
+	var currentLevel = {{ jsonLevel|safe }}
 	var takenJerseys = [];
 	var takenStaffJerseys = [];
+	var shirtSizes = [];
 
 	$( "body" ).ready(function() {
 		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
+			var prevLevel = 45;
+			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
+				prevLevel = parseFloat(currentLevel.basePrice);
+			}
 			$.each( data, function( key, val ) {
 				levelTemplateData.push({
 					name: val.name,
-					price: "$" + (val.base_price - 45),
+					price: "$" + (val.base_price - prevLevel),
 					levelId: "level_" + val.id,
 				});
 			});

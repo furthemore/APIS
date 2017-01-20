@@ -63,8 +63,13 @@ def infoStaff(request):
     if staff:
 	staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
+        if staff.attendee.effectiveLevel():
+            lvl_dict = model_to_dict(staff.attendee.effectiveLevel())
+        else:
+            lvl_dict = {}
         context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler), 
-                   'jsonAttendee': json.dumps(attendee_dict, default=handler)}
+                   'jsonAttendee': json.dumps(attendee_dict, default=handler),
+                   'jsonLevel': json.dumps(lvl_dict, default=handler)}
     return render(request, 'registration/staff-payment.html', context)
 
 def invoiceStaff(request):
