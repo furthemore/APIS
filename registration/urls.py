@@ -32,6 +32,12 @@ urlpatterns = [
     url(r'^cart/checkout/?$', views.checkout, name='checkout'),
     url(r'^cart/done/?$', views.cartDone, name='done'),
 
+    url(r'^jersey/lookup/?$', views.lookupJersey, name='lookupjersey'),    
+    url(r'^jersey/add/?$', views.addJersey, name='addjersey'),    
+    url(r'^jersey/checkout/?$', views.checkoutJersey, name='checkoutjersey'),    
+    url(r'^jersey/done/?$', views.doneJersey, name='donejersey'),    
+    url(r'^jersey/(?P<guid>\w+)/?$', views.getJersey, name='jersey'),    
+
     url(r'^events/?$', views.getEvents, name='events'),
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),

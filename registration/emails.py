@@ -17,6 +17,15 @@ def sendRegistrationEmail(orderId, email):
         sendEmail("registration@furthemore.org", [oi.attendee.email], 
                  "Furthemore 2017 Registration Confirmation", msgTxt, msgHtml)
 
+def sendJerseyEmail(orderId, email):
+    order = Order.objects.get(id=orderId)
+    data = {'reference': order.reference}
+    msgTxt = render_to_string('registration/emails/jersey.txt', data)
+    msgHtml = render_to_string('registration/emails/jersey.html', data)
+    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Jersey Payment", 
+              msgTxt, msgHtml)
+        
+
 def sendStaffRegistrationEmail(orderId, email):
     order = Order.objects.get(id=orderId)
     data = {'reference': order.reference}

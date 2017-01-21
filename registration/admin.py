@@ -3,6 +3,7 @@ from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedTabularInline, NestedModelAdmin
+
 from .models import *
 from .emails import *
 
@@ -50,11 +51,13 @@ class DealerAdmin(ImportExportModelAdmin):
     save_on_top = True
     resource_class = DealerResource
     actions = [send_approval_email, send_payment_email]
+    readonly_fields = ['get_email']
     fieldsets = (
         (
 	    None, 
             {'fields':(
                 ('attendee', 'approved'), 
+                'get_email',
                 'registrationToken', 'tableNumber',
                 ('discount','discountReason'), 'notes'
             )}
@@ -62,7 +65,7 @@ class DealerAdmin(ImportExportModelAdmin):
         (
             'Business Info', 
             {'fields': (
-                'businessName', 'license', 'website', 'description', 'partners'
+                'businessName', 'license', 'website', 'description'
             )}
         ),
         (
@@ -77,10 +80,15 @@ class DealerAdmin(ImportExportModelAdmin):
         (
             'Contributions', 
             {'fields':(
-                'buttonOffer', 'charityRaffle'
+                'artShow', 'buttonOffer', 'charityRaffle'
             )}
         )
     )
+    
+    def get_email(self, obj):
+        return obj.attendee.email
+    get_email.short_description = "Attendee Email"
+
 
 admin.site.register(Dealer, DealerAdmin)
 
