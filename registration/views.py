@@ -24,7 +24,90 @@ def flush(request):
     request.session.flush()
     return JsonResponse({'success': True})
 
+###################################
+# Jersey Only
 
+def getJersey(request, guid):
+    context = {'token': guid}
+    return render(request, 'registration/jersey-locate.html', context)
+
+def doneJersey(request):
+    context = {}
+    return render(request, 'registration/jersey-done.html', context)
+
+def lookupJersey(request):
+  try:
+    postData = json.loads(request.body)
+    email = postData['email']
+    token = postData['token']
+
+    attendee = Attendee.objects.get(email=email, registrationToken=token)
+    if not attendee:     
+        return JsonResponse({'success': False})
+
+    request.session['attendee_id'] = attendee.id
+    return JsonResponse({'success': True, 'message':'ATTENDEE'})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
+def addJersey(request):
+    context = {'attendee': None}
+    try:
+      attId = request.session['attendee_id']
+    except Exception as e:
+      return render(request, 'registration/jersey-add.html', context)
+
+    attendee = Attendee.objects.get(id=attId)
+    if attendee:
+      level = attendee.effectiveLevel()
+      option = level.priceleveloption_set.get(optionExtraType='Jersey')
+      context = {'attendee': attendee, 'optionid': option.id}
+    return render(request, 'registration/jersey-add.html', context)
+
+def checkoutJersey(request):
+    postData = json.loads(request.body)
+    pbill = postData["billingData"]
+    jer = postData['jersey']
+    attId = request.session['attendee_id']
+    attendee = Attendee.objects.get(id=attId)
+
+    priceLevel = attendee.effectiveLevel()
+
+    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem.save()
+
+    jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+    jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
+    jersey.save()
+    jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
+    jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
+    jerseyOption.save()
+
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationToken()
+
+    order = Order(total=Decimal(80), reference=reference, discount=None,
+                  orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
+    order.save()
+
+    orderItem.order = order
+    orderItem.save()
+    
+    result = chargePayment(order.id, pbill)
+    try:
+      if result:
+        sendJerseyEmail(order.id, pbill['email'])
+        request.session.flush()
+    except Exception as e:
+        #none of this should return a failure to the user
+        print e
+
+    return JsonResponse({'success': True})
+            
 
 ###################################
 # Staff
@@ -551,6 +634,7 @@ def addNewDealer(request):
 
 ###################################
 # Attendees
+
 
 def getCart(request):
     sessionItems = request.session.get('order_items', [])
