@@ -17,8 +17,13 @@ from .payments import chargePayment
 # Create your views here.
 
 def index(request):
+    event = Event.objects.first()
+    tz = timezone.get_current_timezone()
+    today = tz.localize(datetime.now())
     context = {}
-    return render(request, 'registration/registration-form.html', context)
+    if event.attendeeRegStart <= today <= event.attendeeRegEnd:
+        return render(request, 'registration/registration-form.html', context)
+    return render(request, 'registration/closed.html', context)
 
 def flush(request):
     request.session.flush()
@@ -206,7 +211,7 @@ def addStaff(request):
     if 'staff_id' not in request.session:
         return JsonResponse({'success': False, 'message': 'Staff record not found'})
 
-    ## Update Dealer info
+    ## Update Staff info
     if not staff:
         return JsonResponse({'success': False, 'message': 'Staff record not found'})
 
@@ -254,7 +259,7 @@ def addStaff(request):
         sjerseyOption = AttendeeOptions(option=sjOption, orderItem=orderItem, optionValue=sjersey.id)
         sjerseyOption.save()
 
-    #add attendee to session order
+    #add to session order
     orderItems = request.session.get('order_items', [])
     orderItems.append(orderItem.id)
     request.session['order_items'] = orderItems
@@ -287,50 +292,65 @@ def checkoutStaff(request):
                   orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
                   billingAddress1=att.address1, billingAddress2=att.address2,
                   billingCity=att.city, billingState=att.state, billingCountry=att.country,
-                  billingPostal=att.postalCode, billingEmail=att.email)
+                  billingPostal=att.postalCode, billingEmail=att.email, status="Complete")
       order.save()
       email = att.email
 
-    else:
-      pbill = postData["billingData"]
-      porg = Decimal(postData["orgDonation"].strip() or 0.00)
-      pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
-      if porg < 0: 
-        porg = 0
-      if pcharity < 0:
-        pcharity = 0 
+      for oitem in orderItems:
+          oitem.order = order
+          oitem.save()
 
-      total = subtotal + porg + pcharity
+      sendStaffRegistrationEmail(order.id, email)
+      discount.used = discount.used + 1
+      discount.save()
+      request.session.flush()
+      return JsonResponse({'success': True})
 
-      order = Order(total=Decimal(total), reference=reference, discount=discount,
+
+
+    pbill = postData["billingData"]
+    porg = Decimal(postData["orgDonation"].strip() or 0.00)
+    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    if porg < 0: 
+      porg = 0
+    if pcharity < 0:
+      pcharity = 0 
+
+    total = subtotal + porg + pcharity
+
+    order = Order(total=Decimal(total), reference=reference, discount=discount,
                   orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
-      order.save()
-      email = order.billingEmail
+    order.save()
+    email = order.billingEmail
 
-    for oitem in orderItems:
-        oitem.order = order
-        oitem.save()
-    
-    if total > 0:
-        result = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill)
+
+    if response is not None:
+        if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                sendStaffRegistrationEmail(order.id, email)
+                for oitem in orderItems:
+                    oitem.order = order
+                    oitem.save()
+                request.session.flush()
+                discount.used = discount.used + 1
+                discount.save()
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+        else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
     else:
-        order.status = "Paid"
-        result = True
-    try:
-      if result:
-        if discount:
-	  discount.used = discount.used + 1
-          discount.save()
-        sendStaffRegistrationEmail(order.id, email)
-        request.session.flush()
-    except Exception as e:
-        #none of this should return a failure to the user
-        print e
-        #todo: send an error email?
+        return JsonResponse({'success': False, 'message': "Unknown Error"})
 
+    request.session.flush()
     return JsonResponse({'success': True})
 
 
@@ -547,6 +567,7 @@ def checkoutDealer(request):
         orderItem.order = order
         orderItem.save()
         sendDealerPaymentEmail(dealer, order)
+        request.session.flush()
         return JsonResponse({'success': True})
       
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -575,7 +596,7 @@ def checkoutDealer(request):
     if response is not None:
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
-                del request.session['dealer_id']
+                request.session.flush()
                 sendDealerPaymentEmail(dealer, order)
                 return JsonResponse({'success': True})
             else:
@@ -749,10 +770,6 @@ def checkout(request):
    
     #todo: event = Event.objects.get(id=int(postData["eventId"]))
 
-    if porg < 0: 
-        porg = 0
-    if pcharity < 0:
-        pcharity = 0
     discount = Discount.objects.filter(codeName=pdisc)
     if discount.count() > 0 and discount.first().isValid():
         subtotal = getTotal(orderItems, discount.first())
@@ -760,11 +777,32 @@ def checkout(request):
     else: 
         discount = None
         subtotal = getTotal(orderItems)
-    total = subtotal + porg + pcharity
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
         reference = getConfirmationToken()
+
+    if subtotal == 0:
+        att = orderItems[0].attendee
+        order = Order(total=0, reference=reference, discount=discount,
+                  orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
+                  billingAddress1=att.address1, billingAddress2=att.address2,
+                  billingCity=att.city, billingState=att.state, billingCountry=att.country,
+                  billingPostal=att.postalCode, status="Complete", billingEmail=att.email)
+        order.save()
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
+        del request.session['order_items']
+        sendRegistrationEmail(order.id, att.email)
+        return JsonResponse({'success': True})
+
+    if porg < 0: 
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+
+    total = subtotal + porg + pcharity
 
     order = Order(total=Decimal(total), reference=reference, discount=discount,
                   orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
@@ -773,25 +811,32 @@ def checkout(request):
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
     order.save()
 
-    for oitem in orderItems:
-        oitem.order = order
-        oitem.save()
     
-    if total > 0:
-        result = chargePayment(order.id, pbill)
-    else:
-        order.status = "Paid"
-        result = True
-    try:
-      if result:
-        if discount:
-	  discount.used = discount.used + 1
-          discount.save()
+    response = chargePayment(order.id, pbill)
 
-        sendRegistrationEmail(order.id, pbill['email'])
-    except:
-        pass  #none of this should return a failure to the user
-        #todo: send an error email?
+    if response is not None:
+          if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                request.session.flush()
+                for oitem in orderItems:
+                    oitem.order = order
+                    oitem.save()
+                sendRegistrationEmail(order.id, pbill['email'])
+                if discount:
+                    discount.used = discount.used + 1
+                    discount.save()
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+          else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    else:
+          return JsonResponse({'success': False, 'message': "Unknown Error"})
+
 
     request.session.flush()
     return JsonResponse({'success': True})
