@@ -7,8 +7,8 @@ def sendRegistrationEmail(orderId, email):
     data = {'reference': order.reference}
     msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
     msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
-    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Registration Payment", 
-              "Thank you for your payment.", msgTxt, msgHtml)
+    sendEmail("registration@furthemore.org", [email], 
+              "Furthemore 2017 Registration Payment", msgTxt, msgHtml)
 
     orderItems = OrderItem.objects.filter(order=order)
     for oi in orderItems:
@@ -37,7 +37,7 @@ def sendStaffRegistrationEmail(orderId, email):
 def sendStaffPromotionEmail(staff):
     data = {'registrationToken': staff.registrationToken}
     msgTxt = render_to_string('registration/emails/staffPromotion.txt', data)
-    msgHtml = render_to_string('registration/emails/staffPromotion.html', sata)
+    msgHtml = render_to_string('registration/emails/staffPromotion.html', data)
     sendEmail("registration@furthemore.org", [staff.attendee.email], "Welcome to Furthemore Staff!", 
               msgTxt, msgHtml)
 
