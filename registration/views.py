@@ -41,11 +41,11 @@ def lookupJersey(request):
     email = postData['email']
     token = postData['token']
 
-    attendee = Attendee.objects.get(email=email, registrationToken=token)
-    if not attendee:     
+    attendee = Attendee.objects.filter(email=email, registrationToken=token)
+    if attendee.count() == 0:     
         return JsonResponse({'success': False})
 
-    request.session['attendee_id'] = attendee.id
+    request.session['attendee_id'] = attendee.first().id
     return JsonResponse({'success': True, 'message':'ATTENDEE'})
   except Exception as e:
     return HttpResponseServerError(str(e))
