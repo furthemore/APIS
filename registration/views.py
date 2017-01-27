@@ -588,34 +588,29 @@ def checkoutDealer(request):
                   billingPostal=pbill['postal'])
     order.save()
 
-    orderItem.order = order
-    orderItem.save()    
-
     response = chargePayment(order.id, pbill)
 
     if response is not None:
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
-                request.session.flush()
+                orderItem.order = order
+                orderItem.save()    
                 sendDealerPaymentEmail(dealer, order)
+                request.session.flush()
                 return JsonResponse({'success': True})
             else:
                 if hasattr(response.transactionResponse, 'errors') == True:
                     order.delete()
-                    orderItem.delete()
                     return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
         else:
             if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
                 order.delete()
-                orderItem.delete()
                 return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
             else:
                 order.delete()
-                orderItem.delete()
                 return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
     else:
         order.delete()
-        orderItem.delete()
         return JsonResponse({'success': False, 'message': "Unknown Error"})
         
   except Exception as e:
