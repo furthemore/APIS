@@ -11,8 +11,13 @@ from .emails import *
 admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
-admin.site.register(Jersey)
-admin.site.register(StaffJersey)
+
+class JerseyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number', 'shirtSize')
+
+admin.site.register(Jersey, JerseyAdmin)
+admin.site.register(StaffJersey, JerseyAdmin)
+
 admin.site.register(TableSize)
 
 
