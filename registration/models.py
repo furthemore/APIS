@@ -61,7 +61,7 @@ class Department(models.Model):
 class Jersey(models.Model):
     shirtSize = models.ForeignKey(ShirtSizes)
     name = models.CharField(max_length=50)
-    number = models.IntegerField()
+    number = models.CharField(max_length=3)
 
 class StaffJersey(Jersey):
     pass

@@ -102,15 +102,32 @@ def checkoutJersey(request):
     orderItem.order = order
     orderItem.save()
     
-    result = chargePayment(order.id, pbill)
-    try:
-      if result:
-        sendJerseyEmail(order.id, pbill['email'])
-        request.session.flush()
-    except Exception as e:
-        #none of this should return a failure to the user
-        print e
+    response = chargePayment(order.id, pbill)
+    if response is not None:
+        if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                sendJerseyEmail(order.id, pbill['email'])
+                orderItem.order = order
+                orderItem.save()
+                request.session.flush()
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    order.delete()
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+        else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    else:
+        order.delete()
+        return JsonResponse({'success': False, 'message': "Unknown Error"})
 
+
+    request.session.flush()
     return JsonResponse({'success': True})
             
 
