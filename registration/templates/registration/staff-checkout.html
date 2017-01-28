@@ -23,6 +23,14 @@
 				<div class="col-sm-2">
 				</div>
 			</div>
+			{% if staff.attendee.effectiveLevel %}
+			<div class="row">
+				<div class="col-sm-5 col-sm-offset-1">Previous Level - {{item.priceLevel}}</div>
+				<div class="col-sm-2">-${{staff.attendee.effectiveLevel.basePrice}}</div>   
+				<div class="col-sm-2">
+				</div>
+			</div>
+			{% endif %}
 			{% for option in item.getOptions %}
 			<div class="row">
 				{% if option.option.optionExtraType == "int" %}
