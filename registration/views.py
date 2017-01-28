@@ -167,10 +167,12 @@ def invoiceStaff(request):
         context = {'orderItems': [], 'total': 0, 'discount': {}}
         request.session.flush()
     else:
+        staffId = request.session['staff_id']
+        staff = Staff.objects.get(id=staffId)
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
         discount = Discount.objects.get(codeName=sessionDiscount)
-        total = getTotal(orderItems, discount)
-        context = {'orderItems': orderItems, 'total': total, 'discount': discount}
+        total = getStaffTotal(orderItems, discount, staff)
+        context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'staff': staff}
     return render(request, 'registration/staff-checkout.html', context)
 
 
@@ -268,9 +270,21 @@ def addStaff(request):
     return JsonResponse({'success': True})
 
 
+def getStaffTotal(orderItems, discount, staff):
+    if staff.attendee.effectiveLevel():
+        discount = None
+    subTotal = getTotal(orderItems, discount)
+    alreadyPaid = staff.attendee.paidTotal()
+    total = subTotal - alreadyPaid
+    if total < 0: 
+      return 0
+    return total
+
+
 def checkoutStaff(request):
     sessionItems = request.session.get('order_items', [])
     pdisc = request.session.get('discount', "")
+    staffId = request.session['staff_id']
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
     event = Event.objects.first()
@@ -278,7 +292,8 @@ def checkoutStaff(request):
     #todo: event = Event.objects.get(id=int(postData["eventId"]))
 
     discount = Discount.objects.get(codeName="StaffDiscount")
-    subtotal = getTotal(orderItems, discount)
+    staff = Staff.objects.get(id=staffId)
+    subtotal = getStaffTotal(orderItems, discount, staff)
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
@@ -341,13 +356,17 @@ def checkoutStaff(request):
                 return JsonResponse({'success': True})
             else:
                 if hasattr(response.transactionResponse, 'errors') == True:
+                    order.delete()
                     return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
         else:
             if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                order.delete()
                 return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
             else:
+                order.delete()
                 return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
     else:
+        order.delete()
         return JsonResponse({'success': False, 'message': "Unknown Error"})
 
     request.session.flush()
