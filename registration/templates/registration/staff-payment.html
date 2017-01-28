@@ -121,7 +121,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="text" id="birthDate" value="{{staff.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
+                        <input type="text" id="birthDate" value="{{staff.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required />
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
@@ -361,7 +361,7 @@
 	<div class="form-group">
 		<label class="col-sm-3 control-label">Jersey Number</label>
 		<div class="col-sm-9">
-			<input type="text" id="jerseyNumber" maxlength=2 class="form-control form-control-text" />
+			<input type="text" id="jerseyNumber" maxlength=3 pattern="^[0-9]+$"  class="form-control form-control-text" />
 		</div>
 	</div>
 	<div class="form-group">
@@ -389,7 +389,7 @@
 	<div class="form-group">
 		<label class="col-sm-3 control-label">Staff Jersey Number</label>
 		<div class="col-sm-9">
-			<input type="text" id="sjerseyNumber" maxlength=2 class="form-control form-control-text" />
+			<input type="text" id="sjerseyNumber" maxlength=2 pattern="^[0-9]+$"  class="form-control form-control-text" />
 		</div>
 	</div>
 	<div class="form-group">
