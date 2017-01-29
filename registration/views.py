@@ -270,7 +270,7 @@ def addStaff(request):
         jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
         jerseyOption.save()
     if sjer:
-        sjerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+        sjerseySize = ShirtSizes.objects.get(id=int(sjer['size']))
         sjersey = StaffJersey(name=sjer['name'], number=sjer['number'], shirtSize=sjerseySize)
         sjersey.save()
         sjOption = PriceLevelOption.objects.get(id=int(sjer['optionId']))
