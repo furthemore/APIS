@@ -148,7 +148,7 @@ def findStaff(request):
     email = postData['email']
     token = postData['token']
 
-    staff = Staff.objects.get(attendee__email=email, registrationToken=token)
+    staff = Staff.objects.get(attendee__email__iexact=email, registrationToken=token)
     if not staff:     
       return HttpResponseServerError("No Staff Found")
 

@@ -151,7 +151,8 @@ def clear_abandons(modeladmin, request, queryset):
     for att in queryset:
         if att.abandoned() == True:
            jerseyTypes = PriceLevelOption.objects.filter(optionExtraType='Jersey')
-           jerseyOptions = AttendeeOptions.objects.filter(option__in=jerseyTypes)
+           orderItems = OrderItem.objects.filter(attendee=att)
+           jerseyOptions = AttendeeOptions.objects.filter(option__in=jerseyTypes, orderItem__in=orderItems)
            for jerOpt in jerseyOptions:
              jersey = Jersey.objects.get(id=jerOpt.optionValue)
              jersey.delete()
@@ -206,7 +207,11 @@ class AttendeeAdmin(NestedModelAdmin):
 admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
 admin.site.register(OrderItem)
-admin.site.register(Order)
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('reference', 'createdDate', 'total', 'orgDonation', 'charityDonation', 'discount', 'status')
+
+admin.site.register(Order, OrderAdmin)
 
 class PriceLevelAdmin(admin.ModelAdmin):
     list_display = ('name', 'basePrice', 'startDate', 'endDate', 'public', 'group')
