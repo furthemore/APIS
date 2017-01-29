@@ -63,8 +63,11 @@ class Jersey(models.Model):
     name = models.CharField(max_length=50)
     number = models.CharField(max_length=3)
 
-class StaffJersey(Jersey):
-    pass
+class StaffJersey(models.Model):
+    shirtSize = models.ForeignKey(ShirtSizes)
+    name = models.CharField(max_length=50)
+    number = models.CharField(max_length=3)
+
 
 #End CustomAddons
 

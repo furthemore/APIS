@@ -45,8 +45,7 @@ def lookupJersey(request):
     postData = json.loads(request.body)
     email = postData['email']
     token = postData['token']
-
-    attendee = Attendee.objects.filter(email=email, registrationToken=token)
+    attendee = Attendee.objects.filter(email__iexact=email, registrationToken=token)
     if attendee.count() == 0:     
         return JsonResponse({'success': False})
 
@@ -475,7 +474,7 @@ def findDealer(request):
     email = postData['email']
     token = postData['token']
 
-    dealer = Dealer.objects.get(attendee__email=email, registrationToken=token)
+    dealer = Dealer.objects.get(attendee__email__iexact=email, registrationToken=token)
     if not dealer:     
       return HttpResponseServerError("No Dealer Found")
 
