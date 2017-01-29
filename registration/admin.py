@@ -14,9 +14,11 @@ admin.site.register(Event)
 
 class JerseyAdmin(admin.ModelAdmin):
     list_display = ('name', 'number', 'shirtSize')
+class StaffJerseyAdmin(admin.ModelAdmin):
+    list_display = ('name', 'number', 'shirtSize')
 
 admin.site.register(Jersey, JerseyAdmin)
-admin.site.register(StaffJersey, JerseyAdmin)
+admin.site.register(StaffJersey, StaffJerseyAdmin)
 
 admin.site.register(TableSize)
 
