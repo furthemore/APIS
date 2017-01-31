@@ -613,6 +613,15 @@
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
 
+                if ($.inArray($("#jerseyNumber").val(), takenJerseys) > -1) {
+                        alert("That jersey number has already been claimed. Please choose another.");
+                        return;
+                }
+                if ($.inArray($("#sjerseyNumber").val(), takenStaffJerseys) > -1) {
+                        alert("That staff jersey number has already been claimed. Please choose another.");
+                        return;
+                }
+
 		$("#checkout").attr("disabled", "disabled");
 
 		var data = {
