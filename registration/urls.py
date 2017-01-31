@@ -46,7 +46,7 @@ urlpatterns = [
     url(r'^tables/?$', views.getTableSizes, name='tablesizes'),
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),
     url(r'^takenJerseys/?$', views.getJerseyNumbers, name='takenJerseys'),
-    url(r'^takenStaffJerseys/?$', views.getJerseyNumbers, name='takenStaffJerseys'),
+    url(r'^takenStaffJerseys/?$', views.getStaffJerseyNumbers, name='takenStaffJerseys'),
 
     url(r'^flush/?$', views.flush, name='flush'),
 
