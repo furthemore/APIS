@@ -974,7 +974,8 @@ def getTotal(orderItems, disc = ""):
 
         for option in item.attendeeoptions_set.all():
             if option.option.optionExtraType == 'int':
-                itemTotal += (option.option.optionPrice*Decimal(option.optionValue))
+                if option.optionValue:
+                    itemTotal += (option.option.optionPrice*Decimal(option.optionValue))
             else:
                 itemTotal += option.option.optionPrice
 
