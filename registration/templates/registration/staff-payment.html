@@ -53,12 +53,12 @@
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Staff Registration - Furthemore 2017</h1>
 
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
 		<hr>
 			
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
+                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
                     <div class="col-sm-4">
                         <input type="text" id="firstName" value="{{staff.attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
                     </div>
@@ -68,21 +68,21 @@
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
+                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="email" id="email" value="{{staff.attendee.email}}" class="form-control" disabled />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
                 <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number</label>
+                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="phone" id="phone" value="{{staff.attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address</label>
+                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" name="add1" id="add1" value="{{staff.attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
                     </div>
@@ -96,7 +96,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State</label>
+                    <label for="city" class="col-sm-3 control-label">City/State <span style="color:red;">*</span></label>
 		    <div class="col-sm-4">
 			<input type="text" name="city" id="city" value="{{staff.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
 		    </div>
@@ -106,7 +106,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
+                    <label for="country" class="col-sm-3 control-label">ZIP/Country <span style="color:red;">*</span></label>
 		    <div class="col-sm-3">
 			<input type="text" name="zip" id="zip" value="{{staff.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
 		    </div>
@@ -119,7 +119,7 @@
 		<hr/>
 
                 <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
+                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="birthDate" value="{{staff.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required />
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
@@ -139,7 +139,7 @@
 		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
 		<hr>
                 <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Badge Name</label>
+                    <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" name="badgeName" id="badgeName" value="{{staff.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
                     </div>
@@ -147,21 +147,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="department" class="col-sm-3 control-label">Department</label>
+                    <label for="department" class="col-sm-3 control-label">Department <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <select id="department" name="department"class="form-control" required></select>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="title" class="col-sm-3 control-label">Title</label>
+                    <label for="title" class="col-sm-3 control-label">Title <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="title" name="title" value="{{staff.title}}" placeholder="Title" class="form-control form-control-text" required>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="shirt" class="col-sm-3 control-label">Shirt Size</label>
+                    <label for="shirt" class="col-sm-3 control-label">Shirt Size <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <select id="shirt" name="department" class="form-control" required></select>
                     </div>
@@ -170,21 +170,21 @@
 		<hr/>
 		<h3>Emergency Contact Info</h3>
                 <div class="form-group">
-                    <label for="contactName" class="col-sm-3 control-label">Name</label>
+                    <label for="contactName" class="col-sm-3 control-label">Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="contactName" name="contactName" value="{{staff.contactName}}" placeholder="Contact Name" class="form-control form-control-text" required>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="contactRel" class="col-sm-3 control-label">Relationship</label>
+                    <label for="contactRel" class="col-sm-3 control-label">Relationship <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="contactRel" name="contactRel" value="{{staff.contactRelation}}" placeholder="Relationship To You" class="form-control form-control-text" required>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="contactPhone" class="col-sm-3 control-label">Phone Number</label>
+                    <label for="contactPhone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="phone" id="contactPhone" name="contactPhone" value="{{staff.contactPhone}}" placeholder="Phone Number" class="form-control form-control-text" required>
                     </div>
@@ -192,7 +192,7 @@
                 </div>
 
 		<hr/>
-		<h3>Optional Info</h3>
+		<h3>Other Info</h3>
                 <div class="form-group">
                     <label for="twitter" class="col-sm-3 control-label">Twitter Handle</label>
                     <div class="col-sm-9">
@@ -206,21 +206,21 @@
                     </div>
                 </div>
 		<div class="form-group">
-                    <label for="medical" class="col-sm-3 control-label">Medical Needs</label>
+                    <label for="medical" class="col-sm-3 control-label">Medical Needs <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="medical" name="medical" value="{{staff.specialMedical}}" class="form-control form-control-text" required />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
-                    <label for="food" class="col-sm-3 control-label">Dietary Needs</label>
+                    <label for="food" class="col-sm-3 control-label">Dietary Needs <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="food" name="food" value="{{staff.specialFood}}" class="form-control form-control-text" required />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
-                    <label for="skills" class="col-sm-3 control-label">Additional Skills</label>
+                    <label for="skills" class="col-sm-3 control-label">Additional Skills <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="skills" name="skills" value="{{staff.specialSkills}}" class="form-control form-control-text" required />
                     </div>

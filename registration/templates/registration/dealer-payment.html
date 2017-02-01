@@ -56,12 +56,12 @@
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - Furthemore 2017</h1>
 
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
 		<hr>
 			
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
+                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
                     <div class="col-sm-4">
                         <input type="text" id="firstName" value="{{dealer.attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
                     </div>
@@ -71,7 +71,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
+                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="email" id="email" value="{{dealer.attendee.email}}" class="form-control" disabled />
                         <input type="checkbox" id="contact"> <span class="control-label" >Please keep me up to date with convention related information.</span>
@@ -79,14 +79,14 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
                 <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number</label>
+                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="phone" id="phone" value="{{dealer.attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address</label>
+                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" name="add1" id="add1" value="{{dealer.attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
                     </div>
@@ -100,7 +100,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State</label>
+                    <label for="city" class="col-sm-3 control-label">City/State <span style="color:red;">*</span></label>
 		    <div class="col-sm-4">
 			<input type="text" name="city" id="city" value="{{dealer.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
 		    </div>
@@ -110,7 +110,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
+                    <label for="country" class="col-sm-3 control-label">ZIP/Country <span style="color:red;">*</span></label>
 		    <div class="col-sm-3">
 			<input type="text" name="zip" id="zip" value="{{dealer.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
 		    </div>
@@ -123,7 +123,7 @@
 		<hr/>
 
                 <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
+                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="birthDate" value="{{dealer.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
@@ -133,7 +133,7 @@
 
 		<hr/>
                 <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Badge Name</label>
+                    <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" name="badgeName" id="badgeName" value="{{dealer.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
                     </div>
@@ -149,17 +149,17 @@
 	</div>
 	<div role="tabpanel" class="tab-pane fade" id="profile">
 		<h1>Dealer Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 		<hr>
                 <div class="form-group">
-                    <label for="businessName" class="col-sm-3 control-label">Business Name</label>
+                    <label for="businessName" class="col-sm-3 control-label">Business Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="businessName" value="{{dealer.businessName}}" name="businessName" placeholder="Business Name" class="form-control form-control-text" required>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
+                    <label for="license" class="col-sm-3 control-label">Virginia Tax License <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="license" value="{{dealer.license}}"  name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
 			<input type="checkbox" id="tempLicense" /> <small>I need a temporary tax license for VA.</small> 
@@ -167,14 +167,14 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="website" class="col-sm-3 control-label">Website</label>
+                    <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="url" id="website" value="{{dealer.website}}" name="website" placeholder="http://www.mysite.org" class="form-control form-control-text" required data-error="Please enter a full URL here. Ex: http://www.google.com" />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="description" class="col-sm-3 control-label">Description of Wares</label>
+                    <label for="description" class="col-sm-3 control-label">Description of Wares <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <textarea id="description" name="description" class="form-control form-control-textarea" required>{{dealer.description}}</textarea>
                     </div>
