@@ -34,12 +34,12 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Pre-Register for Furthemore 2016!</h1>
-		<p>Welcome to the registration system. To continue, enter your information below.</p>
+		<p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 		<hr>
 
 			
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
+                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
                     <div class="col-sm-4">
                         <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
                     </div>
@@ -49,7 +49,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
+                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
                     </div>
@@ -62,14 +62,14 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number</label>
+                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9]{1,}$" data-minlength="10" maxlength=10 data-error="A 10-digit phone number is required. Please enter only numbers.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address</label>
+                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
                     </div>
@@ -83,7 +83,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+                    <label for="city" class="col-sm-3 control-label">City/State/ZIP <span style="color:red;">*</span></label>
 		    <div class="col-sm-4">
 			<input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
 		    </div>
@@ -96,7 +96,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country</label>
+                    <label for="country" class="col-sm-3 control-label">Country <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
 			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
                     </div>
@@ -105,7 +105,7 @@
 		<hr>
 
                 <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
+                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="birthDate" class="form-control" placeholder="Click to select your birthdate" required data-error="Date of birth is required.">
 			<p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
@@ -124,7 +124,7 @@
 		<p>Select your registration options and level.</p>
 		<hr>
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Badge Name</label>
+                    <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
                         <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
                     </div>
