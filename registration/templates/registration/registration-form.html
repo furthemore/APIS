@@ -44,7 +44,7 @@
                         <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
                     </div>
 		    <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" required data-error="Last name is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -58,7 +58,9 @@
                 <div class="form-group">
                     <label class="col-sm-3">&nbsp;</label>
                     <div class="col-sm-9">
-                        <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        <label>
+                            <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        </label>
                     </div>
                 </div>
                 <div class="form-group">
@@ -114,7 +116,7 @@
                 </div>
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-			<a href="#registration" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+			<a href="#registration" class="btn btn-primary col-sm-6 col-sm-offset-6 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
                     </div>
                 </div>
             
@@ -141,17 +143,19 @@
 		<div class="row" id="levelContainer"></div>
 		<br/>
 		<hr/>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
+             <div>
+                    <div>
+                        <label>
+                            <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
 			I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
+                        </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
-		<div class="form-group">
-			<a href="#personal" class="btn btn-primary col-sm-6" aria-controls="personal" role="tab" data-toggle="tab" id="back-registration"><< Back</a>
-       	        	<button type="submit" class="btn btn-primary col-sm-6" id="register">Register</button>
-        	</div>
+		<div>
+            <a href="#personal" class="btn btn-primary col-sm-6" aria-controls="personal" role="tab" data-toggle="tab" id="back-registration"><< Back</a>
+       	    <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button>
+        </div>
 	</div>
 	</div>
 	{% csrf_token %}
