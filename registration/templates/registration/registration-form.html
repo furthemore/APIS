@@ -109,7 +109,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Click to select your birthdate" required data-error="Date of birth is required.">
+                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" required data-error="Date of birth is required.">
             <p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -284,8 +284,7 @@
         if (!Modernizr.inputtypes.date) {
             $("#birthDate").datepicker({
                 changeMonth: true,
-                changeYear: true,
-                format: 'yyyy-mm-dd'
+                changeYear: true
             });
         }
         $.getJSON("/apis/registration/pricelevels", function(data) {
@@ -479,7 +478,13 @@
             alert("Please select a jersey number less than 199.");
             return;
         }
-        var birthdate = parseDate($("#birthDate").val());
+        if (!Modernizr.inputtypes.date) {
+            // native datepicker - expect ISO date
+            var birthdate = parseDate($("#birthDate").val());
+        } else {
+            // American middle-endian format put out by datepicker javascript
+            var birthdate = new Date(Date.parse($("#birthDate").val()));
+        }
         var age = getAge(birthdate);
         if (age < 18) {
             alert("You must be 18 by the first day of Furthemore to register online.")
