@@ -147,7 +147,7 @@
                     <div>
                         <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
+			I agree to abide by Furthemore's <a href="http://www.furthemore.org/policies/code-of-conduct/" target="_blank">Code of Conduct</a>.
                         </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -478,7 +478,7 @@
             alert("Please select a jersey number less than 199.");
             return;
         }
-        if (!Modernizr.inputtypes.date) {
+        if (Modernizr.inputtypes.date) {
             // native datepicker - expect ISO date
             var birthdate = parseDate($("#birthDate").val());
         } else {
