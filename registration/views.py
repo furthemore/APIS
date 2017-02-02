@@ -793,9 +793,6 @@ def checkout(request):
     pdisc = request.session.get('discount', "")
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
-    porg = Decimal(postData["orgDonation"].strip() or 0.00)
-    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
-    pbill = postData["billingData"]
     event = Event.objects.first()
    
     #todo: event = Event.objects.get(id=int(postData["eventId"]))
@@ -826,6 +823,10 @@ def checkout(request):
         del request.session['order_items']
         sendRegistrationEmail(order.id, att.email)
         return JsonResponse({'success': True})
+
+    porg = Decimal(postData["orgDonation"].strip() or 0.00)
+    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    pbill = postData["billingData"]
 
     if porg < 0: 
         porg = 0
