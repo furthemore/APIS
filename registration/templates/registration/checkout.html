@@ -77,12 +77,20 @@
 		<h3>Discount</h3>
 		<div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount code, enter it below:</div>
 		<div class="row">
-			<div class="col-sm-4 col-sm-offset-1"><input type="text" id="discount" class="form-control" /></div>
-			<button class="btn btn-primary" id="applyDiscount">Apply</button>
+			<div class="col-sm-11 col-sm-offset-1">
+				<div class="form-inline">
+				<div class="form-group">
+					<label for="discount" class="sr-only">Discount Code</label>
+					<input type="text" id="discount" class="form-control" />
+				</div>
+				<button class="btn btn-primary" id="applyDiscount">Apply</button>
+			</div>
 		</div>
+
 		<hr/>
 		
 		{% endif %}
+		<div class="container" style="width: inherit">
 		<form class="form-horizontal" role="form" data-toggle="validator">
 		
 		<h3>Extra Donations</h3>
@@ -209,10 +217,11 @@
 		</div>
 
 		{% csrf_token %}
-		<div class="form-group" style="margin-right:0px;">
-			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
-		</div>
+		<!-- <div class="form-group" style="margin-right:0px;"> -->
+			<button class="btn btn-primary col-sm-3 col-sm-offset-9 mobile-block" style="padding-right:10px;" id="checkout">Checkout</button>
+		<!-- </div> -->
  		</form>
+		</div>
 		
 
 		{% else %}
