@@ -54,7 +54,9 @@
                     <label for="email" class="col-sm-3 control-label">Email</label>
                     <div class="col-sm-9">
                         <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
-                        <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        <label>
+                          <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        </label>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -105,14 +107,14 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="text" id="birthDate" class="form-control" placeholder="Click to select your birthdate" />
+                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" />
             <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-            <a href="#profile" class="btn btn-primary col-sm-12" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+            <a href="#profile" class="btn btn-primary col-sm-12 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
                     </div>
                 </div>
             
@@ -132,7 +134,10 @@
                     <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
                     <div class="col-sm-9">
                         <input type="text" id="license" name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
-            <input type="checkbox" id="tempLicense" /> <small>I need a temporary tax license for VA.</small> 
+            
+                        <label>
+                            <input type="checkbox" id="tempLicense" /> I need a temporary tax license for VA.
+                        </label>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -185,8 +190,8 @@
                 </div>
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-            <a href="#personal" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal"><< Back</a>
-            <a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+            <a href="#personal" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-personal"><< Back</a>
+            <a href="#options" class="btn btn-primary col-sm-6 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-optional">Next >></a>
                     </div>
                 </div>
     </div>
@@ -207,7 +212,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="wall" class="col-sm-3 control-label">I will consider different table types</label>
+                    <label for="switch" class="col-sm-3 control-label">I will consider different table types</label>
                     <div class="col-sm-9">
                         <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
                     </div>
@@ -250,18 +255,21 @@
                     </div>
                 </div>
         <hr/>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
+             <div>
+                 <div>
+                      <label>
+                            <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
             I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
+                      </label>
+                 </div>
+                 <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+            </div>
+
 
         <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
             <a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
-                        <button id="register" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit</button>
+                        <button id="register" type="submit" class="btn btn-primary col-sm-6 pull-right" aria-controls="profile" data-toggle="tab">Submit</button>
             </div>
                 </div>
     </div>
@@ -276,7 +284,12 @@
  <script type="text/javascript">
     var tableSizes = [];
     $( "body" ).ready(function() {
-        $("#birthDate").datepicker();
+        if (!Modernizr.inputtypes.date) {
+            $("#birthDate").datepicker({
+                changeMonth: true,
+                changeYear: true
+            });
+        }
                 $.getJSON("/apis/registration/tables", function(data) {
                         tableSizes = data;
             $.each(tableSizes, function (key, item) {
@@ -298,6 +311,15 @@
         });     
     });
 
+    $("#next-personal").click(function() {
+        window.scrollTo(0, 0);
+    });
+    
+    $("#next-optional").click(function() {
+        window.scrollTo(0, 0);
+    });
+
+
     function setTableInfo(id){
         $.each(tableSizes, function (key, item) {
             if (item.id == id){
@@ -317,7 +339,7 @@
                         var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
                                   '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
                                   '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
-                                  '<input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.<br/> '
+                                  '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label><br/>'
                         $("#partnerList").append(partner);
                         if (i != item.partnerMax){$("#partnerList").append("<br/>");}
                     }
@@ -379,8 +401,14 @@
             alert("You must enter your birthdate to submit your application.");
             return;
         } 
-        var birthDate = new Date(Date.parse($("#birthDate").val()));
-        var age = getAge(birthDate);
+        if (Modernizr.inputtypes.date) {
+            // native datepicker - expect ISO date
+            var birthdate = parseDate($("#birthDate").val());
+        } else {
+            // American middle-endian format put out by datepicker javascript
+            var birthdate = new Date(Date.parse($("#birthDate").val()));
+        }
+        var age = getAge(birthdate);
         if (age < 18){
             alert("You must be 18 by the first day of Furthemore to be a dealer.");
             return;
@@ -391,7 +419,7 @@
                 'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthDate),
+                'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
                 'emailsOk': $("#contact").is(':checked')
             }, 
             'dealer': {
