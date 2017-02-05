@@ -38,6 +38,12 @@ urlpatterns = [
     url(r'^jersey/done/?$', views.doneJersey, name='donejersey'),    
     url(r'^jersey/(?P<guid>\w+)/?$', views.getJersey, name='jersey'),    
 
+    url(r'^staffjersey/lookup/?$', views.lookupStaffJersey, name='lookupstaffjersey'),    
+    url(r'^staffjersey/add/?$', views.addStaffJersey, name='addstaffjersey'),    
+    url(r'^staffjersey/checkout/?$', views.checkoutStaffJersey, name='checkoutstaffjersey'),    
+    url(r'^staffjersey/done/?$', views.doneStaffJersey, name='donestaffjersey'),    
+    url(r'^staffjersey/(?P<guid>\w+)/?$', views.getStaffJersey, name='staffjersey'),    
+
     url(r'^events/?$', views.getEvents, name='events'),
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
