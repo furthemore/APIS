@@ -30,6 +30,106 @@ def flush(request):
     return JsonResponse({'success': True})
 
 ###################################
+# Staff Jersey Only
+
+def getStaffJersey(request, guid):
+    context = {'token': guid}
+    return render(request, 'registration/sjersey-locate.html', context)
+
+def doneStaffJersey(request):
+    context = {}
+    return render(request, 'registration/sjersey-done.html', context)
+
+def lookupStaffJersey(request):
+  try:
+    postData = json.loads(request.body)
+    email = postData['email']
+    token = postData['token']
+    staff = Staff.objects.filter(attendee__email__iexact=email, registrationToken=token)
+    if staff.count() == 0:     
+        return JsonResponse({'success': False})
+
+    request.session['staff_id'] = staff.first().id
+    return JsonResponse({'success': True, 'message':'STAFF'})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
+def addStaffJersey(request):
+    context = {'attendee': None}
+    try:
+      staffId = request.session['staff_id']
+    except Exception as e:
+      return render(request, 'registration/sjersey-add.html', context)
+
+    staff = Staff.objects.get(id=staffId)
+    if staff.attendee:
+      level = staff.attendee.effectiveLevel()
+      option = level.priceleveloption_set.get(optionExtraType='StaffJersey')
+      context = {'attendee': staff.attendee, 'optionid': option.id}
+    return render(request, 'registration/sjersey-add.html', context)
+
+def checkoutStaffJersey(request):
+    postData = json.loads(request.body)
+    pbill = postData["billingData"]
+    jer = postData['jersey']
+    staffId = request.session['staff_id']
+    staff = Staff.objects.get(id=staffId)
+
+    priceLevel = staff.attendee.effectiveLevel()
+
+    orderItem = OrderItem(attendee=staff.attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem.save()
+
+    jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
+    jersey = StaffJersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
+    jersey.save()
+    jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
+    jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
+    jerseyOption.save()
+
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationToken()
+
+    order = Order(total=Decimal(60), reference=reference, discount=None,
+                  orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
+    order.save()
+
+    orderItem.order = order
+    orderItem.save()
+    
+    response = chargePayment(order.id, pbill)
+    if response is not None:
+        if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                sendStaffJerseyEmail(order.id, pbill['email'])
+                orderItem.order = order
+                orderItem.save()
+                request.session.flush()
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    order.delete()
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+        else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    else:
+        order.delete()
+        return JsonResponse({'success': False, 'message': "Unknown Error"})
+
+
+    request.session.flush()
+    return JsonResponse({'success': True})
+
+###################################
 # Jersey Only
 
 def getJersey(request, guid):
