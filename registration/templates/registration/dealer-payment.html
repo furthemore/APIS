@@ -490,23 +490,6 @@
 	$("#wall").attr('checked', dealer.wallSpace);
 	$("#switch").attr('checked', dealer.willSwitch);
 
-	{% if dealer.paidTotal > 0 %}
-		$("#badgeName").attr("disabled", "disabled");
-		$("#businessName").attr("disabled", "disabled");
-		$("#tempLicense").attr("disabled", "disabled");
-		$("#description").attr("disabled", "disabled");
-		$("#breakfast").attr("disabled", "disabled");
-		$("#reception").attr("disabled", "disabled");
-		$("#artShow").attr("disabled", "disabled");
-		$("#buttonOffer").attr("disabled", "disabled");
-		$("#charityRaffle").attr("disabled", "disabled");
-		$("#wall").attr("disabled", "disabled");
-		$("#switch").attr("disabled", "disabled");
-		$("#near").attr("disabled", "disabled");
-		$("#far").attr("disabled", "disabled");
-		$("#checkout").text("Update Information");
-	{% endif %}
-
 	if (dealer.license == "temporary") {
 		$("#license").attr("disabled", "disabled");
 		$("#tempLicense").attr('checked', true);
