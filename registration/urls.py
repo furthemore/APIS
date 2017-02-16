@@ -23,6 +23,12 @@ urlpatterns = [
     url(r'^dealer/invoice/?$', views.invoiceDealer, name='invoiceDealer'),
     url(r'^dealer/checkout/?$', views.checkoutDealer, name='checkoutDealer'),
     url(r'^dealer/(?P<guid>\w+)/?$', views.dealers, name='dealers'),
+
+    url(r'^dealerassistant/lookup/?$', views.findAsstDealer, name='findAsstDealer'),
+    url(r'^dealerassistant/add/?$', views.addAsstDealer, name='addAsstDealer'),
+    url(r'^dealerassistant/checkout/?$', views.checkoutAsstDealer, name='checkoutAsstDealer'),
+    url(r'^dealerassistant/done/?$', views.doneAsstDealer, name='doneAsstDealer'),
+    url(r'^dealerassistant/(?P<guid>\w+)/?$', views.dealerAsst, name='dealerAsst'),
     
     url(r'^cart/?$', views.getCart, name='cart'),
     url(r'^cart/add/?$', views.addToCart, name='addToCart'),

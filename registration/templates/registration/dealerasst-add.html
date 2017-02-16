@@ -1,0 +1,332 @@
+{% extends "registration/master.html" %}
+
+{% block content %}
+
+{% if attendee %}
+
+	<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+		<h1>Add A Partner</h1>
+		<hr>
+
+		<form class="form-horizontal" role="form" data-toggle="validator">
+
+		<div class="form-group">
+                    <label for="tables" class="col-sm-3 control-label">Table Type</label>
+                    <div class="col-sm-9"><input type='text' value='{{ dealer.tableSize }}' disabled class='form-control' /></div>
+		</div>
+		<div class="form-group">
+                    <label for="tables" class="col-sm-3 control-label">Partner Information</label>
+                    <div class="col-sm-9" id="partnerList">
+                    </div>
+		</div>
+
+		<hr/>
+
+		<div id="billingInfo">
+		<h3>Charges</h3>
+		
+		<div class='form-group' style='margin-left:30px;'>You will be charged $40 for each new partner added via this form.</div>
+		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@futhemore.org</a> instead.</div>
+		
+		<hr/>
+		<h3>Billing Information</h3>
+
+
+		<div class="form-group">
+                    <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
+                    <div class="col-sm-4">
+                        <input type="text" id="fname" placeholder="Billing First Name" value="{{attendee.firstName}}" class="form-control" required data-error="Billing name is required. " />
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" id="lname" placeholder="Billing Last Name" value="{{attendee.lastName}}" class="form-control" required data-error="Billing name is required. " />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		</div>
+		<div class="form-group">
+                    <label for="email" class="col-sm-3 control-label">Email</label>
+                    <div class="col-sm-9">
+                        <input type="email" id="email" placeholder="Email" class="form-control" value="{{attendee.email}}" required data-error="Email is required. " />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		</div>
+		<div class="form-group">
+                    <label for="add1" class="col-sm-3 control-label">Billing Address</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" value="{{attendee.address1}}" class="form-control" required />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" value="{{attendee.address2}}" class="form-control" />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+		    <div class="col-sm-4">
+			<input type="text" name="city" id="city" placeholder="City" class="form-control" value="{{attendee.city}}" required data-error="City is required." />
+		    </div>
+                    <div class="col-sm-2">
+			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+                    </div>
+		    <div class="col-sm-3">
+			<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" value="{{attendee.postalCode}}" data-error="Zip code is required." />
+		    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="country" class="col-sm-3 control-label">Country</label>
+                    <div class="col-sm-9">
+			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+                    </div>
+		</div>
+	<hr/>
+		<div class="form-group">
+                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="ccNumber" id="ccNumber" autocomplete="off" class="form-control" maxlength="16" required />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+		<div class="form-group">
+                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
+                    <div class="col-sm-2">
+			<select id="ccMonth" class="form-control" required>
+				<option value="01">01</option>
+				<option value="02">02</option>
+				<option value="03">03</option>
+				<option value="04">04</option>
+				<option value="05">05</option>
+				<option value="06">06</option>
+				<option value="07">07</option>
+				<option value="08">08</option>
+				<option value="09">09</option>
+				<option value="10">10</option>
+				<option value="11">11</option>
+				<option value="12">12</option>
+			</select>
+                    </div>
+                    <div class="col-sm-2">
+			<select id="ccYear" class="form-control" required>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+				<option value="2019">2019</option>
+				<option value="2020">2020</option>
+				<option value="2021">2021</option>
+				<option value="2021">2022</option>
+			</select>
+                    </div>
+                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
+		    <div class="col-sm-3">
+                        <input type="text" id="ccCVV" class="form-control" maxlength="4" autocomplete="off" required data-error="CVV is required" />
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		</div>
+
+		{% csrf_token %}
+		<div class="form-group" style="margin-right:0px;">
+			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
+		</div>
+
+		</div>
+ 		</form>
+		
+
+	</div>
+	</div>
+{% else %}
+
+	<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+		<h1>Checkout</h1>
+		<div>There are no attendees in your order. Please check your email link and try again, or contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> for help.</div>
+	</div>
+	</div>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript">
+
+	var tableSizes = [];
+        var dealerPartners = "{{dealer.partners}}";
+	$( "body" ).ready(function() {
+                $.getJSON("/apis/registration/tables", function(data) {
+                        tableSizes = data;
+       			setTableInfo({{dealer.tableSize.id}});
+                });
+
+
+		$("#state").val("{{attendee.state}}");
+		$("#country").val("{{attendee.country}}");
+	}); 
+
+    function setTableInfo(id){
+        $.each(tableSizes, function (key, item) {
+            if (item.id == id){
+                if (item.partnerMax > 0){
+                    for (var i=item.partnerMin; i <= item.partnerMax; i++) {
+                        var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
+                                  '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
+                                  '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
+                                  '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label><br/>'
+                        $("#partnerList").append(partner);
+                        if (i != item.partnerMax){$("#partnerList").append("<br/>");}
+                    }
+		    var partners = dealerPartners.split(', ');
+	            var partnerCount = 0;
+                    var partner1 = {};
+	            var partner2 = {};
+                    $.each(partners, function(key, item) {
+		        if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
+			    partnerCount = partnerCount + 1;
+		        }
+		        if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
+			   partnerCount = partnerCount + 1;
+		        }
+		        if (item.indexOf("_1") > -1) {
+			    var p1 = item.split(':');
+			    partner1[p1[0]] = p1[1];
+		        }
+		        if (item.indexOf("_2") > -1) {
+			    var p2 = item.split(':');
+			    partner2[p2[0]] = p2[1];
+		        }
+	            });
+
+                    if (!$.isEmptyObject(partner1)) {
+                        $("#name_1").val(partner1.name_1.trim());
+                        $("#email_1").val(partner1.email_1.trim());
+                        $("#license_1").val(partner1.license_1.trim());
+                        $("#tempLicense_1").on('click',partnerLicense);
+                        if (partner1.tempLicense_1.indexOf('true') > -1){ 
+                            $("#tempLicense_1").click();
+                        }
+                    }
+                    if (!$.isEmptyObject(partner2)) {
+                        $("#name_2").val(partner2.name_2.trim());
+                        $("#email_2").val(partner2.email_2.trim());
+                        $("#license_2").val(partner2.license_2.trim());
+                        $("#tempLicense_2").on('click',partnerLicense);
+                        if (partner2.tempLicense_2.indexOf('true') > -1){ 
+                            $("#tempLicense_2").click();
+                        }
+                    }
+                    if (partnerCount == item.partnerMax) {
+                        $('#billingInfo').empty();
+                        $('#billingInfo').append("You already have the maximum allowed partners for this table type. Please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a> if you believe this is an error.");                        
+                    }
+                    $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
+                }
+            }
+        });     
+    };
+
+    $("#tempLicense").on("click", function () {
+        if ($(this).is(":checked")) {
+            $("#license").val("temporary").attr("disabled", "disabled");
+        } else {
+            $("#license").val("").removeAttr("disabled");
+        }
+    });
+    function partnerLicense() {
+        var id = this.id.split('_')[1];
+        if ($(this).is(":checked")) {
+            $("#license_" + id).val("temporary").attr("disabled", "disabled");
+        } else {
+            $("#license_" + id).val("").removeAttr("disabled");
+        }
+    }
+
+    function getAssistants() {
+        var partners = "";
+        var partnerList = $("#partnerList input");
+        $.each(partnerList, function(key, item) {
+            if ($(item).is(':checkbox')) {
+                partners += item.id + ": " + $(item).is(':checked') + ", ";                 
+            } else {
+                partners += item.id + ": " + $(item).val() + ", "; 
+            }
+        });
+        return partners;		
+    }
+
+	$("#checkout").click(function (e) {
+		e.preventDefault();
+		$("form").validator('validate');
+		var errorCount = $(".has-error").length;
+		if (errorCount > 0) {return;}
+
+		$("#checkout").attr("disabled", "disabled");
+
+		var data = {
+		    'dealer': {'id': {{dealer.id}} },
+		    'billingData': {
+			'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
+			'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
+			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+                        'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
+                        'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+		    },
+                    'assistants': getAssistants()
+		};
+
+		$.ajax({
+		    "type": "POST",
+		    "dataType": "json",
+		    "url": "/apis/registration/dealerassistant/checkout/",
+		    "data": JSON.stringify(data),
+		    "beforeSend": function(xhr, settings) {
+		        console.log("Before Send");
+		        $.ajaxSettings.beforeSend(xhr, settings);
+		    },
+		    "error": function(result, status, error) {
+                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
+			$("#checkout").removeAttr("disabled");
+		    },
+                    "success": function (result, status) {
+                        if (result.success) {
+				window.location = "/apis/registration/dealerassistant/done/";
+                        } else {
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
+			    $("#checkout").removeAttr("disabled");
+			}
+                    }
+		});
+
+
+	});
+
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    }
+});
+
+</script>
+{% endblock %}
