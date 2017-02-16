@@ -497,6 +497,10 @@ def dealers(request, guid):
     context = {'token': guid}
     return render(request, 'registration/dealer-locate.html', context)
 
+def dealerAsst(request, guid):
+    context = {'token': guid}
+    return render(request, 'registration/dealerasst-locate.html', context)
+
 def newDealer(request):
     event = Event.objects.first()
     tz = timezone.get_current_timezone()
@@ -530,9 +534,8 @@ def infoDealer(request):
 
 def getDealerTotal(orderItems, discount, dealer):
     subTotal = getTotal(orderItems, discount)
-    alreadyPaid = dealer.paidTotal()
     partnerCount = dealer.getPartnerCount()
-    total = subTotal + 40*partnerCount + dealer.tableSize.basePrice - dealer.discount - alreadyPaid
+    total = subTotal + 40*partnerCount + dealer.tableSize.basePrice - dealer.discount
     if total < 0: 
       return 0
     return total
@@ -568,6 +571,10 @@ def doneDealer(request):
     context = {}
     return render(request, 'registration/dealer-done.html', context)
 
+def doneAsstDealer(request):
+    context = {}
+    return render(request, 'registration/dealerasst-done.html', context)
+
 def findDealer(request):
   try:
     postData = json.loads(request.body)
@@ -582,6 +589,98 @@ def findDealer(request):
     return JsonResponse({'success': True, 'message':'DEALER'})
   except Exception as e:
     return HttpResponseServerError(str(e))
+
+def findAsstDealer(request):
+  try:
+    postData = json.loads(request.body)
+    email = postData['email']
+    token = postData['token']
+
+    dealer = Dealer.objects.get(attendee__email__iexact=email, registrationToken=token)
+    if not dealer:     
+      return HttpResponseServerError("No Dealer Found")
+
+    request.session['dealer_id'] = dealer.id
+    return JsonResponse({'success': True, 'message':'DEALER'})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
+def addAsstDealer(request):
+    context = {'attendee': None, 'dealer': None}
+    try:
+      dealerId = request.session['dealer_id']
+    except Exception as e:
+      return render(request, 'registration/dealerasst-add.html', context)
+
+    dealer = Dealer.objects.get(id=dealerId)
+    if dealer.attendee:
+      context = {'attendee': dealer.attendee, 'dealer': dealer}
+    return render(request, 'registration/dealerasst-add.html', context)
+
+def checkoutAsstDealer(request):
+    postData = json.loads(request.body)
+    pbill = postData["billingData"]
+    assts = postData['assistants']
+    dealerId = request.session['dealer_id']
+    dealer = Dealer.objects.get(id=dealerId)
+
+    priceLevel = dealer.attendee.effectiveLevel()
+    if priceLevel is None:
+        return JsonResponse({'success': False, 'message': "Dealer acount has not been paid. Please pay for your table before adding assistants."})
+
+    originalPartnerCount = dealer.getPartnerCount()
+
+    orderItem = OrderItem(attendee=dealer.attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem.save()
+
+    dealer.partners = assts
+    dealer.save()
+    partnerCount = dealer.getPartnerCount()
+
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationToken()
+
+    partners = partnerCount - originalPartnerCount
+
+    order = Order(total=Decimal(40*partners), reference=reference, discount=None,
+                  orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
+    order.save()
+
+    orderItem.order = order
+    orderItem.save()
+    
+    response = chargePayment(order.id, pbill)
+    if response is not None:
+        if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                sendDealerAsstEmail(dealer.id)
+                orderItem.order = order
+                orderItem.save()
+                request.session.flush()
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    order.delete()
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+        else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    else:
+        order.delete()
+        return JsonResponse({'success': False, 'message': "Unknown Error"})
+
+
+    request.session.flush()
+    return JsonResponse({'success': True})
+
 
 def addDealer(request):
     postData = json.loads(request.body)
