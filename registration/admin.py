@@ -110,14 +110,14 @@ class StaffResource(resources.ModelResource):
         fields = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
-                  'department', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize', 
+                  'department__name', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize__name', 
                   'specialSkills', 'specialFood', 'specialMedical', 'contactName', 'contactPhone', 
                   'contactRelation'
                   )
         export_order = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
-                  'department', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize', 
+                  'department__name', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize__name', 
                   'specialSkills', 'specialFood', 'specialMedical', 'contactName', 'contactPhone', 
                   'contactRelation'
                   )
