@@ -114,10 +114,14 @@ class Attendee(models.Model):
       return Decimal(total)
 
     def abandoned(self):
-        if Staff.objects.filter(attendee=self).exists() or Dealer.objects.filter(attendee=self).exists():
-            return 'Assc'
+        if Staff.objects.filter(attendee=self).exists():
+            return 'Staff'
+        if Dealer.objects.filter(attendee=self).exists():
+            return 'Dealer'
         if self.paidTotal() > 0: 
             return 'Paid'
+        if self.paidTotal() == 0 and self.effectiveLevel is not None:
+            return 'Comp'
         return True
 
     def effectiveLevel(self):

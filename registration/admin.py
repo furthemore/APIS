@@ -104,10 +104,31 @@ def send_staff_registration_email(modeladmin, request, queryset):
         sendStaffPromotionEmail(staff)
 send_staff_registration_email.short_description = "Send registration instructions"
 
-class StaffAdmin(admin.ModelAdmin):
+class StaffResource(resources.ModelResource):
+    class Meta:
+        model = Staff
+        fields = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+                  'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
+                  'department', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize', 
+                  'specialSkills', 'specialFood', 'specialMedical', 'contactName', 'contactPhone', 
+                  'contactRelation'
+                  )
+        export_order = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+                  'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
+                  'department', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize', 
+                  'specialSkills', 'specialFood', 'specialMedical', 'contactName', 'contactPhone', 
+                  'contactRelation'
+                  )
+
+class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
     actions = [send_staff_registration_email]
     list_display = ('attendee', 'title', 'department', 'shirtsize', 'staff_total')
+    list_filter = ('department',)
+    search_fields = ['attendee__email', 'attendee__badgeName', 'attendee__lastName', 'attendee__firstName'] 
+    resource_class = StaffResource
     fieldsets = (
         (
 	    None, 
