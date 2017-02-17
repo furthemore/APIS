@@ -100,8 +100,13 @@ class Attendee(models.Model):
     parentPhone = models.CharField(max_length=20, blank=True)
     parentEmail = models.CharField(max_length=200, blank=True)
     event = models.ForeignKey(Event)    
-    registeredDate = models.DateTimeField(auto_now_add=True, null=True)
+    registeredDate = models.DateTimeField(null=True)
     registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+
+    def save(self, *args, **kwargs):
+      if not self.id:
+        self.registeredDate = timezone.now()
+      return super(Attendee, self).save(*args, **kwargs)
 
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
