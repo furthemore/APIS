@@ -208,7 +208,7 @@ class AttendeeAdmin(NestedModelAdmin):
                 ('address1', 'address2'),
                 ('city', 'state', 'postalCode', 'country'),
                 ('email','phone', 'emailsOk'),
-                'birthdate', 
+                'birthdate', 'registeredDate',
             )}
         ),
         (
