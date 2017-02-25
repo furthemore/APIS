@@ -29,6 +29,10 @@ urlpatterns = [
     url(r'^dealerassistant/checkout/?$', views.checkoutAsstDealer, name='checkoutAsstDealer'),
     url(r'^dealerassistant/done/?$', views.doneAsstDealer, name='doneAsstDealer'),
     url(r'^dealerassistant/(?P<guid>\w+)/?$', views.dealerAsst, name='dealerAsst'),
+
+    url(r'^onsite/?$', views.onsite, name='onsite'),
+    url(r'^onsite/cart/?$', views.onsiteCart, name='onsiteCart'),
+    url(r'^onsite/done/?$', views.onsiteDone, name='onsiteDone'),
     
     url(r'^cart/?$', views.getCart, name='cart'),
     url(r'^cart/add/?$', views.addToCart, name='addToCart'),
@@ -54,6 +58,7 @@ urlpatterns = [
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),
+    url(r'^minorpricelevels/?$', views.getMinorPriceLevels, name='minorpricelevels'),
     url(r'^shirts/?$', views.getShirtSizes, name='shirtsizes'),
     url(r'^tables/?$', views.getTableSizes, name='tablesizes'),
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),

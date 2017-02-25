@@ -49,14 +49,6 @@
 
 			</div>
 			{% endfor %}
-			{% if discount %}
-				<div class="row">
-					<div class="col-sm-5 col-sm-offset-1">Discount - {{discount.codeName}}</div>
-					<div class="col-sm-2">- ${{discount.amountOff}}</div>   
-					<div class="col-sm-2">
-					</div>
-				</div>
-			{% endif%}
 			<div class="row" style="height:10px;">&nbsp;</div>
 
 		{% endfor %}
@@ -67,29 +59,10 @@
 
 	
 		<br/>
-		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registraiton</a>
+		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registration</a>
 
 		<hr/>
-		{% if total > 0%}
 
-		{% if not discount %}
-
-		<h3>Discount</h3>
-		<div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount code, enter it below:</div>
-		<div class="row">
-			<div class="col-sm-11 col-sm-offset-1">
-				<div class="form-inline">
-				<div class="form-group">
-					<label for="discount" class="sr-only">Discount Code</label>
-					<input type="text" id="discount" class="form-control" />
-				</div>
-				<button class="btn btn-primary" id="applyDiscount">Apply</button>
-			</div>
-		</div>
-
-		<hr/>
-		
-		{% endif %}
 		<div class="container" style="width: inherit">
 		<form class="form-horizontal" role="form" data-toggle="validator">
 		
@@ -173,65 +146,15 @@
 			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
                     </div>
 		</div>
-	<hr/>
-		<div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="ccNumber" id="ccNumber" class="form-control" maxlength="16" required />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-		<div class="form-group">
-                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
-                    <div class="col-sm-2">
-			<select id="ccMonth" class="form-control" required>
-				<option value="01">01</option>
-				<option value="02">02</option>
-				<option value="03">03</option>
-				<option value="04">04</option>
-				<option value="05">05</option>
-				<option value="06">06</option>
-				<option value="07">07</option>
-				<option value="08">08</option>
-				<option value="09">09</option>
-				<option value="10">10</option>
-				<option value="11">11</option>
-				<option value="12">12</option>
-			</select>
-                    </div>
-                    <div class="col-sm-2">
-			<select id="ccYear" class="form-control" required>
-				<option value="2017">2017</option>
-				<option value="2018">2018</option>
-				<option value="2019">2019</option>
-				<option value="2020">2020</option>
-				<option value="2021">2021</option>
-				<option value="2021">2022</option>
-			</select>
-                    </div>
-                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
-		    <div class="col-sm-3">
-                        <input type="text" id="ccCVV" class="form-control" maxlength="4" required data-error="CVV is required" />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
 
-		{% csrf_token %}
-		<!-- <div class="form-group" style="margin-right:0px;"> -->
-			<button class="btn btn-primary col-sm-3 col-sm-offset-9 mobile-block" style="padding-right:10px;" id="checkout">Checkout</button>
-		<!-- </div> -->
  		</form>
 		</div>
-		
-
-		{% else %}
 
 			{% csrf_token %}
 			<div class="row">
 				<a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Checkout</a>
 			</div>
 
-		{% endif %}
 
 	</div>
 	</div>
@@ -242,7 +165,7 @@
 		<h1>Checkout</h1>
 		<h3>There are no attendees in your order</h3>
 		<hr>
-		<a class="btn btn-primary" href="/apis/registration/">Add Attendee</a>
+		<a class="btn btn-primary" href="/apis/registration/onsite/">Add Attendee</a>
 
 
 	</div>
@@ -288,7 +211,7 @@
 	});
 
 	$("#addAnother").click(function() {
-		window.location = "/apis/registration";
+		window.location = "/apis/registration/onsite";
 	});
 
 	$("#cancel").click(function() {
@@ -296,39 +219,8 @@
 		if (cancel == false) { return;}
 		
                 $.getJSON("/apis/registration/cart/abandon", function(data) {
-			window.location = "/apis/registration";
+			window.location = "/apis/registration/onsite";
                 });
-	});
-
-	$("#applyDiscount").click(function(e) {
-		var discount = $("#discount").val();
-		if (discount == '') {
-			alert("You must enter a discount to apply.");
-			return;
-		}
-		var data = {'discount': discount}
-		$.ajax({
-		    "type": "POST",
-		    "dataType": "json",
-		    "url": "/apis/registration/cart/discount/",
-		    "data": JSON.stringify(data),
-		    "beforeSend": function(xhr, settings) {
-		        console.log("Before Send");
-		        $.ajaxSettings.beforeSend(xhr, settings);
-		    },
-		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
-		    },
-                    "success": function (result, status) {
-                        if (result.success) {
-				window.location.reload();
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
-			}
-                    }
-		});
-
-		
 	});
 
 	$("#useFrom").on("change", function(e) {
@@ -369,23 +261,16 @@
 
 		$("#checkout").attr("disabled", "disabled");
 
-		{% if total > 0 %}
 		var data = {
-            'onsite': false,
+            'onsite': true,
 		    'billingData': {
-			'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
-			'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
-			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                        'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                        'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
+                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
 		    },
 		    'charityDonation': $("#donateCharity").val(),
 		    'orgDonation': $("#donateOrg").val()
 		};
-		{% else %}
-		var data = {};
-
-		{% endif %}
 
 		$.ajax({
 		    "type": "POST",
@@ -402,7 +287,7 @@
 		    },
                     "success": function (result, status) {
                         if (result.success) {
-				window.location = "/apis/registration/cart/done/";
+				window.location = "/apis/registration/onsite/done/";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
 			    $("#checkout").removeAttr("disabled");
