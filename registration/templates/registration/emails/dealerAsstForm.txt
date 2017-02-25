@@ -1,0 +1,4 @@
+
+Please use the link below to add additional assistants to your paid dealer registration. 
+
+http://dawningbrooke.org/apis/registration/dealerassistant/{{dealer.registrationToken}}

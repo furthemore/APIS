@@ -883,6 +883,34 @@ def addNewDealer(request):
 
 
 ###################################
+# Attendees - Onsite
+
+def onsite(request):
+    event = Event.objects.first()
+    tz = timezone.get_current_timezone()
+    today = tz.localize(datetime.now())
+    context = {}
+    if event.onlineRegStart <= today <= event.onlineRegEnd:
+        return render(request, 'registration/onsite.html', context)
+    return render(request, 'registration/closed.html', context)
+
+def onsiteCart(request):
+    sessionItems = request.session.get('order_items', [])
+    if not sessionItems:
+        context = {'orderItems': [], 'total': 0}
+        request.session.flush()
+    else:
+        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+        total = getTotal(orderItems)
+        context = {'orderItems': orderItems, 'total': total}
+    return render(request, 'registration/onsite-checkout.html', context)
+
+def onsiteDone(request):
+    context = {}
+    return render(request, 'registration/onsite-done.html', context)
+
+
+###################################
 # Attendees
 
 
@@ -1041,6 +1069,10 @@ def checkout(request):
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
     order.save()
 
+    onsite = postData["onsite"]
+    if onsite:
+        request.session.flush()
+        return JsonResponse({'success': True})
     
     response = chargePayment(order.id, pbill)
 
@@ -1094,6 +1126,13 @@ def getAllDepartments(request):
     depts = Department.objects.order_by('name')
     data = [{'name': item.name, 'id': item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type='application/json')
+
+def getMinorPriceLevels(request):
+    now = timezone.now()
+    levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='minor')
+    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
+
 
 def getPriceLevels(request):
     dealer = request.session.get('dealer_id', -1)

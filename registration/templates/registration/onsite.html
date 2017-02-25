@@ -1,0 +1,500 @@
+{% extends "registration/master.html" %}
+
+{% block content %}
+<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
+      </div>
+      <div class="modal-body">
+        <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 28, 1999). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 28, 2004).</p>
+        <p>All attendees, even those too young to attend without a parent or legal guardian, must have a printed badge for safety reasons.</p>
+        <p>Please talk to registration staff if you have any questions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <form class="form-horizontal" role="form" data-toggle="validator">
+    <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Furthemore 2017 Onsite Registration</h1>
+        <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+        <hr>
+
+            
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
+                    <div class="col-sm-4">
+                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
+                    </div>
+		    <div class="col-sm-5">
+                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" required data-error="Last name is required.">
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-3">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <label>
+                            <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="tel" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9]{1,}$" data-minlength="10" maxlength=10 data-error="A 10-digit phone number is required. Please enter only numbers.">
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                    <div class="col-sm-9">
+                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="col-sm-3 control-label">City/State/ZIP <span style="color:red;">*</span></label>
+            <div class="col-sm-4">
+            <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
+            </div>
+                    <div class="col-sm-2">
+            <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+                    </div>
+            <div class="col-sm-3">
+            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="country" class="col-sm-3 control-label">Country <span style="color:red;">*</span></label>
+                    <div class="col-sm-9">
+            <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+                    </div>
+                </div>
+                
+        <hr>
+
+                <div class="form-group">
+                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" required data-error="Date of birth is required.">
+            <p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-9 col-sm-offset-3">
+			<a href="#registration" class="btn btn-primary col-sm-6 col-sm-offset-6 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+                    </div>
+                </div>
+            
+    </div>
+    <div role="tabpanel" class="tab-pane fade" id="registration">
+        <h2>Registration Info</h2>
+        <p>Select your registration options and level.</p>
+        <hr>
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
+                    <div class="col-sm-9">
+                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="firstName" class="col-sm-3 control-label">Are you interested in volunteering?</label>
+                    <div class="col-sm-9">
+                        <select id="volunteer" name="volunteer"  class="form-control form-control-select" ><option value="">No Thanks</option></select>
+                    </div>
+                    
+                </div>
+		<hr/>
+		<div class="row" id="levelContainer"></div>
+		<br/>
+		<hr/>
+             <div>
+                    <div>
+                        <label>
+                            <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
+			I agree to abide by Furthemore's <a href="http://www.furthemore.org/policies/code-of-conduct/" target="_blank">Code of Conduct</a>.
+                        </label>
+                    </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		</div>
+		<div>
+            <a href="#personal" class="btn btn-primary col-sm-6" aria-controls="personal" role="tab" data-toggle="tab" id="back-registration"><< Back</a>
+       	    <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button>
+        </div>
+	</div>
+	</div>
+	{% csrf_token %}
+	</form>
+
+{% endblock %}
+
+{% block javascript %}
+
+<script type="text/html" id="levelTemplate">
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
+    <div class="panel price">
+        <div class="panel-heading  text-center">
+        <h3 data-content="name"></h3>
+        </div>
+        <div class="panel-body text-center">
+            <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+        </div>
+        <div class="panel-footer">
+            <a class="btn btn-lg btn-block btn-danger selectLevel" href="#" data-id="levelId">Select</a>
+            <a class="btn btn-default btn-block changeLevel" href="#">Change Level?</a>
+        </div>
+    </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionBoolTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
+        </div>
+    </div>
+<div>
+<script type="text/html" id="optionBoolReqTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
+        </div>
+    </div>
+<div>
+
+</script>
+<script type="text/html" id="optionIntTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
+        </div>
+    </div>
+
+</script>
+<script type="text/html" id="optionIntReqTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
+        </div>
+    </div>
+
+</script>
+<script type="text/html" id="optionStringTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+        </div>
+    </div>
+</script>
+<script type="text/html" id="optionStringReqTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+        </div>
+    </div>
+</script>
+<script type="text/html" id="optionListTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <select data-id="id" class="form-control form-control-select levelOptions" 
+              data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+        </div>
+    </div>
+</script>
+
+ <script type="text/javascript">
+    var levelTemplateData = [];
+    var minorLevelTemplateData = [];
+    var levelData = [];
+    var minorLevelData = [];
+    var deptData = [];
+    var shirtSizes = [];
+    $( "body" ).ready(function() {
+        // only init the javascript datepicker if none is provided by the browser natively
+        if (!Modernizr.inputtypes.date) {
+            $("#birthDate").datepicker({
+                changeMonth: true,
+                changeYear: true
+            });
+        }
+        $.getJSON("/apis/registration/pricelevels", function(data) {
+            levelData = data;
+            $.each( data, function( key, val ) {
+                levelTemplateData.push({
+                    name: val.name,
+                    price: "$" + val.base_price,
+                    levelId: "level_" + val.id,
+                    selectText: "Select " + val.name
+                });
+            });
+            $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+            $(".changeLevel").hide();
+            
+        });
+        $.getJSON("/apis/registration/minorpricelevels", function(data) {
+            minorLevelData = data;
+            $.each( data, function( key, val ) {
+                minorLevelTemplateData.push({
+                    name: val.name,
+                    price: "$" + val.base_price,
+                    levelId: "level_" + val.id,
+                    selectText: "Select " + val.name
+                });
+            });
+            
+        });
+        $.getJSON("/apis/registration/departments", function(data) {
+            deptData = data;
+            $.each(data, function(key, val) {
+                $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
+            });
+        });
+        $.getJSON("/apis/registration/shirts", function(data) {
+            shirtSizes = data;
+        });
+    });
+
+    // scroll to top on all the next views
+    $("#next-personal").click(function() {
+        window.scrollTo(0, 0);
+    });
+
+    $("#levelContainer").on('click', 'a.selectLevel', function(){
+        clearLevels();
+        var levelId = $(this).attr('id').split('_')[1];
+        $.each( levelTemplateData, function( key, val ) {
+            var id = val.levelId.split('_')[1];
+            if (id == levelId){
+                $("#regLevel").val(val.name);
+                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                $(".changeLevel").show();
+                $(".selectLevel").text("Selected!");
+                generateOptions(id);
+                return false;
+            }
+        });
+    });
+
+    $("body").on("click", '#next-personal', function() {
+        if (Modernizr.inputtypes.date) {
+            // native datepicker - expect ISO date
+            var birthdate = parseDate($("#birthDate").val());
+        } else {
+            // American middle-endian format put out by datepicker javascript
+            var birthdate = new Date(Date.parse($("#birthDate").val()));
+        }
+        var age = getAge(birthdate);
+
+
+        if (age < 18){
+            $("#levelContainer").loadTemplate($("#levelTemplate"), minorLevelTemplateData);
+            $(".changeLevel").hide();
+        }        
+
+    });
+
+
+    $("#levelContainer").on('click', 'a.changeLevel', function() {
+        $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);      
+        $("#regLevel").val("");
+        $(".changeLevel").hide();
+    });
+
+    var clearLevels = function(){
+        $.each( levelTemplateData, function( key, val ) {
+            $("#"+val.levelId).text("Select " + val.name);
+        });
+        $("form").validator('update');
+    };
+
+    var generateOptions = function(levelId){
+        var data = [];
+        $.each(levelData, function(key, thing){
+            if (thing.id == levelId){
+                data = thing.options;
+                return false;
+            }
+        });
+        var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+        $("#levelContainer").append(container);
+        $.each( data, function(key, val) {
+            if (val.value == "0.00"){
+                var price = " (Free) ";
+            } else {
+                var price = " (+$" + val.value + ") "
+            }
+            var required = "";
+            if (val.required) {required = "required";}
+            switch (val.type){
+                case "bool":
+                    var template = $("#optionBoolTemplate");
+                    if (val.required) {template = $("#optionBoolReqTemplate");}
+                    $("#optionsContainer").loadTemplate(template, {
+                        'name': val.name + " " + price,
+                        'id': "option_" + val.id
+                    }, {append: true});
+                    break;
+                case "int":
+                    var template = $("#optionIntTemplate");
+                    if (val.required) {template = $("#optionIntReqTemplate");}
+                    $("#optionsContainer").loadTemplate(template, {
+                        'name': val.name + " " + price,
+                        'id': "option_" + val.id
+                    }, {append: true});
+                    break;
+                case "string":
+                    var template = $("#optionStringTemplate");
+                    if (val.required) {template = $("#optionStringReqTemplate");}
+                    var placeholder = val.name;
+                    $("#optionsContainer").loadTemplate(template, {
+                        'name': val.name + " " + price,
+                        'id': "option_" + val.id,
+                        'placeholder': placeholder,
+                    }, {append: true});
+                    break;
+                case "Jersey":
+                    break;
+                case "StaffJersey":
+                    break;
+                default:
+                    if (val.list == []){break;}
+                    var options = [];
+                    if (!val.required) {options.push({"content": "Select One...", "value": ""});}
+                    $.each(val.list, function (key, item) {
+                        options.push({"content": item.name, "value": item.id})
+                    });
+                    $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
+                        'name': val.name + " " + price,
+                        'id': "option_" + val.id,
+                        'options': options
+                    }, {append: true});
+                    break;
+            }
+        });
+        
+        $("form").validator('update');
+    };
+
+    var getOptions = function() {
+        var options = $(".levelOptions");
+                var data = [];
+        $.each(options, function(key, option) {
+            if ($(option).is(':checkbox')) {
+                if ($(option).is(':checked')) {
+                    data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
+                }
+            } else {
+                data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+            }
+        });
+        return data;
+    };
+
+    $( "#badgeName" )
+        .keyup(function() {
+        var value = $( this ).val();
+        $( "#badge-text" ).text( value );
+    })
+    .keyup();
+
+    $("#register").click(function(e) {
+        e.preventDefault();
+        $("form").validator('validate');
+        var errorCount = $(".has-error").length;
+        if (errorCount > 0) {return;}
+        if ($("#birthDate").val() == "") {
+            alert("You must enter your birthdate to submit your registration.");
+            return;
+        }
+        var data = {
+            'attendee': {
+                'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
+                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
+                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
+                'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
+                'volDepts': $("#volunteer").val(),
+            }, 
+            'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
+            'jersey': {}
+        };
+        $.ajax({
+            "type": "POST",
+            "dataType": "json",
+            "url": "/apis/registration/cart/add/",
+            "data": JSON.stringify(data),
+            "beforeSend": function(xhr, settings) {
+                console.log("Before Send");
+                $.ajaxSettings.beforeSend(xhr, settings);
+            },
+            "success": function(result) {
+                window.location = "/apis/registration/onsite/cart";
+            },
+            "error": function(result, status) {
+            alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
+            }
+        })
+
+    });
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    }
+});
+
+
+</script>
+
+
+{% endblock %}
