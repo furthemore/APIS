@@ -62,7 +62,7 @@ class DealerAdmin(ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal')
     save_on_top = True
     resource_class = DealerResource
-    actions = [send_approval_email, send_payment_email]
+    actions = [send_approval_email, send_assistant_form_email, send_payment_email]
     readonly_fields = ['get_email']
     fieldsets = (
         (
