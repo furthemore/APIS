@@ -35,6 +35,11 @@ def send_payment_email(modeladmin, request, queryset):
             sendDealerPaymentEmail(dealer,oi.order)
 send_payment_email.short_description = "Resend payment confirmation email"
 
+def send_assistant_form_email(modeladmin, request, queryset):
+    for dealer in queryset:
+        sendDealerAsstFormEmail(dealer)
+send_assistant_form_email.short_description = "Send assistent addition form email"
+
 class DealerResource(resources.ModelResource):
     class Meta:
         model = Dealer
