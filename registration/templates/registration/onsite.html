@@ -236,8 +236,12 @@
  <script type="text/javascript">
     var levelTemplateData = [];
     var minorLevelTemplateData = [];
+    var accompaniedLevelTemplateData = [];
+    var freeLevelTemplateData = [];
     var levelData = [];
     var minorLevelData = [];
+    var accompaniedLevelData = [];
+    var freeLevelData = [];
     var deptData = [];
     var shirtSizes = [];
     $( "body" ).ready(function() {
@@ -266,6 +270,30 @@
             minorLevelData = data;
             $.each( data, function( key, val ) {
                 minorLevelTemplateData.push({
+                    name: val.name,
+                    price: "$" + val.base_price,
+                    levelId: "level_" + val.id,
+                    selectText: "Select " + val.name
+                });
+            });
+            
+        });
+        $.getJSON("/apis/registration/accompaniedpricelevels", function(data) {
+            accompaniedLevelData = data;
+            $.each( data, function( key, val ) {
+                accompaniedLevelTemplateData.push({
+                    name: val.name,
+                    price: "$" + val.base_price,
+                    levelId: "level_" + val.id,
+                    selectText: "Select " + val.name
+                });
+            });
+            
+        });
+        $.getJSON("/apis/registration/freepricelevels", function(data) {
+            freeLevelData = data;
+            $.each( data, function( key, val ) {
+                freeLevelTemplateData.push({
                     name: val.name,
                     price: "$" + val.base_price,
                     levelId: "level_" + val.id,
@@ -304,6 +332,39 @@
                 return false;
             }
         });
+        $.each( minorLevelTemplateData, function( key, val ) {
+            var id = val.levelId.split('_')[1];
+            if (id == levelId){
+                $("#regLevel").val(val.name);
+                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                $(".changeLevel").show();
+                $(".selectLevel").text("Selected!");
+                generateOptions(id);
+                return false;
+            }
+        });
+        $.each( accompaniedLevelTemplateData, function( key, val ) {
+            var id = val.levelId.split('_')[1];
+            if (id == levelId){
+                $("#regLevel").val(val.name);
+                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                $(".changeLevel").show();
+                $(".selectLevel").text("Selected!");
+                generateOptions(id);
+                return false;
+            }
+        });
+        $.each( freeLevelTemplateData, function( key, val ) {
+            var id = val.levelId.split('_')[1];
+            if (id == levelId){
+                $("#regLevel").val(val.name);
+                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                $(".changeLevel").show();
+                $(".selectLevel").text("Selected!");
+                generateOptions(id);
+                return false;
+            }
+        });
     });
 
     $("body").on("click", '#next-personal', function() {
@@ -316,8 +377,15 @@
         }
         var age = getAge(birthdate);
 
+        if (age < 7) {
+            $("#levelContainer").loadTemplate($("#levelTemplate"), freeLevelTemplateData);
+            $(".changeLevel").hide();
 
-        if (age < 18){
+        } else if (age < 13) {
+            $("#levelContainer").loadTemplate($("#levelTemplate"), accompaniedLevelTemplateData);
+            $(".changeLevel").hide();
+
+        } else if (age < 18) {
             $("#levelContainer").loadTemplate($("#levelTemplate"), minorLevelTemplateData);
             $(".changeLevel").hide();
         }        
@@ -421,13 +489,6 @@
         return data;
     };
 
-    $( "#badgeName" )
-        .keyup(function() {
-        var value = $( this ).val();
-        $( "#badge-text" ).text( value );
-    })
-    .keyup();
-
     $("#register").click(function(e) {
         e.preventDefault();
         $("form").validator('validate');
@@ -436,6 +497,13 @@
         if ($("#birthDate").val() == "") {
             alert("You must enter your birthdate to submit your registration.");
             return;
+        }
+        if (Modernizr.inputtypes.date) {
+            // native datepicker - expect ISO date
+            var birthdate = parseDate($("#birthDate").val());
+        } else {
+            // American middle-endian format put out by datepicker javascript
+            var birthdate = new Date(Date.parse($("#birthDate").val()));
         }
         var data = {
             'attendee': {

@@ -1,0 +1,125 @@
+
+<h3>Attendees</h3>
+
+<table>
+
+{% for att in attendees %}
+  <tr>
+    <td>{{att.badgeName}}</td>
+    <td>##</td>
+    <td>{{att.level}}</td>
+    <td>{{att.assoc}}</td>
+    {% for oi in att.orderItems %}
+      {% for ao in oi.getOptions %}
+        {% if 'Book' in ao.option.optionName and ao.optionValue.lower == 'on' or ao.optionValue.lower == 'true' %}
+          <td>Conbook</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'T-shirt' in ao.option.optionName %}
+          <td>Shirt {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'Dinner' in ao.option.optionName and ao.optionValue != "" and ao.optionValue > 0 %}
+          <td>GoH Dinner x{{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'Jersey' in ao.option.optionName %}
+          <td>Jersey {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </tr>
+{% endfor %}
+
+</table>
+
+<h3>Dealers</h3>
+
+<table>
+
+{% for deal in dealers %}
+  <tr>
+    <td>{{deal.badgeName}}</td>
+    <td>##</td>
+    <td>{{deal.level}}</td>
+    <td>{{deal.assoc}}</td>
+    {% for oi in deal.orderItems %}
+      {% for ao in oi.getOptions %}
+        {% if 'Book' in ao.option.optionName and ao.optionValue.lower == 'on' or ao.optionValue.lower == 'true' %}
+          <td>Conbook</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'T-shirt' in ao.option.optionName %}
+          <td>Shirt {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'Dinner' in ao.option.optionName and ao.optionValue != "" and ao.optionValue > 0 %}
+          <td>GoH Dinner x{{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'Jersey' in ao.option.optionName %}
+          <td>Jersey {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </tr>
+{% endfor %}
+
+</table>
+
+<h3>Staff</h3>
+
+<table>
+
+{% for sta in staff %}
+  <tr>
+    <td>{{sta.badgeName}}</td>
+    <td>##</td>
+    <td>{{sta.level}}</td>
+    <td>{{sta.assoc}}</td>
+    {% for oi in sta.orderItems %}
+      {% for ao in oi.getOptions %}
+        {% if 'Book' in ao.option.optionName and ao.optionValue.lower == 'on' or ao.optionValue.lower == 'true' %}
+          <td>Conbook</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'T-shirt' in ao.option.optionName %}
+          <td>Shirt {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'Dinner' in ao.option.optionName and ao.optionValue != "" and ao.optionValue > 0 %}
+          <td>GoH Dinner x{{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'StaffJersey' in ao.option.optionName %}
+          <td>Staff Jersey {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+        {% if 'Jersey' in ao.option.optionName %}
+          <td>Jersey {{ao.optionValue}}</td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </tr>
+{% endfor %}
+
+</table>
+
+
+

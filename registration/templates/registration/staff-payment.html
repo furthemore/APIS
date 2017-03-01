@@ -522,26 +522,8 @@
 					}, {append: true});
 					break;
 				case "Jersey":
-					var options = [];
-					$.each(shirtSizes, function (key, item) {
-						options.push({"content": item.name, "value": item.id})
-					});
-					$("#optionsContainer").loadTemplate($("#optionJerseyTemplate"), {
-						'name': val.name + " " + price,
-						'optionId': val.id,
-						'options': options
-					}, {append: true});
 					break;
 				case "StaffJersey":
-					var options = [];
-					$.each(shirtSizes, function (key, item) {
-						options.push({"content": item.name, "value": item.id})
-					});
-					$("#optionsContainer").loadTemplate($("#optionStaffJerseyTemplate"), {
-						'name': val.name + " " + price,
-						'optionId': val.id,
-						'options': options
-					}, {append: true});
 					break;
 				default:
 					if (val.list == []){break;}
