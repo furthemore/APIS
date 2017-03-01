@@ -59,11 +59,15 @@ urlpatterns = [
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),
     url(r'^minorpricelevels/?$', views.getMinorPriceLevels, name='minorpricelevels'),
+    url(r'^accompaniedpricelevels/?$', views.getAccompaniedPriceLevels, name='accompaniedpricelevels'),
+    url(r'^freepricelevels/?$', views.getFreePriceLevels, name='freepricelevels'),
     url(r'^shirts/?$', views.getShirtSizes, name='shirtsizes'),
     url(r'^tables/?$', views.getTableSizes, name='tablesizes'),
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),
     url(r'^takenJerseys/?$', views.getJerseyNumbers, name='takenJerseys'),
     url(r'^takenStaffJerseys/?$', views.getStaffJerseyNumbers, name='takenStaffJerseys'),
+
+    url(r'^utility/badges?$', views.badgeList, name='badgeList'),
 
     url(r'^flush/?$', views.flush, name='flush'),
 
