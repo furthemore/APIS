@@ -1112,6 +1112,16 @@ def cartDone(request):
 ###################################
 # Utilities
 
+def badgeList(request):
+    attendees = Attendee.objects.all()
+    data = [{'badgeName': att.badgeName, 'level': att.effectiveLevel(), 'assoc': att.abandoned(), 'orderItems':att.orderitem_set.all()} for att in attendees if att.effectiveLevel() != None]
+    sdata = sorted(data, key=lambda x: x['level'].name)
+    dealers = [att for att in sdata if att['assoc'] == 'Dealer']
+    staff = [att for att in sdata if att['assoc'] == 'Staff']
+    attendees = [att for att in sdata if att['assoc'] != 'Dealer' and att['assoc'] != 'Staff' ]
+    return render(request, 'registration/utility/badgelist.html', {'attendees': attendees, 'dealers': dealers, 'staff': staff})    
+
+
 def getEvents(request):
     events = Event.objects.all()
     data = [{'name': ev.name, 'id': ev.id, 'dealerStart': ev.dealerRegStart, 'dealerEnd': ev.dealerRegEnd, 'staffStart': ev.staffRegStart, 'staffEnd': ev.staffRegEnd, 'attendeeStart': ev.attendeeRegStart, 'attendeeEnd': ev.attendeeRegEnd} for ev in events]
@@ -1129,7 +1139,19 @@ def getAllDepartments(request):
 
 def getMinorPriceLevels(request):
     now = timezone.now()
-    levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='minor')
+    levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='minor').order_by('basePrice')
+    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
+
+def getAccompaniedPriceLevels(request):
+    now = timezone.now()
+    levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='accompanied').order_by('basePrice')
+    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
+
+def getFreePriceLevels(request):
+    now = timezone.now()
+    levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='free')
     data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
@@ -1238,3 +1260,4 @@ def handler(obj):
         return str(obj)
     else:
         raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
+

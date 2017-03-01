@@ -6,8 +6,8 @@
 
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Checkout</h1>
-		<h3>Add another attendee to your order, or checkout</h3>
+		<h1>Finalize Registration</h1>
+		<h3>Add another attendee to your order, or click Finish</h3>
 		<hr>
 
 		<h3>Your Order</h3>
@@ -25,6 +25,21 @@
 					<a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
 				</div>
 			</div>
+            {% if 'Minor' in item.priceLevel.name%}
+			<div class="row">
+				<div class="col-sm-9 col-sm-offset-1" style="color:red;">A parent or guardian must sign a waiver when paying for this attendee.</div>
+			</div>
+            {% endif %}
+            {% if 'Accompanied' in item.priceLevel.name%}
+			<div class="row">
+				<div class="col-sm-9 col-sm-offset-1" style="color:red;">A parent or guardian must register and accompany this attendee.</div>
+			</div>
+            {% endif %}
+            {% if 'Free' in item.priceLevel.name%}
+			<div class="row">
+				<div class="col-sm-9 col-sm-offset-1" style="color:red;">A parent or guardian must register and accompany this attendee.</div>
+			</div>
+            {% endif %}
 			{% for option in item.getOptions %}
 			<div class="row">
 				{% if option.option.optionExtraType == "int" %}
@@ -80,79 +95,15 @@
 			<input type="text" id="donateOrg" class="form-control" placeholder="0.00" />
 		    </div>
 		</div>
-		<hr/>
 
 
-		<h3>Billing Information</h3>
 
-
-		<div class="form-group">
-                    <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
-                    <div class="col-sm-9">
-                        <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
-			{% for oi in orderItems %}
-			    <option value="{{oi.attendee.id}}">{{oi.attendee}}</option>
-			{% endfor %}
-			</select>
-                    </div>
-		</div>
-		<div class="form-group">
-                    <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
-                    <div class="col-sm-4">
-                        <input type="text" id="fname" placeholder="Billing First Name" class="form-control" required data-error="Billing name is required. " />
-                    </div>
-                    <div class="col-sm-5">
-                        <input type="text" id="lname" placeholder="Billing Last Name" class="form-control" required data-error="Billing name is required. " />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required. " />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Billing Address</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control" />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
-		    <div class="col-sm-4">
-			<input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required." />
-		    </div>
-                    <div class="col-sm-2">
-			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
-                    </div>
-		    <div class="col-sm-3">
-			<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required." />
-		    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country</label>
-                    <div class="col-sm-9">
-			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-		</div>
-
+			{% csrf_token %}
  		</form>
 		</div>
 
-			{% csrf_token %}
 			<div class="row">
-				<a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Checkout</a>
+				<a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Finish</a>
 			</div>
 
 
@@ -178,11 +129,7 @@
 
 {% block javascript %}
 <script type="text/javascript">
-	var addresses = [];
 	$( "body" ).ready(function() {
-                $.getJSON("/apis/registration/addresses", function(data) {
-		addresses = data;
-                });		
 	});
 
 	$(".deleteAttendee").click(function(e) {
@@ -223,36 +170,6 @@
                 });
 	});
 
-	$("#useFrom").on("change", function(e) {
-		var userId = $(this).val();
-		if (userId == ""){
-			$("#fname").val("");
-			$("#lname").val("");
-			$("#email").val("");
-			$("#add1").val("");
-			$("#add2").val("");
-			$("#city").val("");
-			$("#state").val("");
-			$("#country").val("");
-			$("#zip").val("");
-			return;
-		}
-
-		var userName = $("#useFrom option[value='" + userId + "']").text();
-		$("#fname").val(userName.split(' ')[0]);
-		$("#lname").val(userName.split(' ')[1]);
-		$.each(addresses, function (key, item) {
-			if (item.id != userId) { return; }
-			$("#email").val(item.email);
-			$("#add1").val(item.address1);
-			$("#add2").val(item.address2);
-			$("#city").val(item.city);
-			$("#state").val(item.state);
-			$("#country").val(item.country);
-			$("#zip").val(item.postalCode);
-		});
-	});
-
 	$("#checkout").click(function (e) {
 		e.preventDefault();
 		$("form").validator('validate');
@@ -263,11 +180,7 @@
 
 		var data = {
             'onsite': true,
-		    'billingData': {
-                'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-		    },
+		    'billingData': {},
 		    'charityDonation': $("#donateCharity").val(),
 		    'orgDonation': $("#donateOrg").val()
 		};
