@@ -130,15 +130,17 @@ class StaffResource(resources.ModelResource):
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
     actions = [send_staff_registration_email]
-    list_display = ('attendee', 'title', 'department', 'shirtsize', 'staff_total')
+    list_display = ('attendee', 'get_email', 'get_badge', 'title', 'department', 'shirtsize', 'staff_total')
     list_filter = ('department',)
     search_fields = ['attendee__email', 'attendee__badgeName', 'attendee__lastName', 'attendee__firstName'] 
     resource_class = StaffResource
+    readonly_fields = ['get_email', 'get_badge']
     fieldsets = (
         (
 	    None, 
             {'fields':(
                 ('attendee', 'registrationToken'), 
+                ('get_email', 'get_badge'),
                 ('title', 'timesheetAccess'),
                 ('department', 'supervisor'),
                 ('twitter','telegram'),
@@ -159,6 +161,14 @@ class StaffAdmin(ImportExportModelAdmin):
             )}
         ),
     )
+
+    def get_email(self, obj):
+        return obj.attendee.email
+    get_email.short_description = "Email"
+
+    def get_badge(self, obj):
+        return obj.attendee.badgeName
+    get_badge.short_description = "Badge Name"
 
     def staff_total(self, obj):
         return obj.attendee.paidTotal()
