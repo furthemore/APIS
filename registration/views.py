@@ -1112,9 +1112,22 @@ def cartDone(request):
 ###################################
 # Utilities
 
+def getOptionsDict(orderItems):
+    orderDict = {}
+    for oi in orderItems:
+        aos = oi.getOptions()
+        for ao in aos: 
+            if ao.optionValue == 0 or ao.optionValue == None or ao.optionValue == "": pass
+            if ao.option.optionName in orderDict: 
+              orderDict[ao.option.optionName.replace(" ", "").replace("-", "") + '2'] = ao.optionValue
+            else:
+              orderDict[ao.option.optionName.replace(" ", "").replace("-", "")] = ao.optionValue
+
+    return orderDict
+
 def badgeList(request):
     attendees = Attendee.objects.all()
-    data = [{'badgeName': att.badgeName, 'level': att.effectiveLevel(), 'assoc': att.abandoned(), 'orderItems':att.orderitem_set.all()} for att in attendees if att.effectiveLevel() != None]
+    data = [{'badgeName': att.badgeName, 'level': att.effectiveLevel(), 'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
     sdata = sorted(data, key=lambda x: x['level'].name)
     dealers = [att for att in sdata if att['assoc'] == 'Dealer']
     staff = [att for att in sdata if att['assoc'] == 'Staff']
