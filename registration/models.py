@@ -111,6 +111,14 @@ class Attendee(models.Model):
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
 
+    def getDiscount(self):
+      discount = ""
+      orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
+      for oi in orderItems: 
+        if oi.order.discount != None:
+          discount = oi.order.discount.codeName
+      return discount
+
     def paidTotal(self):
       total = 0
       orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
