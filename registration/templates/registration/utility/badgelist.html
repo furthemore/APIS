@@ -13,10 +13,9 @@
   <td>GOH</td>
 </tr>
 {% for att in attendees %}
-  {% if att.discount != "FMDealerPartner17" %}
   <tr>
     <td>{{att.badgeName}}</td>
-    <td>##</td>
+    <td>{{att.badgeNumber|stringformat:"03d"}}</td>
     <td>{{att.level}}</td>
     <td>{{att.discount}}</td>
     <td>{{att.assoc}}</td>
@@ -25,7 +24,6 @@
     <td>{{att.orderItems.Jersey}} {{att.orderItems.Jersey2}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
-  {% endif %}
 {% endfor %}
 
 </table>
@@ -36,7 +34,6 @@
 
 <tr>
   <td>Badge Name</td>
-  <td>##</td>
   <td>Level</td>
   <td>Assoc</td>
   <td>Conbook</td>
@@ -47,7 +44,6 @@
 {% for att in dealers %}
   <tr>
     <td>{{att.badgeName}}</td>
-    <td>##</td>
     <td>{{att.level}}</td>
     <td>{{att.assoc}}</td>
     <td>{{att.orderItems.ConBook}}</td>
@@ -63,7 +59,6 @@
 <table border="1">
 <tr>
   <td>Badge Name</td>
-  <td>##</td>
   <td>Level</td>
   <td>Discount</td>
   <td>Assoc</td>
@@ -76,7 +71,6 @@
   {% if att.discount == "FMDealerPartner17" %}
   <tr>
     <td>{{att.badgeName}}</td>
-    <td>##</td>
     <td>{{att.level}}</td>
     <td>{{att.discount}}</td>
     <td>{{att.assoc}}</td>
@@ -97,6 +91,7 @@
 <tr>
   <td>Badge Name</td>
   <td>##</td>
+  <td>Title</td>
   <td>Level</td>
   <td>Assoc</td>
   <td>Conbook</td>
@@ -108,7 +103,8 @@
 {% for att in staff %}
   <tr>
     <td>{{att.badgeName}}</td>
-    <td>##</td>
+    <td>S{{att.badgeNumber|stringformat:"03d"}}</td>
+    <td>{{att.title}}</td>
     <td>{{att.level}}</td>
     <td>{{att.assoc}}</td>
     <td>{{att.orderItems.ConBook}}</td>
