@@ -213,7 +213,8 @@ def clear_abandons(modeladmin, request, queryset):
 clear_abandons.short_description = "***Delete Abandoned Orders***"
 
 def assign_badge_numbers(modeladmin, request, queryset):
-    highest = Attendee.objects.all().aggregate(Max('badgeNumber'))['badgeNumber__max']
+    nonstaff = Attendee.objects.filter(staff=None)
+    highest = nonstaff.aggregate(Max('badgeNumber'))['badgeNumber__max']
     for att in queryset.order_by('registeredDate'): 
         if att.badgeNumber: continue
         if att.effectiveLevel() == None: continue
