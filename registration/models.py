@@ -102,6 +102,7 @@ class Attendee(models.Model):
     event = models.ForeignKey(Event)    
     registeredDate = models.DateTimeField(null=True)
     registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    printed = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
       if not self.id:
