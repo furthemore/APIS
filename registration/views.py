@@ -1127,11 +1127,22 @@ def getOptionsDict(orderItems):
 
 def badgeList(request):
     attendees = Attendee.objects.all()
-    data = [{'badgeName': att.badgeName, 'level': att.effectiveLevel(), 'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
+    staff = Staff.objects.all()
+
+    data = [{'badgeName': att.badgeName, 'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel(), 
+             'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 
+             'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
+    staffdata = [{'badgeName': s.attendee.badgeName, 'badgeNumber': s.attendee.badgeNumber, 
+                  'level': s.attendee.effectiveLevel(), 'assoc': s.attendee.abandoned(), 
+                  'orderItems':getOptionsDict(s.attendee.orderitem_set.all()), 
+                  'discount': s.attendee.getDiscount(), 
+                  'title': s.title} for s in staff if s.attendee.effectiveLevel() != None]
     sdata = sorted(data, key=lambda x: x['level'].name)
+    ssdata = sorted(staffdata, key=lambda x: x['level'].name)
+
     dealers = [att for att in sdata if att['assoc'] == 'Dealer']
-    staff = [att for att in sdata if att['assoc'] == 'Staff']
-    attendees = [att for att in sdata if att['assoc'] != 'Dealer' and att['assoc'] != 'Staff' ]
+    staff = [att for att in ssdata]
+    attendees = [att for att in sdata if att['assoc'] != 'Staff' ]
     return render(request, 'registration/utility/badgelist.html', {'attendees': attendees, 'dealers': dealers, 'staff': staff})    
 
 
