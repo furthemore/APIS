@@ -2,6 +2,8 @@
 <h3>Attendees</h3>
 <table border="1">
 <tr>
+  <td>First Name</td>
+  <td>Last Name</td>
   <td>Badge Name</td>
   <td>##</td>
   <td>Level</td>
@@ -14,8 +16,10 @@
 </tr>
 {% for att in attendees %}
   <tr>
+    <td>{{att.firstName}}</td>
+    <td>{{att.lastName}}</td>
     <td>{{att.badgeName}}</td>
-    <td>{{att.badgeNumber|stringformat:"03d"}}</td>
+    <td>{{att.badgeNumber|stringformat:"04d"}}</td>
     <td>{{att.level}}</td>
     <td>{{att.discount}}</td>
     <td>{{att.assoc}}</td>
@@ -33,6 +37,8 @@
 <table border="1">
 
 <tr>
+  <td>First Name</td>
+  <td>Last Name</td>
   <td>Badge Name</td>
   <td>Level</td>
   <td>Assoc</td>
@@ -43,6 +49,8 @@
 </tr>
 {% for att in dealers %}
   <tr>
+    <td>{{att.firstName}}</td>
+    <td>{{att.lastName}}</td>
     <td>{{att.badgeName}}</td>
     <td>{{att.level}}</td>
     <td>{{att.assoc}}</td>
@@ -58,6 +66,8 @@
 <h3>Dealer Assistants</h3>
 <table border="1">
 <tr>
+  <td>First Name</td>
+  <td>Last Name</td>
   <td>Badge Name</td>
   <td>Level</td>
   <td>Discount</td>
@@ -70,6 +80,8 @@
 {% for att in attendees %}
   {% if att.discount == "FMDealerPartner17" %}
   <tr>
+    <td>{{att.firstName}}</td>
+    <td>{{att.lastName}}</td>
     <td>{{att.badgeName}}</td>
     <td>{{att.level}}</td>
     <td>{{att.discount}}</td>
@@ -89,6 +101,8 @@
 
 <table border="1">
 <tr>
+  <td>First Name</td>
+  <td>Last Name</td>
   <td>Badge Name</td>
   <td>##</td>
   <td>Title</td>
@@ -102,6 +116,8 @@
 </tr>
 {% for att in staff %}
   <tr>
+    <td>{{att.firstName}}</td>
+    <td>{{att.lastName}}</td>
     <td>{{att.badgeName}}</td>
     <td>S{{att.badgeNumber|stringformat:"03d"}}</td>
     <td>{{att.title}}</td>

@@ -6,6 +6,7 @@ from django.template.response import TemplateResponse
 from django.utils import timezone
 from datetime import datetime
 from decimal import *
+from operator import itemgetter
 import json
 import random
 import string
@@ -1129,16 +1130,19 @@ def badgeList(request):
     attendees = Attendee.objects.all()
     staff = Staff.objects.all()
 
-    data = [{'badgeName': att.badgeName, 'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel(), 
+    data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName, 
+             'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel().name, 
              'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 
              'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
-    staffdata = [{'badgeName': s.attendee.badgeName, 'badgeNumber': s.attendee.badgeNumber, 
-                  'level': s.attendee.effectiveLevel(), 'assoc': s.attendee.abandoned(), 
+    staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
+                  'badgeName': s.attendee.badgeName, 'badgeNumber': s.attendee.badgeNumber, 
+                  'level': s.attendee.effectiveLevel().name, 'assoc': s.attendee.abandoned(), 
                   'orderItems':getOptionsDict(s.attendee.orderitem_set.all()), 
                   'discount': s.attendee.getDiscount(), 
                   'title': s.title} for s in staff if s.attendee.effectiveLevel() != None]
-    sdata = sorted(data, key=lambda x: x['level'].name)
-    ssdata = sorted(staffdata, key=lambda x: x['level'].name)
+
+    sdata = sorted(data, key=lambda x:(x['level'],x['lastName']))
+    ssdata = sorted(staffdata, key=lambda x:x['lastName'])
 
     dealers = [att for att in sdata if att['assoc'] == 'Dealer']
     staff = [att for att in ssdata]
