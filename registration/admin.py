@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Max
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -104,10 +105,24 @@ class DealerAdmin(ImportExportModelAdmin):
 
 admin.site.register(Dealer, DealerAdmin)
 
+########################################################
+#   Staff Admin
+
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
         sendStaffPromotionEmail(staff)
 send_staff_registration_email.short_description = "Send registration instructions"
+
+def assign_staff_badge_numbers(modeladmin, request, queryset):
+    highest = Staff.objects.all().aggregate(Max('attendee__badgeNumber'))['attendee__badgeNumber__max']
+    for staff in queryset.order_by('attendee__registeredDate'): 
+        if staff.attendee.badgeNumber: continue
+        if staff.attendee.effectiveLevel() == None: continue
+        highest = highest + 1
+        a = staff.attendee
+        a.badgeNumber = highest 
+        a.save()
+assign_staff_badge_numbers.short_description = "Assign staff badge numbers"
 
 class StaffResource(resources.ModelResource):
     class Meta:
@@ -129,7 +144,7 @@ class StaffResource(resources.ModelResource):
 
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
-    actions = [send_staff_registration_email]
+    actions = [send_staff_registration_email, assign_staff_badge_numbers]
     list_display = ('attendee', 'get_email', 'get_badge', 'title', 'department', 'shirtsize', 'staff_total')
     list_filter = ('department',)
     search_fields = ['attendee__email', 'attendee__badgeName', 'attendee__lastName', 'attendee__firstName'] 
@@ -197,6 +212,16 @@ def clear_abandons(modeladmin, request, queryset):
            att.delete()
 clear_abandons.short_description = "***Delete Abandoned Orders***"
 
+def assign_badge_numbers(modeladmin, request, queryset):
+    highest = Attendee.objects.all().aggregate(Max('badgeNumber'))['badgeNumber__max']
+    for att in queryset.order_by('registeredDate'): 
+        if att.badgeNumber: continue
+        if att.effectiveLevel() == None: continue
+        highest = highest + 1
+        att.badgeNumber = highest 
+        att.save()
+assign_badge_numbers.short_description = "Assign badge numbers"
+
 class AttendeeOptionInline(NestedTabularInline):
     model=AttendeeOptions
     extra=1
@@ -206,12 +231,10 @@ class OrderItemInline(NestedTabularInline):
     extra=0
     inlines = [AttendeeOptionInline]
 
-
-
 class AttendeeAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
     save_on_top = True
-    actions = [make_staff, clear_abandons]
+    actions = [make_staff, clear_abandons, assign_badge_numbers]
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
     fieldsets = (
         (
