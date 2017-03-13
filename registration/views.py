@@ -536,7 +536,8 @@ def infoDealer(request):
 def getDealerTotal(orderItems, discount, dealer):
     subTotal = getTotal(orderItems, discount)
     partnerCount = dealer.getPartnerCount()
-    total = subTotal + 40*partnerCount + dealer.tableSize.basePrice - dealer.discount
+    paidTotal = dealer.paidTotal()
+    total = subTotal + 40*partnerCount + dealer.tableSize.basePrice - dealer.discount - paidTotal
     if total < 0: 
       return 0
     return total
