@@ -134,9 +134,9 @@ class Attendee(models.Model):
             return 'Dealer'
         if self.paidTotal() > 0: 
             return 'Paid'
-        if self.paidTotal() == 0 and self.effectiveLevel is not None:
+        if self.effectiveLevel():
             return 'Comp'
-        return True
+        return 'Abandoned'
 
     def effectiveLevel(self):
         level = None
@@ -284,6 +284,10 @@ class Discount(models.Model):
         return True
 
 class Order(models.Model):
+    CREDIT = 'Credit'
+    CASH = 'Cash'
+    COMP = 'Comp'
+    BILLING_TYPE_CHOICES = ((CREDIT, 'Credit'), (CASH, 'Cash'), (COMP, 'Comp'))
     total = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=50, default='Pending')
     reference = models.CharField(max_length=50)
@@ -293,14 +297,15 @@ class Order(models.Model):
     orgDonation = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     charityDonation = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     notes = models.TextField(blank=True)
-    billingName = models.CharField(max_length=200)
-    billingAddress1 = models.CharField(max_length=200)
+    billingName = models.CharField(max_length=200, blank=True)
+    billingAddress1 = models.CharField(max_length=200, blank=True)
     billingAddress2 = models.CharField(max_length=200, blank=True)
-    billingCity = models.CharField(max_length=200)
-    billingState = models.CharField(max_length=200)
-    billingCountry = models.CharField(max_length=200)
-    billingPostal = models.CharField(max_length=20)
-    billingEmail = models.CharField(max_length=200)
+    billingCity = models.CharField(max_length=200, blank=True)
+    billingState = models.CharField(max_length=200, blank=True)
+    billingCountry = models.CharField(max_length=200, blank=True)
+    billingPostal = models.CharField(max_length=20, blank=True)
+    billingEmail = models.CharField(max_length=200, blank=True)
+    billingType = models.CharField(max_length=20, choices=BILLING_TYPE_CHOICES, default=CREDIT)
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)

@@ -14,9 +14,9 @@ admin.site.register(ShirtSizes)
 admin.site.register(Event)
 
 class JerseyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'number', 'shirtSize')
+    list_display = ('id', 'name', 'number', 'shirtSize')
 class StaffJerseyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'number', 'shirtSize')
+    list_display = ('id', 'name', 'number', 'shirtSize')
 
 admin.site.register(Jersey, JerseyAdmin)
 admin.site.register(StaffJersey, StaffJerseyAdmin)
@@ -236,6 +236,7 @@ class AttendeeAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
     save_on_top = True
     actions = [make_staff, clear_abandons, assign_badge_numbers]
+    search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
     fieldsets = (
         (
@@ -268,10 +269,37 @@ class AttendeeAdmin(NestedModelAdmin):
 
 admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
+
 admin.site.register(OrderItem)
 
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(NestedModelAdmin):
     list_display = ('reference', 'createdDate', 'total', 'orgDonation', 'charityDonation', 'discount', 'status')
+    save_on_top = True
+    inlines = [OrderItemInline]
+    fieldsets = (
+        (
+	    None, 
+            {'fields':(
+                ('total', 'billingType'), 
+                ('reference', 'status'), 
+                'discount', 'orgDonation', 'charityDonation'
+            )}
+        ),
+        (
+            'Billing Address', 
+            {'fields': (
+                'billingName', 'billingEmail', 'billingAddress1', 'billingAddress2',
+                'billingCity', 'billingState', 'billingPostal'
+            ), 'classes': ('collapse',)}
+        ),
+        (
+            'Notes', 
+            {'fields': (
+                'notes',
+            ), 'classes': ('collapse',)}
+        ),
+    )
+
 
 admin.site.register(Order, OrderAdmin)
 
