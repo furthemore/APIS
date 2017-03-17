@@ -321,5 +321,7 @@ class AttendeeOptions(models.Model):
     option = models.ForeignKey(PriceLevelOption)
     orderItem = models.ForeignKey(OrderItem)
     optionValue = models.CharField(max_length=200)
+    optionValue2 = models.CharField(max_length=200, blank=True)
+    optionValue3 = models.CharField(max_length=200, blank=True)
 
  

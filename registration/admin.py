@@ -1,5 +1,8 @@
+from datetime import date
+
 from django.contrib import admin
 from django.db.models import Max
+from django.utils.html import format_html
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -231,6 +234,17 @@ class OrderItemInline(NestedTabularInline):
     model=OrderItem
     extra=0
     inlines = [AttendeeOptionInline]
+    list_display = ['attendee', 'priceLevel', 'get_age_range', 'enteredBy']
+    readonly_fields = ['get_age_range', ]
+
+    def get_age_range(self, obj):
+        born = obj.attendee.birthdate
+        today = date.today()
+        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        if age >= 18: return format_html('<span>18+</span>')
+        return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
+    get_age_range.short_description = "Age Group"
+
 
 class AttendeeAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
@@ -270,6 +284,40 @@ class AttendeeAdmin(NestedModelAdmin):
 admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
 
+
+def print_badges(modeladmin, request, queryset):
+    for att in queryset:
+        #print the badge
+        att.printed = True
+        att.save()
+print_badges.short_description = "Print Badges"
+
+class AttendeeOnsite(Attendee):
+    class Meta:
+        proxy=True
+
+class AttendeeOnsiteAdmin(NestedModelAdmin):
+    inlines = [OrderItemInline]
+    save_on_top = True
+    actions = [assign_badge_numbers, print_badges]
+    search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
+    list_display = ('firstName', 'lastName', 'effectiveLevel', 'is_minor', 'badgeNumber', 'printed')
+
+    def is_minor(self, obj):
+        today = date.today()
+        born = obj.birthdate
+        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        if age >= 18: return ""
+        return format_html('<span style="color:red">YES</span>')
+
+    def get_actions(self, request):
+        actions = super(AttendeeOnsiteAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+admin.site.register(AttendeeOnsite, AttendeeOnsiteAdmin)
+
 admin.site.register(OrderItem)
 
 class OrderAdmin(NestedModelAdmin):
@@ -282,7 +330,8 @@ class OrderAdmin(NestedModelAdmin):
             {'fields':(
                 ('total', 'billingType'), 
                 ('reference', 'status'), 
-                'discount', 'orgDonation', 'charityDonation'
+                'discount', 
+                ('orgDonation', 'charityDonation')
             )}
         ),
         (
