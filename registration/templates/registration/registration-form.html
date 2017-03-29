@@ -491,7 +491,7 @@
                 'volDepts': $("#volunteer").val(),
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'jersey': getJersey()
+            'jersey': getJersey(), 'event': 'Furthemore 2017'
         };
         $.ajax({
             "type": "POST",
