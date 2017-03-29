@@ -306,6 +306,7 @@ class Order(models.Model):
     billingPostal = models.CharField(max_length=20, blank=True)
     billingEmail = models.CharField(max_length=200, blank=True)
     billingType = models.CharField(max_length=20, choices=BILLING_TYPE_CHOICES, default=CREDIT)
+    lastFour = models.CharField(max_length=4, blank=True)
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)

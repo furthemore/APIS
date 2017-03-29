@@ -130,14 +130,14 @@ assign_staff_badge_numbers.short_description = "Assign staff badge numbers"
 class StaffResource(resources.ModelResource):
     class Meta:
         model = Staff
-        fields = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+        fields = ('id','attendee__badgeNumber', 'attendee__printed', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
                   'department__name', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize__name', 
                   'specialSkills', 'specialFood', 'specialMedical', 'contactName', 'contactPhone', 
                   'contactRelation'
                   )
-        export_order = ('id', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+        export_order = ('id', 'attendee__badgeNumber', 'attendee__printed', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'attendee__badgeName',
                   'department__name', 'supervisor', 'title', 'twitter', 'telegram', 'shirtsize__name', 
@@ -302,6 +302,32 @@ class AttendeeOnsiteAdmin(NestedModelAdmin):
     actions = [assign_badge_numbers, print_badges]
     search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
     list_display = ('firstName', 'lastName', 'effectiveLevel', 'is_minor', 'badgeNumber', 'printed')
+    fieldsets = (
+        (
+	    None, 
+            {'fields':(
+                ('firstName', 'lastName'), 
+                ('badgeName', 'badgeNumber'),
+                ('address1', 'address2'),
+                ('city', 'state', 'postalCode', 'country'),
+                ('email','phone', 'emailsOk'),
+                'birthdate',
+            )}
+        ),
+        (
+            'Parent Info', 
+            {'fields': (
+                'parentFirstName', 'parentLastName', 
+                'parentPhone', 'parentEmail',
+            ),  'classes': ('collapse',)}
+        ),
+        (
+            'Other Con Info', 
+            {'fields': (
+                'holdType',
+            ),  'classes': ('collapse',)}
+        ),
+    )
 
     def is_minor(self, obj):
         today = date.today()
@@ -330,7 +356,7 @@ class OrderAdmin(NestedModelAdmin):
             {'fields':(
                 ('total', 'billingType'), 
                 ('reference', 'status'), 
-                'discount', 
+                ('discount', 'lastFour'), 
                 ('orgDonation', 'charityDonation')
             )}
         ),
