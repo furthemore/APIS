@@ -742,7 +742,6 @@ def addDealer(request):
     except Exception as e:
         return HttpResponseServerError(str(e))
 
-    #Todo: get price level from post
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
     orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
@@ -909,6 +908,7 @@ def onsiteCart(request):
 
 def onsiteDone(request):
     context = {}
+    request.session.flush()
     return render(request, 'registration/onsite-done.html', context)
 
 
@@ -958,11 +958,12 @@ def addToCart(request):
     pda = postData['attendee']
     pdp = postData['priceLevel']
     jer = postData['jersey']
+    evt = postData['event']
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
-    #TODO: get correct event
-    event = Event.objects.first()
+
+    event = Event.objects.get(name=evt)
 
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
@@ -1022,9 +1023,6 @@ def checkout(request):
     pdisc = request.session.get('discount', "")
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
-    event = Event.objects.first()
-   
-    #todo: event = Event.objects.get(id=int(postData["eventId"]))
 
     discount = Discount.objects.filter(codeName=pdisc)
     if discount.count() > 0 and discount.first().isValid():
@@ -1049,7 +1047,7 @@ def checkout(request):
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
-        del request.session['order_items']
+        request.session.flush()
         sendRegistrationEmail(order.id, att.email)
         return JsonResponse({'success': True})
 
@@ -1064,6 +1062,23 @@ def checkout(request):
 
     total = subtotal + porg + pcharity
 
+    onsite = postData["onsite"]
+    if onsite:
+        att = orderItems[0].attendee
+        order = Order(total=0, reference=reference, discount=discount,
+                  orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
+                  billingAddress1=att.address1, billingAddress2=att.address2,
+                  billingCity=att.city, billingState=att.state, billingCountry=att.country,
+                  billingPostal=att.postalCode, status="Complete", billingEmail=att.email)
+        order.save()
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
+        request.session.flush()
+        return JsonResponse({'success': True})
+    
+
+
     order = Order(total=Decimal(total), reference=reference, discount=discount,
                   orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
@@ -1071,11 +1086,6 @@ def checkout(request):
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
     order.save()
 
-    onsite = postData["onsite"]
-    if onsite:
-        request.session.flush()
-        return JsonResponse({'success': True})
-    
     response = chargePayment(order.id, pbill)
 
     if response is not None:
