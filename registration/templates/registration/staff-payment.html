@@ -414,7 +414,7 @@
 	$( "body" ).ready(function() {
 		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
-			var prevLevel = 45;
+			var prevLevel = 50;
 			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
 				prevLevel = parseFloat(currentLevel.basePrice);
 			}
