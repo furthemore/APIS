@@ -1150,7 +1150,7 @@ def badgeList(request):
     staff = Staff.objects.all()
 
     data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName, 
-             'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel().name, 
+             'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel().name, 'printed': att.printed,
              'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 
              'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
     staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
