@@ -102,7 +102,7 @@ def checkoutStaffJersey(request):
     orderItem.order = order
     orderItem.save()
     
-    response = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill, get_client_ip(request))
     if response is not None:
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
@@ -202,7 +202,7 @@ def checkoutJersey(request):
     orderItem.order = order
     orderItem.save()
     
-    response = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill, get_client_ip(request))
     if response is not None:
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
@@ -458,7 +458,7 @@ def checkoutStaff(request):
     order.save()
     email = order.billingEmail
 
-    response = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if response is not None:
         if response.messages.resultCode == "Ok":
@@ -655,7 +655,7 @@ def checkoutAsstDealer(request):
     orderItem.order = order
     orderItem.save()
     
-    response = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill, get_client_ip(request))
     if response is not None:
         if response.messages.resultCode == "Ok":
             if hasattr(response.transactionResponse, 'messages') == True:
@@ -823,7 +823,7 @@ def checkoutDealer(request):
                   billingPostal=pbill['postal'])
     order.save()
 
-    response = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if response is not None:
         if response.messages.resultCode == "Ok":
@@ -1086,7 +1086,7 @@ def checkout(request):
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
     order.save()
 
-    response = chargePayment(order.id, pbill)
+    response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if response is not None:
           if response.messages.resultCode == "Ok":
@@ -1123,6 +1123,14 @@ def cartDone(request):
 
 ###################################
 # Utilities
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def getOptionsDict(orderItems):
     orderDict = {}
