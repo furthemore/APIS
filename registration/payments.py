@@ -3,10 +3,13 @@ from authorizenet import apicontractsv1
 from authorizenet.apicontrollers import *
 from decimal import *
 
+import os
+
 from .models import *
 
-def chargePayment(orderId, ccData):
+def chargePayment(orderId, ccData, ipAddress):
     order = Order.objects.get(id=orderId)
+    clientIP = ipAddress
 
     merchantAuth = apicontractsv1.merchantAuthenticationType()
     merchantAuth.name = settings.AUTHNET_NAME
@@ -38,6 +41,7 @@ def chargePayment(orderId, ccData):
     transactionrequest.payment = payment
     transactionrequest.billTo = billTo
     transactionrequest.order = ordertype
+    transactionrequest.customerIP = clientIP
  
     createtransactionrequest = apicontractsv1.createTransactionRequest()
     createtransactionrequest.merchantAuthentication = merchantAuth
