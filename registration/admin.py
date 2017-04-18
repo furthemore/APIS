@@ -251,6 +251,7 @@ class AttendeeAdmin(NestedModelAdmin):
     save_on_top = True
     actions = [make_staff, clear_abandons, assign_badge_numbers]
     search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
+    list_filter = ('event',)
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
     fieldsets = (
         (
@@ -306,6 +307,8 @@ print_badges.short_description = "Print Badges"
 class AttendeeOnsite(Attendee):
     class Meta:
         proxy=True
+        verbose_name='Attendee Onsite 2017'
+        verbose_name_plural='Attendee Onsite 2017'
 
 class AttendeeOnsiteAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
@@ -352,6 +355,10 @@ class AttendeeOnsiteAdmin(NestedModelAdmin):
         if 'delete_selected' in actions:
             del actions['delete_selected']
         return actions
+
+    def get_queryset(self, request):
+        ev = Event.objects.get(name='Furthemore 2017')
+        return super(AttendeeOnsiteAdmin,self).get_queryset(request).filter(event=ev).filter(printed=False)
 
 admin.site.register(AttendeeOnsite, AttendeeOnsiteAdmin)
 

@@ -12,8 +12,8 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="javascript">
-$(function () {
+<script type="text/javascript">
+$( "body" ).ready(function () {
     setTimeout(function(){
        window.location = "/apis/registration/onsite";
     }, 5000);
