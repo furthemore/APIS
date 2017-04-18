@@ -1,0 +1,57 @@
+This directory contains nametag templates for Taxidi to use.
+Templates are rendered using the QT implementation of webkit,
+and should be tested in a modern webkit browser such as
+Chromium, Konquerer, (or Firefox in most cases).  
+
+Each template should be in its own directory with an unique
+name, along with an accompanying .conf file bearing the same
+name as the folder.  This defines default zoom, page size, 
+margins, etc. and are specific to printer and label types.
+The included configurations are specific to the 100x62mm
+labels and the default settings for the Brother QL-570.  If
+you require different dimensions you will need to use a
+different template pack or change the values in the conf file.
+A scheme for printer-specific margin settings for overriding
+this automatically may be considered for the future, but for
+now, patched .conf files will be required for different model
+printers.
+
+Creating themes:
+The directory should contain at minimum the .conf and
+default.html, which defines the base template.  Placeholders
+inside the template are formatted like %this%, and accept the
+following:
+
+    %date%, %time%      Formatted date and time (per config.)
+    %room%, %service%   Room and service of check-in.
+    %first%, %last%     Names
+    %medical%           Allergies, etc. or volunteer position.
+    %code%, %s%         Paging number and security code (%s%)
+    
+secure.png, parent-link.png, and parent-secure.png will be
+replaced by their respective 1D and/or QR codes - any encoding
+can be used and is defined by the client configuration.  The
+barcode png's in the template directory are used for previewing
+in a browser outside of Taxidi, and are overridden while in
+use.
+
+The .conf file is organized by sections, one for each html file.
+At least the [default] section is required, however all defines
+are optional.  An html file is ignored if it has no section in
+this file.  The configuration accepts the following values:
+
+    zoom =      #digit zoom factor (1.00 for 100%)
+    height =    #height of page in mm
+    width =     #width of page in mm
+    left =      #left margin (mm)
+    right =     #right margin
+    top =       #top margin
+    bottom =    #bottom margin
+    orientation #print orientation, landscape or portrait
+    options =   #comma separated options to pass to wkhtmltopdf
+
+If zoom is undefined, it defaults to 1.  When height and width
+are undefined, the default output size is A4.  The margins all
+default to 10mm.  Additional options may be passed with the
+options = parameter.  For more info about these read the
+wkhtmltopdf documentation here: http://code.google.com/p/wkhtmltopdf/    
