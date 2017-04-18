@@ -286,10 +286,21 @@ admin.site.register(AttendeeOptions)
 
 
 def print_badges(modeladmin, request, queryset):
+    con = printing.Main()
+    tags = []
     for att in queryset:
         #print the badge
+        tags.append({ 
+            'name'   : att.badgeName,
+            'number' : att.badgeNumber,
+            'level'  : att.effectiveLevel,
+            'title'  : ''
+        })
         att.printed = True
         att.save()
+    con.nametags(tags, theme='apis')
+    # serve up this file
+    con.pdf
 print_badges.short_description = "Print Badges"
 
 class AttendeeOnsite(Attendee):

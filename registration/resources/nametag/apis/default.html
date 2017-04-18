@@ -1,0 +1,92 @@
+<!HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <!-- <link rel="stylesheet" href="http://localhost:8000/stylesheet.css" type="text/css" charset="utf-8" /> -->
+    <!--<link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono:400' rel='stylesheet' type='text/css'>-->
+
+    <style>
+      body {
+        margin: 0px 0px;
+        background-color: white;
+        font-family: 'Computer Pixel-7';
+        word-spacing: -10px;
+      }
+
+      .container {
+        width: 400px;
+        padding-left: 12px;
+      }
+      
+      .name {
+        font-size: 3.5em;
+        width: 100%;
+        text-align: center;
+        line-height: 70%;
+      }
+
+      .title {
+        text-align: center;
+        font-size: 2.0em;
+        margin-top: 10px;
+        position: absolute;
+        top: 70px;
+        width: 400px;
+      }
+
+      .pull-right {
+        float: right;
+        position: absolute;
+        top: 80px;
+        left: 325px;
+        font-size: 2.0em;
+      }
+
+      .pull-left {
+        float: left;
+        position: absolute;
+        top: 80px;
+        left: 40px;
+        font-size: 2.0em;
+      }
+
+      .name-container {
+        height: 80px;
+        width: 400px;
+        overflow: hidden;
+      }
+    </style>
+
+</head>
+<body>
+
+  <div class="container">
+    <!-- max 10 characters: 5em -->
+    <div class="name-container">
+      <div id="name" class="name">%NAME%</div>
+    </div>
+    <div class="title">%TITLE%</div>
+    <span class="pull-left">%LEVEL%</span>
+    <span class="pull-right">%NUMBER%</span>
+  </div>
+
+  <script src="jquery-1.12.0.min.js"></script>
+<!--
+  <script src="jquery.fittext.js"></script>
+-->
+
+  <script>
+  var name = $('#name').text();
+  var size = '3.5em';
+  if (name.length <= 8) {
+    size = '7em';
+  } else if ((name.length > 8) && (name.length <= 11)) {
+    size = '5em';
+  } 
+  $(".name").css('font-size', size);
+  //$(document).ready(function () {
+    //$(".name").fitText(1, { minFontSize: '3.5em' });
+  //});
+  </script>
+</body>
+</html>
