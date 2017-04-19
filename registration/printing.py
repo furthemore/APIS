@@ -32,27 +32,31 @@ PRINT_MODE = 'pdf'
 
 # Platforms using the CUPS printing system (UNIX):
 unix = ['Linux', 'linux2', 'Darwin']
-wkhtmltopdf = 'bin/wkhtmltopdf' #path to wkhtmltopdf binary
+wkhtmltopdf = '/usr/local/bin/wkhtmltopdf' #path to wkhtmltopdf binary
 #TODO: Option to select native or builtin wkhtmltopdf
 
 #TODO: Determine whether to use ~/.taxidi/resources/ (config.ini in ~/.taxidi/)
 #      or $PWD/resources/ (config.ini in pwd).
-nametags = os.path.join('resources', 'nametag') #path where html can be found.
+script_path = os.path.dirname(os.path.realpath(__file__))
+nametags = os.path.join(script_path, 'resources', 'nametag') #path where html can be found.
 #For distribution this may be moved to /usr/share/taxidi/ in UNIX, but should be
 #copied to user's ~/.taxidi/ as write access is needed.
 lpr = '/usr/bin/lpr' #path to LPR program (CUPS/Unix only).
 
 class Printer:
-    def __init__(self):
+    def __init__(self, local=False):
         self.log = logging.getLogger(__name__)
-        if platform.system() in unix:
-            self.log.info("System is type UNIX. Using CUPS.")
-            self.con = _CUPS()
-        elif platform.system() == 'win32':
-            self.log.info("System is type WIN32. Using GDI.")
-            #TODO implement win32 printing code
+        if local:
+            self.con = _DummyPrinter()
         else:
-            self.log.warning("Unsupported platform. Printing by preview only.")
+            if platform.system() in unix:
+                self.log.info("System is type UNIX. Using CUPS.")
+                self.con = _CUPS()
+            elif platform.system() == 'win32':
+                self.log.info("System is type WIN32. Using GDI.")
+                #TODO implement win32 printing code
+            else:
+                self.log.warning("Unsupported platform. Printing by preview only.")
 
     def buildArguments(self, config, section='default'):
         """Returns list of arguments to pass to wkhtmltopdf. Requires config
@@ -358,6 +362,18 @@ class Nametag:
 
         return html
 
+class _DummyPrinter:
+    def __init__(self):
+        self.con = None
+    def listPrinters(self):
+        return []
+    def getPrinters(self):
+        return {}
+    def returnDefault(self):
+        return ''
+    def printout(self, filename, printer=None, orientation=None):
+        raise PrinterError('No printer system available')
+
 class _CUPS:
     def __init__(self):
         self.log = logging.getLogger(__name__)
@@ -429,9 +445,9 @@ class PrinterError(Exception):
 
 
 class Main:
-    def __init__(self):
+    def __init__(self, local=False):
         self.log = logging.getLogger(__name__)
-        self.con = Printer()
+        self.con = Printer(local)
         self.tag = Nametag(True)
         self.section = ''
 
