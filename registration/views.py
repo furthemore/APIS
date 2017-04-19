@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import datetime
 from decimal import *
 from operator import itemgetter
+import os
 import json
 import random
 import string
@@ -1119,6 +1120,24 @@ def cartDone(request):
     context = {}
     return render(request, 'registration/done.html', context)
 
+def printNametag(request):
+    context = { 'file' : request.GET.get('file', None) }
+    return render(request, 'registration/printing.html', context)
+
+def servePDF(request):
+    filename = request.GET.get('file', None)
+    if filename is None:
+        return JsonResponse({'success': False})
+    filename = filename.replace('..', '/')
+    try:
+        fsock = open('/tmp/%s' % filename)
+    except IOError as e:
+        return JsonResponse({'success': False}) 
+    response = HttpResponse(fsock, content_type='application/pdf')
+    #response['Content-Disposition'] = 'attachment; filename=download.pdf'
+    fsock.close()
+    os.unlink('/tmp/%s' % filename)
+    return response
 
 
 ###################################
@@ -1247,7 +1266,7 @@ def getSessionAddresses(request):
         orderItems = OrderItem.objects.filter(id__in=sessionItems)
         data = [{'id': oi.attendee.id, 'fname': oi.attendee.firstName, 'lname': oi.attendee.lastName, 'email': oi.attendee.email, 'address1': oi.attendee.address1, 'address2': oi.attendee.address2, 'city': oi.attendee.city, 'state': oi.attendee.state, 'country': oi.attendee.country, 'postalCode': oi.attendee.postalCode} for oi in orderItems]
         context = {'addresses': data}
-    return HttpResponse(json.dumps(data), content_type='application/json')    
+    return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 ##################################

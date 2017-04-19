@@ -1,0 +1,24 @@
+<!doctype HTML>
+<html>
+    <head>
+        <title>Print Dialog</title>
+    </head>
+    
+    <body>
+        <script>
+            var w = window.open("{% url 'pdf' %}" + "/?file={{ file }}");
+            w.onload = function () {
+                w.print();
+                w.onfocus = function () { 
+                    setTimeout(function () { 
+                        w.close();
+                        window.location.replace('/apis/admin/registration/attendeeonsite/');
+                    }, 10); 
+                }; 
+            };
+        </script>
+
+        <!-- redirect to here after close -->
+        <!-- url 'admin:attendeeonsite' -->
+    </body>
+</html>

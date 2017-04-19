@@ -3,6 +3,8 @@ from datetime import date
 from django.contrib import admin
 from django.db.models import Max
 from django.utils.html import format_html
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
@@ -10,6 +12,9 @@ from nested_inline.admin import NestedTabularInline, NestedModelAdmin
 
 from .models import *
 from .emails import *
+import views
+
+import printing
 
 # Register your models here.
 admin.site.register(HoldType)
@@ -287,21 +292,29 @@ admin.site.register(AttendeeOptions)
 
 
 def print_badges(modeladmin, request, queryset):
-    con = printing.Main()
+    con = printing.Main(local=True)
     tags = []
     for att in queryset:
         #print the badge
+        if att.badgeNumber is None:
+            badgeNumber = ''
+        else:
+            badgeNumber = '{:04}'.format(att.badgeNumber)
         tags.append({ 
             'name'   : att.badgeName,
-            'number' : att.badgeNumber,
-            'level'  : att.effectiveLevel,
+            'number' : badgeNumber,
+            'level'  : str(att.effectiveLevel()),
             'title'  : ''
         })
         att.printed = True
         att.save()
     con.nametags(tags, theme='apis')
     # serve up this file
-    con.pdf
+    pdf_path = con.pdf.split('/')[-1]
+    # FIXME: get site URL from sites contrib package?
+    response = HttpResponseRedirect(reverse(views.printNametag))
+    response['Location'] += '?file={}'.format(pdf_path)
+    return response
 print_badges.short_description = "Print Badges"
 
 class AttendeeOnsite(Attendee):
