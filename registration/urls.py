@@ -71,4 +71,6 @@ urlpatterns = [
 
     url(r'^flush/?$', views.flush, name='flush'),
 
+    url(r'^pdf/?$', views.servePDF, name='pdf'),
+    url(r'^print/?$', views.printNametag, name='print'),
 ]
