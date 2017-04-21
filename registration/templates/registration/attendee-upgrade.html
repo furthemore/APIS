@@ -1,0 +1,357 @@
+{% extends "registration/master.html" %}
+
+{% block content %}
+
+
+{% if attendee %}
+
+
+	<form class="form-horizontal" role="form" data-toggle="validator">
+	<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+		<h1>Registration Upgrade - Furthemore 2017</h1>
+
+		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+
+		<hr>
+		<div class="form-group">
+            <div class="col-sm-3">Full Name</div><div class="col-sm-9">{{attendee.firstName}} {{attendee.lastName}}</div>
+            <div class="col-sm-3">Email</div><div class="col-sm-9">{{attendee.email}}</div>
+            <div class="col-sm-3">Phone Number</div><div class="col-sm-9">{{attendee.phone}}</div>
+            <div class="col-sm-3">Address</div><div class="col-sm-9">{{attendee.address1}}, {{attendee.city}}, {{attendee.city}}, {{attendee.state}}, {{attendee.postalCode}} </div>
+            <div class="col-sm-3">Birthdate</div><div class="col-sm-9">{{attendee.birthdate}}</div>
+            <div class="col-sm-3">Badge Name</div><div class="col-sm-9">{{attendee.badgeName}}</div>
+        </div>	
+				
+		<hr/>
+
+		<h3>Choose a different attendee level</h3>
+
+		<div class="row" id="levelContainer"></div>
+
+		<div class="form-group">
+            <div class="col-sm-12">
+                <button id="checkout" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Continue</button>
+		    </div>
+        </div>
+
+	</div>
+	{% csrf_token %}
+
+	</div>
+	</form>
+
+{% else %}
+
+<h1>Registration Upgrade - Furthemore 2017</h1>
+<p>Your session has expired. Please use the link in your email again to start over.</p>
+
+{% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+<script type="text/html" id="levelTemplate">
+	<div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
+	<div class="panel price">
+		<div class="panel-heading  text-center">
+		<h3 data-content="name"></h3>
+		</div>
+		<div class="panel-body text-center">
+			<p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+		</div>
+		<div class="panel-footer">
+			<a class="btn btn-lg btn-block btn-danger selectLevel" href="#" data-id="levelId">Select</a>
+			<a class="btn btn-default btn-block changeLevel" href="#">Change Level?</a>
+		</div>
+	</div>
+	</div>
+</script>
+
+<script type="text/html" id="optionBoolTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
+		</div>
+	</div>
+</script>
+<script type="text/html" id="optionBoolReqTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
+		</div>
+	</div>
+
+</script>
+<script type="text/html" id="optionIntTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
+		</div>
+	</div>
+
+</script>
+<script type="text/html" id="optionIntReqTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
+		</div>
+	</div>
+
+</script>
+<script type="text/html" id="optionStringTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+		</div>
+	</div>
+</script>
+<script type="text/html" id="optionStringReqTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+		</div>
+	</div>
+</script>
+<script type="text/html" id="optionListTemplate">
+	<div class="form-group">
+		<label class="col-sm-3 control-label" data-content="name"></label>
+		<div class="col-sm-9">
+			<select data-id="id" class="form-control form-control-select levelOptions" 
+			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+		</div>
+	</div>
+</script>
+ <script type="text/javascript">
+	var attendee = {{ jsonAttendee|safe }} 
+	var currentLevel = {{ jsonLevel|safe }}
+	var levelTemplateData = [];
+    var shirtSizes = [];
+
+	$( "body" ).ready(function() {
+		$.getJSON("/apis/registration/pricelevels", function(data) {
+			levelData = data;
+			var prevLevel = 50;
+			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
+				prevLevel = parseFloat(currentLevel.basePrice);
+			}
+			$.each( data, function( key, val ) {
+				levelTemplateData.push({
+					name: val.name,
+					price: "$" + (val.base_price - prevLevel),
+					levelId: "level_" + val.id,
+				});
+			});
+			$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+			$(".changeLevel").hide();
+			if (shirtSizes.length > 0){
+				$(".selectLevel")[0].click();
+			}
+
+		});
+		$.getJSON("/apis/registration/shirts", function(data) {
+			shirtSizes = data;
+			if (levelTemplateData.length > 0){
+				$(".selectLevel")[0].click();
+			}
+		});
+	});
+
+	$("#levelContainer").on('click', 'a.selectLevel', function(){
+		clearLevels();
+		var levelId = $(this).attr('id').split('_')[1];
+		$.each( levelTemplateData, function( key, val ) {
+			var id = val.levelId.split('_')[1];
+			if (id == levelId){
+				$("#regLevel").val(val.name);
+				$("#levelContainer").loadTemplate($("#levelTemplate"), val);
+				$(".changeLevel").show();
+				$(".selectLevel").text("Selected!");
+				generateOptions(id);
+				return false;
+			}
+		});
+	});
+	$("#levelContainer").on('click', 'a.changeLevel', function() {
+		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
+		$("#regLevel").val("");
+		$(".changeLevel").hide();
+	});
+	var clearLevels = function(){
+		$.each( levelTemplateData, function( key, val ) {
+			$("#"+val.levelId).text("Select " + val.name);
+		});
+		$("form").validator('update');
+	};
+	var generateOptions = function(levelId){
+		var data = [];
+		$.each(levelData, function(key, thing){
+			if (thing.id == levelId){
+				data = thing.options;
+				return false;
+			}
+		});
+		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+		$("#levelContainer").append(container);
+		$.each( data, function(key, val) {
+			if (val.value == "0.00"){
+				var price = " (Free) ";
+			} else {
+				var price = " (+$" + val.value + ") "
+			}
+			var required = "";
+			if (val.required) {required = "required";}
+			switch (val.type){
+				case "bool":
+					var template = $("#optionBoolTemplate");
+					if (val.required) {template = $("#optionBoolReqTemplate");}
+					$("#optionsContainer").loadTemplate(template, {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id
+					}, {append: true});
+					break;
+				case "int":
+					var template = $("#optionIntTemplate");
+					if (val.required) {template = $("#optionIntReqTemplate");}
+					$("#optionsContainer").loadTemplate(template, {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id
+					}, {append: true});
+					break;
+				case "string":
+					var template = $("#optionStringTemplate");
+					if (val.required) {template = $("#optionStringReqTemplate");}
+					var placeholder = val.name;
+					$("#optionsContainer").loadTemplate(template, {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id,
+						'placeholder': placeholder,
+					}, {append: true});
+					break;
+				case "Jersey":
+					break;
+				case "StaffJersey":
+					break;
+				default:
+					if (val.list == []){break;}
+					var options = [];
+					if (!val.required) {options.push({"content": "Select One...", "value": ""});}
+					$.each(val.list, function (key, item) {
+						options.push({"content": item.name, "value": item.id})
+					});
+					$("#optionsContainer").loadTemplate($("#optionListTemplate"), {
+						'name': val.name + " " + price,
+						'id': "option_" + val.id,
+						'options': options
+					}, {append: true});
+					break;
+			}
+		});
+		
+		$("form").validator('update');
+	};
+	var getOptions = function() {
+		var options = $(".levelOptions");
+                var data = [];
+		$.each(options, function(key, option) {
+			if ($(option).is(':checkbox')){
+				data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
+			} else if($(option).val() == "") {
+				
+			} else {
+				data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+			}
+		});
+		return data;
+	};
+
+
+	$("#checkout").click(doRegister);
+	
+
+	function doRegister(e) {
+		e.preventDefault();
+		$("form").validator('validate');
+		var errorCount = $(".has-error").length;
+		if (errorCount > 0) {return;}
+		
+		$("#checkout").attr("disabled", "disabled");
+
+		var data = {
+			'attendee': {
+				'id': attendee.id,
+			}, 
+			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
+		};
+		
+
+		$.ajax({
+		    "type": "POST",
+		    "dataType": "json",
+		    "url": "/apis/registration/upgrade/add/",
+		    "data": JSON.stringify(data),
+		    "beforeSend": function(xhr, settings) {
+		        console.log("Before Send");
+		        $.ajaxSettings.beforeSend(xhr, settings);
+		    },
+		    "error": function(result, status, error) {
+			if (result.responseText == "") {
+				alert("Your session has expired.");
+			} else {
+                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.")
+			}
+			$("#checkout").removeAttr("disabled");
+		    },
+                    "success": function (result, status) {
+                        if (result.success)
+                        {
+                            window.location = "/apis/registration/upgrade/invoice";
+                        } else {
+			    $("#checkout").removeAttr("disabled");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
+			}
+                    }
+		});
+	}
+
+
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    }
+});
+
+
+
+
+ </script>
+
+{% endblock %}
