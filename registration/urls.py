@@ -4,6 +4,14 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^upgrade/lookup/?$', views.findUpgrade, name='findUpgrade'),
+    url(r'^upgrade/info/?$', views.infoUpgrade, name='infoUpgrade'),
+    url(r'^upgrade/add/?$', views.addUpgrade, name='addUpgrade'),
+    url(r'^upgrade/invoice/?$', views.invoiceUpgrade, name='invoiceUpgrade'),
+    url(r'^upgrade/checkout/?$', views.checkoutUpgrade, name='checkoutUpgrade'),
+    url(r'^upgrade/done/?$', views.doneUpgrade, name='doneUpgrade'),
+    url(r'^upgrade/(?P<guid>\w+)/?$', views.upgrade, name='upgrade'),
+
     url(r'^staff/done/?$', views.staffDone, name='staff'),
     url(r'^staff/lookup/?$', views.findStaff, name='findStaff'),
     url(r'^staff/add/?$', views.addStaff, name='addStaff'),

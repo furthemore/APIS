@@ -521,7 +521,7 @@ def infoDealer(request):
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer:
-	dealer_dict = model_to_dict(dealer)
+        dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
         table_dict = model_to_dict(dealer.tableSize)        
         if dealer.attendee.effectiveLevel():
@@ -916,6 +916,172 @@ def onsiteDone(request):
 ###################################
 # Attendees
 
+def upgrade(request, guid):
+    context = {'token': guid}
+    return render(request, 'registration/attendee-locate.html', context)
+
+def infoUpgrade(request):
+  try:
+    postData = json.loads(request.body)
+    email = postData['email']
+    token = postData['token']
+
+    attendee = Attendee.objects.get(email__iexact=email, registrationToken=token)
+    if not attendee:     
+      return HttpResponseServerError("No Record Found")
+
+    request.session['attendee_id'] = attendee.id
+    return JsonResponse({'success': True, 'message':'ATTENDEE'})
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
+def findUpgrade(request):
+    context = {'attendee': None}
+    try:
+      attId = request.session['attendee_id']
+    except Exception as e:
+      return render(request, 'registration/attendee-upgrade.html', context)
+
+    attendee = Attendee.objects.get(id=attId)
+    if attendee:
+        attendee_dict = model_to_dict(attendee)
+        lvl_dict = model_to_dict(attendee.effectiveLevel())
+        context = {'attendee': attendee,  
+                   'jsonAttendee': json.dumps(attendee_dict, default=handler),
+                   'jsonLevel': json.dumps(lvl_dict, default=handler)}
+    return render(request, 'registration/attendee-upgrade.html', context)
+
+def addUpgrade(request):
+    postData = json.loads(request.body)
+    pda = postData['attendee']
+    pdp = postData['priceLevel']
+
+    if 'attendee_id' not in request.session:
+        return HttpResponseServerError("Session expired")
+
+    ## Update Attendee info
+    attendee = Attendee.objects.get(id=pda['id'])
+    if not attendee:
+        return HttpResponseServerError("Attendee id not found")
+
+    priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
+
+    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem.save()
+
+    for option in pdp['options']:
+        plOption = PriceLevelOption.objects.get(id=int(option['id']))
+        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
+        attendeeOption.save()
+
+    orderItems = request.session.get('order_items', [])
+    orderItems.append(orderItem.id)
+    request.session['order_items'] = orderItems
+
+    return JsonResponse({'success': True})
+
+def invoiceUpgrade(request):
+    sessionItems = request.session.get('order_items', [])
+    if not sessionItems:
+        context = {'orderItems': [], 'total': 0, 'discount': {}}
+        request.session.flush()
+    else:
+        attendeeId = request.session.get('attendee_id', -1)
+        if attendeeId == -1: 
+            context = {'orderItems': [], 'total': 0, 'discount': {}}
+            request.session.flush()
+        else:
+            attendee = Attendee.objects.get(id=attendeeId)
+            orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+            total = getTotal(orderItems)
+            context = {'orderItems': orderItems, 'total': total, 'attendee': attendee}
+    return render(request, 'registration/upgrade-checkout.html', context)
+
+def doneUpgrade(request):
+    context = {}
+    return render(request, 'registration/upgrade-done.html', context)
+
+def checkoutUpgrade(request):
+  try:
+    sessionItems = request.session.get('order_items', [])
+    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    orderItem = orderItems[0]
+    if 'attendee_id' not in request.session:
+        return HttpResponseServerError("Session expired")
+
+    attendee = Attendee.objects.get(id=request.session.get('attendee_id'))
+    postData = json.loads(request.body)
+    event = Event.objects.first()
+
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationToken()
+
+    subtotal = getTotal(orderItems)
+
+    if subtotal == 0:
+        att = attendee
+        order = Order(total=0, reference=reference, discount=None,
+                  orgDonation=0, charityDonation=0,
+                  billingName=att.firstName + " " + att.lastName,
+                  billingAddress1=att.address1, billingAddress2=att.address2,
+                  billingCity=att.city, billingState=att.state, billingCountry=att.country,
+                  billingPostal=att.postalCode, status="Complete")
+        order.save()
+
+        orderItem.order = order
+        orderItem.save()
+        sendUpgradePaymentEmail(attendee, order)
+        request.session.flush()
+        return JsonResponse({'success': True})
+      
+    porg = Decimal(postData["orgDonation"].strip() or 0.00)
+    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    if porg < 0: 
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+
+    total = subtotal + porg + pcharity
+
+    pbill = postData['billingData']
+    order = Order(total=Decimal(total), reference=reference, discount=None,
+                  orgDonation=porg, charityDonation=pcharity,
+                  billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
+                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
+                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
+                  billingPostal=pbill['postal'])
+    order.save()
+
+    response = chargePayment(order.id, pbill, get_client_ip(request))
+
+    if response is not None:
+        if response.messages.resultCode == "Ok":
+            if hasattr(response.transactionResponse, 'messages') == True:
+                orderItem.order = order
+                orderItem.save()    
+                sendUpgradePaymentEmail(attendee, order)
+                request.session.flush()
+                return JsonResponse({'success': True})
+            else:
+                if hasattr(response.transactionResponse, 'errors') == True:
+                    order.delete()
+                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+        else:
+            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
+            else:
+                order.delete()
+                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    else:
+        order.delete()
+        return JsonResponse({'success': False, 'message': "Unknown Error"})
+        
+  except Exception as e:
+    return HttpResponseServerError(str(e))
+
+
 
 def getCart(request):
     sessionItems = request.session.get('order_items', [])
@@ -1119,6 +1285,9 @@ def checkout(request):
 def cartDone(request):
     context = {}
     return render(request, 'registration/done.html', context)
+
+###################################
+# Printing
 
 def printNametag(request):
     context = { 'file' : request.GET.get('file', None) }
