@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'nested_inline',
     'registration',
     'import_export',
+    'django_extensions',
 ]
 
 MIDDLEWARE_CLASSES = [
