@@ -259,66 +259,6 @@ def assign_badge_numbers(modeladmin, request, queryset):
         att.save()
 assign_badge_numbers.short_description = "Assign badge numbers"
 
-class AttendeeOptionInline(NestedTabularInline):
-    model=AttendeeOptions
-    extra=1
-
-class OrderItemInline(NestedTabularInline):
-    model=OrderItem
-    extra=0
-    inlines = [AttendeeOptionInline]
-    list_display = ['attendee', 'priceLevel', 'get_age_range', 'enteredBy']
-    readonly_fields = ['get_age_range', ]
-
-    def get_age_range(self, obj):
-        born = obj.attendee.birthdate
-        today = date.today()
-        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        if age >= 18: return format_html('<span>18+</span>')
-        return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
-    get_age_range.short_description = "Age Group"
-
-
-class AttendeeAdmin(NestedModelAdmin):
-    inlines = [OrderItemInline]
-    save_on_top = True
-    actions = [make_staff, clear_abandons, assign_badge_numbers]
-    search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
-    list_filter = ('event',)
-    list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
-    fieldsets = (
-        (
-	    None, 
-            {'fields':(
-                ('firstName', 'lastName'), 
-                ('registrationToken', 'event'), 
-                ('badgeName', 'badgeNumber'),
-                ('address1', 'address2'),
-                ('city', 'state', 'postalCode', 'country'),
-                ('email','phone', 'emailsOk'),
-                'birthdate', 'registeredDate',
-            )}
-        ),
-        (
-            'Other Con Info', 
-            {'fields': (
-                'volunteerDepts', 'holdType', 'notes'
-            )}
-        ),
-        (
-            'Parent Info', 
-            {'fields': (
-                'parentFirstName', 'parentLastName', 
-                'parentPhone', 'parentEmail',
-            )}
-        ),
-    )
-
-
-admin.site.register(Attendee, AttendeeAdmin)
-admin.site.register(AttendeeOptions)
-
-
 def print_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
@@ -344,6 +284,66 @@ def print_badges(modeladmin, request, queryset):
     response['Location'] += '?file={}'.format(pdf_path)
     return response
 print_badges.short_description = "Print Badges"
+
+
+class AttendeeOptionInline(NestedTabularInline):
+    model=AttendeeOptions
+    extra=1
+
+class OrderItemInline(NestedTabularInline):
+    model=OrderItem
+    extra=0
+    inlines = [AttendeeOptionInline]
+    list_display = ['attendee', 'priceLevel', 'get_age_range', 'enteredBy']
+    readonly_fields = ['get_age_range', ]
+
+    def get_age_range(self, obj):
+        born = obj.attendee.birthdate
+        today = date.today()
+        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        if age >= 18: return format_html('<span>18+</span>')
+        return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
+    get_age_range.short_description = "Age Group"
+
+
+class AttendeeAdmin(NestedModelAdmin):
+    inlines = [OrderItemInline]
+    save_on_top = True
+    actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges]
+    search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
+    list_filter = ('event',)
+    list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
+    fieldsets = (
+        (
+	    None, 
+            {'fields':(
+                ('firstName', 'lastName'), 
+                ('registrationToken', 'event'), 
+                ('badgeName', 'badgeNumber', 'printed'),
+                ('address1', 'address2'),
+                ('city', 'state', 'postalCode', 'country'),
+                ('email','phone', 'emailsOk'),
+                'birthdate', 'registeredDate',
+            )}
+        ),
+        (
+            'Other Con Info', 
+            {'fields': (
+                'volunteerDepts', 'holdType', 'notes'
+            )}
+        ),
+        (
+            'Parent Info', 
+            {'fields': (
+                'parentFirstName', 'parentLastName', 
+                'parentPhone', 'parentEmail',
+            )}
+        ),
+    )
+
+
+admin.site.register(Attendee, AttendeeAdmin)
+admin.site.register(AttendeeOptions)
 
 class AttendeeOnsite(Attendee):
     class Meta:
