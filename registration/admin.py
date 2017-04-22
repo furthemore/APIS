@@ -338,7 +338,7 @@ class AttendeeAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
     save_on_top = True
     actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges]
-    search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
+    search_fields = ['email', 'badgeName', 'lastName', 'firstName', 'badgeNumber'] 
     list_filter = ('event',)
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
     fieldsets = (
