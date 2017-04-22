@@ -49,6 +49,34 @@ def send_assistant_form_email(modeladmin, request, queryset):
         sendDealerAsstFormEmail(dealer)
 send_assistant_form_email.short_description = "Send assistent addition form email"
 
+def print_dealer_badges(modeladmin, request, queryset):
+    con = printing.Main(local=True)
+    tags = []
+    for dealer in queryset:
+        #print the badge
+        att = dealer.attendee
+        if att.badgeNumber is None:
+            badgeNumber = ''
+        else:
+            badgeNumber = 'S{:03}'.format(att.badgeNumber)
+        tags.append({ 
+            'name'   : att.badgeName,
+            'number' : '',
+            'level'  : '',
+            'title'  : ''
+        })
+        att.printed = True
+        att.save()
+    con.nametags(tags, theme='apis')
+    # serve up this file
+    pdf_path = con.pdf.split('/')[-1]
+    # FIXME: get site URL from sites contrib package?
+    response = HttpResponseRedirect(reverse(views.printNametag))
+    response['Location'] += '?file={}'.format(pdf_path)
+    return response
+print_dealer_badges.short_description = "Print Dealer Badges"
+
+
 class DealerResource(resources.ModelResource):
     class Meta:
         model = Dealer
@@ -71,7 +99,7 @@ class DealerAdmin(ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal')
     save_on_top = True
     resource_class = DealerResource
-    actions = [send_approval_email, send_assistant_form_email, send_payment_email]
+    actions = [send_approval_email, send_assistant_form_email, send_payment_email, print_dealer_badges]
     readonly_fields = ['get_email']
     fieldsets = (
         (
