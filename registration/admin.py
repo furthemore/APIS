@@ -132,6 +132,34 @@ def assign_staff_badge_numbers(modeladmin, request, queryset):
         a.save()
 assign_staff_badge_numbers.short_description = "Assign staff badge numbers"
 
+def print_staff_badges(modeladmin, request, queryset):
+    con = printing.Main(local=True)
+    tags = []
+    for staff in queryset:
+        #print the badge
+        att = staff.attendee
+        if att.badgeNumber is None:
+            badgeNumber = ''
+        else:
+            badgeNumber = 'S{:03}'.format(att.badgeNumber)
+        tags.append({ 
+            'name'   : att.badgeName,
+            'number' : badgeNumber,
+            'level'  : staff.title,
+            'title'  : ''
+        })
+        att.printed = True
+        att.save()
+    con.nametags(tags, theme='apis')
+    # serve up this file
+    pdf_path = con.pdf.split('/')[-1]
+    # FIXME: get site URL from sites contrib package?
+    response = HttpResponseRedirect(reverse(views.printNametag))
+    response['Location'] += '?file={}'.format(pdf_path)
+    return response
+print_staff_badges.short_description = "Print Staff Badges"
+
+
 class StaffResource(resources.ModelResource):
     class Meta:
         model = Staff
@@ -152,7 +180,7 @@ class StaffResource(resources.ModelResource):
 
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
-    actions = [send_staff_registration_email, assign_staff_badge_numbers]
+    actions = [send_staff_registration_email, assign_staff_badge_numbers, print_staff_badges]
     list_display = ('attendee', 'get_email', 'get_badge', 'title', 'department', 'shirtsize', 'staff_total')
     list_filter = ('department',)
     search_fields = ['attendee__email', 'attendee__badgeName', 'attendee__lastName', 'attendee__firstName'] 
