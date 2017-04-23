@@ -313,6 +313,31 @@ def print_badges(modeladmin, request, queryset):
     return response
 print_badges.short_description = "Print Badges"
 
+def print_dealerasst_badges(modeladmin, request, queryset):
+    con = printing.Main(local=True)
+    tags = []
+    for att in queryset:
+        #print the badge
+        if att.badgeNumber is None:
+            badgeNumber = ''
+        else:
+            badgeNumber = 'S{:03}'.format(att.badgeNumber)
+        tags.append({ 
+            'name'   : att.badgeName,
+            'number' : '',
+            'level'  : '',
+            'title'  : ''
+        })
+        att.printed = True
+        att.save()
+    con.nametags(tags, theme='apis')
+    # serve up this file
+    pdf_path = con.pdf.split('/')[-1]
+    # FIXME: get site URL from sites contrib package?
+    response = HttpResponseRedirect(reverse(views.printNametag))
+    response['Location'] += '?file={}'.format(pdf_path)
+    return response
+print_dealerasst_badges.short_description = "Print Dealer Assistant Badges"
 
 class AttendeeOptionInline(NestedTabularInline):
     model=AttendeeOptions
@@ -337,7 +362,7 @@ class OrderItemInline(NestedTabularInline):
 class AttendeeAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
     save_on_top = True
-    actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges]
+    actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges, print_dealerasst_badges]
     search_fields = ['email', 'badgeName', 'lastName', 'firstName', 'badgeNumber'] 
     list_filter = ('event',)
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
