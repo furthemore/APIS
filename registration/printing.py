@@ -355,7 +355,7 @@ class Nametag:
         html = self.date_re.sub(now.strftime("%a %d %b, %Y"), html)
         html = self.time_re.sub(now.strftime("%H:%M:%S"), html)
         #Fix for if database returns None instead of empty string:
-        html = self.name_re.sub(str(name), html)
+        html = self.name_re.sub(name.encode('utf-8'), html.encode('utf-8'))
         html = self.level_re.sub(str(level), html)
         html = self.title_re.sub(str(title), html)
         html = self.number_re.sub(str(number), html)
@@ -479,7 +479,7 @@ class Main:
             stuff = self.tag.nametag(name=data['name'], number=data['number'], title=data['title'], template=theme, level=data['level'])
             temp_path = self.tag._getTemplatePath(theme)
             html = tempfile.NamedTemporaryFile(delete=False, dir=temp_path, suffix='.html')
-            html.write(stuff.encode('utf-8'))
+            html.write(stuff)
             html.close()
             html_files.append(html.name)
 
