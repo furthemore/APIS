@@ -75,7 +75,7 @@ urlpatterns = [
     url(r'^takenJerseys/?$', views.getJerseyNumbers, name='takenJerseys'),
     url(r'^takenStaffJerseys/?$', views.getStaffJerseyNumbers, name='takenStaffJerseys'),
 
-    url(r'^utility/badges?$', views.badgeList, name='badgeList'),
+#    url(r'^utility/badges?$', views.badgeList, name='badgeList'),
 
     url(r'^flush/?$', views.flush, name='flush'),
 
