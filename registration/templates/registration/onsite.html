@@ -413,6 +413,10 @@
            $("#optionsContainer").append("<h4>None</h4>")
         }
         $.each( data, function(key, val) {
+            if (!val.active) 
+            {
+                return false;
+            }
             if (val.value == "0.00"){
                 var price = " (Free) ";
             } else {
