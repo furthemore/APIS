@@ -415,7 +415,7 @@
         $.each( data, function(key, val) {
             if (!val.active) 
             {
-                return false;
+                return true;
             }
             if (val.value == "0.00"){
                 var price = " (Free) ";
@@ -470,7 +470,9 @@
                     break;
             }
         });
-        
+        if ($.trim( $('#optionsContainer').html() ).length <= 33){
+            $("#optionsContainer").append("<h4>None</h4>")
+        }
         $("form").validator('update');
     };
 
