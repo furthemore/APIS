@@ -415,7 +415,7 @@ class AttendeeOnsiteAdmin(NestedModelAdmin):
 	    None, 
             {'fields':(
                 ('firstName', 'lastName'), 
-                ('badgeName', 'badgeNumber'),
+                ('badgeName', 'badgeNumber', 'event'),
                 ('address1', 'address2'),
                 ('city', 'state', 'postalCode', 'country'),
                 ('email','phone', 'emailsOk'),
@@ -496,7 +496,7 @@ class PriceLevelAdmin(admin.ModelAdmin):
 admin.site.register(PriceLevel, PriceLevelAdmin)
 
 class PriceLevelOptionAdmin(admin.ModelAdmin):
-    list_display = ('optionName', 'priceLevel', 'optionPrice', 'optionExtraType', 'required')
+    list_display = ('optionName', 'priceLevel', 'optionPrice', 'optionExtraType', 'required', 'active')
 
 admin.site.register(PriceLevelOption, PriceLevelOptionAdmin)
 
