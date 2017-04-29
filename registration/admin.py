@@ -444,7 +444,7 @@ class AttendeeOnsite(Attendee):
 class AttendeeOnsiteAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
     save_on_top = True
-    actions = [assign_badge_numbers, print_badges]
+    actions = [assign_badge_numbers, print_badges, assign_numbers_and_print]
     search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
     list_display = ('firstName', 'lastName', 'badgeName', 'effectiveLevel', 'is_minor', 'badgeNumber', 'printed')
     fieldsets = (
