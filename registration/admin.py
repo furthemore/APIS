@@ -285,7 +285,44 @@ def assign_badge_numbers(modeladmin, request, queryset):
         highest = highest + 1
         att.badgeNumber = highest 
         att.save()
-assign_badge_numbers.short_description = "Assign badge numbers"
+assign_badge_numbers.short_description = "Assign badge number"
+    
+def assign_numbers_and_print(modeladmin, request, queryset):
+    nonstaff = Attendee.objects.filter(staff=None)
+    highest = nonstaff.aggregate(Max('badgeNumber'))['badgeNumber__max']
+
+    for att in queryset.order_by('registeredDate'): 
+        if att.badgeNumber: continue
+        if att.effectiveLevel() == None: continue
+        highest = highest + 1
+        att.badgeNumber = highest 
+        att.save()
+
+    con = printing.Main(local=True)
+    tags = []
+    for att in queryset:
+        #print the badge
+        if att.badgeNumber is None:
+            badgeNumber = ''
+        else:
+            badgeNumber = '{:04}'.format(att.badgeNumber)
+        tags.append({ 
+            'name'   : att.badgeName,
+            'number' : badgeNumber,
+            'level'  : str(att.effectiveLevel()),
+            'title'  : ''
+        })
+        att.printed = True
+        att.save()
+    con.nametags(tags, theme='apis')
+    # serve up this file
+    pdf_path = con.pdf.split('/')[-1]
+    # FIXME: get site URL from sites contrib package?
+    response = HttpResponseRedirect(reverse(views.printNametag))
+    response['Location'] += '?file={}'.format(pdf_path)
+    return response
+
+assign_numbers_and_print.short_description = "Assign Number and Print"
 
 def print_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
@@ -362,7 +399,7 @@ class OrderItemInline(NestedTabularInline):
 class AttendeeAdmin(NestedModelAdmin):
     inlines = [OrderItemInline]
     save_on_top = True
-    actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges, print_dealerasst_badges]
+    actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges, print_dealerasst_badges, assign_numbers_and_print]
     search_fields = ['email', 'badgeName', 'lastName', 'firstName', 'badgeNumber'] 
     list_filter = ('event',)
     list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
