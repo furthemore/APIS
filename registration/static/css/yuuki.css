@@ -1,14 +1,19 @@
 .artisan {
-    background-image: linear-gradient(203deg, rgba(196,205,255,0.65) 35%, transparent 0%);
+/**
+    background-image: linear-gradient(203deg, rgba(194,155,114,0.65) 35%, transparent 0%);
     background-size: 100% 100%;
     background-position: 100% 0%;
     background-repeat: no-repeat;
     display: flex;
     height: 100vh;
     padding-top: 2%;
+**/
+
+    background: url('../img/2017/Logo-promo.png') no-repeat top right;
+
 }
 .artisan2 {
-    background-image: linear-gradient(235deg, rgba(196,205,255,0.65) 35%, transparent 0%);
+    background-image: linear-gradient(235deg, rgba(194,155,114,0.65) 35%, transparent 0%);
     background-size: 100% 100%;
     background-position: 100% 0%;
     background-repeat: no-repeat;
@@ -16,7 +21,7 @@
 }
 
 body {
-    background: url('../img/fmbottom.png') repeat-x bottom center black;
+    background: url('../img/2017/sakura.png') center center white;
 }
 
 .containter {
@@ -26,7 +31,7 @@ body {
 #content-holder {
     background: white;
     padding: 3%;
-    border: purple 5px solid;
+    border: #f8bfef 5px solid;
 }
 
 #content{
