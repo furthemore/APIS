@@ -19,7 +19,7 @@ from .payments import chargePayment
 # Create your views here.
 
 def index(request):
-    event = Event.objects.first()
+    event = Event.objects.get(name__icontains="2018")
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}
