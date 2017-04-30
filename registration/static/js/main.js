@@ -1,6 +1,6 @@
 // ==== forms ====
 function getAge(birthdate) {
-    var curr  = new Date(2017, 3, 28); // Note: months are 0-indexed
+    var curr  = new Date(2018, 3, 20); // Note: months are 0-indexed
     var diff = curr.getTime() - birthdate.getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 }

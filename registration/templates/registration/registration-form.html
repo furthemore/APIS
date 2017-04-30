@@ -16,24 +16,11 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="jerseyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Year 5 Jersey</h4>
-      </div>
-      <div class="modal-body">
-    <img width="400" src="/static/img/attendee_jersey.jpg"/>
-      </div>
-    </div>
-  </div>
-</div>
 
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Pre-Register for Furthemore 2017!</h1>
+        <h1>Pre-Register for Furthemore 2018!</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
@@ -245,40 +232,12 @@
         </div>
     </div>
 </script>
-<script type="text/html" id="optionJerseyTemplate">
-    <br/>
-    <h4>Year 5 Jersey</h4>
-    <hr/>
-        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore! 
-        <br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures and more information.</div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label">Jersey Name</label>
-        <div class="col-sm-9">
-            <input type="text" id="jerseyName" maxlength=15 class="form-control form-control-text" />
-            <input type="hidden" id="optionId" data-value="optionId" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label">Jersey Number</label>
-        <div class="col-sm-9">
-            <input type="text" id="jerseyNumber" maxlength=3 pattern="^[0-9]+$" class="form-control form-control-text" />
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="col-sm-3 control-label">Jersey Size</label>
-        <div class="col-sm-9">
-            <select id="jerseySize" class="form-control form-control-select" 
-              data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-        </div>
-    </div>
-</script>
 
  <script type="text/javascript">
     var levelTemplateData = [];
     var levelData = [];
-        var deptData = [];
+    var deptData = [];
     var shirtSizes = [];
-    var takenJerseys = [];
     $( "body" ).ready(function() {
         // only init the javascript datepicker if none is provided by the browser natively
         if (!Modernizr.inputtypes.date) {
@@ -309,9 +268,6 @@
         });
         $.getJSON("/apis/registration/shirts", function(data) {
             shirtSizes = data;
-        });
-        $.getJSON("/apis/registration/takenJerseys", function(data) {
-            takenJerseys = data;
         });
     });
 
@@ -417,18 +373,6 @@
         $("form").validator('update');
     };
 
-    var getJersey = function() {
-        var jersey = {};
-        if ($("#jerseyName").val() == "") {return jersey;}
-        jersey = {
-            'name': $("#jerseyName").val(),
-            'number': $("#jerseyNumber").val(),
-            'size': $("#jerseySize").val(),
-            'optionId': $("#optionId").val()
-        };
-        return jersey;
-    };
-
     var getOptions = function() {
         var options = $(".levelOptions");
                 var data = [];
@@ -461,14 +405,6 @@
             alert("You must enter your birthdate to submit your registration.");
             return;
         }
-        if ($.inArray($("#jerseyNumber").val(), takenJerseys) > -1) {
-            alert("That jersey number has already been claimed. Please choose another.");
-            return;
-        }
-        if (getJersey() != {} && $("#jerseyNumber").val() > 199){
-            alert("Please select a jersey number less than 199.");
-            return;
-        }
         if (Modernizr.inputtypes.date) {
             // native datepicker - expect ISO date
             var birthdate = parseDate($("#birthDate").val());
@@ -491,7 +427,7 @@
                 'volDepts': $("#volunteer").val(),
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'jersey': getJersey(), 'event': 'Furthemore 2017'
+            'jersey': {}, 'event': 'Furthemore 2018'
         };
         $.ajax({
             "type": "POST",
@@ -506,7 +442,7 @@
                 window.location = "/apis/registration/cart";
             },
             "error": function(result, status) {
-            alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
+                alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
             }
         })
 
