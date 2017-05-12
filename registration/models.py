@@ -147,6 +147,17 @@ class Attendee(models.Model):
                 level = oi.priceLevel
         return level
 
+class Badge(models.Model):
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    event = models.ForeignKey(Event)
+    registeredDate = models.DateTimeField(null=True)
+    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    badgeName = models.CharField(max_length=200, blank=True)
+    badgeNumber = models.IntegerField(null=True, blank=True)
+    printed = models.BooleanField(default=False)
+    
+        
+
 class Staff(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
     registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
@@ -230,8 +241,30 @@ class Dealer(models.Model):
 
 
 # Start order tables
+
+class PriceLevelOption(models.Model):
+    optionName = models.CharField(max_length=200)
+    optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
+    optionExtraType = models.CharField(max_length=100, blank=True)
+    optionExtraType2 = models.CharField(max_length=100, blank=True)
+    optionExtraType3 = models.CharField(max_length=100, blank=True)
+    required = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+
+    def __str__(self):
+      return '%s' % (self.optionName)
+
+    def getList(self):
+	if self.optionExtraType in ["int", "bool", "string"]:
+            return []
+        elif self.optionExtraType == "ShirtSizes":
+            return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
+        else:
+            return []
+
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
+    priceLevelOptions = models.ManyToManyField(PriceLevelOption)
     description = models.TextField()
     basePrice = models.DecimalField(max_digits=6, decimal_places=2)
     startDate = models.DateTimeField()
@@ -242,25 +275,6 @@ class PriceLevel(models.Model):
 
     def __str__(self):
       return self.name
-
-class PriceLevelOption(models.Model):
-    priceLevel = models.ForeignKey(PriceLevel)
-    optionName = models.CharField(max_length=200)
-    optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
-    optionExtraType = models.CharField(max_length=100, blank=True)
-    required = models.BooleanField(default=False)
-    active = models.BooleanField(default=False)
-
-    def __str__(self):
-      return '%s - %s' % (self.priceLevel, self.optionName)
-
-    def getList(self):
-	if self.optionExtraType in ["int", "bool", "string"]:
-            return []
-        elif self.optionExtraType == "ShirtSizes":
-            return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
-        else:
-            return []
 
 class Discount(models.Model):
     codeName = models.CharField(max_length=100)
