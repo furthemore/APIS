@@ -1,5 +1,31 @@
 <h3>Thank you for your payment.</h3> 
-<p>Your payment confirmation number is: {{reference}}</p> 
-<p>If you have any questions about your order, please contact us at <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>.</p> 
+
+<hr/>
+{% for oi in orderItems %}
+  <p>{{oi.badge.badgeName}} - {{oi.priceLevel.name}} ... ${{oi.priceLevel.subtotal}}
+  {% for ao in oi.attendeeOptionss%}
+    {% if ao.option.optionExtraType == 'int'%}
+    <br>{{ao.option.optionName}} x{{ao.optionValue}}: ${{ao.getTotal}}
+    {% else %}
+    <br>{{ao.option.optionName}}: ${{ao.option.optionPrice}}
+    {% endif %}
+  {% endfor %}
+  {% if oi.priceLevel.emailVip %}
+    <br>** This person qualifies for our VIP experience. Please complete your hotel reservation and email
+       your hotel confirmation code to guests@furthemore.org. Our VIP department has also been notified
+       of your registration and should be contacting you directly with more information. If you have
+       questions regarding perks please contact guests@furthemore.org. Thank you for your support!
+  {% endif %}
+  </p>
+{% endfor %}
+
+  <p>Total: {{order.total}}
+  <br>Paid On: {{order.settledDate}}</p>
+<hr/>
+
+<p>Your payment confirmation is: {{reference}}</p>
+<p>If you have any questions about your order, please contact us at registration@furthemore.org.</p>
+
 <p>Thank you!</p>
+
 <p>'Kiric<br/>Head of Registration</p>
