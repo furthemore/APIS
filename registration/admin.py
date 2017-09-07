@@ -256,7 +256,7 @@ admin.site.register(Staff, StaffAdmin)
 
 
 ########################################################
-#   Attendee Admin
+#   Attendee/Badge Admin
 
 def make_staff(modeladmin, request, queryset):
     for att in queryset:
@@ -264,56 +264,46 @@ def make_staff(modeladmin, request, queryset):
         staff.save()
 make_staff.short_description = "Add to Staff"
 
-def clear_abandons(modeladmin, request, queryset):
-    for att in queryset:
-        if att.abandoned() == True:
-           jerseyTypes = PriceLevelOption.objects.filter(optionExtraType='Jersey')
-           orderItems = OrderItem.objects.filter(attendee=att)
-           jerseyOptions = AttendeeOptions.objects.filter(option__in=jerseyTypes, orderItem__in=orderItems)
-           for jerOpt in jerseyOptions:
-             jersey = Jersey.objects.get(id=jerOpt.optionValue)
-             jersey.delete()
-           att.delete()
-clear_abandons.short_description = "***Delete Abandoned Orders***"
-
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
-    highest = nonstaff.aggregate(Max('badgeNumber'))['badgeNumber__max']
-    for att in queryset.order_by('registeredDate'): 
-        if att.badgeNumber: continue
-        if att.effectiveLevel() == None: continue
+    badges = Badge.objects.filter(attendee__in=nonstaff)
+    highest = badges.aggregate(Max('badgeNumber'))['badgeNumber__max']
+    for badge in queryset.order_by('registeredDate'): 
+        if badge.badgeNumber: continue
+        if badge.effectiveLevel() == None: continue
         highest = highest + 1
-        att.badgeNumber = highest 
-        att.save()
+        badge.badgeNumber = highest 
+        badge.save()
 assign_badge_numbers.short_description = "Assign badge number"
     
 def assign_numbers_and_print(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
-    highest = nonstaff.aggregate(Max('badgeNumber'))['badgeNumber__max']
+    badges = Badge.objects.filter(attendee__in=nonstaff)
+    highest = badges.aggregate(Max('badgeNumber'))['badgeNumber__max']
 
-    for att in queryset.order_by('registeredDate'): 
-        if att.badgeNumber: continue
-        if att.effectiveLevel() == None: continue
+    for badge in queryset.order_by('registeredDate'): 
+        if badge.badgeNumber: continue
+        if badge.effectiveLevel() == None: continue
         highest = highest + 1
-        att.badgeNumber = highest 
-        att.save()
+        badge.badgeNumber = highest 
+        badge.save()
 
     con = printing.Main(local=True)
     tags = []
-    for att in queryset:
+    for badge in queryset:
         #print the badge
-        if att.badgeNumber is None:
+        if badge.badgeNumber is None:
             badgeNumber = ''
         else:
-            badgeNumber = '{:04}'.format(att.badgeNumber)
+            badgeNumber = '{:04}'.format(badge.badgeNumber)
         tags.append({ 
-            'name'   : att.badgeName,
+            'name'   : badge.badgeName,
             'number' : badgeNumber,
-            'level'  : str(att.effectiveLevel()),
+            'level'  : str(badge.effectiveLevel()),
             'title'  : ''
         })
-        att.printed = True
-        att.save()
+        badge.printed = True
+        badge.save()
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
@@ -327,20 +317,20 @@ assign_numbers_and_print.short_description = "Assign Number and Print"
 def print_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
-    for att in queryset:
+    for badge in queryset:
         #print the badge
-        if att.badgeNumber is None:
+        if badge.badgeNumber is None:
             badgeNumber = ''
         else:
-            badgeNumber = '{:04}'.format(att.badgeNumber)
+            badgeNumber = '{:04}'.format(badge.badgeNumber)
         tags.append({ 
-            'name'   : att.badgeName,
+            'name'   : badge.badgeName,
             'number' : badgeNumber,
-            'level'  : str(att.effectiveLevel()),
+            'level'  : str(badge.effectiveLevel()),
             'title'  : ''
         })
-        att.printed = True
-        att.save()
+        badge.printed = True
+        badge.save()
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
@@ -353,20 +343,20 @@ print_badges.short_description = "Print Badges"
 def print_dealerasst_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
-    for att in queryset:
+    for badge in queryset:
         #print the badge
-        if att.badgeNumber is None:
+        if badge.badgeNumber is None:
             badgeNumber = ''
         else:
-            badgeNumber = 'S{:03}'.format(att.badgeNumber)
+            badgeNumber = 'S{:03}'.format(badge.badgeNumber)
         tags.append({ 
-            'name'   : att.badgeName,
+            'name'   : badge.badgeName,
             'number' : '',
             'level'  : '',
             'title'  : ''
         })
-        att.printed = True
-        att.save()
+        badge.printed = True
+        badge.save()
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
@@ -376,6 +366,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
     return response
 print_dealerasst_badges.short_description = "Print Dealer Assistant Badges"
 
+
 class AttendeeOptionInline(NestedTabularInline):
     model=AttendeeOptions
     extra=1
@@ -384,7 +375,13 @@ class OrderItemInline(NestedTabularInline):
     model=OrderItem
     extra=0
     inlines = [AttendeeOptionInline]
-    list_display = ['attendee', 'priceLevel', 'get_age_range', 'enteredBy']
+    list_display = ['priceLevel', 'enteredBy']
+
+class BadgeInline(NestedTabularInline):
+    model=Badge
+    extra=0
+    inlines = [OrderItemInline]
+    list_display = ['event', 'badgeName', 'badgeNumber', 'registrationToken', 'registrationDate']
     readonly_fields = ['get_age_range', ]
 
     def get_age_range(self, obj):
@@ -395,25 +392,29 @@ class OrderItemInline(NestedTabularInline):
         return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
     get_age_range.short_description = "Age Group"
 
+class BadgeAdmin(admin.ModelAdmin):
+    list_filter = ('event',)
+    list_display = ('attendee', 'badgeName', 'badgeNumber', 'printed', 'paidTotal', 'effectiveLevel', 'abandoned')
+    search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName', 'badgeName', 'badgeNumber'] 
+    actions = [assign_badge_numbers, print_badges, print_dealerasst_badges, assign_numbers_and_print]
+
+admin.site.register(Badge, BadgeAdmin)
 
 class AttendeeAdmin(NestedModelAdmin):
-    inlines = [OrderItemInline]
+    inlines = [BadgeInline]
     save_on_top = True
-    actions = [make_staff, clear_abandons, assign_badge_numbers, print_badges, print_dealerasst_badges, assign_numbers_and_print]
-    search_fields = ['email', 'badgeName', 'lastName', 'firstName', 'badgeNumber'] 
-    list_filter = ('event',)
-    list_display = ('firstName', 'lastName', 'badgeName', 'email', 'paidTotal', 'effectiveLevel', 'abandoned', 'registeredDate')
+    actions = [make_staff]
+    search_fields = ['email', 'lastName', 'firstName'] 
+    list_display = ('firstName', 'lastName',  'email', 'get_age_range')
     fieldsets = (
         (
 	    None, 
             {'fields':(
                 ('firstName', 'lastName'), 
-                ('registrationToken', 'event'), 
-                ('badgeName', 'badgeNumber', 'printed'),
                 ('address1', 'address2'),
                 ('city', 'state', 'postalCode', 'country'),
                 ('email','phone', 'emailsOk'),
-                'birthdate', 'registeredDate',
+                'birthdate',
             )}
         ),
         (
@@ -431,67 +432,18 @@ class AttendeeAdmin(NestedModelAdmin):
         ),
     )
 
+    def get_age_range(self, obj):
+        born = obj.birthdate
+        today = date.today()
+        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        if age >= 18: return format_html('<span>18+</span>')
+        return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
+    get_age_range.short_description = "Age Group"
+
+
 
 admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
-
-class AttendeeOnsite(Attendee):
-    class Meta:
-        proxy=True
-        verbose_name='Attendee Onsite 2017'
-        verbose_name_plural='Attendee Onsite 2017'
-
-class AttendeeOnsiteAdmin(NestedModelAdmin):
-    inlines = [OrderItemInline]
-    save_on_top = True
-    actions = [assign_badge_numbers, print_badges, assign_numbers_and_print]
-    search_fields = ['email', 'badgeName', 'lastName', 'firstName'] 
-    list_display = ('firstName', 'lastName', 'badgeName', 'effectiveLevel', 'is_minor', 'badgeNumber', 'printed')
-    fieldsets = (
-        (
-	    None, 
-            {'fields':(
-                ('firstName', 'lastName'), 
-                ('badgeName', 'badgeNumber', 'event'),
-                ('address1', 'address2'),
-                ('city', 'state', 'postalCode', 'country'),
-                ('email','phone', 'emailsOk'),
-                'birthdate',
-            )}
-        ),
-        (
-            'Parent Info', 
-            {'fields': (
-                'parentFirstName', 'parentLastName', 
-                'parentPhone', 'parentEmail',
-            ),  'classes': ('collapse',)}
-        ),
-        (
-            'Other Con Info', 
-            {'fields': (
-                'holdType',
-            ),  'classes': ('collapse',)}
-        ),
-    )
-
-    def is_minor(self, obj):
-        today = date.today()
-        born = obj.birthdate
-        age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        if age >= 18: return ""
-        return format_html('<span style="color:red">YES</span>')
-
-    def get_actions(self, request):
-        actions = super(AttendeeOnsiteAdmin, self).get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
-        return actions
-
-    def get_queryset(self, request):
-        ev = Event.objects.get(name='Furthemore 2017')
-        return super(AttendeeOnsiteAdmin,self).get_queryset(request).filter(event=ev).filter(printed=False)
-
-admin.site.register(AttendeeOnsite, AttendeeOnsiteAdmin)
 
 admin.site.register(OrderItem)
 

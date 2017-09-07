@@ -10,7 +10,7 @@
       </div>
       <div class="modal-body">
     <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
-        <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 28, 1999). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 28, 2004).</p>
+        <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 20, 2000). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 20, 2005).</p>
     <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
       </div>
     </div>
@@ -47,6 +47,8 @@
                     <div class="col-sm-9">
                         <label>
                             <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                            <br/>
+                            <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the post-con survey.</span>
                         </label>
                     </div>
                 </div>
@@ -101,16 +103,8 @@
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#registration" class="btn btn-primary col-sm-6 col-sm-offset-6 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
-                    </div>
-                </div>
-            
-    </div>
-    <div role="tabpanel" class="tab-pane fade" id="registration">
-        <h2>Registration Info</h2>
-        <p>Select your registration options and level.</p>
+
+        <h3><a name="level"></a>Select your registration options and level.</h3>
         <hr>
                 <div class="form-group">
                     <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
@@ -140,8 +134,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div>
-            <a href="#personal" class="btn btn-primary col-sm-6" aria-controls="personal" role="tab" data-toggle="tab" id="back-registration"><< Back</a>
-       	    <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button>
+       	    <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button> &nbsp;
         </div>
 	</div>
 	</div>
@@ -162,8 +155,8 @@
             <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
         </div>
         <div class="panel-footer">
-            <a class="btn btn-lg btn-block btn-danger selectLevel" href="#" data-id="levelId">Select</a>
-            <a class="btn btn-default btn-block changeLevel" href="#">Change Level?</a>
+            <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
+            <a class="btn btn-default btn-block changeLevel">Change Level?</a>
         </div>
     </div>
     </div>
@@ -271,11 +264,6 @@
         });
     });
 
-    // scroll to top on all the next views
-    $("#next-personal").click(function() {
-        window.scrollTo(0, 0);
-    });
-
     $("#levelContainer").on('click', 'a.selectLevel', function(){
         clearLevels();
         var levelId = $(this).attr('id').split('_')[1];
@@ -307,13 +295,15 @@
 
     var generateOptions = function(levelId){
         var data = [];
+        var description = "";
         $.each(levelData, function(key, thing){
             if (thing.id == levelId){
                 data = thing.options;
+                description = thing.description;
                 return false;
             }
         });
-        var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+        var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
         $("#levelContainer").append(container);
         $.each( data, function(key, val) {
             if (val.value == "0.00"){
@@ -389,13 +379,6 @@
     };
 
 
-    $( "#badgeName" )
-        .keyup(function() {
-        var value = $( this ).val();
-        $( "#badge-text" ).text( value );
-    })
-    .keyup();
-
     $("#register").click(function(e) {
         e.preventDefault();
         $("form").validator('validate');
@@ -424,10 +407,10 @@
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
                 'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
-                'volDepts': $("#volunteer").val(),
+                'volDepts': $("#volunteer").val(), 'surveyOk': $("#survey").is(':checked'),
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'jersey': {}, 'event': 'Furthemore 2018'
+            'event': 'Furthemore 2018'
         };
         $.ajax({
             "type": "POST",
