@@ -2,20 +2,31 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from .models import *
 
-def sendRegistrationEmail(orderId, email):
-    order = Order.objects.get(id=orderId)
-    data = {'reference': order.reference}
+def sendRegistrationEmail(order, email):
+    orderItems = OrderItem.objects.filter(order=order)
+    # send payment receipt
+    data = {'reference': order.reference, 'order': order, 'orderItems': orderItems}
     msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
     msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
     sendEmail("registration@furthemore.org", [email], 
-              "Furthemore 2017 Registration Payment", msgTxt, msgHtml)
+              "Furthemore 2018 Registration Payment", msgTxt, msgHtml)
 
-    orderItems = OrderItem.objects.filter(order=order)
+    # send registration confirmations to all people in the order
     for oi in orderItems:
+        data = {'reference': order.reference, 'orderItem': oi}
         msgTxt = render_to_string('registration/emails/registration.txt', data)
         msgHtml = render_to_string('registration/emails/registration.html', data)
-        sendEmail("registration@furthemore.org", [oi.attendee.email], 
-                 "Furthemore 2017 Registration Confirmation", msgTxt, msgHtml)
+        sendEmail("registration@furthemore.org", [oi.badge.attendee.email], 
+                 "Furthemore 2018 Registration Confirmation", msgTxt, msgHtml)
+
+        # send vip notification if necessary
+        if oi.priceLevel.emailVIP:
+            data = {'orderItem': oi}
+            msgTxt = render_to_string('registration/emails/vipNotification.txt', data)
+            msgHtml = render_to_string('registration/emails/vipNotification.html', data)
+            sendEmail("registration@furthemore.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')], 
+                 "Furthemore 2018 VIP Registration", msgTxt, msgHtml)
+
 
 def sendUpgradePaymentEmail(attendee, order):
     data = {'reference': order.reference}
@@ -24,22 +35,6 @@ def sendUpgradePaymentEmail(attendee, order):
     sendEmail("registration@furthemore.org", [attendee.email], "Furthemore 2017 Upgrade Payment", 
               msgTxt, msgHtml)
 
-def sendJerseyEmail(orderId, email):
-    order = Order.objects.get(id=orderId)
-    data = {'reference': order.reference}
-    msgTxt = render_to_string('registration/emails/jersey.txt', data)
-    msgHtml = render_to_string('registration/emails/jersey.html', data)
-    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Jersey Payment", 
-              msgTxt, msgHtml)
-
-def sendStaffJerseyEmail(orderId, email):
-    order = Order.objects.get(id=orderId)
-    data = {'reference': order.reference}
-    msgTxt = render_to_string('registration/emails/sjersey.txt', data)
-    msgHtml = render_to_string('registration/emails/sjersey.html', data)
-    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Staff Jersey Payment", 
-              msgTxt, msgHtml)
-        
 
 def sendStaffRegistrationEmail(orderId, email):
     order = Order.objects.get(id=orderId)

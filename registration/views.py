@@ -31,206 +31,6 @@ def flush(request):
     request.session.flush()
     return JsonResponse({'success': True})
 
-###################################
-# Staff Jersey Only
-
-def getStaffJersey(request, guid):
-    context = {'token': guid}
-    return render(request, 'registration/sjersey-locate.html', context)
-
-def doneStaffJersey(request):
-    context = {}
-    return render(request, 'registration/sjersey-done.html', context)
-
-def lookupStaffJersey(request):
-  try:
-    postData = json.loads(request.body)
-    email = postData['email']
-    token = postData['token']
-    staff = Staff.objects.filter(attendee__email__iexact=email, registrationToken=token)
-    if staff.count() == 0:     
-        return JsonResponse({'success': False})
-
-    request.session['staff_id'] = staff.first().id
-    return JsonResponse({'success': True, 'message':'STAFF'})
-  except Exception as e:
-    return HttpResponseServerError(str(e))
-
-def addStaffJersey(request):
-    context = {'attendee': None}
-    try:
-      staffId = request.session['staff_id']
-    except Exception as e:
-      return render(request, 'registration/sjersey-add.html', context)
-
-    staff = Staff.objects.get(id=staffId)
-    if staff.attendee:
-      level = staff.attendee.effectiveLevel()
-      option = level.priceleveloption_set.get(optionExtraType='StaffJersey')
-      context = {'attendee': staff.attendee, 'optionid': option.id}
-    return render(request, 'registration/sjersey-add.html', context)
-
-def checkoutStaffJersey(request):
-    postData = json.loads(request.body)
-    pbill = postData["billingData"]
-    jer = postData['jersey']
-    staffId = request.session['staff_id']
-    staff = Staff.objects.get(id=staffId)
-
-    priceLevel = staff.attendee.effectiveLevel()
-
-    orderItem = OrderItem(attendee=staff.attendee, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
-
-    jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
-    jersey = StaffJersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
-    jersey.save()
-    jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
-    jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
-    jerseyOption.save()
-
-    reference = getConfirmationToken()
-    while Order.objects.filter(reference=reference).count() > 0:
-        reference = getConfirmationToken()
-
-    order = Order(total=Decimal(60), reference=reference, discount=None,
-                  orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
-                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
-                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
-                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
-    order.save()
-
-    orderItem.order = order
-    orderItem.save()
-    
-    response = chargePayment(order.id, pbill, get_client_ip(request))
-    if response is not None:
-        if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                sendStaffJerseyEmail(order.id, pbill['email'])
-                orderItem.order = order
-                orderItem.save()
-                request.session.flush()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    order.delete()
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-        else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
-    else:
-        order.delete()
-        return JsonResponse({'success': False, 'message': "Unknown Error"})
-
-
-    request.session.flush()
-    return JsonResponse({'success': True})
-
-###################################
-# Jersey Only
-
-def getJersey(request, guid):
-    context = {'token': guid}
-    return render(request, 'registration/jersey-locate.html', context)
-
-def doneJersey(request):
-    context = {}
-    return render(request, 'registration/jersey-done.html', context)
-
-def lookupJersey(request):
-  try:
-    postData = json.loads(request.body)
-    email = postData['email']
-    token = postData['token']
-    attendee = Attendee.objects.filter(email__iexact=email, registrationToken=token)
-    if attendee.count() == 0:     
-        return JsonResponse({'success': False})
-
-    request.session['attendee_id'] = attendee.first().id
-    return JsonResponse({'success': True, 'message':'ATTENDEE'})
-  except Exception as e:
-    return HttpResponseServerError(str(e))
-
-def addJersey(request):
-    context = {'attendee': None}
-    try:
-      attId = request.session['attendee_id']
-    except Exception as e:
-      return render(request, 'registration/jersey-add.html', context)
-
-    attendee = Attendee.objects.get(id=attId)
-    if attendee:
-      level = attendee.effectiveLevel()
-      option = level.priceleveloption_set.get(optionExtraType='Jersey')
-      context = {'attendee': attendee, 'optionid': option.id}
-    return render(request, 'registration/jersey-add.html', context)
-
-def checkoutJersey(request):
-    postData = json.loads(request.body)
-    pbill = postData["billingData"]
-    jer = postData['jersey']
-    attId = request.session['attendee_id']
-    attendee = Attendee.objects.get(id=attId)
-
-    priceLevel = attendee.effectiveLevel()
-
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
-
-    jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
-    jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
-    jersey.save()
-    jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
-    jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
-    jerseyOption.save()
-
-    reference = getConfirmationToken()
-    while Order.objects.filter(reference=reference).count() > 0:
-        reference = getConfirmationToken()
-
-    order = Order(total=Decimal(80), reference=reference, discount=None,
-                  orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
-                  billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
-                  billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
-                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
-    order.save()
-
-    orderItem.order = order
-    orderItem.save()
-    
-    response = chargePayment(order.id, pbill, get_client_ip(request))
-    if response is not None:
-        if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                sendJerseyEmail(order.id, pbill['email'])
-                orderItem.order = order
-                orderItem.save()
-                request.session.flush()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    order.delete()
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-        else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
-    else:
-        order.delete()
-        return JsonResponse({'success': False, 'message': "Unknown Error"})
-
-
-    request.session.flush()
-    return JsonResponse({'success': True})
-            
 
 ###################################
 # Staff
@@ -285,11 +85,13 @@ def invoiceStaff(request):
         context = {'orderItems': [], 'total': 0, 'discount': {}}
         request.session.flush()
     else:
+        #TODO: get correct event
+        event = Event.objects.first()
         staffId = request.session['staff_id']
         staff = Staff.objects.get(id=staffId)
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
         discount = Discount.objects.get(codeName=sessionDiscount)
-        total = getStaffTotal(orderItems, discount, staff)
+        total = getStaffTotal(orderItems, discount, staff, event)
         context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'staff': staff}
     return render(request, 'registration/staff-checkout.html', context)
 
@@ -299,8 +101,6 @@ def addStaff(request):
     #create attendee from request post
     pda = postData['attendee']
     pdp = postData['priceLevel']
-    jer = postData['jersey']
-    sjer = postData['staffjersey']
     pds = postData['staff']
 
     #TODO: get correct event
@@ -319,8 +119,8 @@ def addStaff(request):
     attendee.country=pda['country']
     attendee.postalCode=pda['postal']
     attendee.phone=pda['phone']
-    attendee.badgeName=pda['badgeName']
     attendee.emailsOk=True
+    attendee.surveyOk=False  #staff get their own survey
 
     try:
         attendee.save()
@@ -352,32 +152,25 @@ def addStaff(request):
     try:
         staff.save()
     except Exception as e:
-        return JsonResponse({'success': False, 'message': 'Staff not saved: ' + e})
+        return JsonResponse({'success': False, 'message': 'Staff not saved: ' + str(e)})
+
+    badge = Badge.objects.get(attendee=attendee,event=event)
+    badge.badgeName = pda['badgeName']
+    try:
+        badge.save()
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Badge not saved: ' + str(e)})
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    #cleanup
+    orderItem = OrderItem(attendee=attendee, badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
         attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
-
-    if jer:
-        jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
-        jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
-        jersey.save()
-        jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
-        jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
-        jerseyOption.save()
-    if sjer:
-        sjerseySize = ShirtSizes.objects.get(id=int(sjer['size']))
-        sjersey = StaffJersey(name=sjer['name'], number=sjer['number'], shirtSize=sjerseySize)
-        sjersey.save()
-        sjOption = PriceLevelOption.objects.get(id=int(sjer['optionId']))
-        sjerseyOption = AttendeeOptions(option=sjOption, orderItem=orderItem, optionValue=sjersey.id)
-        sjerseyOption.save()
 
     #add to session order
     orderItems = request.session.get('order_items', [])
@@ -388,11 +181,12 @@ def addStaff(request):
     return JsonResponse({'success': True})
 
 
-def getStaffTotal(orderItems, discount, staff):
-    if staff.attendee.effectiveLevel():
+def getStaffTotal(orderItems, discount, staff, event):
+    badge = Badge.objects.get(attendee=staff.attendee,event=event)
+    if badge.effectiveLevel():
         discount = None
     subTotal = getTotal(orderItems, discount)
-    alreadyPaid = staff.attendee.paidTotal()
+    alreadyPaid = badge.paidTotal()
     total = subTotal - alreadyPaid
     if total < 0: 
       return 0
@@ -411,7 +205,7 @@ def checkoutStaff(request):
 
     discount = Discount.objects.get(codeName="StaffDiscount")
     staff = Staff.objects.get(id=staffId)
-    subtotal = getStaffTotal(orderItems, discount, staff)
+    subtotal = getStaffTotal(orderItems, discount, staff, event)
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
@@ -524,8 +318,8 @@ def infoDealer(request):
         dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
         table_dict = model_to_dict(dealer.tableSize)        
-        if dealer.attendee.effectiveLevel():
-            lvl_dict = model_to_dict(dealer.attendee.effectiveLevel())
+        if dealer.attendee.badge.effectiveLevel():
+            lvl_dict = model_to_dict(dealer.attendee.badge.effectiveLevel())
         else:
             lvl_dict = {}
         context = {'dealer': dealer, 'jsonDealer': json.dumps(dealer_dict, default=handler), 
@@ -690,7 +484,9 @@ def addDealer(request):
     pda = postData['attendee']
     pdd = postData['dealer']
     pdp = postData['priceLevel']
-    jer = postData['jersey']
+    event = Event.objects.first()
+   
+    #todo: event = Event.objects.get(id=int(postData["eventId"]))
 
     if 'dealer_id' not in request.session:
         return HttpResponseServerError("Session expired")
@@ -736,31 +532,32 @@ def addDealer(request):
     attendee.country=pda['country']
     attendee.postalCode=pda['postal']
     attendee.phone=pda['phone']
-    attendee.badgeName=pda['badgeName']
 
     try:
         attendee.save()
     except Exception as e:
         return HttpResponseServerError(str(e))
 
+    
+    badge = Badge.objects.get(attendee=attendee,event=event)
+    badge.badgeName=pda['badgeName']    
+
+    try:
+        attendee.save()
+    except Exception as e:
+        return HttpResponseServerError(str(e))
+    
+
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    #cleanup
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB", attendee=attendee)
     orderItem.save()
 
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
         attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
-
-    if jer:
-        jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
-        jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
-        jersey.save()
-        jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
-        jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
-        jerseyOption.save()
-
 
     orderItems = request.session.get('order_items', [])
     orderItems.append(orderItem.id)
@@ -867,8 +664,13 @@ def addNewDealer(request):
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
-                        emailsOk=pda['emailsOk'], event=event )
+                        emailsOk=pda['emailsOk'], surveyOk=pda['surveyOk']
+                        #cleanup
+                        , event=event)
     attendee.save()
+
+    badge = Badge(attendee=attendee, event=event, badgeName=pda['badgeName'])
+    badge.save()
 
     tablesize = TableSize.objects.get(id=pdd['tableSize'])
     dealer = Dealer(attendee=attendee, businessName=pdd['businessName'], 
@@ -1124,7 +926,6 @@ def addToCart(request):
     #create attendee from request post
     pda = postData['attendee']
     pdp = postData['priceLevel']
-    jer = postData['jersey']
     evt = postData['event']
 
     tz = timezone.get_current_timezone()
@@ -1135,27 +936,22 @@ def addToCart(request):
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
-                        badgeName=pda['badgeName'], emailsOk=pda['emailsOk'], volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
-                        event=event )
+                        emailsOk=pda['emailsOk'], volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
+                        surveyOk=pda['surveyOk'], event=event )
     attendee.save()
+
+    badge = Badge(badgeName=pda['badgeName'], event=event, attendee=attendee)
+    badge.save()
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem = OrderItem(badge=badge, attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
         attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
-
-    if jer:
-        jerseySize = ShirtSizes.objects.get(id=int(jer['size']))
-        jersey = Jersey(name=jer['name'], number=jer['number'], shirtSize=jerseySize)
-        jersey.save()
-        jOption = PriceLevelOption.objects.get(id=int(jer['optionId']))
-        jerseyOption = AttendeeOptions(option=jOption, orderItem=orderItem, optionValue=jersey.id)
-        jerseyOption.save()
 
     #add attendee to session order
     orderItems = request.session.get('order_items', [])
@@ -1215,7 +1011,7 @@ def checkout(request):
             oitem.order = order
             oitem.save()
         request.session.flush()
-        sendRegistrationEmail(order.id, att.email)
+        sendRegistrationEmail(order, att.email)
         return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -1262,7 +1058,7 @@ def checkout(request):
                 for oitem in orderItems:
                     oitem.order = order
                     oitem.save()
-                sendRegistrationEmail(order.id, pbill['email'])
+                sendRegistrationEmail(order, pbill['email'])
                 if discount:
                     discount.used = discount.used + 1
                     discount.save()
@@ -1404,7 +1200,7 @@ def getPriceLevels(request):
     levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now)
     if att and att.effectiveLevel():
         levels = levels.exclude(basePrice__lt=att.effectiveLevel().basePrice)
-    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceLevelOptions.order_by('optionPrice').all() ]} for level in levels]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getShirtSizes(request):
@@ -1415,16 +1211,6 @@ def getShirtSizes(request):
 def getTableSizes(request):
     sizes = TableSize.objects.all()
     data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax, 'basePrice': str(size.basePrice)} for size in sizes]
-    return HttpResponse(json.dumps(data), content_type='application/json')
-
-def getJerseyNumbers(request):
-    jerseys = Jersey.objects.all()
-    data = [str(jersey.number) for jersey in jerseys]
-    return HttpResponse(json.dumps(data), content_type='application/json')
-
-def getStaffJerseyNumbers(request):
-    jerseys = StaffJersey.objects.all()
-    data = [str(jersey.number) for jersey in jerseys]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getSessionAddresses(request):
@@ -1449,12 +1235,8 @@ def deleteOrderItem(id):
     if orderItems.count() == 0: 
       return
     orderItem = orderItems.first()
-    #Delete any jerseys. Other options will cascade delete properly.
-    jerseyOptions = AttendeeOptions.objects.filter(orderItem__attendee=orderItem.attendee, option__optionExtraType='Jersey')
-    for jerOpt in jerseyOptions:
-      jersey = Jersey.objects.get(id=jerOpt.optionValue)
-      jersey.delete()
-    orderItem.attendee.delete()
+    orderItem.badge.attendee.delete()
+    orderItem.badge.delete()
     orderItem.delete()
 
 def getTotal(orderItems, disc = ""):
@@ -1462,7 +1244,7 @@ def getTotal(orderItems, disc = ""):
     if not orderItems: return total
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
-        effLevel = item.attendee.effectiveLevel()
+        effLevel = item.badge.effectiveLevel()
         if effLevel:
             itemTotal = itemSubTotal - effLevel.basePrice
         else: 
