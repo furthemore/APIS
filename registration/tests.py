@@ -28,8 +28,8 @@ class OrdersTestCases(TestCase):
         self.department1 = Department(name="BestDept")
         self.department2 = Department(name="WorstDept")
 
-	self.department1.save()
-	self.department2.save()
+        self.department1.save()
+        self.department2.save()
 
         self.discount = Discount(codeName="FiveOff", amountOff=5.00,
                                  startDate=now, endDate=now+ten_days)
@@ -48,22 +48,20 @@ class OrdersTestCases(TestCase):
         self.shirt1 = ShirtSizes(name='Test_Large')
         self.shirt1.save()
 
-	#TODO: shirt option type
-        self.option1 = PriceLevelOption(priceLevel=self.price1,optionName="Conbook",optionPrice=0.00)
-        self.option2 = PriceLevelOption(priceLevel=self.price1,optionName="Shirt Size",optionPrice=0.00,optionExtraType="ShirtSizes")
-        self.option3 = PriceLevelOption(priceLevel=self.price2,optionName="Conbook",optionPrice=0.00)
-        self.option4 = PriceLevelOption(priceLevel=self.price1,optionName="Jersey",optionPrice=80.00)
-        self.option5 = PriceLevelOption(priceLevel=self.price2,optionName="Jersey",optionPrice=80.00)
-        self.option6 = PriceLevelOption(priceLevel=self.price1,optionName="StaffJersey",optionPrice=65.00)
-        self.option7 = PriceLevelOption(priceLevel=self.price2,optionName="StaffJersey",optionPrice=65.00)
+        #TODO: shirt option type
+        self.option1 = PriceLevelOption(optionName="Conbook",optionPrice=0.00)
+        self.option2 = PriceLevelOption(optionName="Shirt Size",optionPrice=0.00,optionExtraType="ShirtSizes")
+        self.option3 = PriceLevelOption(optionName="Something Pricy",optionPrice=100.00)
 
-	self.option1.save()
-	self.option2.save()
-	self.option3.save()
-	self.option4.save()
-	self.option5.save()
-	self.option6.save()
-	self.option7.save()
+        self.option1.save()
+        self.option2.save()
+        self.option3.save()
+
+        self.price1.priceLevelOptions.add(self.option1)
+        self.price1.priceLevelOptions.add(self.option2)
+        self.price2.priceLevelOptions.add(self.option1)
+        self.price3.priceLevelOptions.add(self.option1)
+        self.price3.priceLevelOptions.add(self.option3)
         
 
         self.event = Event(name="Test Event 2050!", dealerRegStart=now-ten_days, dealerRegEnd=now+ten_days,
@@ -96,37 +94,39 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Tester", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id},
                     'event': 'Test Event 2050!'}
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
-	attendee = Attendee.objects.get(firstName="Tester")
-	self.assertEqual(attendee.lastName, "Testerson")
-	orderitem = OrderItem.objects.get(attendee=attendee)
-	self.assertEqual(orderitem.priceLevel_id, self.price1.id)
-	self.assertEqual(orderitem.enteredBy, "WEB")
+        attendee = Attendee.objects.get(firstName="Tester")
+        self.assertEqual(attendee.lastName, "Testerson")
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
+        self.assertEqual(badge.badgeName, "FluffyButz")
+        orderitem = OrderItem.objects.get(badge=badge)
+        self.assertEqual(orderitem.priceLevel_id, self.price1.id)
+        self.assertEqual(orderitem.enteredBy, "WEB")
         orderoption2 = orderitem.attendeeoptions_set.get(option__id=self.option2.id)
         self.assertEqual(orderoption2.optionValue, self.shirt1.id.__str__())
 
         response = self.client.get(reverse('cart'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         self.assertEqual(cart[0].id, orderitem.id)
         total = response.context["total"]
-        self.assertEqual(total, 45+80)
+        self.assertEqual(total, 45)
 
-	response = self.client.get(reverse('cancelOrder'))
-	self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('cancelOrder'))
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('cart'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 0)
         self.assertEqual(Attendee.objects.filter(firstName="Tester").count(), 0)
+        self.assertEqual(Badge.objects.filter(badgeName="FluffyButz").count(), 0)
         self.assertEqual(OrderItem.objects.filter(id=orderitem.id).count(), 0)
         self.assertEqual(AttendeeOptions.objects.filter(orderItem=orderitem).count(), 0)
         self.assertEqual(PriceLevel.objects.filter(id=self.price1.id).count(), 1)
@@ -137,9 +137,9 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Frank", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{}, 'event': 'Test Event 2050!'}
+                    'event': 'Test Event 2050!'}
 
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
@@ -147,9 +147,9 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Felix", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "true"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option3.id, 'value': "true"}]},
-                    'jersey':{}, 'event': 'Test Event 2050!'}
+                    'event': 'Test Event 2050!'}
 
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
@@ -157,37 +157,36 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Julie", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id},
                     'event': 'Test Event 2050!'}
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
         response = self.client.get(reverse('cart'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 3)
         total = response.context["total"]
-        self.assertEqual(total, 45+90+45+80)
+        self.assertEqual(total, 45+90+100+45)
 
         attendee = Attendee.objects.get(firstName='Felix')
-	postData = {'id': OrderItem.objects.get(attendee=attendee).id}
+        postData = {'id': OrderItem.objects.get(attendee=attendee).id}
         response = self.client.post(reverse('removeFromCart'), json.dumps(postData), content_type='application/json')
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('cart'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 2)
         total = response.context["total"]
-        self.assertEqual(total, 45+45+80)
+        self.assertEqual(total, 45+45)
         self.assertEqual(Attendee.objects.filter(firstName="Felix").count(), 0)
 
         response = self.client.get(reverse('cancelOrder'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('cart'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 0)
         self.assertEqual(Attendee.objects.filter(firstName="Frank").count(), 0)
@@ -197,14 +196,13 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Bea", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id},
                     'event': 'Test Event 2050!'}
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-	attendee = Attendee.objects.get(firstName='Bea')
+        attendee = Attendee.objects.get(firstName='Bea')
         postData = {'billingData': {'cc_firstname':attendee.firstName, 'cc_lastname': attendee.lastName, 'cc_number':"4111111111111111", 
                     'cc_month':"12", 'cc_year':"2020", 'cc_security':"123", 'address1':attendee.address1,
                     'address2':attendee.address2, 'city':attendee.city, 'state':attendee.state,
@@ -219,7 +217,7 @@ class OrdersTestCases(TestCase):
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertEqual(order.discount, None)
-        self.assertEqual(order.total, 45+80+11)
+        self.assertEqual(order.total, 45+11)
         self.assertEqual(attendee.postalCode, order.billingPostal)
         self.assertEqual(order.orgDonation, 1.00)
         self.assertEqual(order.charityDonation, 10.00)
@@ -230,14 +228,13 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Jenny", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': ""},
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id},
                     'event': 'Test Event 2050!'}
 	
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-	attendee = Attendee.objects.get(firstName='Jenny')
+        attendee = Attendee.objects.get(firstName='Jenny')
         self.assertNotEqual(attendee.registeredDate, None)
         self.assertEqual(attendee.orderitem_set.count(), 1)
 
@@ -245,11 +242,11 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('discount'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('cart'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 112.50)
+        self.assertEqual(total, 40.50)
 
         postData = {'billingData': {'cc_firstname':attendee.firstName, 'cc_lastname': attendee.lastName, 'cc_number':"4111111111111111", 
                     'cc_month':"12", 'cc_year':"2020", 'cc_security':"123", 'address1':attendee.address1,
@@ -281,14 +278,18 @@ class OrdersTestCases(TestCase):
         attendee.save()
         staff = Staff(attendee=attendee)
         staff.save()
+        badge = Badge(attendee=attendee,event=self.event,badgeName="DisStaff")
+        badge.save()
         attendee2 = Attendee(firstName="Staph", lastName="Testerson", event=self.event,
                             address1="123 Somewhere St", city="Place", state="PA", country="USA", postalCode=12345,
                             phone="1112223333", email="testerson@mailinator.org", birthdate="1990-01-01")
         attendee2.save()
         staff2 = Staff(attendee=attendee2)
         staff2.save()
+        badge2 = Badge(attendee=attendee2,event=self.event,badgeName="AnotherStaff")
+        badge2.save()
 
-	postData = {'email':attendee.email, 'token':staff.registrationToken}
+        postData = {'email':attendee.email, 'token':staff.registrationToken}
         response = self.client.post(reverse('findStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
@@ -298,15 +299,14 @@ class OrdersTestCases(TestCase):
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true"},
                     'staff': {'id': staff.id, 
-				'department': self.department1.id, 'title': 'Something Cool',
-				'twitter': "@twitstaff", 'telegram': "@twitstaffagain",
-				'shirtsize': self.shirt1.id, 'specialSkills': "Something here",
-				'specialFood': "no water please", 'specialMedical': 'alerigic to bandaids',
-				'contactPhone': "4442223333", 'contactName': 'Test Testerson',
-				'contactRelation': 'Pet'},
-                    'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id},
-                    'staffjersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option6.id}}
+                    'department': self.department1.id, 'title': 'Something Cool',
+                    'twitter': "@twitstaff", 'telegram': "@twitstaffagain",
+                    'shirtsize': self.shirt1.id, 'specialSkills': "Something here",
+                    'specialFood': "no water please", 'specialMedical': 'alerigic to bandaids',
+                    'contactPhone': "4442223333", 'contactName': 'Test Testerson',
+                    'contactRelation': 'Pet'},
+                    'priceLevel': {'id': self.price3.id, 'options': [{'id': self.option3.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]}
+                    }
         response = self.client.post(reverse('addStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
@@ -315,7 +315,7 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 45+65+80-45)
+        self.assertEqual(total, 150+100-45)
         discount = response.context["discount"]
         self.assertEqual(discount.codeName, "StaffDiscount")
 
@@ -337,7 +337,7 @@ class OrdersTestCases(TestCase):
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertEqual(order.discount.codeName, "StaffDiscount")
-        self.assertEqual(order.total, 45+65+80-45)
+        self.assertEqual(order.total, 150+100-45)
         self.assertEqual(order.orgDonation, 0)
         self.assertEqual(order.charityDonation, 0)
 
@@ -346,7 +346,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Staff zero-sum
-	postData = {'email':attendee2.email, 'token':staff2.registrationToken}
+        postData = {'email':attendee2.email, 'token':staff2.registrationToken}
         response = self.client.post(reverse('findStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
@@ -356,15 +356,14 @@ class OrdersTestCases(TestCase):
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true"},
                     'staff': {'id': staff2.id, 
-				'department': self.department2.id, 'title': 'Something Cool',
-				'twitter': "@twitstaff", 'telegram': "@twitstaffagain",
-				'shirtsize': self.shirt1.id, 'specialSkills': "Something here",
-				'specialFood': "no water please", 'specialMedical': 'alerigic to bandaids',
-				'contactPhone': "4442223333", 'contactName': 'Test Testerson',
-				'contactRelation': 'Pet'},
+                    'department': self.department2.id, 'title': 'Something Cool',
+                    'twitter': "@twitstaff", 'telegram': "@twitstaffagain",
+                    'shirtsize': self.shirt1.id, 'specialSkills': "Something here",
+                    'specialFood': "no water please", 'specialMedical': 'alerigic to bandaids',
+                    'contactPhone': "4442223333", 'contactName': 'Test Testerson',
+                    'contactRelation': 'Pet'},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
-                    'jersey':{},
-                    'staffjersey':{}}
+                    }
         response = self.client.post(reverse('addStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
@@ -394,22 +393,22 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Dealer", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true"},
+                                 'badgeName': "FluffyButz",'emailsOk': "true", 'surveyOk': "true"},
                     'dealer': {'businessName':"Something Creative", 'website':"http://www.something.com",
-				'license':"jkah9435kd", 'power': True, 'wifi': True,
-                                'wall': True, 'near': "Someone", 'far': "Someone Else",
-				'description': "Stuff for sale", 'tableSize': self.table1.id,  
-				'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
-				'reception': True, 'artShow': False, 
-				'charityRaffle': "Some stuff", 'agreeToRules': True,
-				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"}}
+                    'license':"jkah9435kd", 'power': True, 'wifi': True,
+                    'wall': True, 'near': "Someone", 'far': "Someone Else",
+                    'description': "Stuff for sale", 'tableSize': self.table1.id,  
+                    'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
+                    'reception': True, 'artShow': False, 
+                    'charityRaffle': "Some stuff", 'agreeToRules': True,
+                    'breakfast': True, 'switch': False,
+                    'buttonOffer': "Buttons"}}
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         postData = {'attendee': {'firstName': "Free", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true"},
+                                 'badgeName': "FluffyNutz",'emailsOk': "true", 'surveyOk': "true"},
                     'dealer': {'businessName':"Something Creative", 'website':"http://www.something.com",
 				'license':"jkah9435kd", 'power': True, 'wifi': True,
                                 'wall': True, 'near': "Someone", 'far': "Someone Else",
@@ -424,7 +423,7 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'firstName': "Dealz", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true"},
+                                 'badgeName': "FluffyGutz",'emailsOk': "true", 'surveyOk': "true"},
                     'dealer': {'businessName':"Something Creative", 'website':"http://www.something.com",
 				'license':"jkah9435kd", 'power': True, 'wifi': True,
                                 'wall': True, 'near': "Someone", 'far': "Someone Else",
@@ -436,21 +435,29 @@ class OrdersTestCases(TestCase):
 				'buttonOffer': "Buttons"}}
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
+        #import pdb; pdb.set_trace()
         attendee = Attendee.objects.get(firstName='Dealer')
-        self.assertNotEqual(attendee.registeredDate, None)
-        self.assertEqual(attendee.orderitem_set.count(), 0)
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertEqual(badge.badgeName, "FluffyButz")
+        self.assertNotEqual(badge.registeredDate, None)
+        self.assertEqual(badge.orderitem_set.count(), 0)
         dealer = Dealer.objects.get(attendee=attendee)
         self.assertNotEqual(dealer, None)
         attendee = Attendee.objects.get(firstName='Dealz')
-        self.assertNotEqual(attendee.registeredDate, None)
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertEqual(badge.badgeName, "FluffyGutz")
+        self.assertNotEqual(badge.registeredDate, None)
         attendee = Attendee.objects.get(firstName='Free')
-        self.assertNotEqual(attendee.registeredDate, None)
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertEqual(badge.badgeName, "FluffyNutz")
+        self.assertNotEqual(badge.registeredDate, None)
 
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
         #Dealer
         attendee = Attendee.objects.get(firstName='Dealer')
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
         postData = {'token': dealer.registrationToken, 'email': attendee.email}
         response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
@@ -469,16 +476,16 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    'jersey':{}}
+                    }
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
         self.assertEqual(total, 45+130-45)
-        orderItem = OrderItem.objects.get(attendee=attendee)
+        orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
         response = self.client.get(reverse('flush'))
@@ -486,6 +493,7 @@ class OrdersTestCases(TestCase):
 
         #Dealer, zero-sum
         attendee = Attendee.objects.get(firstName='Free')
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
         dealer.discount = 130
         dealer.save()
@@ -495,7 +503,7 @@ class OrdersTestCases(TestCase):
         postData = {'attendee': {'id': attendee.id,'firstName': "Free", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true"},
+                                 'badgeName': "FluffyNutz",'emailsOk': "true"},
                     'dealer': {'id': dealer.id,'businessName':"Something Creative", 'website':"http://www.something.com",
 				'license':"jkah9435kd", 'power': True, 'wifi': True,
                                 'wall': True, 'near': "Someone", 'far': "Someone Else",
@@ -506,16 +514,16 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    'jersey':{}}
+                    }
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
         self.assertEqual(total, 0)
-        orderItem = OrderItem.objects.get(attendee=attendee)
+        orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
         response = self.client.get(reverse('flush'))
@@ -523,6 +531,7 @@ class OrdersTestCases(TestCase):
 
         #Dealer, upgrade
         attendee = Attendee.objects.get(firstName='Dealer')
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
         postData = {'token': dealer.registrationToken, 'email': attendee.email}
         response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
@@ -541,58 +550,24 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    'jersey':{}}
+                    }
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
         self.assertEqual(total, 90+130-45)
-        orderItem = OrderItem.objects.get(attendee=attendee)
+        orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
-        #Dealer, upgrade, jersey
-        attendee = Attendee.objects.get(firstName='Dealer')
-        dealer = Dealer.objects.get(attendee=attendee)
-        postData = {'token': dealer.registrationToken, 'email': attendee.email}
-        response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        postData = {'attendee': {'id': attendee.id,'firstName': "Dealer", 'lastName': "Testerson",
-                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
-                                 'badgeName': "FluffyButz",'emailsOk': "true"},
-                    'dealer': {'id': dealer.id,'businessName':"Something Creative", 'website':"http://www.something.com",
-				'license':"jkah9435kd", 'power': True, 'wifi': True,
-                                'wall': True, 'near': "Someone", 'far': "Someone Else",
-				'description': "Stuff for sale", 'tableSize': self.table1.id,  
-				'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
-				'reception': True, 'artShow': False, 
-				'charityRaffle': "Some stuff", 'agreeToRules': True,
-				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
-                    'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id}}
-        response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse('invoiceDealer'))
-	self.assertEqual(response.status_code, 200)
-        cart = response.context["orderItems"]
-        self.assertEqual(len(cart), 1)
-        total = response.context["total"]
-        self.assertEqual(total, 90+80+130-45)
-        orderItem = OrderItem.objects.get(attendee=attendee)
-        orderItem.delete()
-
-        response = self.client.get(reverse('flush'))
-        self.assertEqual(response.status_code, 200)
-
-        #Dealer, partners, upgrade, jersey
+        #Dealer, partners, upgrade
         attendee = Attendee.objects.get(firstName='Dealz')
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
         postData = {'token': dealer.registrationToken, 'email': attendee.email}
         response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
@@ -611,23 +586,24 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id}}
+                    }
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+80+40+160-45)
-        orderItem = OrderItem.objects.get(attendee=attendee)
+        self.assertEqual(total, 90+40+160-45)
+        orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
-        #Dealer, partners, upgrade, jersey, discount
+        #Dealer, partners, upgrade, discount
         attendee = Attendee.objects.get(firstName='Dealz')
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
         dealer.discount = 5
         dealer.save()
@@ -648,17 +624,17 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    'jersey':{'name': 'somethingHere', 'number': 15, 'size': self.shirt1.id, 'optionId': self.option4.id}}
+                    }
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
-	self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+80+40+160-45-5)
+        self.assertEqual(total, 90+40+160-45-5)
 
-        #Dealer, partners, upgrade, jersey, discount, donations
+        #Dealer, partners, upgrade, discount, donations
         postData = {'billingData': {
 			'cc_number': "4111111111111111", 'cc_month': "01", 
 			'cc_year': "2018", 'cc_security': "836",
@@ -670,11 +646,11 @@ class OrdersTestCases(TestCase):
 		    'orgDonation': "5"}
         response = self.client.post(reverse('checkoutDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        orderItem = attendee.orderitem_set.first()
+        orderItem = badge.orderitem_set.first()
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertNotEqual(order.discount, None)
-        self.assertEqual(order.total, 90+80+40+160-45-5+15)
+        self.assertEqual(order.total, 90+40+160-45-5+15)
         self.assertEqual(order.orgDonation, 5.00)
         self.assertEqual(order.charityDonation, 10.00)
 
