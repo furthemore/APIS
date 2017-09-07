@@ -90,6 +90,7 @@ class Attendee(models.Model):
     badgeNumber = models.IntegerField(null=True, blank=True)
     badgePrinted = models.BooleanField(default=False)
     emailsOk = models.BooleanField(default=False)
+    surveyOk = models.BooleanField(default=False)
     volunteerContact = models.BooleanField(default=False)
     volunteerDepts = models.CharField(max_length=1000, blank=True)
     holdType = models.ForeignKey(HoldType, null=True, blank=True, on_delete=models.SET_NULL)
@@ -112,40 +113,6 @@ class Attendee(models.Model):
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
 
-    def getDiscount(self):
-      discount = ""
-      orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
-      for oi in orderItems: 
-        if oi.order.discount != None:
-          discount = oi.order.discount.codeName
-      return discount
-
-    def paidTotal(self):
-      total = 0
-      orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
-      for oi in orderItems: 
-          total += oi.order.total
-      return Decimal(total)
-
-    def abandoned(self):
-        if Staff.objects.filter(attendee=self).exists():
-            return 'Staff'
-        if Dealer.objects.filter(attendee=self).exists():
-            return 'Dealer'
-        if self.paidTotal() > 0: 
-            return 'Paid'
-        if self.effectiveLevel():
-            return 'Comp'
-        return 'Abandoned'
-
-    def effectiveLevel(self):
-        level = None
-        orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
-        for oi in orderItems:
-            if not level: level = oi.priceLevel
-            elif oi.priceLevel.basePrice > level.basePrice:
-                level = oi.priceLevel
-        return level
 
 class Badge(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -155,6 +122,46 @@ class Badge(models.Model):
     badgeName = models.CharField(max_length=200, blank=True)
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
+
+    def getDiscount(self):
+      discount = ""
+      orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
+      for oi in orderItems: 
+        if oi.order.discount != None:
+          discount = oi.order.discount.codeName
+      return discount
+
+    def paidTotal(self):
+      total = 0
+      orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
+      for oi in orderItems: 
+          total += oi.order.total
+      return Decimal(total)
+
+    def abandoned(self):
+        if Staff.objects.filter(attendee=self.attendee).exists():
+            return 'Staff'
+        if Dealer.objects.filter(attendee=self.attendee).exists():
+            return 'Dealer'
+        if self.paidTotal() > 0: 
+            return 'Paid'
+        if self.effectiveLevel():
+            return 'Comp'
+        return 'Abandoned'
+
+    def effectiveLevel(self):
+        level = None
+        orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
+        for oi in orderItems:
+            if not level: level = oi.priceLevel
+            elif oi.priceLevel.basePrice > level.basePrice:
+                level = oi.priceLevel
+        return level
+
+    def save(self, *args, **kwargs):
+      if not self.id:
+        self.registeredDate = timezone.now()
+      return super(Badge, self).save(*args, **kwargs)
     
         
 
@@ -255,13 +262,13 @@ class PriceLevelOption(models.Model):
       return '%s' % (self.optionName)
 
     def getList(self):
-	if self.optionExtraType in ["int", "bool", "string"]:
+        if self.optionExtraType in ["int", "bool", "string"]:
             return []
         elif self.optionExtraType == "ShirtSizes":
             return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
         else:
             return []
-
+ 
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
     priceLevelOptions = models.ManyToManyField(PriceLevelOption)
@@ -272,6 +279,8 @@ class PriceLevel(models.Model):
     public = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
     group = models.TextField(blank=True)
+    emailVIP = models.BooleanField(default=False)
+    emailVIPEmails = models.CharField(max_length=400, blank=True, default='')
 
     def __str__(self):
       return self.name
@@ -326,6 +335,7 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
     attendee = models.ForeignKey(Attendee)
+    badge = models.ForeignKey(Badge, null=True)
     priceLevel = models.ForeignKey(PriceLevel)
     enteredBy = models.CharField(max_length=100)
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
@@ -340,4 +350,7 @@ class AttendeeOptions(models.Model):
     optionValue2 = models.CharField(max_length=200, blank=True)
     optionValue3 = models.CharField(max_length=200, blank=True)
 
- 
+    def getTotal(self):
+        if self.option.optionExtraType == "int":
+            return self.optionValue * self.option.optionPrice
+        return self.option.optionPrice

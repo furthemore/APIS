@@ -50,18 +50,6 @@ urlpatterns = [
     url(r'^cart/checkout/?$', views.checkout, name='checkout'),
     url(r'^cart/done/?$', views.cartDone, name='done'),
 
-    url(r'^jersey/lookup/?$', views.lookupJersey, name='lookupjersey'),    
-    url(r'^jersey/add/?$', views.addJersey, name='addjersey'),    
-    url(r'^jersey/checkout/?$', views.checkoutJersey, name='checkoutjersey'),    
-    url(r'^jersey/done/?$', views.doneJersey, name='donejersey'),    
-    url(r'^jersey/(?P<guid>\w+)/?$', views.getJersey, name='jersey'),    
-
-    url(r'^staffjersey/lookup/?$', views.lookupStaffJersey, name='lookupstaffjersey'),    
-    url(r'^staffjersey/add/?$', views.addStaffJersey, name='addstaffjersey'),    
-    url(r'^staffjersey/checkout/?$', views.checkoutStaffJersey, name='checkoutstaffjersey'),    
-    url(r'^staffjersey/done/?$', views.doneStaffJersey, name='donestaffjersey'),    
-    url(r'^staffjersey/(?P<guid>\w+)/?$', views.getStaffJersey, name='staffjersey'),    
-
     url(r'^events/?$', views.getEvents, name='events'),
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
@@ -72,8 +60,6 @@ urlpatterns = [
     url(r'^shirts/?$', views.getShirtSizes, name='shirtsizes'),
     url(r'^tables/?$', views.getTableSizes, name='tablesizes'),
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),
-    url(r'^takenJerseys/?$', views.getJerseyNumbers, name='takenJerseys'),
-    url(r'^takenStaffJerseys/?$', views.getStaffJerseyNumbers, name='takenStaffJerseys'),
 
 #    url(r'^utility/badges?$', views.badgeList, name='badgeList'),
 
