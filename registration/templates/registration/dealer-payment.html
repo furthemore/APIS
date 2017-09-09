@@ -5,7 +5,7 @@
 
 {% if dealer and not dealer.approved%}
 
-<h1>Dealer Registration - Furthemore 2017</h1>
+<h1>Dealer Registration - Furthemore 2018</h1>
 <p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you feel this is in error or have any questions.</p>
 
 {% elif dealer and dealer.approved %}
@@ -38,19 +38,6 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="jerseyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Year 5 Jersey</h4>
-      </div>
-      <div class="modal-body">
-	<img width="400" src="/static/img/attendee_jersey.jpg"/>
-      </div>
-    </div>
-  </div>
-</div>
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
@@ -75,6 +62,8 @@
                     <div class="col-sm-9">
                         <input type="email" id="email" value="{{dealer.attendee.email}}" class="form-control" disabled />
                         <input type="checkbox" id="contact"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                        <br/> 
+                        <input type="checkbox" id="survey"> <span class="control-label" >Please send me the post-con survey.</span>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
@@ -135,21 +124,12 @@
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" name="badgeName" id="badgeName" value="{{dealer.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
+                        <input type="text" name="badgeName" id="badgeName" value="{{badge.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#profile" class="btn btn-primary col-sm-12" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
-                    </div>
-                </div>
             
-	</div>
-	<div role="tabpanel" class="tab-pane fade" id="profile">
-		<h1>Dealer Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 		<hr>
                 <div class="form-group">
                     <label for="businessName" class="col-sm-3 control-label">Business Name <span style="color:red;">*</span></label>
@@ -202,7 +182,7 @@
                 <div class="form-group">
                     <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
                     <div class="col-sm-9">
-                        <input type="text" id="buttonOffer" value="{{dealer.buttonOffer}}" name="buttonOffer" class="form-control form-control-checkbox" />
+                        <textarea id="buttonOffer" name="buttonOffer" class="form-control form-control-textarea">{{dealer.charityRaffle}}</textarea>
                     </div>
 		    <div class="col-sm-9 col-sm-offset-3 small"><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal" >What's this?</button></div>
                 </div>
@@ -213,16 +193,8 @@
                     </div>
 		    <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity onsite for additional information and receipts.</div>
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#personal" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal"><< Back</a>
-			<a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
-                    </div>
-                </div>
-	</div>
-	<div role="tabpanel" class="tab-pane fade" id="options">
-		<h1>Dealer Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a></p>
+
+       <hr/>
                 <div class="form-group">
                     <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
                     <div class="col-sm-9">
@@ -288,7 +260,6 @@
 
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
                         <button id="checkout" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Submit Payment</button>
 		    </div>
                 </div>
@@ -300,7 +271,7 @@
 
 {% else %}
 
-<h1>Dealer Registration - Furthemore 2017</h1>
+<h1>Dealer Registration - Furthemore 2018</h1>
 <p>Your session has expired. Please use the link in your application acceptance email again to start over.</p>
 
 {% endif %}
@@ -388,47 +359,20 @@
 		</div>
 	</div>
 </script>
-<script type="text/html" id="optionJerseyTemplate">
-	<br/>
-        <h4>Year 5 Jersey</h4>
-        <hr/>
-        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore!
-                <br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures and more information. Fill in the desired name and number to reserve a jersey.
-   	<hr/>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Jersey Name</label>
-		<div class="col-sm-9">
-			<input type="text" id="jerseyName" max-length=15 class="form-control form-control-text" />
-			<input type="hidden" id="optionId" data-value="optionId" />
-		</div>
-	</div>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Jersey Number</label>
-		<div class="col-sm-9">
-			<input type="text" id="jerseyNumber" maxlength=3 pattern="^[0-9]+$"  class="form-control form-control-text" />
-		</div>
-	</div>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Jersey Size</label>
-		<div class="col-sm-9">
-			<select id="jerseySize" class="form-control form-control-select" 
-			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-		</div>
-	</div>
-</script>
+
  <script type="text/javascript">
 	var dealer = {{ jsonDealer|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
+	var badge = {{ jsonBadge|safe }} 
 	var table = {{ jsonTable|safe }} 
 	var currentLevel = {{ jsonLevel|safe }}
 	var levelTemplateData = [];
-        var shirtSizes = [];
-	var takenJerseys = [];
+    var shirtSizes = [];
 
 	$( "body" ).ready(function() {
 		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
-			var prevLevel = 50;
+			var prevLevel = 45;
 			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
 				prevLevel = parseFloat(currentLevel.basePrice);
 			}
@@ -452,16 +396,13 @@
 				$(".selectLevel")[0].click();
 			}
 		});
-		$.getJSON("/apis/registration/takenJerseys", function(data) {
-			takenJerseys = data;
-		});
 	});
 
-        var partners = dealer.partners.split(', ');
-	var partnerCount = 0;
-        var partner1 = "";
-	var partner2 = "";
-        $.each(partners, function(key, item) {
+    var partners = dealer.partners.split(', ');
+  	var partnerCount = 0;
+    var partner1 = "";
+    var partner2 = "";
+    $.each(partners, function(key, item) {
 		if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
 			partnerCount = partnerCount + 1;
 		}
@@ -483,6 +424,7 @@
 	$("#partnerCount").text(partnerCount);
 	$("#partnerTotal").text("$" + partnerCount*40 + ".00");
 	$("#contact").attr('checked', attendee.emailsOk);
+	$("#survey").attr('checked', attendee.surveyOk);
 	$("#breakfast").attr('checked', dealer.breakfast);
 	$("#reception").attr('checked', dealer.reception);
 	$("#artShow").attr('checked', dealer.artShow);
@@ -640,17 +582,6 @@
 		
 		$("form").validator('update');
 	};
-	var getJersey = function() {
-		var jersey = {};
-		if ($("#jerseyName").val() == "") {return jersey;}
-		jersey = {
-			'name': $("#jerseyName").val(),
-			'number': $("#jerseyNumber").val(),
-			'size': $("#jerseySize").val(),
-			'optionId': $("#optionId").val()
-		};
-		return jersey;
-	};
 	var getOptions = function() {
 		var options = $(".levelOptions");
                 var data = [];
@@ -676,11 +607,6 @@
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
 		
-		if ($.inArray($("#jerseyNumber").val(), takenJerseys) > -1) {
-                        alert("That jersey number has already been claimed. Please choose another.");
-                        return;
-                }
-
 		$("#checkout").attr("disabled", "disabled");
 
 		var data = {
@@ -690,13 +616,13 @@
 				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
 				'phone': $("#phone").val(),'emailsOk': $("#contact").is(':checked'),
-				'badgeName': $("#badgeName").val()
+				'surveyOk': $("#survey").is(':checked'), 'badgeName': $("#badgeName").val()
 			}, 
 			'dealer': {
 				'id': dealer.id,
 				'businessName':$("#businessName").val(), 'website':$("#website").val(),
 				'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
-                                'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
+                'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
 				'description': $("#description").val(),  
 				'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
@@ -704,7 +630,7 @@
 				'buttonOffer': $('#buttonOffer').val()
 			},
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-			'jersey': getJersey()
+            'event': 'Furthemore 2018'
 		};
 		
 

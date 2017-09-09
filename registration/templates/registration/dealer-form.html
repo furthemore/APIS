@@ -56,6 +56,8 @@
                         <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
                         <label>
                           <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                          <br/>
+                          <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the end-of-con survey.</span>
                         </label>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -102,9 +104,7 @@
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 
-        <hr>
-
-                <div class="form-group">
+            <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
                         <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" />
@@ -112,14 +112,15 @@
                     </div>
             <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-            <a href="#profile" class="btn btn-primary col-sm-12 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
+
+            <div class="form-group">
+                    <label for="far" class="col-sm-3 control-label">Badge Name</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="badgename" name="badgename" placeholder="Badge Name" class="form-control form-control-text" />
                     </div>
-                </div>
-            
-    </div>
-    <div role="tabpanel" class="tab-pane fade" id="profile">
+            </div>
+
+        <p>&nbsp;</p>            
         <h2>Business Information</h2>
         <p>Fill out the information related to your business below.</p>
         <hr>
@@ -177,7 +178,7 @@
                 <div class="form-group">
                     <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
                     <div class="col-sm-9">
-                        <input type="text" id="buttonOffer" name="buttonOffer" class="form-control form-control-checkbox" />
+                        <textarea id="buttonOffer" name="buttonOffer" class="form-control form-control-textarea"> </textarea>
                     </div>
             <div class="col-sm-9 col-sm-offset-3 small"><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal" >What's this?</button></div>
                 </div>
@@ -188,16 +189,11 @@
                     </div>
             <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity onsite for additional information and receipts.</div>
                 </div>
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-            <a href="#personal" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-personal"><< Back</a>
-            <a href="#options" class="btn btn-primary col-sm-6 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-optional">Next >></a>
-                    </div>
-                </div>
-    </div>
-    <div role="tabpanel" class="tab-pane fade" id="options">
+
+        <p>&nbsp;</p>
         <h2>Placement Options</h2>
         <p>The options below may limit where you can be placed in our Marketplace.</p>
+        <hr/>
                 <div class="form-group">
                     <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
                     <div class="col-sm-9">
@@ -268,7 +264,6 @@
 
         <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
-            <a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
                         <button id="register" type="submit" class="btn btn-primary col-sm-6 pull-right" aria-controls="profile" data-toggle="tab">Submit</button>
             </div>
                 </div>
@@ -420,19 +415,21 @@
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
-                'emailsOk': $("#contact").is(':checked')
+                'emailsOk': $("#contact").is(':checked'), 'surveyOk': $("#survey").is(':checked'), 
+                'badgeName': $("#badgename").val()
             }, 
             'dealer': {
                 'businessName':$("#businessName").val(), 'website':$("#website").val(),
                 'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
-                                'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
+                'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
                 'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
                 'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
                 'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
                 'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
                 'buttonOffer': $('#buttonOffer').val()
-            }
+            },
+            'event': 'Furthemore 2018'
         };
         $.ajax({
             "type": "POST",
