@@ -4,8 +4,12 @@ from .models import *
 
 def sendRegistrationEmail(order, email):
     orderItems = OrderItem.objects.filter(order=order)
+    orderDict = {}
+    for oi in orderItems:
+        ao = AttendeeOptions.objects.filter(orderItem=oi)
+        orderDict[oi] = ao
     # send payment receipt
-    data = {'reference': order.reference, 'order': order, 'orderItems': orderItems}
+    data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
     msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
     msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
     sendEmail("registration@furthemore.org", [email], 
@@ -21,7 +25,7 @@ def sendRegistrationEmail(order, email):
 
         # send vip notification if necessary
         if oi.priceLevel.emailVIP:
-            data = {'orderItem': oi}
+            data = {'badge': oi.badge}
             msgTxt = render_to_string('registration/emails/vipNotification.txt', data)
             msgHtml = render_to_string('registration/emails/vipNotification.html', data)
             sendEmail("registration@furthemore.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')], 
