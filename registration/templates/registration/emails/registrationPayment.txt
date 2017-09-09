@@ -1,13 +1,15 @@
 Thank you for your payment.
 
 ---------------------------------
-{% for oi in orderItems %}
-  {{oi.badge.badgeName}} - {{oi.priceLevel.name}} ... ${{oi.priceLevel.subtotal}}
-  {% for ao in oi.attendeeOptionss%}
+{% for oi, options in orderItemsitems %}
+  Badge Name - {{oi.badge.badgeName}} 
+  Level      - {{oi.priceLevel.name}} 
+  Price      - ${{oi.priceLevel.subtotal}}
+  {% for ao in options %}
     {% if ao.option.optionExtraType == 'int'%}
-    {{ao.option.optionName}} x{{ao.optionValue}}: ${{ao.getTotal}}
+    Option: {{ao.option.optionName}} x{{ao.optionValue}} - ${{ao.getTotal}}
     {% else %}
-    {{ao.option.optionName}}: ${{ao.option.optionPrice}}
+    Option: {{ao.option.optionName}} - ${{ao.option.optionPrice}}
     {% endif %}
   {% endfor %}
   {% if oi.priceLevel.emailVip %}
@@ -16,6 +18,7 @@ Thank you for your payment.
        of your registration and should be contacting you directly with more information. If you have 
        questions regarding perks please contact guests@furthemore.org. Thank you for your support!
   {% endif %}
+
 {% endfor %}
 
   Total: {{order.total}}

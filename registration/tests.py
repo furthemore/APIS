@@ -18,7 +18,8 @@ class OrdersTestCases(TestCase):
         self.price4 = PriceLevel(name='Elite', description='ooOOOoooooo', basePrice=235.00, 
                             startDate=now-ten_days, endDate=now+ten_days, public=False)
         self.price5 = PriceLevel(name='Raven God', description='yay', basePrice=675.00, 
-                            startDate=now-ten_days, endDate=now+ten_days, public=False)
+                            startDate=now-ten_days, endDate=now+ten_days, public=False,
+                            emailVIP=True, emailVIPEmails='carissa.brittain@gmail.com' )
         self.price1.save()
         self.price2.save()
         self.price3.save()
@@ -49,9 +50,9 @@ class OrdersTestCases(TestCase):
         self.shirt1.save()
 
         #TODO: shirt option type
-        self.option1 = PriceLevelOption(optionName="Conbook",optionPrice=0.00)
+        self.option1 = PriceLevelOption(optionName="Conbook",optionPrice=0.00,optionExtraType="bool")
         self.option2 = PriceLevelOption(optionName="Shirt Size",optionPrice=0.00,optionExtraType="ShirtSizes")
-        self.option3 = PriceLevelOption(optionName="Something Pricy",optionPrice=100.00)
+        self.option3 = PriceLevelOption(optionName="Something Pricy",optionPrice=100.00,optionExtraType="int")
 
         self.option1.save()
         self.option2.save()
@@ -148,7 +149,7 @@ class OrdersTestCases(TestCase):
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "true"},
-                    'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option3.id, 'value': "true"}]},
+                    'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option3.id, 'value': 1}]},
                     'event': 'Test Event 2050!'}
 
 	
@@ -195,7 +196,7 @@ class OrdersTestCases(TestCase):
     def test_checkout(self):
         postData = {'attendee': {'firstName': "Bea", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
                     'event': 'Test Event 2050!'}
@@ -218,6 +219,36 @@ class OrdersTestCases(TestCase):
         order = orderItem.order
         self.assertEqual(order.discount, None)
         self.assertEqual(order.total, 45+11)
+        self.assertEqual(attendee.postalCode, order.billingPostal)
+        self.assertEqual(order.orgDonation, 1.00)
+        self.assertEqual(order.charityDonation, 10.00)
+
+    def test_vip_checkout(self):
+        postData = {'attendee': {'firstName': "Bea", 'lastName': "Testerson",
+                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
+                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990",
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
+                    'priceLevel': {'id': self.price5.id, 'options': []},
+                    'event': 'Test Event 2050!'}
+	
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        attendee = Attendee.objects.get(firstName='Bea')
+        postData = {'billingData': {'cc_firstname':attendee.firstName, 'cc_lastname': attendee.lastName, 'cc_number':"4111111111111111", 
+                    'cc_month':"12", 'cc_year':"2020", 'cc_security':"123", 'address1':attendee.address1,
+                    'address2':attendee.address2, 'city':attendee.city, 'state':attendee.state,
+                    'country':attendee.country, 'postal':attendee.postalCode, 'email':attendee.email},
+                    'orgDonation':'1.00', 'charityDonation':'10.00', 'eventId':self.event.id, 'onsite': False}
+        response = self.client.post(reverse('checkout'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        attendee = Attendee.objects.get(firstName='Bea')
+        self.assertNotEqual(attendee.registeredDate, None)
+        self.assertEqual(attendee.orderitem_set.count(), 1)
+        orderItem = attendee.orderitem_set.first()
+        self.assertNotEqual(orderItem.order, None)
+        order = orderItem.order
+        self.assertEqual(order.discount, None)
+        self.assertEqual(order.total, 675+11)
         self.assertEqual(attendee.postalCode, order.billingPostal)
         self.assertEqual(order.orgDonation, 1.00)
         self.assertEqual(order.charityDonation, 10.00)
@@ -296,7 +327,7 @@ class OrdersTestCases(TestCase):
 
         postData = {'attendee': {'id': attendee.id,'firstName': "Staffer", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true"},
                     'staff': {'id': staff.id, 
                     'department': self.department1.id, 'title': 'Something Cool',
@@ -305,7 +336,7 @@ class OrdersTestCases(TestCase):
                     'specialFood': "no water please", 'specialMedical': 'alerigic to bandaids',
                     'contactPhone': "4442223333", 'contactName': 'Test Testerson',
                     'contactRelation': 'Pet'},
-                    'priceLevel': {'id': self.price3.id, 'options': [{'id': self.option3.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]}
+                    'priceLevel': {'id': self.price3.id, 'options': [{'id': self.option3.id, 'value': 1}, {'id': self.option2.id, 'value': self.shirt1.id}]}
                     }
         response = self.client.post(reverse('addStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -353,7 +384,7 @@ class OrdersTestCases(TestCase):
 
         postData = {'attendee': {'id': attendee2.id,'firstName': "Staffer", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true"},
                     'staff': {'id': staff2.id, 
                     'department': self.department2.id, 'title': 'Something Cool',

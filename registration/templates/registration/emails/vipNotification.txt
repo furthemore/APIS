@@ -1,5 +1,5 @@
 A Raven God has just registered: 
 
-Badge Name - {{oi.badge.badgeName}}
-Real Name  - {{oi.badge.attendee}}
-Email      - {{oi.badge.attendee.email}}
+Badge Name - {{badge.badgeName}}
+Real Name  - {{badge.attendee}}
+Email      - {{badge.attendee.email}}

@@ -1,13 +1,15 @@
 <h3>Thank you for your payment.</h3> 
 
 <hr/>
-{% for oi in orderItems %}
-  <p>{{oi.badge.badgeName}} - {{oi.priceLevel.name}} ... ${{oi.priceLevel.subtotal}}
-  {% for ao in oi.attendeeOptionss%}
-    {% if ao.option.optionExtraType == 'int'%}
-    <br>{{ao.option.optionName}} x{{ao.optionValue}}: ${{ao.getTotal}}
+{% for oi, options in orderItems.items %}
+  <p>Badge Name - {{oi.badge.badgeName}}<br/>
+     Level - {{oi.priceLevel.name}} <br/>
+     Price - ${{oi.priceLevel.basePrice}}
+  {% for ao in options %}
+    {% if ao.option.optionExtraType == 'int' %}
+    <br>Option: {{ao.option.optionName}} x{{ao.optionValue}} - ${{ao.getTotal}}
     {% else %}
-    <br>{{ao.option.optionName}}: ${{ao.option.optionPrice}}
+    <br>Option: {{ao.option.optionName}} - ${{ao.option.optionPrice}}
     {% endif %}
   {% endfor %}
   {% if oi.priceLevel.emailVip %}
@@ -23,7 +25,7 @@
   <br>Paid On: {{order.settledDate}}</p>
 <hr/>
 
-<p>Your payment confirmation is: {{reference}}</p>
+<p>Your payment confirmation number is: {{reference}}</p>
 <p>If you have any questions about your order, please contact us at registration@furthemore.org.</p>
 
 <p>Thank you!</p>
