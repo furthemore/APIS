@@ -298,7 +298,7 @@ def dealerAsst(request, guid):
     return render(request, 'registration/dealerasst-locate.html', context)
 
 def newDealer(request):
-    event = Event.objects.first()
+    event = Event.objects.last()
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}
@@ -308,6 +308,7 @@ def newDealer(request):
 
 def infoDealer(request):
     context = {'dealer': None}
+    event = Event.objects.last()
     try:
       dealerId = request.session['dealer_id']
     except Exception as e:
@@ -315,16 +316,20 @@ def infoDealer(request):
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer:
+        badge = Badge.objects.filter(attendee=dealer.attendee, event=event).last()
         dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
+        badge_dict = model_to_dict(badge)
         table_dict = model_to_dict(dealer.tableSize)        
-        if dealer.attendee.badge.effectiveLevel():
-            lvl_dict = model_to_dict(dealer.attendee.badge.effectiveLevel())
+        if badge.effectiveLevel():
+            lvl_dict = model_to_dict(badge.effectiveLevel())
         else:
             lvl_dict = {}
-        context = {'dealer': dealer, 'jsonDealer': json.dumps(dealer_dict, default=handler), 
+        context = {'dealer': dealer, 'badge': badge,
+                   'jsonDealer': json.dumps(dealer_dict, default=handler), 
                    'jsonTable': json.dumps(table_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
+                   'jsonBadge': json.dumps(badge_dict, default=handler),
                    'jsonLevel': json.dumps(lvl_dict, default=handler)}
     return render(request, 'registration/dealer-payment.html', context)
 
@@ -484,10 +489,9 @@ def addDealer(request):
     pda = postData['attendee']
     pdd = postData['dealer']
     pdp = postData['priceLevel']
-    event = Event.objects.first()
+    evt = postData['event']
+    event = Event.objects.get(name=evt)
    
-    #todo: event = Event.objects.get(id=int(postData["eventId"]))
-
     if 'dealer_id' not in request.session:
         return HttpResponseServerError("Session expired")
 
@@ -655,11 +659,11 @@ def addNewDealer(request):
     #create attendee from request post
     pda = postData['attendee']
     pdd = postData['dealer']
+    evt = postData['event']
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
-    #TODO: get correct event
-    event = Event.objects.first()
+    event = Event.objects.get(name=evt)
 
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
@@ -728,11 +732,19 @@ def infoUpgrade(request):
     email = postData['email']
     token = postData['token']
 
-    attendee = Attendee.objects.get(email__iexact=email, registrationToken=token)
-    if not attendee:     
+    evt = postData['event']
+    event = Event.objects.get(name=evt)
+
+    badge = Badge.objects.get(registrationToken=token)
+    if not badge:     
+      return HttpResponseServerError("No Record Found")
+
+    attendee = badge.attendee
+    if attendee.email.lower() != email.lower():     
       return HttpResponseServerError("No Record Found")
 
     request.session['attendee_id'] = attendee.id
+    request.session['badge_id'] = badge.id
     return JsonResponse({'success': True, 'message':'ATTENDEE'})
   except Exception as e:
     return HttpResponseServerError(str(e))
@@ -741,15 +753,19 @@ def findUpgrade(request):
     context = {'attendee': None}
     try:
       attId = request.session['attendee_id']
+      badgeId = request.session['badge_id']
     except Exception as e:
       return render(request, 'registration/attendee-upgrade.html', context)
 
     attendee = Attendee.objects.get(id=attId)
     if attendee:
+        badge = Badge.objects.get(id=badgeId)
         attendee_dict = model_to_dict(attendee)
-        lvl_dict = model_to_dict(attendee.effectiveLevel())
-        context = {'attendee': attendee,  
+        badge_dict = model_to_dict(badge)
+        lvl_dict = model_to_dict(badge.effectiveLevel())
+        context = {'attendee': attendee, 'badge': badge,  
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
+                   'jsonBadge': json.dumps(badge_dict, default=handler),
                    'jsonLevel': json.dumps(lvl_dict, default=handler)}
     return render(request, 'registration/attendee-upgrade.html', context)
 
@@ -757,6 +773,9 @@ def addUpgrade(request):
     postData = json.loads(request.body)
     pda = postData['attendee']
     pdp = postData['priceLevel']
+    pdd = postData['badge']
+    evt = postData['event']
+    event = Event.objects.get(name=evt)
 
     if 'attendee_id' not in request.session:
         return HttpResponseServerError("Session expired")
@@ -766,9 +785,10 @@ def addUpgrade(request):
     if not attendee:
         return HttpResponseServerError("Attendee id not found")
 
+    badge = Badge.objects.get(id=pdd['id'])
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem = OrderItem(attendee=attendee, badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
@@ -1190,16 +1210,23 @@ def getFreePriceLevels(request):
 def getPriceLevels(request):
     dealer = request.session.get('dealer_id', -1)
     staff = request.session.get('staff_id', -1)
+    attendee = request.session.get('attendee_id', -1)
     #hide any irrelevant price levels if something in session
     att = None
     if dealer > 0: 
         att = Dealer.objects.get(id=dealer).attendee
+        badge = Badge.objects.filter(attendee=att).last()
     if staff > 0:
         att = Staff.objects.get(id=staff).attendee
+        badge = Badge.objects.filter(attendee=att).last()
+    if attendee > 0:
+        att = Attendee.objects.get(id=attendee)
+        badge = Badge.objects.filter(attendee=att).last()
+
     now = timezone.now()
-    levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now)
-    if att and att.effectiveLevel():
-        levels = levels.exclude(basePrice__lt=att.effectiveLevel().basePrice)
+    levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now).order_by('basePrice')
+    if att and badge.effectiveLevel():
+        levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
     data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceLevelOptions.order_by('optionPrice').all() ]} for level in levels]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
