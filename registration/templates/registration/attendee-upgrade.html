@@ -20,7 +20,7 @@
             <div class="col-sm-3">Phone Number</div><div class="col-sm-9">{{attendee.phone}}</div>
             <div class="col-sm-3">Address</div><div class="col-sm-9">{{attendee.address1}}, {{attendee.city}}, {{attendee.city}}, {{attendee.state}}, {{attendee.postalCode}} </div>
             <div class="col-sm-3">Birthdate</div><div class="col-sm-9">{{attendee.birthdate}}</div>
-            <div class="col-sm-3">Badge Name</div><div class="col-sm-9">{{attendee.badgeName}}</div>
+            <div class="col-sm-3">Badge Name</div><div class="col-sm-9">{{badge.badgeName}}</div>
         </div>	
 				
 		<hr/>
@@ -132,6 +132,7 @@
 </script>
  <script type="text/javascript">
 	var attendee = {{ jsonAttendee|safe }} 
+	var badge = {{ jsonBadge|safe }} 
 	var currentLevel = {{ jsonLevel|safe }}
 	var levelTemplateData = [];
     var shirtSizes = [];
@@ -286,9 +287,9 @@
 		$("#checkout").attr("disabled", "disabled");
 
 		var data = {
-			'attendee': {
-				'id': attendee.id,
-			}, 
+			'attendee': {'id': attendee.id,}, 
+            'badge': {'id': badge.id,},
+            'event': 'Furthemore 2018',
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
 		};
 		
