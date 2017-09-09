@@ -352,5 +352,5 @@ class AttendeeOptions(models.Model):
 
     def getTotal(self):
         if self.option.optionExtraType == "int":
-            return self.optionValue * self.option.optionPrice
+            return int(self.optionValue) * self.option.optionPrice
         return self.option.optionPrice
