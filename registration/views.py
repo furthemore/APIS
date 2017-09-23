@@ -85,13 +85,11 @@ def invoiceStaff(request):
         context = {'orderItems': [], 'total': 0, 'discount': {}}
         request.session.flush()
     else:
-        #TODO: get correct event
-        event = Event.objects.first()
         staffId = request.session['staff_id']
         staff = Staff.objects.get(id=staffId)
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
         discount = Discount.objects.get(codeName=sessionDiscount)
-        total = getStaffTotal(orderItems, discount, staff, event)
+        total = getStaffTotal(orderItems, discount, staff)
         context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'staff': staff}
     return render(request, 'registration/staff-checkout.html', context)
 
@@ -102,9 +100,6 @@ def addStaff(request):
     pda = postData['attendee']
     pdp = postData['priceLevel']
     pds = postData['staff']
-
-    #TODO: get correct event
-    event = Event.objects.first()
 
     attendee = Attendee.objects.get(id=pda['id'])
     if not attendee:
@@ -154,6 +149,8 @@ def addStaff(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': 'Staff not saved: ' + str(e)})
 
+    event = staff.event
+
     badge = Badge.objects.get(attendee=attendee,event=event)
     badge.badgeName = pda['badgeName']
     try:
@@ -163,8 +160,7 @@ def addStaff(request):
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    #cleanup
-    orderItem = OrderItem(attendee=attendee, badge=badge, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
@@ -181,8 +177,8 @@ def addStaff(request):
     return JsonResponse({'success': True})
 
 
-def getStaffTotal(orderItems, discount, staff, event):
-    badge = Badge.objects.get(attendee=staff.attendee,event=event)
+def getStaffTotal(orderItems, discount, staff):
+    badge = Badge.objects.get(attendee=staff.attendee,event=staff.event)
     if badge.effectiveLevel():
         discount = None
     subTotal = getTotal(orderItems, discount)
@@ -199,13 +195,10 @@ def checkoutStaff(request):
     staffId = request.session['staff_id']
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
-    event = Event.objects.first()
-   
-    #todo: event = Event.objects.get(id=int(postData["eventId"]))
 
     discount = Discount.objects.get(codeName="StaffDiscount")
     staff = Staff.objects.get(id=staffId)
-    subtotal = getStaffTotal(orderItems, discount, staff, event)
+    subtotal = getStaffTotal(orderItems, discount, staff)
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
@@ -214,7 +207,7 @@ def checkoutStaff(request):
     email = ''
     total = 0
     if subtotal == 0:
-      att = orderItems[0].attendee
+      att = staff.attendee
       order = Order(total=0, reference=reference, discount=discount,
                   orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
                   billingAddress1=att.address1, billingAddress2=att.address2,
@@ -308,7 +301,6 @@ def newDealer(request):
 
 def infoDealer(request):
     context = {'dealer': None}
-    event = Event.objects.last()
     try:
       dealerId = request.session['dealer_id']
     except Exception as e:
@@ -316,7 +308,7 @@ def infoDealer(request):
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer:
-        badge = Badge.objects.filter(attendee=dealer.attendee, event=event).last()
+        badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
         dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
         badge_dict = model_to_dict(badge)
@@ -425,14 +417,16 @@ def checkoutAsstDealer(request):
     assts = postData['assistants']
     dealerId = request.session['dealer_id']
     dealer = Dealer.objects.get(id=dealerId)
+ 
+    badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
 
-    priceLevel = dealer.attendee.effectiveLevel()
+    priceLevel = badge.effectiveLevel()
     if priceLevel is None:
-        return JsonResponse({'success': False, 'message': "Dealer acount has not been paid. Please pay for your table before adding assistants."})
+        return JsonResponse({'success': False, 'message': "Dealer acocunt has not been paid. Please pay for your table before adding assistants."})
 
     originalPartnerCount = dealer.getPartnerCount()
 
-    orderItem = OrderItem(attendee=dealer.attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     dealer.partners = assts
@@ -516,6 +510,7 @@ def addDealer(request):
     dealer.breakfast=pdd['breakfast']
     dealer.willSwitch=pdd['switch']  
     dealer.buttonOffer=pdd['buttonOffer']
+    dealer.event = event
 
     try:
         dealer.save()
@@ -547,15 +542,14 @@ def addDealer(request):
     badge.badgeName=pda['badgeName']    
 
     try:
-        attendee.save()
+        badge.save()
     except Exception as e:
         return HttpResponseServerError(str(e))
     
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    #cleanup
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB", attendee=attendee)
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
@@ -582,7 +576,6 @@ def checkoutDealer(request):
 
     dealer = Dealer.objects.get(id=request.session.get('dealer_id'))
     postData = json.loads(request.body)
-    event = Event.objects.first()
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
@@ -669,15 +662,14 @@ def addNewDealer(request):
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
                         emailsOk=pda['emailsOk'], surveyOk=pda['surveyOk']
-                        #cleanup
-                        , event=event)
+                        )
     attendee.save()
 
     badge = Badge(attendee=attendee, event=event, badgeName=pda['badgeName'])
     badge.save()
 
     tablesize = TableSize.objects.get(id=pdd['tableSize'])
-    dealer = Dealer(attendee=attendee, businessName=pdd['businessName'], 
+    dealer = Dealer(attendee=attendee, event=event, businessName=pdd['businessName'], 
                     website=pdd['website'], description=pdd['description'], license=pdd['license'], needPower=pdd['power'],
                     needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
                     chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
@@ -788,7 +780,7 @@ def addUpgrade(request):
     badge = Badge.objects.get(id=pdd['id'])
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(attendee=attendee, badge=badge, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
@@ -957,7 +949,7 @@ def addToCart(request):
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
                         emailsOk=pda['emailsOk'], volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
-                        surveyOk=pda['surveyOk'], event=event )
+                        surveyOk=pda['surveyOk'])
     attendee.save()
 
     badge = Badge(badgeName=pda['badgeName'], event=event, attendee=attendee)
@@ -965,12 +957,15 @@ def addToCart(request):
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(badge=badge, attendee=attendee, priceLevel=priceLevel, enteredBy="WEB")
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
-        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
+        if plOption.optionExtraType == 'int' and option['value'] == '':      
+            attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue='0')
+        else:
+            attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
 
     #add attendee to session order
@@ -1246,7 +1241,11 @@ def getSessionAddresses(request):
         data = {}
     else:
         orderItems = OrderItem.objects.filter(id__in=sessionItems)
-        data = [{'id': oi.attendee.id, 'fname': oi.attendee.firstName, 'lname': oi.attendee.lastName, 'email': oi.attendee.email, 'address1': oi.attendee.address1, 'address2': oi.attendee.address2, 'city': oi.attendee.city, 'state': oi.attendee.state, 'country': oi.attendee.country, 'postalCode': oi.attendee.postalCode} for oi in orderItems]
+        data = [{'id': oi.badge.attendee.id, 'fname': oi.badge.attendee.firstName, 
+                 'lname': oi.badge.attendee.lastName, 'email': oi.badge.attendee.email, 
+                 'address1': oi.badge.attendee.address1, 'address2': oi.badge.attendee.address2, 
+                 'city': oi.badge.attendee.city, 'state': oi.badge.attendee.state, 'country': oi.badge.attendee.country, 
+                 'postalCode': oi.badge.attendee.postalCode} for oi in orderItems]
         context = {'addresses': data}
     return HttpResponse(json.dumps(data), content_type='application/json')
 

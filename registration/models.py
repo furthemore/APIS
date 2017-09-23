@@ -57,19 +57,6 @@ class Department(models.Model):
 
 #End lookup and supporting tables
 
-#Start CustomAddons
-class Jersey(models.Model):
-    shirtSize = models.ForeignKey(ShirtSizes)
-    name = models.CharField(max_length=50)
-    number = models.CharField(max_length=3)
-
-class StaffJersey(models.Model):
-    shirtSize = models.ForeignKey(ShirtSizes)
-    name = models.CharField(max_length=50)
-    number = models.CharField(max_length=3)
-
-
-#End CustomAddons
 
 def getRegistrationToken():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(15))
@@ -86,9 +73,6 @@ class Attendee(models.Model):
     phone = models.CharField(max_length=20)
     email = models.CharField(max_length=200)
     birthdate = models.DateField()
-    badgeName = models.CharField(max_length=200, blank=True)
-    badgeNumber = models.IntegerField(null=True, blank=True)
-    badgePrinted = models.BooleanField(default=False)
     emailsOk = models.BooleanField(default=False)
     surveyOk = models.BooleanField(default=False)
     volunteerContact = models.BooleanField(default=False)
@@ -100,15 +84,6 @@ class Attendee(models.Model):
     parentLastName = models.CharField(max_length=200, blank=True)
     parentPhone = models.CharField(max_length=20, blank=True)
     parentEmail = models.CharField(max_length=200, blank=True)
-    event = models.ForeignKey(Event)    
-    registeredDate = models.DateTimeField(null=True)
-    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
-    printed = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-      if not self.id:
-        self.registeredDate = timezone.now()
-      return super(Attendee, self).save(*args, **kwargs)
 
     def __str__(self):
       return '%s %s' % (self.firstName, self.lastName)
@@ -159,7 +134,7 @@ class Badge(models.Model):
         return level
 
     def save(self, *args, **kwargs):
-      if not self.id:
+      if not self.id and not self.registeredDate:
         self.registeredDate = timezone.now()
       return super(Badge, self).save(*args, **kwargs)
     
@@ -184,9 +159,15 @@ class Staff(models.Model):
     contactRelation = models.CharField(max_length=200, blank=True)
     needRoom = models.BooleanField(default=False)
     gender = models.CharField(max_length=50, blank=True)     
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
+
+    def getBadge(self):
+        badge = Badge.objects.filter(attendee=self.attendee,event=self.event).last()
+        return badge
+
 
 class Dealer(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -217,6 +198,7 @@ class Dealer(models.Model):
     discount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discountReason = models.CharField(max_length=200, blank=True)
     emailed = models.BooleanField(default=False)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
@@ -229,23 +211,18 @@ class Dealer(models.Model):
             partnerCount = partnerCount + 1
       return partnerCount
 
-    def effectiveLevel(self):
-        level = None
-        orderItems = OrderItem.objects.filter(attendee=self, order__isnull=False)
-        for oi in orderItems:
-            if not level: level = oi.priceLevel
-            elif oi.priceLevel.basePrice > level.basePrice:
-                level = oi.priceLevel
-        return level
-
     def paidTotal(self):
           total = 0
-          orderItems = OrderItem.objects.filter(attendee=self.attendee)
+          badge = self.getBadge()
+          orderItems = OrderItem.objects.filter(badge=badge)
           for oi in orderItems: 
               if oi.order:
                   total += oi.order.total
           return Decimal(total)
 
+    def getBadge(self):
+        badge = Badge.objects.filter(attendee=self.attendee,event=self.event).last()
+        return badge
 
 # Start order tables
 
@@ -334,7 +311,6 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
-    attendee = models.ForeignKey(Attendee)
     badge = models.ForeignKey(Badge, null=True)
     priceLevel = models.ForeignKey(PriceLevel)
     enteredBy = models.CharField(max_length=100)

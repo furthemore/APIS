@@ -9,6 +9,7 @@ def sendRegistrationEmail(order, email):
         ao = AttendeeOptions.objects.filter(orderItem=oi)
         orderDict[oi] = ao
     # send payment receipt
+#    import pdb; pdb.set_trace()
     data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
     msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
     msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
@@ -36,7 +37,7 @@ def sendUpgradePaymentEmail(attendee, order):
     data = {'reference': order.reference}
     msgTxt = render_to_string('registration/emails/upgrade.txt', data)
     msgHtml = render_to_string('registration/emails/upgrade.html', data)
-    sendEmail("registration@furthemore.org", [attendee.email], "Furthemore 2017 Upgrade Payment", 
+    sendEmail("registration@furthemore.org", [attendee.email], "Furthemore 2018 Upgrade Payment", 
               msgTxt, msgHtml)
 
 
@@ -45,7 +46,7 @@ def sendStaffRegistrationEmail(orderId, email):
     data = {'reference': order.reference}
     msgTxt = render_to_string('registration/emails/staffRegistration.txt', data)
     msgHtml = render_to_string('registration/emails/staffRegistration.html', data)
-    sendEmail("registration@furthemore.org", [email], "Furthemore 2017 Staff Registration", 
+    sendEmail("registration@furthemore.org", [email], "Furthemore 2018 Staff Registration", 
               msgTxt, msgHtml)
 
 def sendStaffPromotionEmail(staff):
@@ -61,17 +62,17 @@ def sendDealerApplicationEmail(dealerId):
     msgTxt = render_to_string('registration/emails/dealer.txt', data)
     msgHtml = render_to_string('registration/emails/dealer.html', data)
     sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
-              "Fur The More 2017 Dealer Application", msgTxt, msgHtml)
+              "Fur The More 2018 Dealer Application", msgTxt, msgHtml)
 
     sendEmail("exhibitions@furthemore.org", ["exhibitions@furthemore.org"], 
-              "Fur The More 2017 Dealer Application", "New dealer reg received.", "New dealer reg received.")
+              "Fur The More 2018 Dealer Application", "New dealer reg received.", "New dealer reg received.")
 
 def sendDealerAsstFormEmail(dealer):
     data = {'dealer': dealer}    
     msgTxt = render_to_string('registration/emails/dealerAsstForm.txt', data)
     msgHtml = render_to_string('registration/emails/dealerAsstForm.html', data)
     sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
-              "Fur The More 2017 Dealer Assistant Addition", msgTxt, msgHtml)
+              "Fur The More 2018 Dealer Assistant Addition", msgTxt, msgHtml)
 
 
 def sendDealerAsstEmail(dealerId):
@@ -80,10 +81,10 @@ def sendDealerAsstEmail(dealerId):
     msgTxt = render_to_string('registration/emails/dealerAsst.txt', data)
     msgHtml = render_to_string('registration/emails/dealerAsst.html', data)
     sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
-              "Fur The More 2017 Dealer Assistant Addition", msgTxt, msgHtml)
+              "Fur The More 2018 Dealer Assistant Addition", msgTxt, msgHtml)
 
     sendEmail("exhibitions@furthemore.org", ["exhibitions@furthemore.org"], 
-              "Fur The More 2017 Dealer Application", "Dealer assistant addition received.", "Dealer asistant addition received.")
+              "Fur The More 2018 Dealer Application", "Dealer assistant addition received.", "Dealer asistant addition received.")
 
 def sendDealerPaymentEmail(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
@@ -93,7 +94,7 @@ def sendDealerPaymentEmail(dealer, order):
     msgHtml = render_to_string('registration/emails/dealerPayment.html', data)
 
     sendEmail("exhibitions@furthemore.org", [dealer.attendee.email],
-              "Fur The More 2017 Dealer Payment", msgTxt, msgHtml)
+              "Fur The More 2018 Dealer Payment", msgTxt, msgHtml)
 
 def sendDealerUpdateEmail(dealerId):
     dealer = Dealer.objects.get(id=dealerId)
@@ -102,7 +103,7 @@ def sendDealerUpdateEmail(dealerId):
     msgHtml = render_to_string('registration/emails/dealerUpdate.html', data)
 
     sendEmail("exhibitions@furthemore.org", [dealer.attendee.email],
-              "Fur The More 2017 Dealer Information Update", msgTxt, msgHtml)
+              "Fur The More 2018 Dealer Information Update", msgTxt, msgHtml)
     
 
 def sendApprovalEmail(dealerQueryset):
@@ -111,7 +112,7 @@ def sendApprovalEmail(dealerQueryset):
         msgTxt = render_to_string('registration/emails/dealerApproval.txt', data)
         msgHtml = render_to_string('registration/emails/dealerApproval.html', data)
         sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
-                  "Fur The More 2017 Dealer Application", msgTxt, msgHtml)
+                  "Fur The More 2018 Dealer Application", msgTxt, msgHtml)
 
 
 def sendEmail(fromAddress, toAddressList, subject, message, htmlMessage):
