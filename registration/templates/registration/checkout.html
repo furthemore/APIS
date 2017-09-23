@@ -19,7 +19,7 @@
 
 		{% for item in orderItems %}
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1">{{item.attendee}} - {{item.priceLevel}}</div>
+				<div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
 				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
 				<div class="col-sm-2">
 					<a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
@@ -28,13 +28,17 @@
 			{% for option in item.getOptions %}
 			<div class="row">
 				{% if option.option.optionExtraType == "int" %}
-
+                  {% if option.optionValue != '0' %}
 				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
-				  {% if option.option.optionPrice == 0 %}
-				    <div class="col-sm-2">Free</div>
-				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-				  {% endif %}
+				    {% if option.option.optionPrice == 0 %}
+				      <div class="col-sm-2">Free</div>
+				    {% else %}
+				      <div class="col-sm-2">${{option.option.optionPrice}} each</div>
+				    {% endif %}
+                  {% else %}
+				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x 0</div>
+				  <div class="col-sm-2">--</div>
+                  {% endif %}
 
 				{% else %}
 
@@ -84,10 +88,9 @@
 					<input type="text" id="discount" class="form-control" />
 				</div>
 				<button class="btn btn-primary" id="applyDiscount">Apply</button>
+                <p>&nbsp;</p>
 			</div>
 		</div>
-
-		
 		
 		{% endif %}
 		<div class="container" style="width: inherit">
@@ -118,7 +121,7 @@
                     <div class="col-sm-9">
                         <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
 			{% for oi in orderItems %}
-			    <option value="{{oi.attendee.id}}">{{oi.attendee}}</option>
+			    <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
 			{% endfor %}
 			</select>
                     </div>
