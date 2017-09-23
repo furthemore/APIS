@@ -173,7 +173,8 @@ class OrdersTestCases(TestCase):
         self.assertEqual(total, 45+90+100+45)
 
         attendee = Attendee.objects.get(firstName='Felix')
-        postData = {'id': OrderItem.objects.get(attendee=attendee).id}
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        postData = {'id': OrderItem.objects.get(badge=badge).id}
         response = self.client.post(reverse('removeFromCart'), json.dumps(postData), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('cart'))
@@ -212,9 +213,10 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('checkout'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         attendee = Attendee.objects.get(firstName='Bea')
-        self.assertNotEqual(attendee.registeredDate, None)
-        self.assertEqual(attendee.orderitem_set.count(), 1)
-        orderItem = attendee.orderitem_set.first()
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertNotEqual(badge.registeredDate, None)
+        self.assertEqual(badge.orderitem_set.count(), 1)
+        orderItem = badge.orderitem_set.first()
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertEqual(order.discount, None)
@@ -242,9 +244,10 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('checkout'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         attendee = Attendee.objects.get(firstName='Bea')
-        self.assertNotEqual(attendee.registeredDate, None)
-        self.assertEqual(attendee.orderitem_set.count(), 1)
-        orderItem = attendee.orderitem_set.first()
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertNotEqual(badge.registeredDate, None)
+        self.assertEqual(badge.orderitem_set.count(), 1)
+        orderItem = badge.orderitem_set.first()
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertEqual(order.discount, None)
@@ -266,8 +269,9 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         attendee = Attendee.objects.get(firstName='Jenny')
-        self.assertNotEqual(attendee.registeredDate, None)
-        self.assertEqual(attendee.orderitem_set.count(), 1)
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertNotEqual(badge.registeredDate, None)
+        self.assertEqual(badge.orderitem_set.count(), 1)
 
         postData = {'discount': 'OneTime'}
         response = self.client.post(reverse('discount'), json.dumps(postData), content_type="application/json")
@@ -303,19 +307,19 @@ class OrdersTestCases(TestCase):
 
 
     def test_staff(self):
-        attendee = Attendee(firstName="Staffer", lastName="Testerson", event=self.event,
+        attendee = Attendee(firstName="Staffer", lastName="Testerson",
                             address1="123 Somewhere St", city="Place", state="PA", country="USA", postalCode=12345,
                             phone="1112223333", email="testerson@mailinator.org", birthdate="1990-01-01")
         attendee.save()
-        staff = Staff(attendee=attendee)
+        staff = Staff(attendee=attendee,event=self.event)
         staff.save()
         badge = Badge(attendee=attendee,event=self.event,badgeName="DisStaff")
         badge.save()
-        attendee2 = Attendee(firstName="Staph", lastName="Testerson", event=self.event,
+        attendee2 = Attendee(firstName="Staph", lastName="Testerson", 
                             address1="123 Somewhere St", city="Place", state="PA", country="USA", postalCode=12345,
                             phone="1112223333", email="testerson@mailinator.org", birthdate="1990-01-01")
         attendee2.save()
-        staff2 = Staff(attendee=attendee2)
+        staff2 = Staff(attendee=attendee2,event=self.event)
         staff2.save()
         badge2 = Badge(attendee=attendee2,event=self.event,badgeName="AnotherStaff")
         badge2.save()
@@ -363,8 +367,9 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('checkoutStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
-        orderItem = OrderItem.objects.get(attendee=attendee)
-        orderItem = attendee.orderitem_set.first()
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        orderItem = OrderItem.objects.get(badge=badge)
+        orderItem = badge.orderitem_set.first()
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertEqual(order.discount.codeName, "StaffDiscount")
@@ -410,7 +415,8 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('checkoutStaff'), "{}", content_type="application/json")
         self.assertEqual(response.status_code, 200)
 
-        orderItem = OrderItem.objects.get(attendee=attendee2)
+        badge = Badge.objects.get(attendee=attendee2, event=self.event)
+        orderItem = OrderItem.objects.get(badge=badge)
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertEqual(order.discount.codeName, "StaffDiscount")
@@ -433,7 +439,9 @@ class OrdersTestCases(TestCase):
                     'reception': True, 'artShow': False, 
                     'charityRaffle': "Some stuff", 'agreeToRules': True,
                     'breakfast': True, 'switch': False,
-                    'buttonOffer': "Buttons"}}
+                    'buttonOffer': "Buttons"},
+                    'event': 'Test Event 2050!'}
+
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         postData = {'attendee': {'firstName': "Free", 'lastName': "Testerson",
@@ -448,7 +456,9 @@ class OrdersTestCases(TestCase):
 				'reception': True, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"}}
+				'buttonOffer': "Buttons"},
+                'event': 'Test Event 2050!'}
+
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         postData = {'attendee': {'firstName': "Dealz", 'lastName': "Testerson",
@@ -463,7 +473,9 @@ class OrdersTestCases(TestCase):
 				'reception': False, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"}}
+				'buttonOffer': "Buttons"},
+                'event': 'Test Event 2050!'}
+
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         #import pdb; pdb.set_trace()
@@ -507,7 +519,8 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    }
+                'event': 'Test Event 2050!'}
+
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
@@ -545,7 +558,8 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    }
+                'event': 'Test Event 2050!'}
+                    
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
@@ -581,7 +595,8 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    }
+                'event': 'Test Event 2050!'}
+                    
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
@@ -617,7 +632,8 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    }
+                'event': 'Test Event 2050!'}
+
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
@@ -655,7 +671,8 @@ class OrdersTestCases(TestCase):
 				'breakfast': True, 'switch': False,
 				'buttonOffer': "Buttons"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
-                    }
+                'event': 'Test Event 2050!'}
+
         response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))
