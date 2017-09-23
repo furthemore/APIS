@@ -20,8 +20,18 @@
   {% endif %}
   </p>
 {% endfor %}
-
-  <p>Total: {{order.total}}
+<p>
+{% if order.discount %}
+  Discount: 
+      {% if order.discount.percentOff %}
+          {{order.discount.percentOff}}% off
+      {% else %}
+          ${{order.discount.amountOff}} off
+      {% endif %}
+   <br>
+  
+{% endif %}
+  Total: {{order.total}}
   <br>Paid On: {{order.settledDate}}</p>
 <hr/>
 
@@ -30,4 +40,4 @@
 
 <p>Thank you!</p>
 
-<p>'Kiric<br/>Head of Registration</p>
+<p>Nalan<br/>Head of Registration</p>

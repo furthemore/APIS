@@ -21,6 +21,14 @@ Thank you for your payment.
 
 {% endfor %}
 
+{% if order.discount %}
+  Discount:
+      {% if order.discount.percentOff %}
+          {{order.discount.percentOff}}% off
+      {% else %}
+          ${{order.discount.amountOff}} off
+      {% endif %}
+{% endif %}
   Total: {{order.total}}
   Paid On: {{order.settledDate}}
 ---------------------------------
@@ -30,5 +38,5 @@ If you have any questions about your order, please contact us at registration@fu
 
 Thank you! 
 
-'Kiric 
+Nalan
 Head of Registration
