@@ -246,36 +246,20 @@ def checkoutStaff(request):
     order.save()
     email = order.billingEmail
 
-    response = chargePayment(order.id, pbill, get_client_ip(request))
+    status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
-    if response is not None:
-        if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                sendStaffRegistrationEmail(order.id, email)
-                for oitem in orderItems:
-                    oitem.order = order
-                    oitem.save()
-                request.session.flush()
-                discount.used = discount.used + 1
-                discount.save()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    order.delete()
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-        else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    if status:
+        sendStaffRegistrationEmail(order.id, email)
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
+        request.session.flush()
+        discount.used = discount.used + 1
+        discount.save()
+        return JsonResponse({'success': True})
     else:
         order.delete()
-        return JsonResponse({'success': False, 'message': "Unknown Error"})
-
-    request.session.flush()
-    return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'message': response})
 
 
 
@@ -448,34 +432,18 @@ def checkoutAsstDealer(request):
 
     orderItem.order = order
     orderItem.save()
-    
-    response = chargePayment(order.id, pbill, get_client_ip(request))
-    if response is not None:
-        if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                sendDealerAsstEmail(dealer.id)
-                orderItem.order = order
-                orderItem.save()
-                request.session.flush()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    order.delete()
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-        else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+
+    status, response = chargePayment(order.id, pbill, get_client_ip(request))
+
+    if status:
+        sendDealerAsstEmail(dealer.id)
+        orderItem.order = order
+        orderItem.save()
+        request.session.flush()
+        return JsonResponse({'success': True})
     else:
         order.delete()
-        return JsonResponse({'success': False, 'message': "Unknown Error"})
-
-
-    request.session.flush()
-    return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'message': response})
 
 
 def addDealer(request):
@@ -618,33 +586,21 @@ def checkoutDealer(request):
                   billingPostal=pbill['postal'])
     order.save()
 
-    response = chargePayment(order.id, pbill, get_client_ip(request))
 
-    if response is not None:
-        if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                orderItem.order = order
-                orderItem.save()    
-                sendDealerPaymentEmail(dealer, order)
-                request.session.flush()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    order.delete()
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-        else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    status, response = chargePayment(order.id, pbill, get_client_ip(request))
+
+    if status:
+        sendDealerPaymentEmail(dealer, order)
+        orderItem.order = order
+        orderItem.save()
+        request.session.flush()
+        return JsonResponse({'success': True})
     else:
         order.delete()
-        return JsonResponse({'success': False, 'message': "Unknown Error"})
-        
+        return JsonResponse({'success': False, 'message': response})
   except Exception as e:
     return HttpResponseServerError(str(e))
+
 
 def addNewDealer(request):
   try:
@@ -867,31 +823,19 @@ def checkoutUpgrade(request):
                   billingPostal=pbill['postal'])
     order.save()
 
-    response = chargePayment(order.id, pbill, get_client_ip(request))
+    status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
-    if response is not None:
-        if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                orderItem.order = order
-                orderItem.save()    
-                sendUpgradePaymentEmail(attendee, order)
-                request.session.flush()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    order.delete()
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-        else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                order.delete()
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    if status:
+        sendUpgradePaymentEmail(attendee, order)
+        orderItem.order = order
+        orderItem.save()
+        request.session.flush()
+        return JsonResponse({'success': True})
     else:
         order.delete()
-        return JsonResponse({'success': False, 'message': "Unknown Error"})
-        
+        return JsonResponse({'success': False, 'message': response})
+
+
   except Exception as e:
     return HttpResponseServerError(str(e))
 
@@ -918,7 +862,6 @@ def applyDiscount(request):
       return JsonResponse({'success': False, 'message': 'Only one discount is allowed per order.'})
 
     postData = json.loads(request.body)
-    #create attendee from request post
     dis = postData['discount']
     
     discount = Discount.objects.filter(codeName=dis)
@@ -1064,34 +1007,22 @@ def checkout(request):
                   billingPostal=pbill['postal'], billingEmail=pbill['email'])
     order.save()
 
-    response = chargePayment(order.id, pbill, get_client_ip(request))
+    status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
-    if response is not None:
-          if response.messages.resultCode == "Ok":
-            if hasattr(response.transactionResponse, 'messages') == True:
-                request.session.flush()
-                for oitem in orderItems:
-                    oitem.order = order
-                    oitem.save()
-                sendRegistrationEmail(order, pbill['email'])
-                if discount:
-                    discount.used = discount.used + 1
-                    discount.save()
-                return JsonResponse({'success': True})
-            else:
-                if hasattr(response.transactionResponse, 'errors') == True:
-                    return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-          else:
-            if hasattr(response, 'transactionResponse') == True and hasattr(response.transactionResponse, 'errors') == True:
-                return JsonResponse({'success': False, 'message': str(response.transactionResponse.errors.error[0].errorText)})
-            else:
-                return JsonResponse({'success': False, 'message': str(response.messages.message[0]['text'])})
+    if status:
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
+        sendRegistrationEmail(order, pbill['email'])
+        request.session.flush()
+        return JsonResponse({'success': True})
     else:
-          return JsonResponse({'success': False, 'message': "Unknown Error"})
+        order.delete()
+        return JsonResponse({'success': False, 'message': response})
 
-
-    request.session.flush()
-    return JsonResponse({'success': True})
 
 def cartDone(request):
     context = {}
