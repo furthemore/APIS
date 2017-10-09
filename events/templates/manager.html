@@ -1,0 +1,43 @@
+{% extends "event_base.html" %}
+{% block body %}
+	<h1>Event Manager</h1>
+	<h2>Panel List{{ filter }}</h2>
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Panel</th>
+				<th>Panelist</th>
+				<th>Starts</th>
+				<th>Time/Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for z in list %}
+			<tr>
+				<td>
+					<a href="{% url "events:panel-detail" event.pk z.panel.pk %}" class="btn btn-link btn-sm panel-detail-modal" data-pk="{{z.panel.pk}}">{% if z.label == "" or z.label == None %}{{z.panel.title}}{% else %}{{z.label}}{% endif %}								{% if z.panel.r18 %}<span class="badge badge-danger">18+ Panel</span>{% endif %}</a>
+				</td>
+				<td>
+					<a href="#" class="btn btn-link btn-sm">{{z.panel.panelist.badge.badgeName}} {%if z.panelist.checked_in%}<span class="badge badge-success"><i class="fa fa-check"></i></span>{% endif %}</a>
+				</td>
+				<td>
+					{% if z.time_start|timeuntil == "0 minutes" %}<span class="badge badge-info">{{ z.time_start|timesince }} ago</span>{% else %}<span class="badge badge-primary">Starts in {{z.time_start|timeuntil}}</span>{% endif %}
+				</td>
+				<td class='text-right'> 	
+								<small>{{z.room}}</small>
+								{% if z.time_start|date:"D" == "Thu" %}<span class="badge badge-light">Thursday</span>{% endif %}
+								{% if z.time_start|date:"D" == "Fri" %}<span class="badge badge-info">Friday</span>{% endif %}
+								{% if z.time_start|date:"D" == "Sat" %}<span class="badge badge-primary">Saturday</span>{% endif %}
+								{% if z.time_start|date:"D" == "Sun" %}<span class="badge badge-warning">Sunday</span>{% endif %}
+								{% if z.time_start|date:"D" == "Mon" %}<span class="badge badge-light">Monday</span>{% endif %}
+								{% if z.time_start|date:"D" == "Tue" %}<span class="badge badge-light">Tuesday</span>{% endif %}
+
+								{% if z.time_start|date:"G"|add:"0" >= 7 and z.time_start|date:"G"|add:"0" <= 15 %}<span class="badge badge-warning">{{ z.time_start|date:"G:i" }} ({{z.get_duration_display}})</span>{% endif %}
+								{% if z.time_start|date:"G"|add:"0" >= 16 and z.time_start|date:"G"|add:"0" <= 23 or z.time_start|date:"G"|add:"0" >= 0 and z.time_start|date:"G"|add:"0" <= 6  %}<span class="badge badge-dark">{{ z.time_start|date:"G:i" }} ({{z.get_duration_display}})</span>{% endif %}
+
+				</td>
+			</tr>
+			{% endfor %}	
+		</tbody>
+	</table>
+{% endblock %}
