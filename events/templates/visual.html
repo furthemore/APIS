@@ -1,0 +1,245 @@
+{% extends "event_base.html" %}
+{% block head %}
+<style>
+#loading {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+
+    text-align: center;
+
+    opacity: 0.95;
+
+    margin: auto;
+}
+
+.white-space{
+	white-space: nowrap !important;
+}
+
+.event-top {
+	border-top: 1px solid #000 !important;
+	border-left: 1px solid #000 !important;
+	border-right: 1px solid #000 !important;
+	border-bottom: none;
+}
+.event-middle {
+	border-top: 0px solid #000 !important;
+	border-left: 1px solid #000 !important;
+	border-right: 1px solid #000 !important;
+	border-bottom: 0px solid #000 !important;
+	
+}
+.event-bottom {
+	border-bottom: 1px solid #000 !important;
+	border-left: 1px solid #000 !important;
+	border-right: 1px solid #000 !important;
+	border-top: 0px solid #000 !important;
+}
+
+</style>
+{% endblock %}
+{% block visual %}
+<div id="loading"><br><br><br><h1>Events Visualizer <small>v0.1</small></h1>Give us a second...<br><small><span id="loading_status"></span></small></div>
+
+	<div id="visual" class="row">
+
+	</div>
+
+	<div id="dev"></div>
+{% endblock %}
+{% block scripting %}
+<script type="text/javascript">
+	$(document).ready(function() {
+
+		var panels = {};
+		var rooms = {};
+		var event = {};
+		var blocks = {};
+		var reverseblocks = {};
+
+		function tableBuild(){
+			$("#visual").text("");
+			$("#loading_status").text("Building Rows..");
+			// setup rows from events
+			$.each(event[{{event.pk}}].names, function(day){
+				$("#visual").append("<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 row-division' id='row-"+event[{{event.pk}}].names[day][1]+"'><h1>"+event[{{event.pk}}].names[day][0]+"</h1></div>");
+				$("#row-"+event[{{event.pk}}].names[day][1]).append("<table class='table'  id='table-"+event[{{event.pk}}].names[day][1]+"' class='action-table'><thead class='thead-inverse'><tr><th><h6>"+event[{{event.pk}}].names[day][0]+"</h6></th></tr></thead><tbody></tbody></table>");
+				$.each(rooms, function(pk,room){
+					$("#row-"+event[{{event.pk}}].names[day][1]+" thead tr").append("<th id='header-"+event[{{event.pk}}].names[day][1]+"-"+pk+"' class='header-tile white-space' data-pk='"+pk+"'>"+room.name+"</th>");
+				});
+				var i = 3;
+				var n = 0;
+				$.each(blocks, function(n,cxi){
+					var dnv = day;
+					if(parseInt(n)>=69){
+							dnv = day + 1;
+					}
+					try{
+						$("#row-"+event[{{event.pk}}].names[day][1]+" tbody").append("<tr id='tablerow-"+cxi+"-"+event[{{event.pk}}].names[dnv][1]+"'><td>"+cxi+"</td></tr>");
+					}catch(err){
+						$("#row-"+event[{{event.pk}}].names[day][1]+" tbody").append("<tr id='tablerow-"+cxi+"-"+event[{{event.pk}}].reverse_day_blocks[dnv+1]+"'><td>"+cxi+"</td></tr>");						
+					}
+						$.each(rooms, function(dm,ix){
+							var evi = event[{{event.pk}}].names[day][1];
+							try{
+								$("#tablerow-"+cxi+"-"+event[{{event.pk}}].names[dnv][1]).append("<td id='"+event[{{event.pk}}].names[dnv][1]+cxi+"-"+dm+"'></td>");
+							}catch(err){
+								$("#tablerow-"+cxi+"-"+event[{{event.pk}}].reverse_day_blocks[dnv+1]).append("<td id='"+event[{{event.pk}}].reverse_day_blocks[dnv+1]+cxi+"-"+dm+"'></td>");
+							}
+						});
+				});
+			});
+			$("#loading_status").text("Populating Events");
+			$.each(panels, function(pk,panel){
+				blk = reverseblocks[panel.block_slot];
+				dayb = (event[{{event.pk}}].day_blocks[panel.date_slot]).toString();
+				if(blk>=69){
+					//panel.time_slot = (event[{{event.pk}}].reverse_day_blocks[(event[{{event.pk}}].day_blocks[panel.date_slot]+1).toString()])+panel.block_slot
+				}
+				$("#"+panel.time_slot+"-"+panel.room).text(panel.title);
+				//$("#"+panel.time_slot+"-"+panel.room).addClass('white-space');
+				if(panel.type == 0){
+					$("#"+panel.time_slot+"-"+panel.room).addClass('bg-info');
+				}
+				if(panel.type == 1){
+					$("#"+panel.time_slot+"-"+panel.room).addClass('bg-inverse');
+					$("#"+panel.time_slot+"-"+panel.room).addClass('table-inverse');
+				}
+				if(panel.type == 2){
+					$("#"+panel.time_slot+"-"+panel.room).addClass('bg-success');
+				}
+				if(panel.type == 3){
+					$("#"+panel.time_slot+"-"+panel.room).addClass('bg-danger');
+				}
+				$("#"+panel.time_slot+"-"+panel.room).addClass('event-top');
+				n = 1;
+				pds = panel.date_slot;
+				while (n !== panel.duration_blocks){
+					if(blk+n==69 && panel.block_slot !== "0000"){
+						pds = event[{{event.pk}}].reverse_day_blocks[(event[{{event.pk}}].day_blocks[panel.date_slot]+1).toString()];
+					}
+					block = blocks[String(blk+n)];
+					if((blk+n) == 1){
+						$("#"+pds+block+"-"+panel.room).html(panel.title);
+					}
+					if((blk+n) == 2){
+						$("#"+pds+block+"-"+panel.room).html("<small>"+panel.panelist+"</small>");
+					}
+					if((blk+n) == 3){
+						$("#"+pds+block+"-"+panel.room).html("<small>"+panel.duration+"</small>");
+					}
+					if(n == 1){
+						$("#"+pds+block+"-"+panel.room).html("<small>"+panel.panelist+"</small>");
+					}
+					if(n == 2){
+						$("#"+pds+block+"-"+panel.room).html("<small>"+panel.duration+"</small>");
+					}
+						//$("#"+panel.date_slot+block+"-"+panel.room).append("<small>(("+panel.pk+"))</small>");
+						//$("#"+panel.date_slot+block+"-"+panel.room).append("<small>(("+(blk+n)+"))</small>");
+					if(panel.type == 0){
+						$("#"+pds+block+"-"+panel.room).addClass('bg-info');
+					}
+					if(panel.type == 1){
+						$("#"+pds+block+"-"+panel.room).addClass('bg-inverse');
+						$("#"+pds+block+"-"+panel.room).addClass('table-inverse');
+					}
+					if(panel.type == 2){
+						$("#"+pds+block+"-"+panel.room).addClass('bg-success');
+					}
+					if(panel.type == 3){
+						$("#"+pds+block+"-"+panel.room).addClass('bg-danger');
+					}
+					$("#"+pds+block+"-"+panel.room).addClass('event-middle');
+					if((blk+n) == 96){
+						blk = 0 - n;
+					}
+					n++;
+					if(n == panel.duration_blocks){
+						$("#"+pds+block+"-"+panel.room).removeClass('event-middle');
+						$("#"+pds+block+"-"+panel.room).addClass('event-bottom');
+					}
+				}
+				n = 0;
+				pds = panel.date_slot;
+				while (n !== panel.setup_blocks){
+					n++;
+					blk = reverseblocks[panel.block_slot];
+					block = blocks[String(blk-n)];
+					if(blk>=69){
+						panel.date_slot = event[{{event.pk}}].reverse_day_blocks[(event[{{event.pk}}].day_blocks[panel.date_slot]-1).toString()];
+					}
+					$("#"+panel.date_slot+block+"-"+panel.room).addClass('event-middle');
+					if(n == 1){
+						$("#"+panel.date_slot+block+"-"+panel.room).addClass('event-bottom');
+						$("#"+panel.date_slot+block+"-"+panel.room).append("<small>Setup: "+panel.setup+"</small>");
+					}
+					if(n == panel.setup_blocks){
+						$("#"+panel.date_slot+block+"-"+panel.room).removeClass('event-middle');
+						$("#"+panel.date_slot+block+"-"+panel.room).removeClass('event-bottom');
+						$("#"+panel.date_slot+block+"-"+panel.room).addClass('event-top');
+					}
+					$("#"+panel.date_slot+block+"-"+panel.room).addClass('bg-warning');
+				}
+
+			});
+			//$('table').stickyTableHeaders({fixedOffset: $(".navbar")});
+			$('table').stickyTableHeaders();
+			$("#loading_status").text("Let's disco.");
+			$("#loading").fadeOut();
+			
+		}
+
+		function getAPI(){
+			panels = {};
+			rooms = {};
+			event = {};
+			blocks = {};
+			reverseblocks = {};
+
+			$("#loading_status").text("Fetching Panels Data..");
+			$.get('/backend/events/controls/v1/{{ event.pk }}/panels/', function(data){
+				panels = data;
+				$("#loading_status").text("Fetching Venue Data..");
+				$.get('/backend/events/controls/v1/{{ event.pk }}/rooms/', function(data2){
+					rooms = data2;
+					$("#loading_status").text("Fetching Event Data..");
+					$.get('/backend/events/controls/v1/{{event.pk}}/', function(data3){
+						event = data3;
+
+						$("#loading_status").text("Preparing Schedule Generator...");
+						$.get('/backend/events/controls/v1/helpers/blocks/', function(data4){
+							// we have everything now, now we setup the rows
+							blocks = data4.blocks;
+							$.get('/backend/events/controls/v1/helpers/reverseblocks/', function(data5){
+								reverseblocks = data5.blocks;
+								tableBuild();
+							});
+						});
+					});
+				});
+			});
+		}
+
+
+		$("#loading_status").text("Initializing Application..");
+		function init(){
+			$("#loading").fadeIn();
+			$("#loading_status").text("Doing a Thing..");
+			// hide extras
+
+			$("#loading_status").text("Contacting the chairman..");
+			getAPI();
+
+		}
+		init();
+	});
+</script>
+{% endblock %}
