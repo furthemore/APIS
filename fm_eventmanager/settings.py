@@ -28,7 +28,7 @@ DEBUG = True
 ADMINS = [('Carissa Brittain', 'carissa.brittain@gmail.com'),]
 SERVER_EMAIL = "it_errors@furthemore.org"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['monoga.io:5000','monoga.io']
 
 
 # Application definition
@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'mathfilters',
     'nested_inline',
     'registration',
+    'volunteer.apps.VolunteerConfig',
+    'events.apps.EventsConfig',
     'import_export',
     'django_extensions',
 ]

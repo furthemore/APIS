@@ -9,6 +9,6 @@ Proposed Stack:
   + Apache2
   + Postgres 9.3
   + Python 2.7.6
-  + Django 1.9.8
+  + Django 1.11.6
   + Bootstrap 3.3.7
   + JQuery 1.9.1
