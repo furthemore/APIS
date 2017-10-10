@@ -37,6 +37,8 @@ class Event(LookupTable):
     attendeeRegEnd = models.DateTimeField()
     onlineRegStart = models.DateTimeField()
     onlineRegEnd = models.DateTimeField()
+    eventStart = models.DateField()
+    eventEnd = models.DateField()
 
 class TableSize(LookupTable):
     description = models.TextField()
