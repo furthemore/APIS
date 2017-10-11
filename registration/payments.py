@@ -48,7 +48,10 @@ def chargePayment(orderId, ccData, ipAddress):
                                                      card_expiry=str(ccData["cc_month"]) + (ccData["cc_year"][2:]),
                                                      card_cvv=ccData["cc_security"],
                                                      card_type=cardtype,
-                                                     description='APIS Payment - ' + order.reference
+                                                     description='APIS Payment - ' + order.reference,
+                                                     street=order.billingAddress1, city=order.billingCity, 
+                                                     state=order.billingState, zipcode=order.billingPostal,
+                                                     country=order.billingCountry, email=order.billingEmail,
                                                     );
 
 

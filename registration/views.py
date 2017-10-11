@@ -67,10 +67,11 @@ def infoStaff(request):
 
     staff = Staff.objects.get(id=staffId)
     if staff:
-	staff_dict = model_to_dict(staff)
+        badge = Badge.objects.get(attendee=staff.attendee,event=staff.event)
+        staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
-        if staff.attendee.effectiveLevel():
-            lvl_dict = model_to_dict(staff.attendee.effectiveLevel())
+        if badge.effectiveLevel():
+            lvl_dict = model_to_dict(badge.effectiveLevel())
         else:
             lvl_dict = {}
         context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler), 
@@ -617,7 +618,7 @@ def addNewDealer(request):
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
-                        emailsOk=pda['emailsOk'], surveyOk=pda['surveyOk']
+                        emailsOk=bool(pda['emailsOk']), surveyOk=bool(pda['surveyOk'])
                         )
     attendee.save()
 
@@ -891,8 +892,8 @@ def addToCart(request):
     attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
-                        emailsOk=pda['emailsOk'], volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
-                        surveyOk=pda['surveyOk'])
+                        emailsOk=bool(pda['emailsOk']), volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
+                        surveyOk=bool(pda['surveyOk']))
     attendee.save()
 
     badge = Badge(badgeName=pda['badgeName'], event=event, attendee=attendee)
