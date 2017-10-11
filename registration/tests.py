@@ -68,7 +68,8 @@ class OrdersTestCases(TestCase):
         self.event = Event(name="Test Event 2050!", dealerRegStart=now-ten_days, dealerRegEnd=now+ten_days,
                            staffRegStart=now-ten_days, staffRegEnd=now+ten_days,
                            attendeeRegStart=now-ten_days, attendeeRegEnd=now+ten_days,
-                           onlineRegStart=now-ten_days, onlineRegEnd=now+ten_days)
+                           onlineRegStart=now-ten_days, onlineRegEnd=now+ten_days, 
+                           eventStart=now-ten_days, eventEnd=now+ten_days)
         self.event.save()
 
         self.table1 = TableSize(name="Booth", description="description here", chairMin=0, chairMax=1,
