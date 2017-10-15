@@ -29,6 +29,8 @@ The following Apt Packages need to be installed in order to run this application
 
 `pip install -r requirements.txt`
 
+NOTE: The version of payeezy in pip must be replaced with https://github.com/alsaihn/payeezy_direct_API to allow for passing addresses with payment information
+
 ### POSTGRES Setup
 
 `sudo su postgres`
