@@ -3,7 +3,6 @@ django-mathfilters==0.4.0
 django-nested-inline==0.3.7
 django-import-export==0.5.1
 psycopg2==2.7.1
-authorizenet
 pytz
 configobj
 payeezy

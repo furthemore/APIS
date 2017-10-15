@@ -41,7 +41,7 @@ def chargePayment(orderId, ccData, ipAddress):
 
     print ("************---------- Authorize Response:Start ---------------*****************" );
 
-    responseAuthorize =  payeezy.transactions.authorize( amount=total,
+    responseAuthorize =  payeezy.transactions.authorizeWithAddress( amount=total,
                                                      currency_code='usd',
                                                      cardholder_name=ccData["cc_firstname"] + " " + ccData["cc_lastname"],
                                                      card_number=ccData["cc_number"],
@@ -75,11 +75,14 @@ def chargePayment(orderId, ccData, ipAddress):
     print(" Now calling Payeezy API: Credit Card Capture ");
 
     print ("************---------- Capture Response:Start ---------------*****************" );
-    responseCapture =  payeezy.transactions.capture(amount=total,
+    responseCapture =  payeezy.transactions.captureWithAddress(amount=total,
                                                 currency_code='usd',
                                                 transactionTag=transactionTag,
                                                 transactionID=transactionID,
-                                                description='APIS Payment - ' + order.reference
+                                                description='APIS Payment - ' + order.reference,
+                                                street=order.billingAddress1, city=order.billingCity, 
+                                                state=order.billingState, zipcode=order.billingPostal,
+                                                country=order.billingCountry, email=order.billingEmail,
     );
     print (" ** " + json.dumps(responseCapture.json(), indent=3) );
     print ("************---------- Capture Response:End ---------------*****************" );
