@@ -440,7 +440,7 @@ class OrdersTestCases(TestCase):
                     'reception': True, 'artShow': False, 
                     'charityRaffle': "Some stuff", 'agreeToRules': True,
                     'breakfast': True, 'switch': False,
-                    'buttonOffer': "Buttons"},
+                    'buttonOffer': "Buttons", 'asstbreakfast': False},
                     'event': 'Test Event 2050!'}
 
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
@@ -457,7 +457,7 @@ class OrdersTestCases(TestCase):
 				'reception': True, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': False},
                 'event': 'Test Event 2050!'}
 
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
@@ -474,7 +474,7 @@ class OrdersTestCases(TestCase):
 				'reception': False, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': False},
                 'event': 'Test Event 2050!'}
 
         response = self.client.post(reverse('addNewDealer'), json.dumps(postData), content_type="application/json")
@@ -518,7 +518,7 @@ class OrdersTestCases(TestCase):
 				'reception': True, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': False},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
                 'event': 'Test Event 2050!'}
 
@@ -557,7 +557,7 @@ class OrdersTestCases(TestCase):
 				'reception': True, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': False},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
                 'event': 'Test Event 2050!'}
                     
@@ -594,7 +594,7 @@ class OrdersTestCases(TestCase):
 				'reception': True, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': False},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
                 'event': 'Test Event 2050!'}
                     
@@ -631,7 +631,7 @@ class OrdersTestCases(TestCase):
 				'reception': False, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': False},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
                 'event': 'Test Event 2050!'}
 
@@ -649,7 +649,7 @@ class OrdersTestCases(TestCase):
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
-        #Dealer, partners, upgrade, discount
+        #Dealer, partners+breakfast, upgrade, discount
         attendee = Attendee.objects.get(firstName='Dealz')
         badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
@@ -670,7 +670,7 @@ class OrdersTestCases(TestCase):
 				'reception': False, 'artShow': False, 
 				'charityRaffle': "Some stuff", 'agreeToRules': True,
 				'breakfast': True, 'switch': False,
-				'buttonOffer': "Buttons"},
+				'buttonOffer': "Buttons", 'asstbreakfast': True},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
                 'event': 'Test Event 2050!'}
 
@@ -681,9 +681,9 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+40+160-45-5)
+        self.assertEqual(total, 90+40+20+160-45-5)
 
-        #Dealer, partners, upgrade, discount, donations
+        #Dealer, partners+breakfast, upgrade, discount, donations
         postData = {'billingData': {
 			'cc_number': "4111111111111111", 'cc_month': "01", 
 			'cc_year': "2018", 'cc_security': "836",
@@ -699,7 +699,7 @@ class OrdersTestCases(TestCase):
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertNotEqual(order.discount, None)
-        self.assertEqual(order.total, 90+40+160-45-5+15)
+        self.assertEqual(order.total, 90+40+20+160-45-5+15)
         self.assertEqual(order.orgDonation, 5.00)
         self.assertEqual(order.charityDonation, 10.00)
 

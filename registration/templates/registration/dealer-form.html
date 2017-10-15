@@ -35,7 +35,7 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Dealer Registration - Furthemore 2017</h1>
+        <h1>Dealer Registration - Furthemore 2018</h1>
         <p>Welcome to the registration system. To continue, enter your information below.</p>
         <hr>
 
@@ -239,6 +239,13 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="asstbreakfst" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" class="form-control form-control-checkbox" />
+                    </div>
+                <div class="col-sm-9 col-sm-offset-3 small">You will be charged an additional $20 per partner for this option.</div>
+                </div>
+                <div class="form-group">
                     <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
                     <div class="col-sm-9">
                         <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
@@ -427,7 +434,7 @@
                 'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
                 'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
-                'buttonOffer': $('#buttonOffer').val()
+                'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked')
             },
             'event': 'Furthemore 2018'
         };
