@@ -41,7 +41,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Registration - Furthemore 2017</h1>
+		<h1>Dealer Registration - Furthemore 2018</h1>
 
 		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
@@ -241,6 +241,13 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label for="asstbreakfast" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" class="form-control form-control-checkbox" />
+                    </div>
+		    <div class="col-sm-9 col-sm-offset-3 small">You will be charged an additional $20 per partner for this option.</div>
+                </div>
+                <div class="form-group">
                     <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
                     <div class="col-sm-9">
                         <input type="text" id="near" value="{{dealer.nearTo}}" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
@@ -431,6 +438,7 @@
 	$("#wifi").attr('checked', dealer.needWifi);
 	$("#wall").attr('checked', dealer.wallSpace);
 	$("#switch").attr('checked', dealer.willSwitch);
+    $("#asstbreakfast").attr('checked', dealer.asstBreakfast);
 
 	if (dealer.license == "temporary") {
 		$("#license").attr("disabled", "disabled");
@@ -627,7 +635,7 @@
 				'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
 				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
-				'buttonOffer': $('#buttonOffer').val()
+				'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked'))
 			},
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
             'event': 'Furthemore 2018'

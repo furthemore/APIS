@@ -14,6 +14,9 @@ Friday Reception: {{dealer.reception|yesno:"Yes,No"}}
 {% if dealer.getPartnerCount > 0%}
 Partners x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:40}}.00
 {% endif %}
+{% if dealer.asstBreakfast%}
+Partner Breakfast x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:20}}.00
+{% endif %}
 Attendee Level - {{orderItem.priceLevel}}: ${{orderItem.priceLevel.basePrice}}
 Dealer Discount: -${{order.discount.amountOff}}
 {% if dealer.discount > 0%}
