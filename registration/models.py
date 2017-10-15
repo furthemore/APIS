@@ -200,6 +200,7 @@ class Dealer(models.Model):
     discount = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
     discountReason = models.CharField(max_length=200, blank=True)
     emailed = models.BooleanField(default=False)
+    asstBreakfast = models.BooleanField(default=False)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):

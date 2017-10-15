@@ -313,8 +313,11 @@ def infoDealer(request):
 def getDealerTotal(orderItems, discount, dealer):
     subTotal = getTotal(orderItems, discount)
     partnerCount = dealer.getPartnerCount()
+    partnerBreakfast = 0
+    if partnerCount > 0 and dealer.asstBreakfast:
+      partnerBreakfast = 20*partnerCount
     paidTotal = dealer.paidTotal()
-    total = subTotal + 40*partnerCount + dealer.tableSize.basePrice - dealer.discount - paidTotal
+    total = subTotal + 40*partnerCount + partnerBreakfast + dealer.tableSize.basePrice - dealer.discount - paidTotal
     if total < 0: 
       return 0
     return total
@@ -479,6 +482,7 @@ def addDealer(request):
     dealer.breakfast=pdd['breakfast']
     dealer.willSwitch=pdd['switch']  
     dealer.buttonOffer=pdd['buttonOffer']
+    dealer.asstBreakfast=pdd['asstbreakfast']
     dealer.event = event
 
     try:
@@ -631,7 +635,8 @@ def addNewDealer(request):
                     needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
                     chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
                     breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'], 
-                    agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'])
+                    agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'], asstBreakfast=pdd['asstbreakfast']
+)
     dealer.save()
     sendDealerApplicationEmail(dealer.id)    
     return JsonResponse({'success': True})
