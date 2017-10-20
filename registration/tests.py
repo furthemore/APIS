@@ -642,7 +642,7 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+40+160-45)
+        self.assertEqual(total, 90+45+160-45)
         orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
@@ -681,7 +681,7 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+40+20+160-45-5)
+        self.assertEqual(total, 90+45+50+160-45-5)
 
         #Dealer, partners+breakfast, upgrade, discount, donations
         postData = {'billingData': {
@@ -699,7 +699,7 @@ class OrdersTestCases(TestCase):
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertNotEqual(order.discount, None)
-        self.assertEqual(order.total, 90+40+20+160-45-5+15)
+        self.assertEqual(order.total, 90+45+50+160-45-5+15)
         self.assertEqual(order.orgDonation, 5.00)
         self.assertEqual(order.charityDonation, 10.00)
 
