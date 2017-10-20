@@ -49,6 +49,12 @@ class TableSize(LookupTable):
     partnerMin = models.IntegerField(default=1)
     partnerMax = models.IntegerField(default=1)
     basePrice = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self): 
+      if self.event is None:
+        return self.name
+      return self.name + " " + self.event.name
 
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
