@@ -1168,7 +1168,8 @@ def getShirtSizes(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getTableSizes(request):
-    sizes = TableSize.objects.all()
+    event = Event.objects.last()
+    sizes = TableSize.objects.filter(event=event)
     data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax, 'basePrice': str(size.basePrice)} for size in sizes]
     return HttpResponse(json.dumps(data), content_type='application/json')
 
