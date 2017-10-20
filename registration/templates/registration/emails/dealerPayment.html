@@ -14,10 +14,10 @@ player 2 on April 28-30th. If you have any questions or concerns, please email
 <tr><td>Continental Breakfast</td><td>{{dealer.breakfast|yesno:"Yes,No"}}</td></tr>
 <tr><td>Friday Reception</td><td>{{dealer.reception|yesno:"Yes,No"}}</td></tr>
 {% if dealer.getPartnerCount > 0%}
-<tr><td>Partners x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:40}}.00</td></tr>
+<tr><td>Partners x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:45}}.00</td></tr>
 {% endif %}
 {% if dealer.asstBreakfast%}
-<tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:20}}.00</td></tr>
+<tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:50}}.00</td></tr>
 {% endif %}
 <tr><td>Attendee Level - {{orderItem.priceLevel}}</td><td>${{orderItem.priceLevel.basePrice}}</td></tr>
 <tr><td>Dealer Discount</td><td>-${{order.discount.amountOff}}</td></tr>
