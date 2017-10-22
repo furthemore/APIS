@@ -9,6 +9,9 @@ Your confirmation number is: {{order.reference}}
 Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}
 -------------------------------------------
 Table Type - {{dealer.tableSize}}: ${{dealer.tableSize.basePrice}}
+{% if dealer.needWifi%}
+Wi-Fi Access: $45.00
+{% endif %}
 Continental Breakfast: {{dealer.breakfast|yesno:"Yes,No"}}
 Friday Reception: {{dealer.reception|yesno:"Yes,No"}}
 {% if dealer.getPartnerCount > 0%}
