@@ -21,7 +21,7 @@ admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
 admin.site.register(TableSize)
-
+admin.site.register(BanList)
 
 def send_approval_email(modeladmin, request, queryset):
     sendApprovalEmail(queryset)
@@ -61,6 +61,7 @@ class DealerResource(resources.ModelResource):
 
 class DealerAdmin(ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal', 'event')
+    list_filter = ('event',)
     save_on_top = True
     resource_class = DealerResource
     actions = [send_approval_email, send_assistant_form_email, send_payment_email]

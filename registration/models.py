@@ -339,3 +339,9 @@ class AttendeeOptions(models.Model):
         if self.option.optionExtraType == "int":
             return int(self.optionValue) * self.option.optionPrice
         return self.option.optionPrice
+
+
+class BanList(models.Model):
+    firstName = models.CharField(max_length=200, blank=True)
+    lastName = models.CharField(max_length=200, blank=True)
+    email = models.CharField(max_length=400, blank=True)

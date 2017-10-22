@@ -511,7 +511,7 @@ class OrdersTestCases(TestCase):
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyButz",'emailsOk': "true"},
                     'dealer': {'id': dealer.id,'businessName':"Something Creative", 'website':"http://www.something.com",
-				'license':"jkah9435kd", 'power': True, 'wifi': True,
+				'license':"jkah9435kd", 'power': True, 'wifi': False,
                                 'wall': True, 'near': "Someone", 'far': "Someone Else",
 				'description': "Stuff for sale", 'tableSize': self.table1.id,  
 				'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
@@ -550,7 +550,7 @@ class OrdersTestCases(TestCase):
                                  'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
                                  'badgeName': "FluffyNutz",'emailsOk': "true"},
                     'dealer': {'id': dealer.id,'businessName':"Something Creative", 'website':"http://www.something.com",
-				'license':"jkah9435kd", 'power': True, 'wifi': True,
+				'license':"jkah9435kd", 'power': True, 'wifi': False,
                                 'wall': True, 'near': "Someone", 'far': "Someone Else",
 				'description': "Stuff for sale", 'tableSize': self.table1.id,  
 				'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
@@ -575,7 +575,7 @@ class OrdersTestCases(TestCase):
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
-        #Dealer, upgrade
+        #Dealer, upgrade, Wifi
         attendee = Attendee.objects.get(firstName='Dealer')
         badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
@@ -605,14 +605,14 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+130-45)
+        self.assertEqual(total, 90+130+45-45)
         orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
-        #Dealer, partners, upgrade
+        #Dealer, partners, upgrade, wifi
         attendee = Attendee.objects.get(firstName='Dealz')
         badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
@@ -642,14 +642,14 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+45+160-45)
+        self.assertEqual(total, 90+45+45+160-45)
         orderItem = OrderItem.objects.get(badge=badge)
         orderItem.delete()
 
         response = self.client.get(reverse('flush'))
         self.assertEqual(response.status_code, 200)
 
-        #Dealer, partners+breakfast, upgrade, discount
+        #Dealer, partners+breakfast, upgrade, discount, wifi
         attendee = Attendee.objects.get(firstName='Dealz')
         badge = Badge.objects.get(attendee=attendee, event=self.event)
         dealer = Dealer.objects.get(attendee=attendee)
@@ -681,9 +681,9 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-        self.assertEqual(total, 90+45+50+160-45-5)
+        self.assertEqual(total, 90+45+45+60+160-45-5)
 
-        #Dealer, partners+breakfast, upgrade, discount, donations
+        #Dealer, partners+breakfast, upgrade, wifi, discount, donations
         postData = {'billingData': {
 			'cc_number': "4111111111111111", 'cc_month': "01", 
 			'cc_year': "2018", 'cc_security': "836",
@@ -699,7 +699,7 @@ class OrdersTestCases(TestCase):
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
         self.assertNotEqual(order.discount, None)
-        self.assertEqual(order.total, 90+45+50+160-45-5+15)
+        self.assertEqual(order.total, 90+45+45+60+160-45-5+15)
         self.assertEqual(order.orgDonation, 5.00)
         self.assertEqual(order.charityDonation, 10.00)
 

@@ -315,9 +315,12 @@ def getDealerTotal(orderItems, discount, dealer):
     partnerCount = dealer.getPartnerCount()
     partnerBreakfast = 0
     if partnerCount > 0 and dealer.asstBreakfast:
-      partnerBreakfast = 50*partnerCount
+      partnerBreakfast = 60*partnerCount
+    wifi = 0
+    if dealer.needWifi:
+        wifi = 45
     paidTotal = dealer.paidTotal()
-    total = subTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice - dealer.discount - paidTotal
+    total = subTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi - dealer.discount - paidTotal
     if total < 0: 
       return 0
     return total

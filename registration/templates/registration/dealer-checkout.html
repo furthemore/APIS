@@ -23,6 +23,15 @@
 				<div class="col-sm-2">
 				</div>
 			</div>
+        {% if dealer.needWifi %}
+			<div class="row">
+				<div class="col-sm-5 col-sm-offset-1">Wi-Fi Access</div>
+				<div class="col-sm-2">$45.00</div>   
+				<div class="col-sm-2">
+				</div>
+			</div>
+        {% endif %}
+
 
 		{% for item in orderItems %}
 			<div class="row">
@@ -43,7 +52,7 @@
 			{% if dealer.asstBreakfast %}
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1">Partner Breakfast x{{ dealer.getPartnerCount }}</div>
-				<div class="col-sm-2">${{dealer.getPartnerCount|mul:50}}.00</div>   
+				<div class="col-sm-2">${{dealer.getPartnerCount|mul:60}}.00</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -75,7 +84,7 @@
 			{% if dealer.attendee.effectiveLevel %}
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1">Dealer Badge - {{item.priceLevel}}</div>
-				<div class="col-sm-2">-$45.00</div>   
+				<div class="col-sm-2">- $45.00</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -99,7 +108,7 @@
 			{% if dealer.paidTotal %}
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1">Previously Paid</div>
-				<div class="col-sm-2">-${{dealer.paidTotal}}</div>   
+				<div class="col-sm-2">- ${{dealer.paidTotal}}</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
