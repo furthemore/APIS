@@ -11,6 +11,9 @@ player 2 on April 28-30th. If you have any questions or concerns, please email
 <table>
 
 <tr><td>Table Type - {{dealer.tableSize}}</td><td> ${{dealer.tableSize.basePrice}}</td></tr>
+{% if dealer.needWifi %}
+<tr><td>Wi-Fi Access</td><td>$45.00</td></tr>
+{% endif %}
 <tr><td>Continental Breakfast</td><td>{{dealer.breakfast|yesno:"Yes,No"}}</td></tr>
 <tr><td>Friday Reception</td><td>{{dealer.reception|yesno:"Yes,No"}}</td></tr>
 {% if dealer.getPartnerCount > 0%}
