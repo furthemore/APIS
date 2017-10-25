@@ -679,6 +679,12 @@ def onsiteDone(request):
 ###################################
 # Attendees
 
+def checkBanList(firstName, lastName, email):
+    banCheck = BanList.objects.filter(firstName=firstName, lastName=lastName, email=email)
+    if banCheck.count() > 0:
+        return True
+    return False
+
 def upgrade(request, guid):
     context = {'token': guid}
     return render(request, 'registration/attendee-locate.html', context)
