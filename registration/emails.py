@@ -61,11 +61,14 @@ def sendDealerApplicationEmail(dealerId):
     data = {}    
     msgTxt = render_to_string('registration/emails/dealer.txt', data)
     msgHtml = render_to_string('registration/emails/dealer.html', data)
-    sendEmail("exhibitions@furthemore.org", [dealer.attendee.email], 
+    sendEmail("marketplacehead@furthemore.org", [dealer.attendee.email], 
               "Fur The More 2018 Dealer Application", msgTxt, msgHtml)
 
-    sendEmail("exhibitions@furthemore.org", ["exhibitions@furthemore.org"], 
-              "Fur The More 2018 Dealer Application", "New dealer reg received.", "New dealer reg received.")
+    data = {'dealer': dealer}
+    msgTxt = render_to_string('registration/emails/dealerNotice.txt', data)
+    msgHtml = render_to_string('registration/emails/dealerNotice.html', data)
+    sendEmail("marketplacehead@furthemore.org", ["marketplacehead@furthemore.org"], 
+              "Fur The More 2018 Dealer Application Received", msgTxt, msgHtml)
 
 def sendDealerAsstFormEmail(dealer):
     data = {'dealer': dealer}    
