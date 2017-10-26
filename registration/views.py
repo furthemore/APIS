@@ -639,7 +639,7 @@ def addNewDealer(request):
                     chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
                     breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'], 
                     agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'], asstBreakfast=pdd['asstbreakfast']
-)
+    )
     dealer.save()
     sendDealerApplicationEmail(dealer.id)    
     return JsonResponse({'success': True})
