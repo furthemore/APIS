@@ -10,34 +10,8 @@
         <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
       </div>
       <div class="modal-body">
-	<p>Staff must be over the age of 18.</p>
-	<p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="jerseyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Year 5 Jersey</h4>
-      </div>
-      <div class="modal-body">
-	<img width="400" src="/static/img/attendee_jersey.jpg"/>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="jerseyStaffModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Year 5 Staff Jersey</h4>
-      </div>
-      <div class="modal-body">
-	<img width="400" src="/static/img/staff_jersey.jpg"/>
+    	<p>Staff must be over the age of 18.</p>
+	    <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -116,7 +90,6 @@
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 				
-		<hr/>
 
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
@@ -127,36 +100,29 @@
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#profile" class="btn btn-primary col-sm-12" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
-                    </div>
-                </div>
-            
-	</div>
-	<div role="tabpanel" class="tab-pane fade" id="profile">
-		<h1>Staff Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
-		<hr>
+		<hr/>
+		<h3>Convention Info</h3>
+        <p>If your department and/or title are not correct, contact the Staff Services department to have it corrected.</p>
+
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" name="badgeName" id="badgeName" value="{{staff.attendee.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
+                        <input type="text" name="badgeName" id="badgeName" value="{{badge.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="department" class="col-sm-3 control-label">Department <span style="color:red;">*</span></label>
+                    <label for="department" class="col-sm-3 control-label">Department </label>
                     <div class="col-sm-9">
-                        <select id="department" name="department"class="form-control" required></select>
+                        <input id="department" name="department"class="form-control" value="{{staff.department}}" disabled />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="title" class="col-sm-3 control-label">Title <span style="color:red;">*</span></label>
+                    <label for="title" class="col-sm-3 control-label">Title </label>
                     <div class="col-sm-9">
-                        <input type="text" id="title" name="title" value="{{staff.title}}" placeholder="Title" class="form-control form-control-text" required>
+                        <input type="text" id="title" name="title" value="{{staff.title}}" placeholder="Title" class="form-control form-control-text" disabled>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -227,30 +193,21 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 
-                <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#personal" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal"><< Back</a>
-			<a href="#options" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
-                    </div>
-                </div>
-	</div>
-	<div role="tabpanel" class="tab-pane fade" id="options">
-		<h1>Staff Registration - Furthemore 2017</h1>
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a></p>
+		<hr/>
+        <h3>Attendee Level</h3>
 
 		<div class="row" id="levelContainer"></div>
-		<hr/>
+
                 <div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
+                    <div class="col-sm-12">
                         <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
 			I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+		    <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
-                    <div class="col-sm-9 col-sm-offset-3">
-			<a href="#profile" class="btn btn-primary col-sm-6" aria-controls="registration" role="tab" data-toggle="tab" id="back-badge"><< Back</a>
-                        <button id="checkout" type="submit" class="btn btn-primary col-sm-6" aria-controls="profile" data-toggle="tab">Register</button>
+                    <div class="col-sm-12">
+                        <button id="checkout" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Register</button>
 		    </div>
                 </div>
 	</div>
@@ -274,8 +231,8 @@
 			<p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
 		</div>
 		<div class="panel-footer">
-			<a class="btn btn-lg btn-block btn-danger selectLevel" href="#" data-id="levelId">Select</a>
-			<a class="btn btn-default btn-block changeLevel" href="#">Change Level?</a>
+			<a class="btn btn-lg btn-block btn-danger selectLevel" href="" data-id="levelId">Select</a>
+			<a class="btn btn-default btn-block changeLevel" href="">Change Level?</a>
 		</div>
 	</div>
 	</div>
@@ -344,71 +301,12 @@
 		</div>
 	</div>
 </script>
-<script type="text/html" id="optionJerseyTemplate">
-	<br/>
-        <h4>Year 5 Jersey</h4>
-        <hr/>
-        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore!
-                <br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyModal">here</button> for pictures a$
-   	<hr/>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Jersey Name</label>
-		<div class="col-sm-9">
-			<input type="text" id="jerseyName" max-length=15 class="form-control form-control-text" />
-			<input type="hidden" id="optionId" data-value="optionId" />
-		</div>
-	</div>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Jersey Number</label>
-		<div class="col-sm-9">
-			<input type="text" id="jerseyNumber" maxlength=3 pattern="^[0-9]+$"  class="form-control form-control-text" />
-		</div>
-	</div>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Jersey Size</label>
-		<div class="col-sm-9">
-			<select id="jerseySize" class="form-control form-control-select" 
-			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-		</div>
-	</div>
-</script>
-<script type="text/html" id="optionStaffJerseyTemplate">
-	<br/>
-	<h4>Year 5 Staff Jersey</h4>
-	<hr/>
-        <div class="small form-group">Order a special commemorative baseball jersey celebrating 5 years of Furthemore! 
-		<br/>Click <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#jerseyStaffModal">here</button> for pictures and more information.</div>
- 	<hr/>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Staff Jersey Name</label>
-		<div class="col-sm-9">
-			<input type="text" id="sjerseyName" max-length=15 class="form-control form-control-text" />
-			<input type="hidden" id="soptionId" data-value="optionId" />
-		</div>
-	</div>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Staff Jersey Number</label>
-		<div class="col-sm-9">
-			<input type="text" id="sjerseyNumber" maxlength=2 pattern="^[0-9]+$"  class="form-control form-control-text" />
-		</div>
-	</div>
-	<div class="form-group">
-		<label class="col-sm-3 control-label">Staff Jersey Size</label>
-		<div class="col-sm-9">
-			<select id="sjerseySize" class="form-control form-control-select" 
-			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-		</div>
-	</div>
-</script>
-
 
  <script type="text/javascript">
 	var levelTemplateData = [];
 	var staff = {{ jsonStaff|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
 	var currentLevel = {{ jsonLevel|safe }}
-	var takenJerseys = [];
-	var takenStaffJerseys = [];
 	var shirtSizes = [];
 
 	$( "body" ).ready(function() {
@@ -429,27 +327,16 @@
 			$(".changeLevel").hide();
 			
 		});
-		$.getJSON("/apis/registration/alldepartments", function(data) {
-			deptData = data;
-			$.each(data, function(key, val) {
-				$("#department").append("<option value='" + val.id + "'>" + val.name + "</option>");
-			});
-		});
 		$.getJSON("/apis/registration/shirts", function(data) {
 			$.each(data, function(key, val) {
 				$("#shirt").append("<option value='" + val.id + "'>" + val.name + "</option>");
 			});
 			shirtSizes = data;
 		});
-		$.getJSON("/apis/registration/takenJerseys", function(data) {
-			takenJerseys = data;
-		});
-		$.getJSON("/apis/registration/takenStaffJerseys", function(data) {
-			takenStaffJerseys = data;
-		});
-        });
+    });
 
-	$("#levelContainer").on('click', 'a.selectLevel', function(){
+	$("#levelContainer").on('click', 'a.selectLevel', function(e){
+        e.preventDefault();
 		clearLevels();
 		var levelId = $(this).attr('id').split('_')[1];
 		$.each( levelTemplateData, function( key, val ) {
@@ -463,11 +350,14 @@
 				return false;
 			}
 		});
+        $("#levelContainer").get(0).scrollIntoView();
 	});
-	$("#levelContainer").on('click', 'a.changeLevel', function() {
+	$("#levelContainer").on('click', 'a.changeLevel', function(e) {
+        e.preventDefault();
 		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
 		$("#regLevel").val("");
 		$(".changeLevel").hide();
+        $("#levelContainer").get(0).scrollIntoView();
 	});
 	var clearLevels = function(){
 		$.each( levelTemplateData, function( key, val ) {
@@ -542,29 +432,9 @@
 		});
 		
 		$("form").validator('update');
+        $("#levelContainer").get(0).scrollIntoView();
 	};
-	var getJersey = function() {
-		var jersey = {};
-		if ($("#jerseyName").val() == "") {return jersey;}
-		jersey = {
-			'name': $("#jerseyName").val(),
-			'number': $("#jerseyNumber").val(),
-			'size': $("#jerseySize").val(),
-			'optionId': $("#optionId").val()
-		};
-		return jersey;
-	};
-	var getStaffJersey = function() {
-		var jersey = {};
-		if ($("#sjerseyName").val() == "") {return jersey;}
-		jersey = {
-			'name': $("#sjerseyName").val(),
-			'number': $("#sjerseyNumber").val(),
-			'size': $("#sjerseySize").val(),
-			'optionId': $("#soptionId").val()
-		};
-		return jersey;
-	};
+
 	var getOptions = function() {
 		var options = $(".levelOptions");
                 var data = [];
@@ -595,15 +465,6 @@
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
 
-                if ($.inArray($("#jerseyNumber").val(), takenJerseys) > -1) {
-                        alert("That jersey number has already been claimed. Please choose another.");
-                        return;
-                }
-                if ($.inArray($("#sjerseyNumber").val(), takenStaffJerseys) > -1) {
-                        alert("That staff jersey number has already been claimed. Please choose another.");
-                        return;
-                }
-
 		$("#checkout").attr("disabled", "disabled");
 
 		var data = {
@@ -616,7 +477,6 @@
 			}, 
 			'staff': {
 				'id': staff.id, 
-				'department': $("#department").val(), 'title': $("#title").val(),
 				'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
 				'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
 				'specialFood': $("#food").val(), 'specialMedical': $("#medical").val(),
@@ -624,8 +484,6 @@
 				'contactRelation': $("#contactRel").val(),
 			},
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-			'jersey': getJersey(),
-			'staffjersey': getStaffJersey(),
             'event': 'Furthemore 2017'
 		};
 		

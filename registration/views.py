@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
 from django.utils import timezone
+
 from datetime import datetime
 from decimal import *
 from operator import itemgetter
@@ -67,16 +68,20 @@ def infoStaff(request):
 
     staff = Staff.objects.get(id=staffId)
     if staff:
-        badge = Badge.objects.get(attendee=staff.attendee,event=staff.event)
         staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
-        if badge.effectiveLevel():
-            lvl_dict = model_to_dict(badge.effectiveLevel())
-        else:
-            lvl_dict = {}
+        badges = Badge.objects.filter(attendee=staff.attendee,event=staff.event)
+        lvl_dict = {}
+        badge = {}
+        if badges.count() > 0:
+            badge = badges[0]
+            if badge.effectiveLevel():
+                lvl_dict = model_to_dict(badge.effectiveLevel())
+       
         context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler), 
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
-                   'jsonLevel': json.dumps(lvl_dict, default=handler)}
+                   'jsonLevel': json.dumps(lvl_dict, default=handler),
+                   'badge': badge}
     return render(request, 'registration/staff-payment.html', context)
 
 def invoiceStaff(request):
@@ -131,10 +136,7 @@ def addStaff(request):
     if not staff:
         return JsonResponse({'success': False, 'message': 'Staff record not found'})
 
-    dept = Department.objects.get(id=pds['department'])
     shirt = ShirtSizes.objects.get(id=pds['shirtsize'])    
-    staff.department = dept
-    staff.title = pds['title']
     staff.twitter = pds['twitter']
     staff.telegram = pds['telegram']
     staff.shirtsize = shirt
@@ -152,8 +154,12 @@ def addStaff(request):
 
     event = staff.event
 
-    badge = Badge.objects.get(attendee=attendee,event=event)
-    badge.badgeName = pda['badgeName']
+    badges = Badge.objects.filter(attendee=attendee,event=event)
+    if badges.count() == 0:
+        badge = Badge(attendee=attendee,event=event,badgeName=pda['badgeName'])
+    else:
+        badge = badges[0]
+        badge.badgeName = pda['badgeName']
     try:
         badge.save()
     except Exception as e:
