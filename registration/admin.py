@@ -1,9 +1,12 @@
 from datetime import date
+import copy
 
+from django import forms
 from django.contrib import admin
 from django.db.models import Max
 from django.utils.html import format_html
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.core.urlresolvers import reverse
 
 from import_export import resources
@@ -13,7 +16,6 @@ from nested_inline.admin import NestedTabularInline, NestedModelAdmin
 from .models import *
 from .emails import *
 import views
-
 import printing
 
 # Register your models here.
@@ -134,7 +136,7 @@ class StaffResource(resources.ModelResource):
 
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
-    actions = [send_staff_registration_email]
+    actions = [send_staff_registration_email, 'copy_to_event']
     list_display = ('attendee', 'get_badge', 'get_email', 'title', 'department', 'shirtsize', 'staff_total', 'event')
     list_filter = ('event','department')
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName'] 
@@ -173,12 +175,49 @@ class StaffAdmin(ImportExportModelAdmin):
 
     def get_badge(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge == None: 
+            return "--"
         return badge.badgeName
     get_badge.short_description = "Badge Name"
 
     def staff_total(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge == None:
+            return "--"
         return badge.paidTotal()
+
+    class CopyToEvent(forms.Form):
+        _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
+        event = forms.ModelChoiceField(Event.objects)
+
+    def copy_to_event(self, request, queryset):
+        form = None
+
+        if 'event' in request.POST:
+            form = self.CopyToEvent(request.POST)
+
+            if form.is_valid():
+                event = form.cleaned_data['event']
+                count = 0
+
+                for staff in queryset:
+                    staff_copy = copy.copy(staff);
+                    staff_copy.id = None
+                    staff_copy.attendee = staff.attendee
+                    staff_copy.event = event
+                    staff_copy.registrationToken = getRegistrationToken()
+                    staff_copy.save()
+                    count += 1
+
+                self.message_user(request, "Successfully copied %d staff to %s." % (count, event))
+                return HttpResponseRedirect(request.get_full_path())
+
+        if not form:
+            form = self.CopyToEvent(initial={'_selected_action': request.POST.getlist(admin.ACTION_CHECKBOX_NAME)})
+
+        return render(request, 'admin/copy_event.html', {'staff': queryset, 'form': form })
+    copy_to_event.short_description = "Copy to Event..."
+
 
 admin.site.register(Staff, StaffAdmin)
 
