@@ -1025,7 +1025,7 @@ def checkout(request):
                   orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
-                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
+                  billingPostal=11111, billingEmail=pbill['email'])
     order.save()
 
     status, response = chargePayment(order.id, pbill, get_client_ip(request))
@@ -1034,6 +1034,8 @@ def checkout(request):
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
+            order.status = "Paid"
+            order.save()
         if discount:
             discount.used = discount.used + 1
             discount.save()
