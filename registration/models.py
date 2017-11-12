@@ -94,6 +94,8 @@ class Attendee(models.Model):
     parentEmail = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
+      if self is None:
+          return "--"
       return '%s %s' % (self.firstName, self.lastName)
 
 

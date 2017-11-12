@@ -1,104 +1,65 @@
 from django.conf import settings
-#from authorizenet import apicontractsv1
-#from authorizenet.apicontrollers import *
+
 from decimal import *
-
-import payeezy
 import json
-
 import os
+import uuid
 
 from .models import *
 
-#-- sandbox credentials --
 
-payeezy.apikey = "dwuKS5zAtWxj4FuRyVAE56iezJC9iMUI"
-payeezy.apisecret = "3401375f1dac9b3fe261ddd99fc984a6cf46c812458246914bec429b80f81bc6"
-payeezy.token = "fdoa-f8b39d0df4ae3e58384aa202919b4a8cf8b39d0df4ae3e58"   #Merchant token, not account token
+import squareconnect
+from squareconnect.rest import ApiException
+from squareconnect.apis.transactions_api import TransactionsApi
+from squareconnect.apis.locations_api import LocationsApi
 
-#-- sandbox environment --
-
-payeezy.url = "https://api-cert.payeezy.com/v1/transactions"
-payeezy.tokenurl = "https://api-cert.payeezy.com/v1/securitytokens"
-
-#-- production environment --
-# payeezy.url = "https://api.payeezy.com/v1/transactions"
-# payeezy.tokenurl = "https://api.payeezy.com/v1/securitytokens"
+squareconnect.configuration.access_token = 'sandbox-sq0atb-OiZSIsVbxQ3w40DWT09ZIQ'
+location_id = 'CBASED7NPDEnW3rjrTkuZBqR9vYgAQ'
 
 
 # Returns two variabies: 
 #    True/False  - general success flag
 #    message - type of failure. 
 def chargePayment(orderId, ccData, ipAddress):
-
   try:
     order = Order.objects.get(id=orderId)
-    total = int(order.total * 100)
+    idempotency_key = str(uuid.uuid1())
+    convertedTotal = int(order.total*100)
+    
+    amount = {'amount': convertedTotal, 'currency': 'USD'}
 
-    cardtype = cardType(ccData["cc_number"])
-    if cardtype == "":
-        return False, "Card Type is not recognized"
+    billing_address = {'address_line_1': ccData["address1"], 'address_line_2': ccData["address2"],
+                       'locality': ccData["city"], 'administrative_district_level_1': ccData["state"],
+                       'postal_code': ccData["postal"], 'country': ccData["country"], 
+                       'buyer_email_address': ccData["email"], 
+                       'first_name': ccData["cc_firstname"], 'last_name': ccData["cc_lastname"]}
 
-    print ("************---------- Authorize Response:Start ---------------*****************" );
+    body = {'idempotency_key': idempotency_key, 'card_nonce': ccData["nonce"], 'amount_money': amount, 
+            'reference_id': order.reference, 'billing_address': billing_address}
 
-    responseAuthorize =  payeezy.transactions.authorizeWithAddress( amount=total,
-                                                     currency_code='usd',
-                                                     cardholder_name=ccData["cc_firstname"] + " " + ccData["cc_lastname"],
-                                                     card_number=ccData["cc_number"],
-                                                     card_expiry=str(ccData["cc_month"]) + (ccData["cc_year"][2:]),
-                                                     card_cvv=ccData["cc_security"],
-                                                     card_type=cardtype,
-                                                     description='APIS Payment - ' + order.reference,
-                                                     street=order.billingAddress1, city=order.billingCity, 
-                                                     state=order.billingState, zipcode=order.billingPostal,
-                                                     country=order.billingCountry, email=order.billingEmail,
-                                                    );
+    print("---- Begin Transaction ----")
+    print(body)
 
+    api_instance = TransactionsApi()
+    api_response = api_instance.charge(location_id, body)
 
-    print(responseAuthorize);
-    print (" ** " + json.dumps(responseAuthorize.json(), indent=3) ); 
-    print ("************---------- Authorize Response:End ---------------*****************" );
+    print("---- Charge Submitted ----")
+    print(api_response)
 
-    status = responseAuthorize.json()['transaction_status']
+    if api_response.errors and len(api_response.errors) > 0:
+        message = api_response.errors[0].details
+        print("---- Transaction Failed ----")
+        return False, message
 
-    if status == "Declined": 
-        return False, "Authorization was declined, please check your information and try again."
-    if status == "Not Processed": 
-        return False, "An unexpected error has occurred."
-
-    transactionTag = responseAuthorize.json()['transaction_tag']
-    transactionID = responseAuthorize.json()['transaction_id']
-
-    print("");
-    print(" transactionTag from Authorize transactions: " + transactionTag );
-    print(" transactionID from Authorize transactions : " + transactionID);
-    print(" Now calling Payeezy API: Credit Card Capture ");
-
-    print ("************---------- Capture Response:Start ---------------*****************" );
-    responseCapture =  payeezy.transactions.captureWithAddress(amount=total,
-                                                currency_code='usd',
-                                                transactionTag=transactionTag,
-                                                transactionID=transactionID,
-                                                description='APIS Payment - ' + order.reference,
-                                                street=order.billingAddress1, city=order.billingCity, 
-                                                state=order.billingState, zipcode=order.billingPostal,
-                                                country=order.billingCountry, email=order.billingEmail,
-    );
-    print (" ** " + json.dumps(responseCapture.json(), indent=3) );
-    print ("************---------- Capture Response:End ---------------*****************" );
-
-    status = responseCapture.json()['transaction_status']
-
-    if status == "Declined": 
-        return False, "Authorization was declined, please check your information and try again."
-    if status == "Not Processed": 
-        return False, "An unexpected error has occurred."
-
+    print("---- End Transaction ----")
 
     return True, ""
-  except Exception as e:
+  except ApiException as e:
+    print("---- Transaction Failed ----")
     print e
+    print("---- End Transaction ----")
     return False, "An unexpected error has occurred."
+
 
 
 def cardType(number):
@@ -119,7 +80,13 @@ def cardType(number):
             cardtype = "Visa"
     return cardtype
 
-def _chargePayment(orderId, ccData, ipAddress):
+
+
+
+#from authorizenet import apicontractsv1
+#from authorizenet.apicontrollers import *
+
+def chargePayment_authnet(orderId, ccData, ipAddress):
 #    order = Order.objects.get(id=orderId)
 #    clientIP = ipAddress
 
