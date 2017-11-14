@@ -222,24 +222,24 @@ var paymentForm = new SqPaymentForm({
 		<div class="form-group">
                     <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
                     <div class="col-sm-4">
-                        <input type="text" id="fname" placeholder="Billing First Name" class="form-control" required data-error="Billing name is required. " />
+                        <input type="text" id="fname" placeholder="Billing First Name" class="form-control validate" required data-error="Billing name is required. " />
                     </div>
                     <div class="col-sm-5">
-                        <input type="text" id="lname" placeholder="Billing Last Name" class="form-control" required data-error="Billing name is required. " />
+                        <input type="text" id="lname" placeholder="Billing Last Name" class="form-control validate" required data-error="Billing name is required. " />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
                     <label for="email" class="col-sm-3 control-label">Email</label>
                     <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required. " />
+                        <input type="email" id="email" placeholder="Email" class="form-control validate" required data-error="Email is required. " />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Billing Address</label>
                     <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required />
+                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control validate" required />
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -253,13 +253,13 @@ var paymentForm = new SqPaymentForm({
             <div class="form-group">
                 <label for="city" class="col-sm-3 control-label">City/State/Zip</label>
 		        <div class="col-sm-4">
-			        <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required." />
+			        <input type="text" name="city" id="city" placeholder="City" class="form-control validate" required data-error="City is required." />
 		        </div>
                 <div class="col-sm-2">
 			        <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
                 </div>
                 <div class="col-sm-3">
-                    <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required." />
+                    <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control validate" data-minlength="5" data-error="Zip code is required." />
                 </div>
 		        <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
             </div>
@@ -270,6 +270,9 @@ var paymentForm = new SqPaymentForm({
                     </div>
 		</div>
 	<hr/>
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3 control-label" style="text-align:left;"><b>Please Note: </b>If you are using FireFox, you may see a red line under your credit card number and expiration date. The form will still submit if your information is correct. Please check your card number and expiration date carefully. This issue does not happen in Chrome, Opera or Edge. We have contacted Square to resolve this issue. </div>
+        </div>
 		<div class="form-group">
                     <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
                     <div class="col-sm-9">
@@ -337,8 +340,13 @@ var paymentForm = new SqPaymentForm({
         $.getJSON("/apis/registration/addresses", function(data) {
             addresses = data;
         });
-		
+
 	});
+
+        $.fn.validator.Constructor.INPUT_SELECTOR = ':input:not([type="submit"], button, [type="tel"]) .validate';
+    	$("form").validator('update');
+		
+
 
 	$(".deleteAttendee").click(function(e) {
 		var id = this.id.split('_')[1];
@@ -441,8 +449,7 @@ var paymentForm = new SqPaymentForm({
 
 	$("#checkout").click(function (e) {
 		e.preventDefault();
-		$("form").validator('validate');
-		var errorCount = $(".has-error").length;
+   		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
 
 		$("#checkout").attr("disabled", "disabled");
