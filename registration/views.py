@@ -32,6 +32,11 @@ def flush(request):
     request.session.flush()
     return JsonResponse({'success': True})
 
+def testForm(request):
+    context = {}
+    return render(request, 'registration/test.html', context)
+
+
 
 ###################################
 # Staff

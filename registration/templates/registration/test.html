@@ -1,0 +1,149 @@
+{% extends "registration/master.html" %}
+
+{% block head %}
+    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+
+    <script type="text/javascript">
+var paymentForm = new SqPaymentForm({
+
+  // Initialize the payment form elements
+  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
+  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  inputClass: 'form-control',
+
+  // Initialize the credit card placeholders
+  cardNumber: {
+    elementId: 'sq-card-number',
+    placeholder: '•••• •••• •••• ••••'
+  },
+  cvv: {
+    elementId: 'sq-cvv',
+    placeholder: 'CVV'
+  },
+  expirationDate: {
+    elementId: 'sq-expiration-date',
+    placeholder: 'MM/YY'
+  },
+  postalCode: {
+    elementId: 'sq-postal-code',
+    placeholder: '•••••'
+  },
+
+  // SqPaymentForm callback functions
+  callbacks: {
+
+    /*
+     * callback function: cardNonceResponseReceived
+     * Triggered when: SqPaymentForm completes a card nonce request
+     */
+    cardNonceResponseReceived: function(errors, nonce, cardData) {
+      if (errors) {
+        var errorList = "";
+
+        console.log("Encountered errors:");
+        errors.forEach(function(error) {
+          console.log('  ' + error.message);
+          errorList += error.message + "; ";
+        });
+        alert("One or more Square payment errors have occurred: " + errorList);
+        return;
+      }
+
+      document.getElementById('card-nonce').value = nonce;
+      doCheckout();
+
+    },
+
+    /*
+     * callback function: unsupportedBrowserDetected
+     * Triggered when: the page loads and an unsupported browser is detected
+     */
+    unsupportedBrowserDetected: function() {
+      /* PROVIDE FEEDBACK TO SITE VISITORS */
+    },
+    inputEventReceived: function(inputEvent) {
+      switch (inputEvent.eventType) {
+        case 'focusClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'focusClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'cardBrandChanged':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'postalCodeChanged':
+          /* HANDLE AS DESIRED */
+          break;
+      }
+    },
+  }
+});
+
+
+
+
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <form novalidate>
+		<div class="form-group">
+                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+                    <div class="col-sm-9">
+                        <div id="sq-card-number"></div>
+                    </div>
+                </div>
+		<div class="form-group">
+                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
+                    <div class="col-sm-2">
+                        <div id="sq-expiration-date"></div>
+                    </div>
+                    <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
+        		    <div class="col-sm-2">
+                        <div id="sq-cvv"></div>
+                    </div>
+                    <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
+                    <div class="col-sm-2">
+                        <div id="sq-postal-code"></div>
+		            </div>
+
+		</div>
+		<br/>
+        <input type="hidden" id="card-nonce" name="nonce">
+		{% csrf_token %}
+		<!-- <div class="form-group" style="margin-right:0px;"> -->
+			<button class="btn btn-primary col-sm-3 col-sm-offset-9 mobile-block" style="padding-right:10px;" id="checkout">Checkout</button>
+		<!-- </div> -->
+ 		</form>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript">
+
+	$("#checkout").click(function (e) {
+		e.preventDefault();
+
+		{% if total > 0 %}
+            paymentForm.requestCardNonce();
+		{% else %}
+            doCheckout();
+		{% endif %}
+
+	});
+
+function doCheckout() {
+    alert("here");
+}
+
+</script>
+{% endblock %}
