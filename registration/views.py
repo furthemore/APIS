@@ -329,7 +329,7 @@ def getDealerTotal(orderItems, discount, dealer):
       partnerBreakfast = 60*partnerCount
     wifi = 0
     if dealer.needWifi:
-        wifi = 45
+        wifi = 50
     paidTotal = dealer.paidTotal()
     total = subTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi - dealer.discount - paidTotal
     if total < 0: 
@@ -612,6 +612,8 @@ def checkoutDealer(request):
         sendDealerPaymentEmail(dealer, order)
         orderItem.order = order
         orderItem.save()
+        order.status = "Paid"
+        order.save()
         request.session.flush()
         return JsonResponse({'success': True})
     else:
@@ -1030,7 +1032,7 @@ def checkout(request):
                   orgDonation=porg, charityDonation=pcharity, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
-                  billingPostal=11111, billingEmail=pbill['email'])
+                  billingPostal=pbill['postal'], billingEmail=pbill['email'])
     order.save()
 
     status, response = chargePayment(order.id, pbill, get_client_ip(request))
