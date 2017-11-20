@@ -1,9 +1,9 @@
 {% load mathfilters %}
-Greetings Player 1,
+Salutations Sakura Festival Vendors,
 
-Thank you for participating in Fur The More's 8-Bit Adventure! We look forward to being your
-player 2 on April 28-30th. If you have any questions or concerns, please email
-marketplace@furthemore.org.
+Thank you for participating in Fur The More's Fantasy in the Sakura Forest! 
+We look forward to meeting under the Cherry Blossoms on April 20-22nd. If you have any questions or 
+concerns, please email marketplace@furthemore.org.
 
 Your confirmation number is: {{order.reference}}
 Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}
