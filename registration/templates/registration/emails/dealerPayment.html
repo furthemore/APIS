@@ -3,7 +3,7 @@
 
 <p>Thank you for participating in Fur The More's 8-Bit Adventure! We look forward to being your
 player 2 on April 28-30th. If you have any questions or concerns, please email
-<a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>.</p>
+<a href='mailto:marketplace@furthemore.org'>marketplace@furthemore.org</a>.</p>
 
 <p>Your confirmation number is: {{order.reference}}</p>
 <p><b>Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}</b></p>
@@ -12,7 +12,7 @@ player 2 on April 28-30th. If you have any questions or concerns, please email
 
 <tr><td>Table Type - {{dealer.tableSize}}</td><td> ${{dealer.tableSize.basePrice}}</td></tr>
 {% if dealer.needWifi %}
-<tr><td>Wi-Fi Access</td><td>$45.00</td></tr>
+<tr><td>Wi-Fi Access</td><td>$50.00</td></tr>
 {% endif %}
 <tr><td>Continental Breakfast</td><td>{{dealer.breakfast|yesno:"Yes,No"}}</td></tr>
 <tr><td>Friday Reception</td><td>{{dealer.reception|yesno:"Yes,No"}}</td></tr>
@@ -20,7 +20,7 @@ player 2 on April 28-30th. If you have any questions or concerns, please email
 <tr><td>Partners x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:45}}.00</td></tr>
 {% endif %}
 {% if dealer.asstBreakfast%}
-<tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:50}}.00</td></tr>
+<tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:60}}.00</td></tr>
 {% endif %}
 <tr><td>Attendee Level - {{orderItem.priceLevel}}</td><td>${{orderItem.priceLevel.basePrice}}</td></tr>
 <tr><td>Dealer Discount</td><td>-${{order.discount.amountOff}}</td></tr>
@@ -31,6 +31,7 @@ player 2 on April 28-30th. If you have any questions or concerns, please email
 {% if dealer.attendee.effectiveLevel %}
 <tr><td>Previous Level {{dealer.attendee.effectiveLevel}}</td><td>-${{dealer.attendee.effectiveLevel.basePrice}}</td></tr>
 {% endif %}
+
 {% for option in options %}
   {% if option.option.optionExtraType == 'int'%}
 <tr><td>{{option.option.optionName}} x{{option.optionValue}}</td><td>${{option.option.optionPrice|mul:option.optionValue}}</td></tr>
