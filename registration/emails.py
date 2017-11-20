@@ -91,8 +91,8 @@ def sendDealerAsstEmail(dealerId):
 
 def sendDealerPaymentEmail(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
-    attendeeOptions = AttendeeOptions.objects.filter(orderItem=orderItem)
-    data = {'order': order, 'dealer': dealer, 'orderItem': orderItem, 'options': attendeeOptions}
+    options = AttendeeOptions.objects.filter(orderItem=orderItem)
+    data = {'order': order, 'dealer': dealer, 'orderItem': orderItem, 'options': options}
     msgTxt = render_to_string('registration/emails/dealerPayment.txt', data)
     msgHtml = render_to_string('registration/emails/dealerPayment.html', data)
 

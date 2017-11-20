@@ -4,6 +4,6 @@ Please go to the url below and enter the email address you used to register.
 https://www.furthemore.org/apis/registration/dealer/{{dealer.registrationToken}} 
 
 You will receive an email with a confirmation number after submitting your payment. 
-If you have any further questions, please feel free to contact us: exhibitions@furthemore.org
+If you have any further questions, please feel free to contact us: marketplace@furthemore.org
 
 Thank you and welcome to the Furthemore 2018 Dealer's Den!
