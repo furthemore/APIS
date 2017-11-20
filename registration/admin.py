@@ -32,7 +32,8 @@ send_approval_email.short_description = "Send approval email and payment instruc
 
 def send_payment_email(modeladmin, request, queryset):
     for dealer in queryset:
-        oi = OrderItem.objects.filter(attendee=dealer.attendee).first()
+        badge = dealer.getBadge()
+        oi = OrderItem.objects.filter(badge=badge).first()
         if oi and oi.order: 
             sendDealerPaymentEmail(dealer,oi.order)
 send_payment_email.short_description = "Resend payment confirmation email"
