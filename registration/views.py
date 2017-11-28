@@ -441,7 +441,7 @@ def checkoutAsstDealer(request):
 
     partners = partnerCount - originalPartnerCount
 
-    order = Order(total=Decimal(40*partners), reference=reference, discount=None,
+    order = Order(total=Decimal(45*partners), reference=reference, discount=None,
                   orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],
@@ -454,10 +454,15 @@ def checkoutAsstDealer(request):
     status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if status:
-        sendDealerAsstEmail(dealer.id)
         orderItem.order = order
         orderItem.save()
+        order.status = "Paid"
+        order.save()
         request.session.flush()
+        try:
+            sendDealerAsstEmail(dealer.id)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact marketplace@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()

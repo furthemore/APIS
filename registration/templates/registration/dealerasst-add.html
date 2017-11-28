@@ -1,5 +1,86 @@
 {% extends "registration/master.html" %}
 
+{% block head %}
+    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+
+    <script type="text/javascript">
+var paymentForm = new SqPaymentForm({
+  // Initialize the payment form elements
+  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
+  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  inputClass: 'form-control',
+  // Initialize the credit card placeholders
+  cardNumber: {
+    elementId: 'sq-card-number',
+    placeholder: '•••• •••• •••• ••••'
+  },
+  cvv: {
+    elementId: 'sq-cvv',
+    placeholder: 'CVV'
+  },
+  expirationDate: {
+    elementId: 'sq-expiration-date',
+    placeholder: 'MM/YY'
+  },
+  postalCode: {
+    elementId: 'sq-postal-code',
+    placeholder: '•••••'
+  },
+  // SqPaymentForm callback functions
+  callbacks: {
+    /*
+     * callback function: cardNonceResponseReceived
+     * Triggered when: SqPaymentForm completes a card nonce request
+     */
+    cardNonceResponseReceived: function(errors, nonce, cardData) {
+      if (errors) {
+        var errorList = "";
+        console.log("Encountered errors:");
+        errors.forEach(function(error) {
+          console.log('  ' + error.message);
+          errorList += error.message + "; ";
+        });
+        alert("One or more Square payment errors have occurred: " + errorList);
+        $("#checkout").removeAttr("disabled");
+        return;
+      }
+      document.getElementById('card-nonce').value = nonce;
+      doCheckout();
+    },
+    /*
+     * callback function: unsupportedBrowserDetected
+     * Triggered when: the page loads and an unsupported browser is detected
+     */
+    unsupportedBrowserDetected: function() {
+      /* PROVIDE FEEDBACK TO SITE VISITORS */
+    },
+    inputEventReceived: function(inputEvent) {
+      switch (inputEvent.eventType) {
+        case 'focusClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'focusClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'cardBrandChanged':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'postalCodeChanged':
+          /* HANDLE AS DESIRED */
+          break;
+      }
+    },
+  }
+});
+    </script>
+{% endblock %}
+
 {% block content %}
 
 {% if attendee %}
@@ -26,8 +107,8 @@
 		<div id="billingInfo">
 		<h3>Charges</h3>
 		
-		<div class='form-group' style='margin-left:30px;'>You will be charged $40 for each new partner added via this form.</div>
-		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@futhemore.org</a> instead.</div>
+		<div class='form-group' style='margin-left:30px;'>You will be charged $45 for each new partner added via this form.</div>
+		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:marketplace@furthemore.org'>marketplace@futhemore.org</a> instead.</div>
 		
 		<hr/>
 		<h3>Billing Information</h3>
@@ -85,47 +166,29 @@
 		</div>
 	<hr/>
 		<div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="ccNumber" id="ccNumber" autocomplete="off" class="form-control" maxlength="16" required />
-                    </div>
+            <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+            <div class="col-sm-9">
+                <div id="sq-card-number"></div>
+            </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-		<div class="form-group">
+        </div>
+        <div class="form-group">
                     <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
                     <div class="col-sm-2">
-			<select id="ccMonth" class="form-control" required>
-				<option value="01">01</option>
-				<option value="02">02</option>
-				<option value="03">03</option>
-				<option value="04">04</option>
-				<option value="05">05</option>
-				<option value="06">06</option>
-				<option value="07">07</option>
-				<option value="08">08</option>
-				<option value="09">09</option>
-				<option value="10">10</option>
-				<option value="11">11</option>
-				<option value="12">12</option>
-			</select>
+                        <div id="sq-expiration-date"></div>
                     </div>
+                    <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
                     <div class="col-sm-2">
-			<select id="ccYear" class="form-control" required>
-				<option value="2017">2017</option>
-				<option value="2018">2018</option>
-				<option value="2019">2019</option>
-				<option value="2020">2020</option>
-				<option value="2021">2021</option>
-				<option value="2021">2022</option>
-			</select>
+                        <div id="sq-cvv"></div>
                     </div>
-                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
-		    <div class="col-sm-3">
-                        <input type="text" id="ccCVV" class="form-control" maxlength="4" autocomplete="off" required data-error="CVV is required" />
+                    <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
+                    <div class="col-sm-2">
+                        <div id="sq-postal-code"></div>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
 
+        </div>
+        <br/>
+        <input type="hidden" id="card-nonce" name="nonce">
 		{% csrf_token %}
 		<div class="form-group" style="margin-right:0px;">
 			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
@@ -155,12 +218,12 @@
 <script type="text/javascript">
 
 	var tableSizes = [];
-        var dealerPartners = "{{dealer.partners}}";
+    var dealerPartners = "{{dealer.partners}}";
 	$( "body" ).ready(function() {
-                $.getJSON("/apis/registration/tables", function(data) {
-                        tableSizes = data;
-       			setTableInfo({{dealer.tableSize.id}});
-                });
+        $.getJSON("/apis/registration/tables", function(data) {
+            tableSizes = data;
+   		    setTableInfo({{dealer.tableSize.id}});
+        });
 
 
 		$("#state").val("{{attendee.state}}");
@@ -173,32 +236,37 @@
                 if (item.partnerMax > 0){
                     for (var i=item.partnerMin; i <= item.partnerMax; i++) {
                         var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
-                                  '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
-                                  '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
-                                  '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label><br/>'
+                            '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
+                            '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
+                            '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label><br/>'
                         $("#partnerList").append(partner);
                         if (i != item.partnerMax){$("#partnerList").append("<br/>");}
                     }
-		    var partners = dealerPartners.split(', ');
-	            var partnerCount = 0;
+		            var partners = dealerPartners.split(', ');
+	                var partnerCount = 0;
                     var partner1 = {};
-	            var partner2 = {};
+	                var partner2 = {};
+	                var partner3 = {};
                     $.each(partners, function(key, item) {
-		        if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
-			    partnerCount = partnerCount + 1;
-		        }
-		        if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
-			   partnerCount = partnerCount + 1;
-		        }
-		        if (item.indexOf("_1") > -1) {
-			    var p1 = item.split(':');
-			    partner1[p1[0]] = p1[1];
-		        }
-		        if (item.indexOf("_2") > -1) {
-			    var p2 = item.split(':');
-			    partner2[p2[0]] = p2[1];
-		        }
-	            });
+		                if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
+			                partnerCount = partnerCount + 1;
+		                }
+		                if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
+			                partnerCount = partnerCount + 1;
+		                }
+		                if (item.indexOf("_1") > -1) {
+			                var p1 = item.split(':');
+			                partner1[p1[0]] = p1[1];
+		                }
+		                if (item.indexOf("_2") > -1) {
+			                var p2 = item.split(':');
+			                partner2[p2[0]] = p2[1];
+		                }
+		                if (item.indexOf("_3") > -1) {
+			                var p3 = item.split(':');
+			                partner3[p3[0]] = p3[1];
+		                }
+	                });
 
                     if (!$.isEmptyObject(partner1)) {
                         $("#name_1").val(partner1.name_1.trim());
@@ -218,9 +286,18 @@
                             $("#tempLicense_2").click();
                         }
                     }
+                    if (!$.isEmptyObject(partner3)) {
+                        $("#name_3").val(partner3.name_3.trim());
+                        $("#email_3").val(partner3.email_3.trim());
+                        $("#license_3").val(partner3.license_3.trim());
+                        $("#tempLicense_3").on('click',partnerLicense);
+                        if (partner3.tempLicense_3.indexOf('true') > -1){ 
+                            $("#tempLicense_3").click();
+                        }
+                    }
                     if (partnerCount == item.partnerMax) {
                         $('#billingInfo').empty();
-                        $('#billingInfo').append("You already have the maximum allowed partners for this table type. Please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a> if you believe this is an error.");                        
+                        $('#billingInfo').append("You already have the maximum allowed partners for this table type. Please contact <a href='mailto:marketplace@furthemore.org'>marketplace@furthemore.org</a> if you believe this is an error.");                        
                     }
                     $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
                 }
@@ -265,16 +342,21 @@
 
 		$("#checkout").attr("disabled", "disabled");
 
+        paymentForm.requestCardNonce();
+
+	});
+
+function doCheckout() {
+
 		var data = {
 		    'dealer': {'id': {{dealer.id}} },
 		    'billingData': {
-			'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
-			'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
-			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                        'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                        'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                'nonce': $("#card-nonce").val(),
+		    	'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
+                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
 		    },
-                    'assistants': getAssistants()
+            'assistants': getAssistants()
 		};
 
 		$.ajax({
@@ -287,21 +369,25 @@
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
-			$("#checkout").removeAttr("disabled");
+                alert("An error has occurred. If this error continues, please contact marketplace@furthemore.org for assistence.")
+	    		$("#checkout").removeAttr("disabled");
 		    },
-                    "success": function (result, status) {
-                        if (result.success) {
-				window.location = "/apis/registration/dealerassistant/done/";
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
-			    $("#checkout").removeAttr("disabled");
-			}
+            "success": function (result, status) {
+                if (result.success) {
+		    		window.location = "/apis/registration/dealerassistant/done/";
+                } else {
+                    if (result.message.indexOf('confirmation email') > -1){
+                        alert(result.message);
+    		    		window.location = "/apis/registration/dealerassistant/done/";
+                    } else {
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact marketplace@furthemore.org for assistence.");
+    			       $("#checkout").removeAttr("disabled");
                     }
+			    }
+            }
 		});
 
-
-	});
+}
 
 
 function getCookie(name) {
