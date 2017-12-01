@@ -1104,7 +1104,7 @@ def holidayBadges(request):
              for badge in badges if badge.effectiveLevel() != None]
  
     sdata = sorted(bdata, key=lambda x:(x['event'],x['level'],x['lastName']))
-    attendees = [att for att in sdata if att['assoc'] != 'Staff' and att['level'] in ('God-mode','God-Mode','Player') ]
+    attendees = [att for att in sdata if att['assoc'] != 'Staff' and att['level'] in ('God-mode','God-Mode','Player','Raven God', 'Elite Sponsor') ]
     return render(request, 'registration/utility/holidaylist.html', {'attendees': attendees})    
 
 
