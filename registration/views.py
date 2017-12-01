@@ -1100,10 +1100,10 @@ def holidayBadges(request):
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(), 
               'address': badge.attendee.address1 + " " + badge.attendee.address2,
               'city': badge.attendee.city, 'state': badge.attendee.state, 'postal': badge.attendee.postalCode,
-              'country': badge.attendee.country } 
-             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2017"]
+              'country': badge.attendee.country, 'event': badge.event.name } 
+             for badge in badges if badge.effectiveLevel() != None]
  
-    sdata = sorted(bdata, key=lambda x:(x['level'],x['lastName']))
+    sdata = sorted(bdata, key=lambda x:(x['event'],x['level'],x['lastName']))
     attendees = [att for att in sdata if att['assoc'] != 'Staff' and att['level'] in ('God-mode','God-Mode','Player') ]
     return render(request, 'registration/utility/holidaylist.html', {'attendees': attendees})    
 
