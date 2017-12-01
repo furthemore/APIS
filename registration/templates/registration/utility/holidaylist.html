@@ -1,0 +1,34 @@
+
+<h3>Attendees</h3>
+<table border="1">
+<tr>
+  <td>Badge Name</td>
+  <td>Level</td>
+  <td>Assoc</td>
+  <td>First Name</td>
+  <td>Last Name</td>
+  <td>Address</td>
+  <td>City</td>
+  <td>State</td>
+  <td>Zip</td>
+  <td>Country</td>
+</tr>
+{% for att in attendees %}
+  <tr>
+    <td>{{att.badgeName}}</td>
+    <td>{{att.level}}</td>
+    <td>{{att.assoc}}</td>
+    <td>{{att.firstName}}</td>
+    <td>{{att.lastName}}</td>
+    <td>{{att.address}}</td>
+    <td>{{att.city}}</td>
+    <td>{{att.state}}</td>
+    <td>{{att.postal}}</td>
+    <td>{{att.country}}</td>
+  </tr>
+{% endfor %}
+
+</table>
+
+
+
