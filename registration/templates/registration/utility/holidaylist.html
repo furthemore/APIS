@@ -12,6 +12,7 @@
   <td>State</td>
   <td>Zip</td>
   <td>Country</td>
+  <td>Event</td>
 </tr>
 {% for att in attendees %}
   <tr>
@@ -25,6 +26,7 @@
     <td>{{att.state}}</td>
     <td>{{att.postal}}</td>
     <td>{{att.country}}</td>
+    <td>{{att.event}}</td>
   </tr>
 {% endfor %}
 
