@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
 
-from import_export import resources
+from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedTabularInline, NestedModelAdmin
 
@@ -431,9 +431,26 @@ class BadgeInline(NestedTabularInline):
         return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
     get_age_range.short_description = "Age Group"
 
+class BadgeResource(resources.ModelResource):
+    badge_level = fields.Field()
 
-class BadgeAdmin(NestedModelAdmin):
+    def dehydrate_badge_level(self, badge):
+        return badge.effectiveLevel()
+
+    class Meta:
+        model = Badge
+        fields = ('id', 'event__name', 'badge_level', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+                  'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber',
+                  )
+        export_order = ('id', 'event__name', 'badge_level', 'attendee__firstName', 'attendee__lastName', 'attendee__address1', 
+                  'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber',
+                  )
+
+class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     inlines = [OrderItemInline]
+    resource_class = BadgeResource
     save_on_top = True
     list_filter = ('event', 'printed')
     list_display = ('attendee', 'badgeName', 'badgeNumber', 'printed', 'paidTotal', 'effectiveLevel', 'abandoned', 'get_age_range')

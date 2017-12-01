@@ -1,3 +1,4 @@
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
@@ -1064,6 +1065,51 @@ def cartDone(request):
     return render(request, 'registration/done.html', context)
 
 ###################################
+# Staff only access
+
+@staff_member_required
+def basicBadges(request):
+    badges = Badge.objects.all()
+    staff = Staff.objects.all()
+
+    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(), 
+              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower() } 
+             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2018"]
+
+    #data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName, 
+    #         'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel().name, 'printed': att.printed,
+    #         'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 
+    #         'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
+
+    staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
+                  'title': s.title} for s in staff if s.event.name == "Furthemore 2018"]
+
+    sdata = sorted(bdata, key=lambda x:(x['level'],x['lastName']))
+    ssdata = sorted(staffdata, key=lambda x:x['lastName'])
+
+    dealers = [att for att in sdata if att['assoc'] == 'Dealer']
+    staff = [att for att in ssdata]
+    attendees = [att for att in sdata if att['assoc'] != 'Staff' ]
+    return render(request, 'registration/utility/badgelist.html', {'attendees': attendees, 'dealers': dealers, 'staff': staff})    
+
+@staff_member_required
+def holidayBadges(request):
+    badges = Badge.objects.all()
+
+    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(), 
+              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(), 
+              'address': badge.attendee.address1 + " " + badge.attendee.address2,
+              'city': badge.attendee.city, 'state': badge.attendee.state, 'postal': badge.attendee.postalCode,
+              'country': badge.attendee.country } 
+             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2017"]
+ 
+    sdata = sorted(bdata, key=lambda x:(x['level'],x['lastName']))
+    attendees = [att for att in sdata if att['assoc'] != 'Staff' ]
+    return render(request, 'registration/utility/holidaylist.html', {'attendees': attendees})    
+
+
+
+###################################
 # Printing
 
 def printNametag(request):
@@ -1109,30 +1155,6 @@ def getOptionsDict(orderItems):
               orderDict[ao.option.optionName.replace(" ", "").replace("-", "")] = ao.optionValue
 
     return orderDict
-
-def badgeList(request):
-    attendees = Attendee.objects.all()
-    staff = Staff.objects.all()
-
-    data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName, 
-             'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel().name, 'printed': att.printed,
-             'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 
-             'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
-    staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
-                  'badgeName': s.attendee.badgeName, 'badgeNumber': s.attendee.badgeNumber, 
-                  'level': s.attendee.effectiveLevel().name, 'assoc': s.attendee.abandoned(), 
-                  'orderItems':getOptionsDict(s.attendee.orderitem_set.all()), 
-                  'discount': s.attendee.getDiscount(), 
-                  'title': s.title} for s in staff if s.attendee.effectiveLevel() != None]
-
-    sdata = sorted(data, key=lambda x:(x['level'],x['lastName']))
-    ssdata = sorted(staffdata, key=lambda x:x['lastName'])
-
-    dealers = [att for att in sdata if att['assoc'] == 'Dealer']
-    staff = [att for att in ssdata]
-    attendees = [att for att in sdata if att['assoc'] != 'Staff' ]
-    return render(request, 'registration/utility/badgelist.html', {'attendees': attendees, 'dealers': dealers, 'staff': staff})    
-
 
 def getEvents(request):
     events = Event.objects.all()
