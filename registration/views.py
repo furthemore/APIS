@@ -926,7 +926,7 @@ def addToCart(request):
                         city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
                         emailsOk=bool(pda['emailsOk']), volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
-                        surveyOk=bool(pda['surveyOk']))
+                        surveyOk=bool(pda['surveyOk']), aslRequest=bool(pda['asl']))
     attendee.save()
 
     badge = Badge(badgeName=pda['badgeName'], event=event, attendee=attendee)
