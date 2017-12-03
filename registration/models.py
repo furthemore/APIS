@@ -92,6 +92,7 @@ class Attendee(models.Model):
     parentLastName = models.CharField(max_length=200, blank=True)
     parentPhone = models.CharField(max_length=20, blank=True)
     parentEmail = models.CharField(max_length=200, blank=True)
+    aslRequest = models.BooleanField(default=False)
 
     def __str__(self):
       if self is None:
