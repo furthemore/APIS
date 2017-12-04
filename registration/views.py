@@ -233,9 +233,9 @@ def checkoutStaff(request):
           oitem.order = order
           oitem.save()
 
-      sendStaffRegistrationEmail(order.id, email)
       discount.used = discount.used + 1
       discount.save()
+      sendStaffRegistrationEmail(order.id, email)
       request.session.flush()
       return JsonResponse({'success': True})
 
@@ -262,13 +262,15 @@ def checkoutStaff(request):
     status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if status:
-        sendStaffRegistrationEmail(order.id, email)
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
+        order.status = 'Paid'
+        order.save()
         request.session.flush()
         discount.used = discount.used + 1
         discount.save()
+        sendStaffRegistrationEmail(order.id, email)
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -441,8 +443,11 @@ def checkoutAsstDealer(request):
         reference = getConfirmationToken()
 
     partners = partnerCount - originalPartnerCount
+    total = Decimal(45*partners)
+    if pbill['breakfast']:
+        total = total + Decimal(60*partners)
 
-    order = Order(total=Decimal(45*partners), reference=reference, discount=None,
+    order = Order(total=total, reference=reference, discount=None,
                   orgDonation=0, charityDonation=0, billingName=pbill['cc_firstname'] + " " + pbill['cc_lastname'],
                   billingAddress1=pbill['address1'], billingAddress2=pbill['address2'],
                   billingCity=pbill['city'], billingState=pbill['state'], billingCountry=pbill['country'],

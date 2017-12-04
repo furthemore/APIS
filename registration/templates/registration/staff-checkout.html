@@ -1,5 +1,86 @@
 {% extends "registration/master.html" %}
 
+{% block head %}
+    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+
+    <script type="text/javascript">
+var paymentForm = new SqPaymentForm({
+  // Initialize the payment form elements
+  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
+  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  inputClass: 'form-control',
+  // Initialize the credit card placeholders
+  cardNumber: {
+    elementId: 'sq-card-number',
+    placeholder: '•••• •••• •••• ••••'
+  },
+  cvv: {
+    elementId: 'sq-cvv',
+    placeholder: 'CVV'
+  },
+  expirationDate: {
+    elementId: 'sq-expiration-date',
+    placeholder: 'MM/YY'
+  },
+  postalCode: {
+    elementId: 'sq-postal-code',
+    placeholder: '•••••'
+  },
+  // SqPaymentForm callback functions
+  callbacks: {
+    /*
+     * callback function: cardNonceResponseReceived
+     * Triggered when: SqPaymentForm completes a card nonce request
+     */
+    cardNonceResponseReceived: function(errors, nonce, cardData) {
+      if (errors) {
+        var errorList = "";
+        console.log("Encountered errors:");
+        errors.forEach(function(error) {
+          console.log('  ' + error.message);
+          errorList += error.message + "; ";
+        });
+        alert("One or more Square payment errors have occurred: " + errorList);
+        $("#checkout").removeAttr("disabled");
+        return;
+      }
+      document.getElementById('card-nonce').value = nonce;
+      doCheckout();
+    },
+    /*
+     * callback function: unsupportedBrowserDetected
+     * Triggered when: the page loads and an unsupported browser is detected
+     */
+    unsupportedBrowserDetected: function() {
+      /* PROVIDE FEEDBACK TO SITE VISITORS */
+    },
+    inputEventReceived: function(inputEvent) {
+      switch (inputEvent.eventType) {
+        case 'focusClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'focusClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'cardBrandChanged':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'postalCodeChanged':
+          /* HANDLE AS DESIRED */
+          break;
+      }
+    },
+  }
+});
+    </script>
+{% endblock %}
+
 {% block content %}
 
 {% if orderItems %}
@@ -147,47 +228,33 @@
                     </div>
 		</div>
 	<hr/>
+        <div class="form-group">
+            <div class="col-sm-9 col-sm-offset-3 control-label" style="text-align:left;"><b>Please Note: </b>If you are using FireFox, you may see a red line under your credit card number and expiration date. The form will still submit if your information is correct. Please check your card number and expiration date carefully. This issue does not happen in Chrome, Opera or Edge. We have contacted Square to resolve this issue. </div>
+        </div>
 		<div class="form-group">
                     <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
                     <div class="col-sm-9">
-                        <input type="text" name="ccNumber" id="ccNumber" class="form-control" maxlength="16" required />
+                        <div id="sq-card-number"></div>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-		<div class="form-group">
+        </div>
+        <div class="form-group">
                     <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
                     <div class="col-sm-2">
-			<select id="ccMonth" class="form-control" required>
-				<option value="01">01</option>
-				<option value="02">02</option>
-				<option value="03">03</option>
-				<option value="04">04</option>
-				<option value="05">05</option>
-				<option value="06">06</option>
-				<option value="07">07</option>
-				<option value="08">08</option>
-				<option value="09">09</option>
-				<option value="10">10</option>
-				<option value="11">11</option>
-				<option value="12">12</option>
-			</select>
+                        <div id="sq-expiration-date"></div>
                     </div>
+                    <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
                     <div class="col-sm-2">
-			<select id="ccYear" class="form-control" required>
-				<option value="2017">2017</option>
-				<option value="2018">2018</option>
-				<option value="2019">2019</option>
-				<option value="2020">2020</option>
-				<option value="2021">2021</option>
-				<option value="2021">2022</option>
-			</select>
+                        <div id="sq-cvv"></div>
                     </div>
-                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
-		    <div class="col-sm-3">
-                        <input type="text" id="ccCVV" class="form-control" maxlength="4" required data-error="CVV is required" />
+                    <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
+                    <div class="col-sm-2">
+                        <div id="sq-postal-code"></div>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
+
+        </div>
+        <br/>
+        <input type="hidden" id="card-nonce" name="nonce">
 
 		{% csrf_token %}
 		<div class="form-group" style="margin-right:0px;">
@@ -227,7 +294,7 @@
 {% block javascript %}
 <script type="text/javascript">
 	$( "body" ).ready(function() {
-                $.getJSON("/apis/registration/addresses", function(data) {
+        $.getJSON("/apis/registration/addresses", function(data) {
 			var item = data[0];
 			$("#fname").val(item.fname);
 			$("#lname").val(item.lname);
@@ -238,8 +305,7 @@
 			$("#state").val(item.state);
 			$("#country").val(item.country);
 			$("#zip").val(item.postalCode);
-
-                });		
+        });		
 	});
 
 	$("#cancel").click(function() {
@@ -265,21 +331,29 @@
 		$("#checkout").attr("disabled", "disabled");
 
 		{% if total > 0 %}
+            paymentForm.requestCardNonce();
+        {% else %}
+            doCheckout();
+        {% endif %}
+
+	});
+
+function doCheckout() {
+	{% if total > 0 %}
 		var data = {
 		    'billingData': {
-			'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
-			'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
-			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                        'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                        'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+    			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
+                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                'nonce': $("#card-nonce").val()
 		    },
 		    'charityDonation': $("#donateCharity").val(),
-		    'orgDonation': $("#donateOrg").val()
+		    'orgDonation': $("#donateOrg").val(),
 		};
-		{% else %}
+	{% else %}
 		var data = {};
 
-		{% endif %}
+	{% endif %}
 
 		$.ajax({
 		    "type": "POST",
@@ -304,8 +378,7 @@
                     }
 		});
 
-
-	});
+}
 
 
 function getCookie(name) {
