@@ -201,7 +201,7 @@
                 <div class="form-group">
                     <div class="col-sm-12">
                         <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
-			I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
+			I agree to abide by Furthemore's Code of Conduct.
                     </div>
 		    <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
@@ -312,7 +312,7 @@
 	$( "body" ).ready(function() {
 		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
-			var prevLevel = 50;
+			var prevLevel = 45;
 			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
 				prevLevel = parseFloat(currentLevel.basePrice);
 			}

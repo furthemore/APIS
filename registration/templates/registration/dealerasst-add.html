@@ -109,6 +109,14 @@ var paymentForm = new SqPaymentForm({
 		
 		<div class='form-group' style='margin-left:30px;'>You will be charged $45 for each new partner added via this form.</div>
 		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:marketplace@furthemore.org'>marketplace@futhemore.org</a> instead.</div>
+
+        <div class="form-group">
+                    <label for="asstbreakfst" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" />
+                        <label>You will be charged an additional $60 per partner for this option.</label>
+                    </div>
+        </div>
 		
 		<hr/>
 		<h3>Billing Information</h3>
@@ -351,7 +359,7 @@ function doCheckout() {
 		var data = {
 		    'dealer': {'id': {{dealer.id}} },
 		    'billingData': {
-                'nonce': $("#card-nonce").val(),
+                'nonce': $("#card-nonce").val(), 'breakfast': $("#asstbreakfast").is(':checked'),
 		    	'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
