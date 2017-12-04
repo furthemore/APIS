@@ -3,5 +3,5 @@ Your registration confirmation number is: {{reference}}
 If you have any questions about your registration, please contact your supervisor or registration@furthemore.org.
 Thank you!
 
-'Kiric
-Head of Registration
+Chazzfox
+Head of Staff Services
