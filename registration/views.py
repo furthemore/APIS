@@ -33,11 +33,6 @@ def flush(request):
     request.session.flush()
     return JsonResponse({'success': True})
 
-def testForm(request):
-    context = {}
-    return render(request, 'registration/test.html', context)
-
-
 
 ###################################
 # Staff
@@ -1078,7 +1073,9 @@ def basicBadges(request):
     staff = Staff.objects.all()
 
     bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(), 
-              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower() } 
+              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
+              'printed': badge.printed, 'discount': badge.getDiscount(),
+              'assoc': badge.abandoned(), 'orderItems': getOptionsDict(badge.orderitem_set.all()) } 
              for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2018"]
 
     #data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName, 
@@ -1087,7 +1084,16 @@ def basicBadges(request):
     #         'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
 
     staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
-                  'title': s.title} for s in staff if s.event.name == "Furthemore 2018"]
+                  'title': s.title, 'id': s.id} 
+                for s in staff if s.event.name == "Furthemore 2018"]
+
+    for staff in staffdata: 
+        sbadge = Staff.objects.get(id=staff['id']).getBadge()
+        if sbadge: 
+            staff['badgeName'] = sbadge.badgeName
+            staff['level'] = sbadge.effectiveLevel().name
+            staff['assoc'] = sbadge.abandoned()
+            staff['orderItems'] = getOptionsDict(sbadge.orderitem_set.all())
 
     sdata = sorted(bdata, key=lambda x:(x['level'],x['lastName']))
     ssdata = sorted(staffdata, key=lambda x:x['lastName'])
