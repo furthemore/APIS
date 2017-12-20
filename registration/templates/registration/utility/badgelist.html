@@ -12,7 +12,6 @@
   <td>Assoc</td>
   <td>Conbook</td>
   <td>Tshirt</td>
-  <td>Jersey</td>
   <td>GOH</td>
 </tr>
 {% for att in attendees %}
@@ -27,7 +26,6 @@
     <td>{{att.assoc}}</td>
     <td>{{att.orderItems.ConBook}}</td>
     <td>{{att.orderItems.Tshirt}}</td>
-    <td>{{att.orderItems.Jersey}} {{att.orderItems.Jersey2}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
 {% endfor %}
@@ -46,7 +44,6 @@
   <td>Assoc</td>
   <td>Conbook</td>
   <td>Tshirt</td>
-  <td>Jersey</td>
   <td>GOH</td>
 </tr>
 {% for att in dealers %}
@@ -58,7 +55,6 @@
     <td>{{att.assoc}}</td>
     <td>{{att.orderItems.ConBook}}</td>
     <td>{{att.orderItems.Tshirt}}</td>
-    <td>{{att.orderItems.Jersey}} {{att.orderItems.Jersey2}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
 {% endfor %}
@@ -76,11 +72,10 @@
   <td>Assoc</td>
   <td>Conbook</td>
   <td>Tshirt</td>
-  <td>Jersey</td>
   <td>GOH</td>
 </tr>
 {% for att in attendees %}
-  {% if att.discount == "FMDealerPartner17" %}
+  {% if att.discount == "FMDealerPartner18" %}
   <tr>
     <td>{{att.firstName}}</td>
     <td>{{att.lastName}}</td>
@@ -90,7 +85,6 @@
     <td>{{att.assoc}}</td>
     <td>{{att.orderItems.ConBook}}</td>
     <td>{{att.orderItems.Tshirt}}</td>
-    <td>{{att.orderItems.Jersey}} {{att.orderItems.Jersey2}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
   {% endif %}
@@ -112,8 +106,6 @@
   <td>Assoc</td>
   <td>Conbook</td>
   <td>Tshirt</td>
-  <td>StaffJersey</td>
-  <td>Jersey</td>
   <td>GOH</td>
 </tr>
 {% for att in staff %}
@@ -127,8 +119,6 @@
     <td>{{att.assoc}}</td>
     <td>{{att.orderItems.ConBook}}</td>
     <td>{{att.orderItems.Tshirt}}</td>
-    <td>{{att.orderItems.StaffJersey}}</td>
-    <td>{{att.orderItems.Jersey}} {{att.orderItems.Jersey2}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
 {% endfor %}
