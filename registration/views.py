@@ -77,7 +77,7 @@ def infoStaff(request):
         if badges.count() > 0:
             badge = badges[0]
             if badge.effectiveLevel():
-                lvl_dict = model_to_dict(badge.effectiveLevel())
+                lvl_dict["basePrice"] = badge.effectiveLevel().basePrice
        
         context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler), 
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
