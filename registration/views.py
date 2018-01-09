@@ -917,6 +917,10 @@ def addToCart(request):
     pdp = postData['priceLevel']
     evt = postData['event']
 
+    banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
+    if banCheck:
+        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furthemore 2018. If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
+        
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
 

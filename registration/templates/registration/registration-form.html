@@ -429,7 +429,11 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "success": function(result) {
-                window.location = "/apis/registration/cart";
+                if (result.success) {
+                    window.location = "/apis/registration/cart";
+                } else {
+                    alert(result.message);
+                }
             },
             "error": function(result, status) {
                 alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
