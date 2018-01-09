@@ -23,7 +23,11 @@ admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
 admin.site.register(TableSize)
-admin.site.register(BanList)
+
+class BanListAdmin(admin.ModelAdmin):
+    list_display = ('firstName', 'lastName', 'email')
+
+admin.site.register(BanList, BanListAdmin)
 
 def send_approval_email(modeladmin, request, queryset):
     sendApprovalEmail(queryset)
