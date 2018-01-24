@@ -1211,19 +1211,23 @@ def getPriceLevels(request):
     attendee = request.session.get('attendee_id', -1)
     #hide any irrelevant price levels if something in session
     att = None
-    if dealer > 0: 
-        att = Dealer.objects.get(id=dealer).attendee
-        badge = Badge.objects.filter(attendee=att).last()
+    if dealer > 0:
+        deal = Dealer.objects.get(id=dealer) 
+        att = deal.attendee
+        event = deal.event
+        badge = Badge.objects.filter(attendee=att,event=event).last()
     if staff > 0:
-        att = Staff.objects.get(id=staff).attendee
-        badge = Badge.objects.filter(attendee=att).last()
+        sta = Staff.objects.get(id=staff)
+        att = sta.attendee
+        event = sta.event
+        badge = Badge.objects.filter(attendee=att,event=event).last()
     if attendee > 0:
         att = Attendee.objects.get(id=attendee)
         badge = Badge.objects.filter(attendee=att).last()
 
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=True, startDate__lte=now, endDate__gte=now).order_by('basePrice')
-    if att and badge.effectiveLevel():
+    if att and badge and badge.effectiveLevel():
         levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
     data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceLevelOptions.order_by('optionPrice').all() ]} for level in levels]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
