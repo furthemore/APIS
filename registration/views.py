@@ -996,8 +996,6 @@ def checkout(request):
         reference = getConfirmationToken()
 
     if subtotal == 0:
-        import pdb; pdb.set_trace()
-
         att = orderItems[0].badge.attendee
         order = Order(total=0, reference=reference, discount=discount,
                   orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
