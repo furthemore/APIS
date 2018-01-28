@@ -95,7 +95,7 @@ class OrdersTestCases(TestCase):
     def test_fullsingleorder(self):
         postData = {'attendee': {'firstName': "Tester", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
                     'event': 'Test Event 2050!'}
@@ -138,7 +138,7 @@ class OrdersTestCases(TestCase):
     def test_multipleorder(self):
         postData = {'attendee': {'firstName': "Frank", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990", 'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
                     'event': 'Test Event 2050!'}
@@ -148,7 +148,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(response.status_code, 200)
         postData = {'attendee': {'firstName': "Felix", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990", 'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "true"},
                     'priceLevel': {'id': self.price2.id, 'options': [{'id': self.option3.id, 'value': 1}]},
                     'event': 'Test Event 2050!'}
@@ -158,7 +158,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(response.status_code, 200)
         postData = {'attendee': {'firstName': "Julie", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990", 'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
                     'event': 'Test Event 2050!'}
@@ -198,7 +198,7 @@ class OrdersTestCases(TestCase):
     def test_checkout(self):
         postData = {'attendee': {'firstName': "Bea", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990", 'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
                     'event': 'Test Event 2050!'}
@@ -229,7 +229,7 @@ class OrdersTestCases(TestCase):
     def test_vip_checkout(self):
         postData = {'attendee': {'firstName': "Bea", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "carissa.brittain@gmail.com",'birthdate': "01/01/1990", 'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price5.id, 'options': []},
                     'event': 'Test Event 2050!'}
@@ -262,7 +262,7 @@ class OrdersTestCases(TestCase):
     def test_discount(self):
         postData = {'attendee': {'firstName': "Jenny", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
-                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990", 'asl': "false",
                                  'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
                     'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}, {'id': self.option2.id, 'value': self.shirt1.id}]},
                     'event': 'Test Event 2050!'}
@@ -304,6 +304,37 @@ class OrdersTestCases(TestCase):
         response = self.client.post(reverse('discount'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, '{"message": "That discount is not valid.", "success": false}')
+
+
+    def test_discount_zero_sum(self):
+        postData = {'attendee': {'firstName': "Harry", 'lastName': "Testerson",
+                                 'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "USA",'postal': "12345",
+                                 'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "01/01/1990", 'asl': "false",
+                                 'badgeName': "FluffyButz",'emailsOk': "true",'volunteer': "false",'volDepts': "", 'surveyOk': "false"},
+                    'priceLevel': {'id': self.price1.id, 'options': [{'id': self.option1.id, 'value': "true"}]},
+                    'event': 'Test Event 2050!'}
+	
+        response = self.client.post(reverse('addToCart'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        attendee = Attendee.objects.get(firstName='Harry')
+        badge = Badge.objects.get(attendee=attendee,event=self.event)
+        self.assertNotEqual(badge.registeredDate, None)
+        self.assertEqual(badge.orderitem_set.count(), 1)
+
+        postData = {'discount': 'StaffDiscount'}
+        response = self.client.post(reverse('discount'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse('cart'))
+        self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 1)
+        total = response.context["total"]
+        self.assertEqual(total, 0)
+
+        postData = {}
+        response = self.client.post(reverse('checkout'), json.dumps(postData), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+
 
 
 
