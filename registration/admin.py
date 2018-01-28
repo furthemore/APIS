@@ -4,7 +4,7 @@ import copy
 from django import forms
 from django.contrib import admin
 from django.db.models import Max
-from django.utils.html import format_html
+from django.utils.html import format_html, urlencode
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
@@ -282,9 +282,12 @@ def assign_numbers_and_print(modeladmin, request, queryset):
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
-    # FIXME: get site URL from sites contrib package?
     response = HttpResponseRedirect(reverse(views.printNametag))
-    response['Location'] += '?file={}'.format(pdf_path)
+    url_params = {
+        'file' : pdf_path,
+        'next' : request.get_full_path()
+    }
+    response['Location'] += '?{}'.format(urlencode(url_params))
     return response
 
 assign_numbers_and_print.short_description = "Assign Number and Print"
@@ -310,9 +313,12 @@ def print_badges(modeladmin, request, queryset):
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
-    # FIXME: get site URL from sites contrib package?
     response = HttpResponseRedirect(reverse(views.printNametag))
-    response['Location'] += '?file={}'.format(pdf_path)
+    url_params = {
+        'file' : pdf_path,
+        'next' : request.get_full_path()
+    }
+    response['Location'] += '?{}'.format(urlencode(url_params))
     return response
 print_badges.short_description = "Print Badges"
 
@@ -336,9 +342,12 @@ def print_dealerasst_badges(modeladmin, request, queryset):
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
-    # FIXME: get site URL from sites contrib package?
     response = HttpResponseRedirect(reverse(views.printNametag))
-    response['Location'] += '?file={}'.format(pdf_path)
+    url_params = {
+        'file' : pdf_path,
+        'next' : request.get_full_path()
+    }
+    response['Location'] += '?{}'.format(urlencode(url_params))
     return response
 print_dealerasst_badges.short_description = "Print Dealer Assistant Badges"
 
@@ -363,9 +372,12 @@ def print_dealer_badges(modeladmin, request, queryset):
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
-    # FIXME: get site URL from sites contrib package?
     response = HttpResponseRedirect(reverse(views.printNametag))
-    response['Location'] += '?file={}'.format(pdf_path)
+    url_params = {
+        'file' : pdf_path,
+        'next' : request.get_full_path()
+    }
+    response['Location'] += '?{}'.format(urlencode(url_params))
     return response
 print_dealer_badges.short_description = "Print Dealer Badges"
 
@@ -403,9 +415,12 @@ def print_staff_badges(modeladmin, request, queryset):
     con.nametags(tags, theme='apis')
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
-    # FIXME: get site URL from sites contrib package?
     response = HttpResponseRedirect(reverse(views.printNametag))
-    response['Location'] += '?file={}'.format(pdf_path)
+    url_params = {
+        'file' : pdf_path,
+        'next' : request.get_full_path()
+    }
+    response['Location'] += '?{}'.format(urlencode(url_params))
     return response
 print_staff_badges.short_description = "Print Staff Badges"
 

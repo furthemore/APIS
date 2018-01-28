@@ -12,13 +12,12 @@
                 w.onfocus = function () { 
                     setTimeout(function () { 
                         w.close();
-                        window.location.replace('/apis/admin/registration/attendeeonsite/');
+                        window.location.replace('{{ next }}');
                     }, 10); 
                 }; 
             };
         </script>
 
-        <!-- redirect to here after close -->
-        <!-- url 'admin:attendeeonsite' -->
+        <!-- redirect after close -->
     </body>
 </html>

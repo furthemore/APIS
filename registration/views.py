@@ -1128,7 +1128,10 @@ def holidayBadges(request):
 # Printing
 
 def printNametag(request):
-    context = { 'file' : request.GET.get('file', None) }
+    context = { 
+        'file' : request.GET.get('file', None),
+        'next' : request.GET.get('next', None)
+    }
     return render(request, 'registration/printing.html', context)
 
 def servePDF(request):
