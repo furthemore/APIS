@@ -18,14 +18,14 @@
 </div>
 
 	{% if not staff %}
-		<h1>Staff Registration - Furthemore 2017</h1>
+		<h1>Staff Registration - Furthemore 2018</h1>
 		<p>Your session has expired. Please use the link in your registration email again to start over.</p>
 	{% else %}
 
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Staff Registration - Furthemore 2017</h1>
+		<h1>Staff Registration - Furthemore 2018</h1>
 
 		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
@@ -94,7 +94,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" id="birthDate" value="{{staff.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required />
+                        <input type="date" id="birthDate" value="{{staff.attendee.birthdate|date:"Y-m-d"}}" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required."/>
 			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
@@ -207,7 +207,7 @@
 		</div>
 		<div class="form-group">
                     <div class="col-sm-12">
-                        <button id="checkout" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Register</button>
+                        <button id="register" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Register</button>
 		    </div>
                 </div>
 	</div>
@@ -310,6 +310,13 @@
 	var shirtSizes = [];
 
 	$( "body" ).ready(function() {
+        // only init the javascript datepicker if none is provided by the browser natively
+        if (!Modernizr.inputtypes.date) {
+            $("#birthDate").datepicker({
+                changeMonth: true,
+                changeYear: true
+            });
+        }
 		$.getJSON("/apis/registration/pricelevels", function(data) {
 			levelData = data;
 			var prevLevel = 45;
@@ -456,7 +463,7 @@
 	});
 
 
-	$("#checkout").click(doRegister);
+	$("#register").click(doRegister);
 	
 
 	function doRegister(e) {
@@ -464,8 +471,26 @@
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
+        
+        // Validate birthdate input
+        if ($("#birthDate").val() == "") {
+            alert("You must enter your birthdate to submit your registration.");
+            return;
+        }
+        if (Modernizr.inputtypes.date) {
+            // native datepicker - expect ISO date
+            var birthdate = parseDate($("#birthDate").val());
+        } else {
+            // American middle-endian format put out by datepicker javascript
+            var birthdate = new Date(Date.parse($("#birthDate").val()));
+        }
+        var age = getAge(birthdate);
+        if (age < 18) {
+            alert("You must be 18 by the first day of Furthemore to register online.")
+            return;
+        }
 
-		$("#checkout").attr("disabled", "disabled");
+		$("#register").attr("disabled", "disabled");
 
 		var data = {
 			'attendee': {
@@ -473,7 +498,8 @@
 				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
 				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'phone': $("#phone").val(), 'badgeName': $("#badgeName").val()
+				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(), 
+                'badgeName': $("#badgeName").val()
 			}, 
 			'staff': {
 				'id': staff.id, 
@@ -484,7 +510,7 @@
 				'contactRelation': $("#contactRel").val(),
 			},
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furthemore 2017'
+            'event': 'Furthemore 2018'
 		};
 		
 
@@ -503,14 +529,14 @@
 			} else {
                         	alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
 			}
-			$("#checkout").removeAttr("disabled");
+			$("#register").removeAttr("disabled");
 		    },
                     "success": function (result, status) {
                         if (result.success)
                         {
  	                    window.location = "/apis/registration/staff/invoice";
                         } else {
-			    $("#checkout").removeAttr("disabled");
+			    $("#register").removeAttr("disabled");
                     	    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
 			}
                     }
