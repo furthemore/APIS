@@ -10,6 +10,7 @@
 **/
 
     background: url('../img/2017/Logo-promo.png') no-repeat top right;
+    min-height: 900px;  /* So logo isn't cut off on short-content pages */
 
 }
 .artisan2 {
