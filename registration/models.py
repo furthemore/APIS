@@ -19,7 +19,7 @@ class LookupTable(models.Model):
     def __str__(self):
       return self.name
 
-    class Meta: 
+    class Meta:
         abstract = True
 
 class HoldType(LookupTable):
@@ -51,7 +51,7 @@ class TableSize(LookupTable):
     basePrice = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __str__(self): 
+    def __str__(self):
       if self.event is None:
         return self.name
       return self.name + " " + self.event.name
@@ -109,10 +109,19 @@ class Badge(models.Model):
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
 
+    def __str__(self):
+        if self.badgeNumber is not None or self.badgeNumber == '':
+            return '"{0}" #{1} ({2})'.format(self.badgeName, self.badgeNumber, self.event).encode("utf-8")
+        if self.badgeName != '':
+            return '"{0}" ({1})'.format(self.badgeName, self.event).encode("utf-8")
+        if self.registeredDate is not None:
+            return "[Orphan {0}]".format(self.registeredDate)
+        return "Badge object {0}".format(self.registrationToken)
+
     def getDiscount(self):
       discount = ""
       orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
-      for oi in orderItems: 
+      for oi in orderItems:
         if oi.order.discount != None:
           discount = oi.order.discount.codeName
       return discount
@@ -120,7 +129,7 @@ class Badge(models.Model):
     def paidTotal(self):
       total = 0
       orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
-      for oi in orderItems: 
+      for oi in orderItems:
           total += oi.order.total
       return Decimal(total)
 
@@ -129,7 +138,7 @@ class Badge(models.Model):
             return 'Staff'
         if Dealer.objects.filter(attendee=self.attendee).exists():
             return 'Dealer'
-        if self.paidTotal() > 0: 
+        if self.paidTotal() > 0:
             return 'Paid'
         if self.effectiveLevel():
             return 'Comp'
@@ -148,8 +157,8 @@ class Badge(models.Model):
       if not self.id and not self.registeredDate:
         self.registeredDate = timezone.now()
       return super(Badge, self).save(*args, **kwargs)
-    
-        
+
+
 
 class Staff(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -159,7 +168,7 @@ class Staff(models.Model):
     title = models.CharField(max_length=200, blank=True)
     twitter = models.CharField(max_length=200, blank=True)
     telegram = models.CharField(max_length=200, blank=True)
-    shirtsize = models.ForeignKey(ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL)    
+    shirtsize = models.ForeignKey(ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL)
     timesheetAccess = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
     specialSkills = models.TextField(blank=True)
@@ -169,7 +178,7 @@ class Staff(models.Model):
     contactPhone = models.CharField(max_length=200, blank=True)
     contactRelation = models.CharField(max_length=200, blank=True)
     needRoom = models.BooleanField(default=False)
-    gender = models.CharField(max_length=50, blank=True)     
+    gender = models.CharField(max_length=50, blank=True)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
@@ -227,7 +236,7 @@ class Dealer(models.Model):
           total = 0
           badge = self.getBadge()
           orderItems = OrderItem.objects.filter(badge=badge)
-          for oi in orderItems: 
+          for oi in orderItems:
               if oi.order:
                   total += oi.order.total
           return Decimal(total)
@@ -257,7 +266,7 @@ class PriceLevelOption(models.Model):
             return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
         else:
             return []
- 
+
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
     priceLevelOptions = models.ManyToManyField(PriceLevelOption)
@@ -321,6 +330,13 @@ class Order(models.Model):
     billingType = models.CharField(max_length=20, choices=BILLING_TYPE_CHOICES, default=CREDIT)
     lastFour = models.CharField(max_length=4, blank=True)
 
+    def __str__(self):
+        return "${0} {1} ({2}) [{3}]".format(
+            self.total,
+            self.billingType,
+            self.status,
+            self.reference)
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
     badge = models.ForeignKey(Badge, null=True)
@@ -330,6 +346,22 @@ class OrderItem(models.Model):
 
     def getOptions(self):
       return list(AttendeeOptions.objects.filter(orderItem=self))
+
+    def __str__(self):
+        try:
+            return '{} (${}) - "{}"'.format(
+                self.order.status,
+                self.order.total,
+                self.badge.badgeName,
+                ).encode("utf-8")
+        except:
+            try:
+                return 'Incomplete from {}: "{}" ({})'.format(
+                    self.enteredBy,
+                    self.badge.badgeName,
+                    self.priceLevel).encode("utf-8")
+            except:
+                return "OrderItem object"
 
 class AttendeeOptions(models.Model):
     option = models.ForeignKey(PriceLevelOption)
@@ -342,6 +374,10 @@ class AttendeeOptions(models.Model):
         if self.option.optionExtraType == "int":
             return int(self.optionValue) * self.option.optionPrice
         return self.option.optionPrice
+
+    def __str__(self):
+        #return "[{0}] - {1}".format(self.orderItem.decode("utf-8"), 1).encode("utf-8")
+        return "[{0}] - {1}".format(str(self.orderItem).decode("utf-8"), self.option).encode("utf-8")
 
 
 class BanList(models.Model):
