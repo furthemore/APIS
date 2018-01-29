@@ -674,7 +674,8 @@ def addNewDealer(request):
 # Attendees - Onsite
 
 def onsite(request):
-    event = Event.objects.first()
+    # FIXME: need mechanism for getting the current event, not just the first row in the db
+    event = Event.objects.get(name__icontains="2018")
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}
