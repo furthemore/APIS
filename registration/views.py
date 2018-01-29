@@ -112,6 +112,9 @@ def addStaff(request):
     if not attendee:
         return JsonResponse({'success': False, 'message': 'Attendee not found'})
 
+    tz = timezone.get_current_timezone()
+    birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
+
     attendee.firstName=pda['firstName']
     attendee.lastName=pda['lastName']
     attendee.address1=pda['address1']
@@ -120,6 +123,7 @@ def addStaff(request):
     attendee.state=pda['state']
     attendee.country=pda['country']
     attendee.postalCode=pda['postal']
+    attendee.birthdate=birthdate
     attendee.phone=pda['phone']
     attendee.emailsOk=True
     attendee.surveyOk=False  #staff get their own survey
