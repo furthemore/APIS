@@ -20,7 +20,7 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Furthemore 2017 Onsite Registration</h1>
+        <h1>Furthemore 2018 Onsite Registration</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
@@ -46,7 +46,10 @@
                     <label class="col-sm-3">&nbsp;</label>
                     <div class="col-sm-9">
                         <label>
-                            <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+                            <input type="checkbox" id="contact" checked="true"> <span class="control-label">Please keep me up to date with convention related information.</span>
+                        </label>
+                        <label>
+                            <input type="checkbox" id="survey" checked="true"> <span class="control-label">Please send me the post-con survey.</span>
                         </label>
                     </div>
                 </div>
@@ -514,10 +517,10 @@
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
                 'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
-                'volDepts': "",
+                'surveyOk' : $("#survey").is(':checked'), 'volDepts': "", 'asl' : ''
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'jersey': {}, 'event': 'Furthemore 2017'
+            'jersey': {}, 'event': 'Furthemore 2018'
         };
         $.ajax({
             "type": "POST",
