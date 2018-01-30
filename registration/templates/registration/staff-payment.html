@@ -317,7 +317,7 @@
                 changeYear: true
             });
         }
-		$.getJSON("/apis/registration/pricelevels", function(data) {
+		$.getJSON("{% url 'pricelevels' %}", function(data) {
 			levelData = data;
 			var prevLevel = 45;
 			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
@@ -334,7 +334,7 @@
 			$(".changeLevel").hide();
 			
 		});
-		$.getJSON("/apis/registration/shirts", function(data) {
+		$.getJSON("{% url 'shirtsizes' %}", function(data) {
 			$.each(data, function(key, val) {
 				$("#shirt").append("<option value='" + val.id + "'>" + val.name + "</option>");
 			});
@@ -517,7 +517,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/staff/add/",
+		    "url": "{% url 'addStaff' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -534,7 +534,7 @@
                     "success": function (result, status) {
                         if (result.success)
                         {
- 	                    window.location = "/apis/registration/staff/invoice";
+ 	                    window.location = "{% url 'invoiceStaff' %}";
                         } else {
 			    $("#register").removeAttr("disabled");
                     	    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")

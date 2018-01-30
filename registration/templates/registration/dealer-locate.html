@@ -76,7 +76,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/dealer/lookup/",
+		    "url": "{% url 'findDealer' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -90,7 +90,7 @@
 			}
 		    },
                     "success": function () {
-                        window.location = "/apis/registration/dealer/info/";
+                        window.location = "{% url 'infoDealer' %}";
                     }
 		});
 	}

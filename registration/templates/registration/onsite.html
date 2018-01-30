@@ -248,7 +248,7 @@
                 changeYear: true
             });
         }
-        $.getJSON("/apis/registration/pricelevels", function(data) {
+        $.getJSON("{% url 'pricelevels' %}", function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
                 levelTemplateData.push({
@@ -262,7 +262,7 @@
             $(".changeLevel").hide();
             
         });
-        $.getJSON("/apis/registration/minorpricelevels", function(data) {
+        $.getJSON("{% url 'minorpricelevels' %}", function(data) {
             minorLevelData = data;
             $.each( data, function( key, val ) {
                 minorLevelTemplateData.push({
@@ -274,7 +274,7 @@
             });
             
         });
-        $.getJSON("/apis/registration/accompaniedpricelevels", function(data) {
+        $.getJSON("{% url 'accompaniedpricelevels' %}", function(data) {
             accompaniedLevelData = data;
             $.each( data, function( key, val ) {
                 accompaniedLevelTemplateData.push({
@@ -286,7 +286,7 @@
             });
             
         });
-        $.getJSON("/apis/registration/freepricelevels", function(data) {
+        $.getJSON("{% url 'freepricelevels' %}", function(data) {
             freeLevelData = data;
             $.each( data, function( key, val ) {
                 freeLevelTemplateData.push({
@@ -298,13 +298,13 @@
             });
             
         });
-        $.getJSON("/apis/registration/departments", function(data) {
+        $.getJSON("{% url 'departments' %}", function(data) {
             deptData = data;
             $.each(data, function(key, val) {
                 $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
             });
         });
-        $.getJSON("/apis/registration/shirts", function(data) {
+        $.getJSON("{% url 'shirtsizes' %}", function(data) {
             shirtSizes = data;
         });
     });
@@ -517,7 +517,8 @@
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
                 'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
-                'surveyOk' : $("#survey").is(':checked'), 'volDepts': "", 'asl' : ''
+                'surveyOk' : $("#survey").is(':checked'), 'volDepts': '', 'asl' : '',
+                'onsite' : true
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
             'jersey': {}, 'event': 'Furthemore 2018'
@@ -525,14 +526,14 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "/apis/registration/cart/add/",
+            "url": "{% url 'addToCart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "success": function(result) {
-                window.location = "/apis/registration/onsite/cart";
+                window.location = "{% url 'onsiteCart' %}";
             },
             "error": function(result, status) {
             alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")

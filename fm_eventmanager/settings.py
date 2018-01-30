@@ -28,7 +28,7 @@ DEBUG = True
 ADMINS = [('Carissa Brittain', 'carissa.brittain@gmail.com'),]
 SERVER_EMAIL = "it_errors@furthemore.org"
 
-ALLOWED_HOSTS = ['dawningbrooke.net',]
+ALLOWED_HOSTS = ['dawningbrooke.net', 'locahost', '127.0.0.1', 'example.com']
 
 
 # Application definition
