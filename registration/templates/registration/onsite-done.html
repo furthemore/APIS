@@ -3,7 +3,7 @@
 {% block content %}
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration - Furthemore 2017</h1>
+		<h1>Registration - Furthemore 2018</h1>
 		<h3>Thank you for your registering!</h3>
 		<hr>
 		<p>Please wait for the next available cashier to pay and pick up your badge.</p>
@@ -15,7 +15,7 @@
 <script type="text/javascript">
 $( "body" ).ready(function () {
     setTimeout(function(){
-       window.location = "/apis/registration/onsite";
+       window.location = "{% url 'onsite' %}";
     }, 5000);
 });
 </script>

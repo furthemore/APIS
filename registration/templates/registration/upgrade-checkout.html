@@ -238,7 +238,7 @@
 <script type="text/javascript">
 	var addresses = [];
 	$( "body" ).ready(function() {
-        $.getJSON("/apis/registration/addresses", function(data) {
+        $.getJSON("{% url 'addresses' %}", function(data) {
 		    addresses = data;
         });		
 	});
@@ -273,7 +273,7 @@
 	});
 
 	$("#cancel").click(function(e){
-        $.getJSON("/apis/registration/flush", function(data) {
+        $.getJSON("{% url 'flush' %}", function(data) {
 			window.location.reload();
         });		
 	});
@@ -306,7 +306,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/upgrade/checkout/",
+		    "url": "{% url 'checkoutUpgrade' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -318,7 +318,7 @@
 		    },
                     "success": function (result, status) {
                         if (result.success) {
-				window.location = "/apis/registration/upgrade/done/";
+				window.location = "{% url 'doneUpgrade' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
 			    $("#checkout").removeAttr("disabled");

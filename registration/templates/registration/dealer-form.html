@@ -293,7 +293,7 @@
                 changeYear: true
             });
         }
-                $.getJSON("/apis/registration/tables", function(data) {
+                $.getJSON("{% url 'tablesizes' %}", function(data) {
                         tableSizes = data;
             $.each(tableSizes, function (key, item) {
                 $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
@@ -442,7 +442,7 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "/apis/registration/dealer/addNew/",
+            "url": "{% url 'addNewDealer' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -452,7 +452,7 @@
                         alert("An error has occurred. Please contact marketplacehead@furthemore.org and we will correct the problem.")
             },
                     "success": function () {
-                        window.location = "/apis/registration/dealer/thanks";
+                        window.location = "{% url 'thanksDealer' %}";
                     }
         });
     }

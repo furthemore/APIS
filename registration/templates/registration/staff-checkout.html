@@ -294,7 +294,7 @@ var paymentForm = new SqPaymentForm({
 {% block javascript %}
 <script type="text/javascript">
 	$( "body" ).ready(function() {
-        $.getJSON("/apis/registration/addresses", function(data) {
+        $.getJSON("{% url 'addresses' %}", function(data) {
 			var item = data[0];
 			$("#fname").val(item.fname);
 			$("#lname").val(item.lname);
@@ -312,7 +312,7 @@ var paymentForm = new SqPaymentForm({
 		var cancel = window.confirm("Are you sure you want to cancel your registration? This will clear everything from your order.")
 		if (cancel == false) { return;}
 		
-                $.getJSON("/apis/registration/cart/abandon", function(data) {
+                $.getJSON("{% url 'cancelOrder' %}", function(data) {
 			window.location = "www.furthemore.org";
                 });
 	});
@@ -358,7 +358,7 @@ function doCheckout() {
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/staff/checkout/",
+		    "url": "{% url 'checkoutStaff' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -370,7 +370,7 @@ function doCheckout() {
 		    },
                     "success": function (result, status) {
                         if (result.success) {
-				window.location = "/apis/registration/staff/done/";
+				window.location = "{% url 'staff' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
 			    $("#checkout").removeAttr("disabled");
