@@ -158,7 +158,7 @@
 	var shirtSizes = [];
         var takenJerseys = [];
 	$( "body" ).ready(function() {
-		$.getJSON("/apis/registration/shirts", function(data) {
+		$.getJSON("{% url 'shirtsizes' %}", function(data) {
 			$.each(data, function(key, val) {
 				$("#jerseySize").append("<option value='" + val.id + "'>" + val.name + "</option>");
 			});

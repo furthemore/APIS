@@ -138,7 +138,7 @@
     var shirtSizes = [];
 
 	$( "body" ).ready(function() {
-		$.getJSON("/apis/registration/pricelevels", function(data) {
+		$.getJSON("{% url 'pricelevels' %}", function(data) {
 			levelData = data;
 			var prevLevel = 50;
 			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
@@ -158,7 +158,7 @@
 			}
 
 		});
-		$.getJSON("/apis/registration/shirts", function(data) {
+		$.getJSON("{% url 'shirtsizes' %}", function(data) {
 			shirtSizes = data;
 			if (levelTemplateData.length > 0){
 				$(".selectLevel")[0].click();
@@ -297,7 +297,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/upgrade/add/",
+		    "url": "{% url 'addUpgrade' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -314,7 +314,7 @@
                     "success": function (result, status) {
                         if (result.success)
                         {
-                            window.location = "/apis/registration/upgrade/invoice";
+                            window.location = "{% url 'invoiceUpgrade' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
                             alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
