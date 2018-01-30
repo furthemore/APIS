@@ -228,7 +228,7 @@ var paymentForm = new SqPaymentForm({
 	var tableSizes = [];
     var dealerPartners = "{{dealer.partners}}";
 	$( "body" ).ready(function() {
-        $.getJSON("/apis/registration/tables", function(data) {
+        $.getJSON("{% url 'tablesizes' %}", function(data) {
             tableSizes = data;
    		    setTableInfo({{dealer.tableSize.id}});
         });
@@ -370,7 +370,7 @@ function doCheckout() {
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "/apis/registration/dealerassistant/checkout/",
+		    "url": "{% url 'checkoutAsstDealer' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -382,11 +382,11 @@ function doCheckout() {
 		    },
             "success": function (result, status) {
                 if (result.success) {
-		    		window.location = "/apis/registration/dealerassistant/done/";
+		    		window.location = "{% url 'doneAsstDealer' %}";
                 } else {
                     if (result.message.indexOf('confirmation email') > -1){
                         alert(result.message);
-    		    		window.location = "/apis/registration/dealerassistant/done/";
+    		    		window.location = "{% url 'doneAsstDealer' %}";
                     } else {
                         alert("An error has occurred: " + result.message + " If this error continues, please contact marketplace@furthemore.org for assistence.");
     			       $("#checkout").removeAttr("disabled");

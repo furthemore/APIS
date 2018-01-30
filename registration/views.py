@@ -52,7 +52,7 @@ def findStaff(request):
     token = postData['token']
 
     staff = Staff.objects.get(attendee__email__iexact=email, registrationToken=token)
-    if not staff:     
+    if not staff:
       return HttpResponseServerError("No Staff Found")
 
     request.session['staff_id'] = staff.id
@@ -78,8 +78,8 @@ def infoStaff(request):
             badge = badges[0]
             if badge.effectiveLevel():
                 lvl_dict["basePrice"] = badge.effectiveLevel().basePrice
-       
-        context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler), 
+
+        context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
                    'jsonLevel': json.dumps(lvl_dict, default=handler),
                    'badge': badge}
@@ -141,7 +141,7 @@ def addStaff(request):
     if not staff:
         return JsonResponse({'success': False, 'message': 'Staff record not found'})
 
-    shirt = ShirtSizes.objects.get(id=pds['shirtsize'])    
+    shirt = ShirtSizes.objects.get(id=pds['shirtsize'])
     staff.twitter = pds['twitter']
     staff.telegram = pds['telegram']
     staff.shirtsize = shirt
@@ -196,7 +196,7 @@ def getStaffTotal(orderItems, discount, staff):
     subTotal = getTotal(orderItems, discount)
     alreadyPaid = badge.paidTotal()
     total = subTotal - alreadyPaid
-    if total < 0: 
+    if total < 0:
       return 0
     return total
 
@@ -243,10 +243,10 @@ def checkoutStaff(request):
     pbill = postData["billingData"]
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
     pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
-    if porg < 0: 
+    if porg < 0:
       porg = 0
     if pcharity < 0:
-      pcharity = 0 
+      pcharity = 0
 
     total = subtotal + porg + pcharity
 
@@ -310,13 +310,13 @@ def infoDealer(request):
         dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
         badge_dict = model_to_dict(badge)
-        table_dict = model_to_dict(dealer.tableSize)        
+        table_dict = model_to_dict(dealer.tableSize)
         if badge.effectiveLevel():
             lvl_dict = model_to_dict(badge.effectiveLevel())
         else:
             lvl_dict = {}
         context = {'dealer': dealer, 'badge': badge,
-                   'jsonDealer': json.dumps(dealer_dict, default=handler), 
+                   'jsonDealer': json.dumps(dealer_dict, default=handler),
                    'jsonTable': json.dumps(table_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
                    'jsonBadge': json.dumps(badge_dict, default=handler),
@@ -334,7 +334,7 @@ def getDealerTotal(orderItems, discount, dealer):
         wifi = 50
     paidTotal = dealer.paidTotal()
     total = subTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi - dealer.discount - paidTotal
-    if total < 0: 
+    if total < 0:
       return 0
     return total
 
@@ -346,7 +346,7 @@ def invoiceDealer(request):
         request.session.flush()
     else:
         dealerId = request.session.get('dealer_id', -1)
-        if dealerId == -1: 
+        if dealerId == -1:
             context = {'orderItems': [], 'total': 0, 'discount': {}}
             request.session.flush()
         else:
@@ -380,7 +380,7 @@ def findDealer(request):
     token = postData['token']
 
     dealer = Dealer.objects.get(attendee__email__iexact=email, registrationToken=token)
-    if not dealer:     
+    if not dealer:
       return HttpResponseServerError("No Dealer Found")
 
     request.session['dealer_id'] = dealer.id
@@ -395,7 +395,7 @@ def findAsstDealer(request):
     token = postData['token']
 
     dealer = Dealer.objects.get(attendee__email__iexact=email, registrationToken=token)
-    if not dealer:     
+    if not dealer:
       return HttpResponseServerError("No Dealer Found")
 
     request.session['dealer_id'] = dealer.id
@@ -421,7 +421,7 @@ def checkoutAsstDealer(request):
     assts = postData['assistants']
     dealerId = request.session['dealer_id']
     dealer = Dealer.objects.get(id=dealerId)
- 
+
     badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
 
     priceLevel = badge.effectiveLevel()
@@ -481,30 +481,30 @@ def addDealer(request):
     pdp = postData['priceLevel']
     evt = postData['event']
     event = Event.objects.get(name=evt)
-   
+
     if 'dealer_id' not in request.session:
         return HttpResponseServerError("Session expired")
 
     dealer = Dealer.objects.get(id=pdd['id'])
-    
+
     ## Update Dealer info
     if not dealer:
         return HttpResponseServerError("Dealer id not found")
-    
-    dealer.businessName=pdd['businessName'] 
-    dealer.website=pdd['website'] 
-    dealer.description=pdd['description'] 
-    dealer.license=pdd['license']    
+
+    dealer.businessName=pdd['businessName']
+    dealer.website=pdd['website']
+    dealer.description=pdd['description']
+    dealer.license=pdd['license']
     dealer.needPower=pdd['power']
     dealer.needWifi=pdd['wifi']
     dealer.wallSpace=pdd['wall']
-    dealer.nearTo=pdd['near'] 
+    dealer.nearTo=pdd['near']
     dealer.farFrom=pdd['far']
     dealer.reception=pdd['reception']
     dealer.artShow=pdd['artShow']
-    dealer.charityRaffle=pdd['charityRaffle'] 
+    dealer.charityRaffle=pdd['charityRaffle']
     dealer.breakfast=pdd['breakfast']
-    dealer.willSwitch=pdd['switch']  
+    dealer.willSwitch=pdd['switch']
     dealer.buttonOffer=pdd['buttonOffer']
     dealer.asstBreakfast=pdd['asstbreakfast']
     dealer.event = event
@@ -534,15 +534,15 @@ def addDealer(request):
     except Exception as e:
         return HttpResponseServerError(str(e))
 
-    
+
     badge = Badge.objects.get(attendee=attendee,event=event)
-    badge.badgeName=pda['badgeName']    
+    badge.badgeName=pda['badgeName']
 
     try:
         badge.save()
     except Exception as e:
         return HttpResponseServerError(str(e))
-    
+
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
@@ -596,10 +596,10 @@ def checkoutDealer(request):
         sendDealerPaymentEmail(dealer, order)
         request.session.flush()
         return JsonResponse({'success': True})
-      
+
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
     pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
-    if porg < 0: 
+    if porg < 0:
         porg = 0
     if pcharity < 0:
         pcharity = 0
@@ -656,15 +656,15 @@ def addNewDealer(request):
     badge.save()
 
     tablesize = TableSize.objects.get(id=pdd['tableSize'])
-    dealer = Dealer(attendee=attendee, event=event, businessName=pdd['businessName'], 
+    dealer = Dealer(attendee=attendee, event=event, businessName=pdd['businessName'],
                     website=pdd['website'], description=pdd['description'], license=pdd['license'], needPower=pdd['power'],
                     needWifi=pdd['wifi'], wallSpace=pdd['wall'], nearTo=pdd['near'], farFrom=pdd['far'], tableSize=tablesize,
-                    chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'], 
-                    breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'], 
+                    chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'],
+                    breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'],
                     agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'], asstBreakfast=pdd['asstbreakfast']
     )
     dealer.save()
-    sendDealerApplicationEmail(dealer.id)    
+    sendDealerApplicationEmail(dealer.id)
     return JsonResponse({'success': True})
   except Exception as e:
     return HttpResponseServerError(str(e))
@@ -723,11 +723,11 @@ def infoUpgrade(request):
     event = Event.objects.get(name=evt)
 
     badge = Badge.objects.get(registrationToken=token)
-    if not badge:     
+    if not badge:
       return HttpResponseServerError("No Record Found")
 
     attendee = badge.attendee
-    if attendee.email.lower() != email.lower():     
+    if attendee.email.lower() != email.lower():
       return HttpResponseServerError("No Record Found")
 
     request.session['attendee_id'] = attendee.id
@@ -750,7 +750,7 @@ def findUpgrade(request):
         attendee_dict = model_to_dict(attendee)
         badge_dict = model_to_dict(badge)
         lvl_dict = model_to_dict(badge.effectiveLevel())
-        context = {'attendee': attendee, 'badge': badge,  
+        context = {'attendee': attendee, 'badge': badge,
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
                    'jsonBadge': json.dumps(badge_dict, default=handler),
                    'jsonLevel': json.dumps(lvl_dict, default=handler)}
@@ -796,7 +796,7 @@ def invoiceUpgrade(request):
         request.session.flush()
     else:
         attendeeId = request.session.get('attendee_id', -1)
-        if attendeeId == -1: 
+        if attendeeId == -1:
             context = {'orderItems': [], 'total': 0, 'discount': {}}
             request.session.flush()
         else:
@@ -843,10 +843,10 @@ def checkoutUpgrade(request):
         sendUpgradePaymentEmail(attendee, order)
         request.session.flush()
         return JsonResponse({'success': True})
-      
+
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
     pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
-    if porg < 0: 
+    if porg < 0:
         porg = 0
     if pcharity < 0:
         pcharity = 0
@@ -897,22 +897,22 @@ def getCart(request):
 
 def applyDiscount(request):
     dis = request.session.get('discount', "")
-    if dis: 
+    if dis:
       return JsonResponse({'success': False, 'message': 'Only one discount is allowed per order.'})
 
     postData = json.loads(request.body)
     dis = postData['discount']
-    
+
     discount = Discount.objects.filter(codeName=dis)
     if discount.count() == 0:
       return JsonResponse({'success': False, 'message': 'That discount is not valid.'})
     discount = discount.first()
     if not discount.isValid():
       return JsonResponse({'success': False, 'message': 'That discount is not valid.'})
-    
+
     request.session["discount"] = discount.codeName
     return JsonResponse({'success': True})
-    
+
 
 
 def addToCart(request):
@@ -925,7 +925,7 @@ def addToCart(request):
     banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
     if banCheck:
         return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furthemore 2018. If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
-        
+
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%m/%d/%Y' ))
 
@@ -948,7 +948,7 @@ def addToCart(request):
 
     for option in pdp['options']:
         plOption = PriceLevelOption.objects.get(id=int(option['id']))
-        if plOption.optionExtraType == 'int' and option['value'] == '':      
+        if plOption.optionExtraType == 'int' and option['value'] == '':
             attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue='0')
         else:
             attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
@@ -969,7 +969,7 @@ def removeFromCart(request):
     #remove attendee from session order
     for item in order:
         if str(item) == str(id):
-            deleteOrderItem(item) 
+            deleteOrderItem(item)
             order.remove(item)
     request.session['order_items'] = order
     return JsonResponse({'success': True})
@@ -992,7 +992,7 @@ def checkout(request):
     if discount.count() > 0 and discount.first().isValid():
         subtotal = getTotal(orderItems, discount.first())
         discount = discount.first()
-    else: 
+    else:
         discount = None
         subtotal = getTotal(orderItems)
 
@@ -1019,7 +1019,7 @@ def checkout(request):
     pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
     pbill = postData["billingData"]
 
-    if porg < 0: 
+    if porg < 0:
         porg = 0
     if pcharity < 0:
         pcharity = 0
@@ -1028,19 +1028,19 @@ def checkout(request):
 
     onsite = postData["onsite"]
     if onsite:
-        att = orderItems[0].attendee
+        att = orderItems[0].badge.attendee
         order = Order(total=0, reference=reference, discount=discount,
                   orgDonation=0, charityDonation=0, billingName=att.firstName + " " + att.lastName,
                   billingAddress1=att.address1, billingAddress2=att.address2,
                   billingCity=att.city, billingState=att.state, billingCountry=att.country,
-                  billingPostal=att.postalCode, status="Complete", billingEmail=att.email)
+                  billingPostal=att.postalCode, status="Onsite Pending", billingEmail=att.email)
         order.save()
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
         request.session.flush()
         return JsonResponse({'success': True})
-    
+
 
 
     order = Order(total=Decimal(total), reference=reference, discount=discount,
@@ -1081,24 +1081,24 @@ def basicBadges(request):
     badges = Badge.objects.all()
     staff = Staff.objects.all()
 
-    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(), 
+    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(),
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
               'printed': badge.printed, 'discount': badge.getDiscount(),
-              'assoc': badge.abandoned(), 'orderItems': getOptionsDict(badge.orderitem_set.all()) } 
+              'assoc': badge.abandoned(), 'orderItems': getOptionsDict(badge.orderitem_set.all()) }
              for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2018"]
 
-    #data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName, 
+    #data = [{'firstName': att.firstName.lower(), 'lastName': att.lastName.lower(), 'badgeName': att.badgeName,
     #         'badgeNumber': att.badgeNumber, 'level': att.effectiveLevel().name, 'printed': att.printed,
-    #         'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()), 
+    #         'assoc': att.abandoned(), 'orderItems':getOptionsDict(att.orderitem_set.all()),
     #         'discount': att.getDiscount()} for att in attendees if att.effectiveLevel() != None]
 
     staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
-                  'title': s.title, 'id': s.id} 
+                  'title': s.title, 'id': s.id}
                 for s in staff if s.event.name == "Furthemore 2018"]
 
-    for staff in staffdata: 
+    for staff in staffdata:
         sbadge = Staff.objects.get(id=staff['id']).getBadge()
-        if sbadge: 
+        if sbadge:
             staff['badgeName'] = sbadge.badgeName
             staff['level'] = sbadge.effectiveLevel().name
             staff['assoc'] = sbadge.abandoned()
@@ -1110,22 +1110,22 @@ def basicBadges(request):
     dealers = [att for att in sdata if att['assoc'] == 'Dealer']
     staff = [att for att in ssdata]
     attendees = [att for att in sdata if att['assoc'] != 'Staff' ]
-    return render(request, 'registration/utility/badgelist.html', {'attendees': attendees, 'dealers': dealers, 'staff': staff})    
+    return render(request, 'registration/utility/badgelist.html', {'attendees': attendees, 'dealers': dealers, 'staff': staff})
 
 @staff_member_required
 def holidayBadges(request):
     badges = Badge.objects.all()
 
-    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(), 
-              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(), 
+    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(),
+              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
               'address': badge.attendee.address1 + " " + badge.attendee.address2,
               'city': badge.attendee.city, 'state': badge.attendee.state, 'postal': badge.attendee.postalCode,
-              'country': badge.attendee.country, 'event': badge.event.name } 
+              'country': badge.attendee.country, 'event': badge.event.name }
              for badge in badges if badge.effectiveLevel() != None]
- 
+
     sdata = sorted(bdata, key=lambda x:(x['event'],x['level'],x['lastName']))
     attendees = [att for att in sdata if att['assoc'] != 'Staff' and att['level'] in ('God-mode','God-Mode','Player','Raven God', 'Elite Sponsor') ]
-    return render(request, 'registration/utility/holidaylist.html', {'attendees': attendees})    
+    return render(request, 'registration/utility/holidaylist.html', {'attendees': attendees})
 
 
 
@@ -1133,7 +1133,7 @@ def holidayBadges(request):
 # Printing
 
 def printNametag(request):
-    context = { 
+    context = {
         'file' : request.GET.get('file', None),
         'next' : request.GET.get('next', None)
     }
@@ -1147,7 +1147,7 @@ def servePDF(request):
     try:
         fsock = open('/tmp/%s' % filename)
     except IOError as e:
-        return JsonResponse({'success': False}) 
+        return JsonResponse({'success': False})
     response = HttpResponse(fsock, content_type='application/pdf')
     #response['Content-Disposition'] = 'attachment; filename=download.pdf'
     fsock.close()
@@ -1170,9 +1170,9 @@ def getOptionsDict(orderItems):
     orderDict = {}
     for oi in orderItems:
         aos = oi.getOptions()
-        for ao in aos: 
+        for ao in aos:
             if ao.optionValue == 0 or ao.optionValue == None or ao.optionValue == "": pass
-            if ao.option.optionName in orderDict: 
+            if ao.option.optionName in orderDict:
               orderDict[ao.option.optionName.replace(" ", "").replace("-", "") + '2'] = ao.optionValue
             else:
               orderDict[ao.option.optionName.replace(" ", "").replace("-", "")] = ao.optionValue
@@ -1197,19 +1197,61 @@ def getAllDepartments(request):
 def getMinorPriceLevels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='minor').order_by('basePrice')
-    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    data = [ {
+        'name': level.name,
+        'id':level.id,
+        'base_price': level.basePrice.__str__(),
+        'description': level.description,
+        'options': [{
+            'name': option.optionName,
+            'value': option.optionPrice,
+            'id': option.id,
+            'required': option.required,
+            'active': option.active,
+            'type': option.optionExtraType,
+            'list': option.getList()
+            } for option in level.priceLevelOptions.order_by('optionPrice').all() ]
+          } for level in levels ]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getAccompaniedPriceLevels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='accompanied').order_by('basePrice')
-    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    data = [ {
+        'name': level.name,
+        'id':level.id,
+        'base_price': level.basePrice.__str__(),
+        'description': level.description,
+        'options': [{
+            'name': option.optionName,
+            'value': option.optionPrice,
+            'id': option.id,
+            'required': option.required,
+            'active': option.active,
+            'type': option.optionExtraType,
+            'list': option.getList()
+            } for option in level.priceLevelOptions.order_by('optionPrice').all() ]
+          } for level in levels ]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getFreePriceLevels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(public=False, startDate__lte=now, endDate__gte=now, name__icontains='free')
-    data = [{'name': level.name, 'id':level.id,  'base_price': level.basePrice.__str__(), 'description': level.description,'options': [{'name': option.optionName, 'value': option.optionPrice, 'id': option.id, 'required': option.required, 'active': option.active, 'type': option.optionExtraType, "list": option.getList() } for option in level.priceleveloption_set.order_by('optionPrice').all() ]} for level in levels]
+    data = [ {
+        'name': level.name,
+        'id':level.id,
+        'base_price': level.basePrice.__str__(),
+        'description': level.description,
+        'options': [{
+            'name': option.optionName,
+            'value': option.optionPrice,
+            'id': option.id,
+            'required': option.required,
+            'active': option.active,
+            'type': option.optionExtraType,
+            'list': option.getList()
+            } for option in level.priceLevelOptions.order_by('optionPrice').all() ]
+          } for level in levels ]
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 
@@ -1220,7 +1262,7 @@ def getPriceLevels(request):
     #hide any irrelevant price levels if something in session
     att = None
     if dealer > 0:
-        deal = Dealer.objects.get(id=dealer) 
+        deal = Dealer.objects.get(id=dealer)
         att = deal.attendee
         event = deal.event
         badge = Badge.objects.filter(attendee=att,event=event).last()
@@ -1257,10 +1299,10 @@ def getSessionAddresses(request):
         data = {}
     else:
         orderItems = OrderItem.objects.filter(id__in=sessionItems)
-        data = [{'id': oi.badge.attendee.id, 'fname': oi.badge.attendee.firstName, 
-                 'lname': oi.badge.attendee.lastName, 'email': oi.badge.attendee.email, 
-                 'address1': oi.badge.attendee.address1, 'address2': oi.badge.attendee.address2, 
-                 'city': oi.badge.attendee.city, 'state': oi.badge.attendee.state, 'country': oi.badge.attendee.country, 
+        data = [{'id': oi.badge.attendee.id, 'fname': oi.badge.attendee.firstName,
+                 'lname': oi.badge.attendee.lastName, 'email': oi.badge.attendee.email,
+                 'address1': oi.badge.attendee.address1, 'address2': oi.badge.attendee.address2,
+                 'city': oi.badge.attendee.city, 'state': oi.badge.attendee.state, 'country': oi.badge.attendee.country,
                  'postalCode': oi.badge.attendee.postalCode} for oi in orderItems]
         context = {'addresses': data}
     return HttpResponse(json.dumps(data), content_type='application/json')
@@ -1274,7 +1316,7 @@ def getConfirmationToken():
 
 def deleteOrderItem(id):
     orderItems = OrderItem.objects.filter(id=id)
-    if orderItems.count() == 0: 
+    if orderItems.count() == 0:
       return
     orderItem = orderItems.first()
     orderItem.badge.attendee.delete()
@@ -1289,7 +1331,7 @@ def getTotal(orderItems, disc = ""):
         effLevel = item.badge.effectiveLevel()
         if effLevel:
             itemTotal = itemSubTotal - effLevel.basePrice
-        else: 
+        else:
             itemTotal = itemSubTotal
 
         for option in item.attendeeoptions_set.all():

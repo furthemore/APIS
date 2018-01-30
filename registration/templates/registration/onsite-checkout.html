@@ -19,7 +19,7 @@
 
         {% for item in orderItems %}
             <div class="row">
-                <div class="col-sm-5 col-sm-offset-1">{{item.attendee}} - {{item.priceLevel}}</div>
+                <div class="col-sm-5 col-sm-offset-1">{{item.badge.badgeName}} - {{item.priceLevel}}</div>
                 <div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
                 <div class="col-sm-2">
                     <a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
@@ -109,8 +109,10 @@
         </form>
         </div>
 
+        <div class="container" style="width: inherit">
         <div class="row">
             <a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Finish</a>
+        </div>
         </div>
 
     </div>
@@ -122,7 +124,7 @@
         <h1>Checkout</h1>
         <h3>There are no attendees in your order</h3>
         <hr>
-        <a class="btn btn-primary" href="/apis/registration/onsite/">Add Attendee</a>
+        <a class="btn btn-primary" href="{% url 'onsite' %}">Add Attendee</a>
 
 
     </div>
@@ -147,7 +149,7 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "/apis/registration/cart/remove/",
+            "url": "{% url 'removeFromCart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -167,15 +169,15 @@
     });
 
     $("#addAnother").click(function() {
-        window.location = "/apis/registration/onsite";
+        window.location = "{% url 'onsite' %}";
     });
 
     $("#cancel").click(function() {
         var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
         if (cancel == false) { return;}
         
-                $.getJSON("/apis/registration/cart/abandon", function(data) {
-            window.location = "/apis/registration/onsite";
+                $.getJSON("{% url 'cancelOrder' %}", function(data) {
+            window.location = "{% url 'onsite' %}";
                 });
     });
 
@@ -197,7 +199,7 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "/apis/registration/cart/checkout/",
+            "url": "{% url 'checkout' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -209,7 +211,7 @@
             },
                     "success": function (result, status) {
                         if (result.success) {
-                window.location = "/apis/registration/onsite/done/";
+                window.location = "{% url 'done' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
                 $("#checkout").removeAttr("disabled");
