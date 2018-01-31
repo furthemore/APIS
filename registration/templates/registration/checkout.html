@@ -196,19 +196,20 @@ var paymentForm = new SqPaymentForm({
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
-                    <input type="number" id="donateCharity" class="form-control" placeholder="0.00" min="0" 
-                     step="0.01" pattern="\d*(\.\d{0,2})?">
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
                 </div>
             </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
         </div>
         <div class="form-group">
             <label for="donateOrg" class="col-sm-3 control-label">Donate to Furthemore</label>
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
-                    <input type="number" id="donateOrg" class="form-control" placeholder="0.00" min="0" step="0.01">
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate"  data-error="Please use only numbers and a decimal." />
                 </div>
             </div>
+		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
         </div>
 		<hr/>
 
@@ -346,8 +347,8 @@ var paymentForm = new SqPaymentForm({
         });
 	});
     
-    $("#donateCharity").change(setTwoNumberDecimal);
-    $("#donateOrg").change(setTwoNumberDecimal);
+    //$("#donateCharity").change(setTwoNumberDecimal);
+    //$("#donateOrg").change(setTwoNumberDecimal);
 
 	$(".deleteAttendee").click(function(e) {
 		var id = this.id.split('_')[1];
@@ -501,8 +502,13 @@ function doCheckout() {
                 if (result.success) {
 	    			window.location = "{% url 'done' %}";
                 } else {
-                    alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
 			        $("#checkout").removeAttr("disabled");
+                    if (result.message.indexOf("email") > -1) {
+                        alert(result.message);
+                        window.location = "{% url 'done' %}";
+                    } else {
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.")
+                    }
                 }
             }
 		});
