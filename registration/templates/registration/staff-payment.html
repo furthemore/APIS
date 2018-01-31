@@ -313,6 +313,7 @@
         // only init the javascript datepicker if none is provided by the browser natively
         if (!Modernizr.inputtypes.date) {
             $("#birthDate").datepicker({
+                format: 'yyyy-mm-dd',
                 changeMonth: true,
                 changeYear: true
             });
