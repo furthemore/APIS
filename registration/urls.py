@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^upgrade/done/?$', views.doneUpgrade, name='doneUpgrade'),
     url(r'^upgrade/(?P<guid>\w+)/?$', views.upgrade, name='upgrade'),
 
-    url(r'^staff/done/?$', views.staffDone, name='staff'),
+    url(r'^staff/done/?$', views.staffDone, name='doneStaff'),
     url(r'^staff/lookup/?$', views.findStaff, name='findStaff'),
     url(r'^staff/add/?$', views.addStaff, name='addStaff'),
     url(r'^staff/info/?$', views.infoStaff, name='infoStaff'),
