@@ -215,14 +215,16 @@ var paymentForm = new SqPaymentForm({
 		<div class="form-group">
                     <label for="donateCharity" class="col-sm-3 control-label">Donate to Frisky's</label>
 		    <div class="col-sm-4">
-			<input type="text" id="donateCharity" class="form-control" placeholder="0.00" />
+            <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate" data-error="Please use only numbers and a decimal." />
 		    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
                     <label for="donateCharity" class="col-sm-3 control-label">Donate to Furthemore</label>
 		    <div class="col-sm-4">
-			<input type="text" id="donateOrg" class="form-control" placeholder="0.00" />
+            <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate" data-error="Please use only numbers and a decimal." />
 		    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<hr/>
 
@@ -291,9 +293,6 @@ var paymentForm = new SqPaymentForm({
                     </div>
 		</div>
 	<hr/>
-        <div class="form-group">
-            <div class="col-sm-9 col-sm-offset-3 control-label" style="text-align:left;"><b>Please Note: </b>If you are using FireFox, you may see a red line under your credit card number and expiration date. The form will still submit if your information is correct. Please check your card number and expiration date carefully. This issue does not happen in Chrome, Opera or Edge. We have contacted Square to resolve this issue. </div>
-        </div>
         <div class="form-group">
                     <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
                     <div class="col-sm-9">
@@ -451,8 +450,13 @@ function doCheckout() {
                     if (result.success) {
 				        window.location = "{% url 'doneDealer' %}";
                     } else {
-                        alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
-			            $("#checkout").removeAttr("disabled");
+                        if (result.mesage.indexOf("email") > -1) {
+                            alert(result.message);
+                            window.location = "{% url 'doneDealer' %}";
+                        } else {
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
+			                $("#checkout").removeAttr("disabled");
+                        }
 			        }
             }
 		});
