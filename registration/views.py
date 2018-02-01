@@ -1036,9 +1036,12 @@ def checkout(request):
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
         request.session.flush()
         try:
-            sendRegistrationEmail(order, pbill['email'])
+            sendRegistrationEmail(order, att.email)
         except Exception as e:
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
@@ -1066,6 +1069,9 @@ def checkout(request):
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
         request.session.flush()
         return JsonResponse({'success': True})
 
