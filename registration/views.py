@@ -234,8 +234,11 @@ def checkoutStaff(request):
 
       discount.used = discount.used + 1
       discount.save()
-      sendStaffRegistrationEmail(order.id, email)
       request.session.flush()
+      try:
+          sendStaffRegistrationEmail(order.id, email)
+      except Exception as e:
+          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
       return JsonResponse({'success': True})
 
 
@@ -269,7 +272,10 @@ def checkoutStaff(request):
         request.session.flush()
         discount.used = discount.used + 1
         discount.save()
-        sendStaffRegistrationEmail(order.id, email)
+        try:
+            sendStaffRegistrationEmail(order.id, email)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -593,8 +599,12 @@ def checkoutDealer(request):
 
         orderItem.order = order
         orderItem.save()
-        sendDealerPaymentEmail(dealer, order)
         request.session.flush()
+
+        try:
+            sendDealerPaymentEmail(dealer, order)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
         return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -615,16 +625,18 @@ def checkoutDealer(request):
                   billingPostal=pbill['postal'])
     order.save()
 
-
     status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if status:
-        sendDealerPaymentEmail(dealer, order)
         orderItem.order = order
         orderItem.save()
         order.status = "Paid"
         order.save()
         request.session.flush()
+        try:
+            sendDealerPaymentEmail(dealer, order)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -662,10 +674,15 @@ def addNewDealer(request):
                     chairs=pdd['chairs'], reception=pdd['reception'], artShow=pdd['artShow'], charityRaffle=pdd['charityRaffle'],
                     breakfast=pdd['breakfast'], willSwitch=pdd['switch'], tables=pdd['tables'],
                     agreeToRules=pdd['agreeToRules'], partners=pdd['partners'], buttonOffer=pdd['buttonOffer'], asstBreakfast=pdd['asstbreakfast']
-    )
+                    )
     dealer.save()
-    sendDealerApplicationEmail(dealer.id)
+
+    try:
+        sendDealerApplicationEmail(dealer.id)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
     return JsonResponse({'success': True})
+
   except Exception as e:
     return HttpResponseServerError(str(e))
 
@@ -840,8 +857,11 @@ def checkoutUpgrade(request):
 
         orderItem.order = order
         orderItem.save()
-        sendUpgradePaymentEmail(attendee, order)
         request.session.flush()
+        try:
+            sendUpgradePaymentEmail(attendee, order)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -865,10 +885,15 @@ def checkoutUpgrade(request):
     status, response = chargePayment(order.id, pbill, get_client_ip(request))
 
     if status:
-        sendUpgradePaymentEmail(attendee, order)
         orderItem.order = order
         orderItem.save()
+        order.status = "Paid"
+        order.save()
         request.session.flush()
+        try:
+            sendUpgradePaymentEmail(attendee, order)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -1012,7 +1037,10 @@ def checkout(request):
             oitem.order = order
             oitem.save()
         request.session.flush()
-        sendRegistrationEmail(order, att.email)
+        try:
+            sendRegistrationEmail(order, pbill['email'])
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
