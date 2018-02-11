@@ -8,8 +8,8 @@ def sendRegistrationEmail(order, email):
     for oi in orderItems:
         ao = AttendeeOptions.objects.filter(orderItem=oi)
         orderDict[oi] = ao
+
     # send payment receipt
-#    import pdb; pdb.set_trace()
     data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
     msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
     msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
@@ -35,14 +35,24 @@ def sendRegistrationEmail(order, email):
 
 def sendUpgradePaymentEmail(attendee, order):
     data = {'reference': order.reference}
+    orderItems = OrderItem.objects.filter(order=order)
     msgTxt = render_to_string('registration/emails/upgrade.txt', data)
     msgHtml = render_to_string('registration/emails/upgrade.html', data)
     sendEmail("registration@furthemore.org", [attendee.email], "Furthemore 2018 Upgrade Payment", 
               msgTxt, msgHtml)
 
+    for oi in orderItems:
+        if oi.priceLevel.emailVIP:
+            data = {'badge': oi.badge}
+            msgTxt = render_to_string('registration/emails/vipNotification.txt', data)
+            msgHtml = render_to_string('registration/emails/vipNotification.html', data)
+            sendEmail("registration@furthemore.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')], 
+                 "Furthemore 2018 VIP Registration", msgTxt, msgHtml)
 
-def sendStaffRegistrationEmail(orderId, email):
+
+def sendStaffRegistrationEmail(orderId):
     order = Order.objects.get(id=orderId)
+    email = order.billingEmail
     data = {'reference': order.reference}
     msgTxt = render_to_string('registration/emails/staffRegistration.txt', data)
     msgHtml = render_to_string('registration/emails/staffRegistration.html', data)
