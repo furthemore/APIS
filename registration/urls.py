@@ -42,7 +42,8 @@ urlpatterns = [
     url(r'^onsite/?$', views.onsite, name='onsite'),
     url(r'^onsite/cart/?$', views.onsiteCart, name='onsiteCart'),
     url(r'^onsite/done/?$', views.onsiteDone, name='onsiteDone'),
-    
+    url(r'^onsite/register/?$', views.onsiteAdmin, name='onsiteAdmin'),
+
     url(r'^cart/?$', views.getCart, name='cart'),
     url(r'^cart/add/?$', views.addToCart, name='addToCart'),
     url(r'^cart/remove/?$', views.removeFromCart, name='removeFromCart'),
@@ -63,7 +64,7 @@ urlpatterns = [
     url(r'^addresses/?$', views.getSessionAddresses, name='addresses'),
 
     url(r'^utility/badges?$', views.basicBadges, name='basicBadges'),
-    url(r'^utility/holiday?$', views.holidayBadges, name='holidayBadges'),
+    url(r'^utility/vips?$', views.vipBadges, name='vipBadges'),
 
     url(r'^flush/?$', views.flush, name='flush'),
 

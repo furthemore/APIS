@@ -153,6 +153,10 @@ class Badge(models.Model):
                 level = oi.priceLevel
         return level
 
+    def getOrderItems(self):
+        orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
+        return orderItems        
+
     def save(self, *args, **kwargs):
       if not self.id and not self.registeredDate:
         self.registeredDate = timezone.now()
@@ -345,7 +349,7 @@ class OrderItem(models.Model):
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
 
     def getOptions(self):
-      return list(AttendeeOptions.objects.filter(orderItem=self))
+      return list(AttendeeOptions.objects.filter(orderItem=self).order_by('option__optionName'))
 
     def __str__(self):
         try:
