@@ -1,36 +1,42 @@
 
-<h3>Attendees</h3>
-<table border="1">
+<h1>VIP Attendees</h1>
+
+{% for ev in events %}
+
+<h2>{{ev.event}}</h2>
+
+<table border="1" cellspacing="0" cellpadding="6">
 <tr>
-  <td>Badge Name</td>
-  <td>Level</td>
-  <td>Assoc</td>
-  <td>First Name</td>
-  <td>Last Name</td>
-  <td>Address</td>
-  <td>City</td>
-  <td>State</td>
-  <td>Zip</td>
-  <td>Country</td>
-  <td>Event</td>
+  <th>Level</th>
+  <th>Status</th>
+  <th>Badge Name</th>
+  <th>Real Name</th>
+  <th>Address</th>
+  <th>Phone</th>
+  <th>Options </th>
 </tr>
-{% for att in attendees %}
+{% for att in ev.attendees %}
   <tr>
-    <td>{{att.badgeName}}</td>
     <td>{{att.level}}</td>
     <td>{{att.assoc}}</td>
-    <td>{{att.firstName}}</td>
-    <td>{{att.lastName}}</td>
-    <td>{{att.address}}</td>
-    <td>{{att.city}}</td>
-    <td>{{att.state}}</td>
-    <td>{{att.postal}}</td>
-    <td>{{att.country}}</td>
-    <td>{{att.event}}</td>
+    <td>{{att.badgeName}}</td>
+    <td>{{att.firstName}} {{att.lastName}}</td>
+    <td>{{att.address}} {{att.city}} {{att.state}} {{att.postal}} {{att.country}}</td>
+    <td>{{att.phone}}</td>
+    <td>
+        {% for oi in att.orderItems %}
+            {{oi.name}} - {{oi.value}}
+            </br> 
+        {% endfor %}
+
+    </td>
   </tr>
 {% endfor %}
 
 </table>
+
+
+{% endfor %}
 
 
 

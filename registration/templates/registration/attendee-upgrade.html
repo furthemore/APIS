@@ -9,7 +9,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furthemore 2017</h1>
+		<h1>Registration Upgrade - Furthemore 2018</h1>
 
 		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
@@ -17,8 +17,8 @@
 		<div class="form-group">
             <div class="col-sm-3">Full Name</div><div class="col-sm-9">{{attendee.firstName}} {{attendee.lastName}}</div>
             <div class="col-sm-3">Email</div><div class="col-sm-9">{{attendee.email}}</div>
-            <div class="col-sm-3">Phone Number</div><div class="col-sm-9">{{attendee.phone}}</div>
             <div class="col-sm-3">Address</div><div class="col-sm-9">{{attendee.address1}}, {{attendee.city}}, {{attendee.city}}, {{attendee.state}}, {{attendee.postalCode}} </div>
+            <div class="col-sm-3">Phone Number</div><div class="col-sm-9">{{attendee.phone}}</div>
             <div class="col-sm-3">Birthdate</div><div class="col-sm-9">{{attendee.birthdate}}</div>
             <div class="col-sm-3">Badge Name</div><div class="col-sm-9">{{badge.badgeName}}</div>
         </div>	
@@ -26,6 +26,8 @@
 		<hr/>
 
 		<h3>Choose a different attendee level</h3>
+
+        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level (such as extra GOH tickets) you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a>.</div>
 
 		<div class="row" id="levelContainer"></div>
 
@@ -43,7 +45,7 @@
 
 {% else %}
 
-<h1>Registration Upgrade - Furthemore 2017</h1>
+<h1>Registration Upgrade - Furthemore 2018</h1>
 <p>Your session has expired. Please use the link in your email again to start over.</p>
 
 {% endif %}
@@ -61,8 +63,8 @@
 			<p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
 		</div>
 		<div class="panel-footer">
-			<a class="btn btn-lg btn-block btn-danger selectLevel" href="#" data-id="levelId">Select</a>
-			<a class="btn btn-default btn-block changeLevel" href="#">Change Level?</a>
+			<a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
+			<a class="btn btn-default btn-block changeLevel" >Change Level?</a>
 		</div>
 	</div>
 	</div>
@@ -192,15 +194,23 @@
 		});
 		$("form").validator('update');
 	};
+
+    var getExistingOptions = function(id) {
+        if (!currentLevel.options) return [];
+        var matches = currentLevel.options.filter(function(opt) { return opt.id == id; });
+        return matches;
+    }
+
 	var generateOptions = function(levelId){
 		var data = [];
 		$.each(levelData, function(key, thing){
 			if (thing.id == levelId){
 				data = thing.options;
+                description = thing.description;
 				return false;
 			}
 		});
-		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
 		$("#levelContainer").append(container);
 		$.each( data, function(key, val) {
 			if (val.value == "0.00"){
@@ -218,6 +228,10 @@
 						'name': val.name + " " + price,
 						'id': "option_" + val.id
 					}, {append: true});
+                    var opts = getExistingOptions(val.id);
+                    if (opts && opts[0] && opts[0].value == "True") {
+                        $("#option_" + val.id).attr("checked", "checked");
+                    }
 					break;
 				case "int":
 					var template = $("#optionIntTemplate");
@@ -226,6 +240,10 @@
 						'name': val.name + " " + price,
 						'id': "option_" + val.id
 					}, {append: true});
+                    var opts = getExistingOptions(val.id);
+                    if (opts && opts[0]) {
+                        $("#option_" + val.id).val(opts[0].value);
+                    }
 					break;
 				case "string":
 					var template = $("#optionStringTemplate");
@@ -236,6 +254,10 @@
 						'id': "option_" + val.id,
 						'placeholder': placeholder,
 					}, {append: true});
+                    var opts = getExistingOptions(val.id);
+                    if (opts && opts[0]) {
+                        $("#option_" + val.id).val(opts[0].value);
+                    }
 					break;
 				case "Jersey":
 					break;
@@ -253,6 +275,10 @@
 						'id': "option_" + val.id,
 						'options': options
 					}, {append: true});
+                    var opts = getExistingOptions(val.id);
+                    if (opts && opts[0]) {
+                        $("#option_" + val.id).val(opts[0].value);
+                    }
 					break;
 			}
 		});
