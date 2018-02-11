@@ -1,6 +1,87 @@
 {% extends "registration/master.html" %}
 {% load mathfilters %}
 
+{% block head %}
+    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+
+    <script type="text/javascript">
+var paymentForm = new SqPaymentForm({
+  // Initialize the payment form elements
+  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
+  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  inputClass: 'form-control',
+  // Initialize the credit card placeholders
+  cardNumber: {
+    elementId: 'sq-card-number',
+    placeholder: '•••• •••• •••• ••••'
+  },
+  cvv: {
+    elementId: 'sq-cvv',
+    placeholder: 'CVV'
+  },
+  expirationDate: {
+    elementId: 'sq-expiration-date',
+    placeholder: 'MM/YY'
+  },
+  postalCode: {
+    elementId: 'sq-postal-code',
+    placeholder: '•••••'
+  },
+  // SqPaymentForm callback functions
+  callbacks: {
+    /*
+     * callback function: cardNonceResponseReceived
+     * Triggered when: SqPaymentForm completes a card nonce request
+     */
+    cardNonceResponseReceived: function(errors, nonce, cardData) {
+      if (errors) {
+        var errorList = "";
+        console.log("Encountered errors:");
+        errors.forEach(function(error) {
+          console.log('  ' + error.message);
+          errorList += error.message + "; ";
+        });
+        alert("One or more Square payment errors have occurred: " + errorList);
+        $("#checkout").removeAttr("disabled");
+        return;
+      }
+      document.getElementById('card-nonce').value = nonce;
+      doCheckout();
+    },
+    /*
+     * callback function: unsupportedBrowserDetected
+     * Triggered when: the page loads and an unsupported browser is detected
+     */
+    unsupportedBrowserDetected: function() {
+      /* PROVIDE FEEDBACK TO SITE VISITORS */
+    },
+    inputEventReceived: function(inputEvent) {
+      switch (inputEvent.eventType) {
+        case 'focusClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'focusClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassAdded':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'errorClassRemoved':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'cardBrandChanged':
+          /* HANDLE AS DESIRED */
+          break;
+        case 'postalCodeChanged':
+          /* HANDLE AS DESIRED */
+          break;
+      }
+    },
+  }
+});
+    </script>
+{% endblock %}
+
 {% block content %}
 
 {% if orderItems %}
@@ -14,13 +95,13 @@
 		<h3>Your Order</h3>
 			
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
+				<div class="col-sm-6 col-sm-offset-1"><h4>Attendee</h4></div>
 				<div class="col-sm-2"><h4>Price</h4></div>   
 			</div>
 
 		{% for item in orderItems %}
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1">{{item.attendee}} - {{item.priceLevel}}</div>
+				<div class="col-sm-6 col-sm-offset-1">{{attendee}} - {{item.priceLevel}}</div>
 				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
 				<div class="col-sm-2">
 				</div>
@@ -30,7 +111,7 @@
 			<div class="row">
 				{% if option.option.optionExtraType == "int" %}
 
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
+				  <div class="col-sm-6 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
 				  {% if option.option.optionPrice == 0 %}
 				    <div class="col-sm-2">Free</div>
 				  {% else %}
@@ -39,7 +120,7 @@
 
 				{% else %}
 
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}}</div>
+				  <div class="col-sm-6 col-sm-offset-1">{{option.option}}</div>
 				  {% if option.option.optionPrice == 0 %}
 				    <div class="col-sm-2">Free</div>
 				  {% else %}
@@ -50,10 +131,10 @@
 
 			</div>
 			{% endfor %}
-			{% if attendee.paidTotal %}
+			{% if prevLevel %}
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1">Previously Paid</div>
-				<div class="col-sm-2">-${{attendee.paidTotal}}</div>   
+				<div class="col-sm-6 col-sm-offset-1">Previously Paid</div>
+				<div class="col-sm-2">-${{prevLevel.basePrice}}</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -62,7 +143,7 @@
 
 		{% endfor %}
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
+				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
 				<div class="col-sm-2"><h4>${{total}}</h4></div>   
 			</div>
 
@@ -76,18 +157,26 @@
 		
 		<h3>Extra Donations</h3>
 		<div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you would like to make an extra gift to our annual charity, Frisky's, or to the convention, please enter it below.</div>
-		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Frisky's</label>
-		    <div class="col-sm-4">
-			<input type="text" id="donateCharity" class="form-control" placeholder="0.00" />
-		    </div>
-		</div>
-		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Furthemore</label>
-		    <div class="col-sm-4">
-			<input type="text" id="donateOrg" class="form-control" placeholder="0.00" />
-		    </div>
-		</div>
+        <div class="form-group">
+            <label for="donateCharity" class="col-sm-3 control-label">Donate to Frisky's</label>
+            <div class="col-sm-4">
+                <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
+                </div>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+        </div>
+        <div class="form-group">
+            <label for="donateOrg" class="col-sm-3 control-label">Donate to Furthemore</label>
+            <div class="col-sm-4">
+                <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate"  data-error="Please use only numbers and a decimal." />
+                </div>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+        </div>
 		<hr/>
 
 
@@ -99,7 +188,7 @@
                     <div class="col-sm-9">
                         <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
 			{% for oi in orderItems %}
-			    <option value="{{oi.attendee.id}}">{{oi.attendee}}</option>
+			    <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
 			{% endfor %}
 			</select>
                     </div>
@@ -155,51 +244,30 @@
                     </div>
 		</div>
 	<hr/>
-		<div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+        <div class="form-group">
+                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number<span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" name="ccNumber" id="ccNumber" class="form-control" maxlength="16" required />
+                        <div id="sq-card-number"></div>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
-		<div class="form-group">
-                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
+        <div class="form-group">
+                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date<span style="color:red;">*</span></label>
                     <div class="col-sm-2">
-			<select id="ccMonth" class="form-control" required>
-				<option value="01">01</option>
-				<option value="02">02</option>
-				<option value="03">03</option>
-				<option value="04">04</option>
-				<option value="05">05</option>
-				<option value="06">06</option>
-				<option value="07">07</option>
-				<option value="08">08</option>
-				<option value="09">09</option>
-				<option value="10">10</option>
-				<option value="11">11</option>
-				<option value="12">12</option>
-			</select>
+                        <div id="sq-expiration-date"></div>
                     </div>
+                    <label for="ccCVV" class="col-sm-1 control-label">CVV<span style="color:red;">*</span></label>
                     <div class="col-sm-2">
-			<select id="ccYear" class="form-control" required>
-				<option value="2017">2017</option>
-				<option value="2018">2018</option>
-				<option value="2019">2019</option>
-				<option value="2020">2020</option>
-				<option value="2021">2021</option>
-				<option value="2022">2022</option>
-				<option value="2023">2023</option>
-				<option value="2024">2024</option>
-			</select>
+                        <div id="sq-cvv"></div>
                     </div>
-                    <label for="ccCVV" class="col-sm-2 control-label">CVV</label>
-		    <div class="col-sm-3">
-                        <input type="text" id="ccCVV" class="form-control" maxlength="4" required data-error="CVV is required" />
+                    <label for="ccZip" class="col-sm-2 control-label">Zip Code<span style="color:red;">*</span></label>
+                    <div class="col-sm-2">
+                        <div id="sq-postal-code"></div>
                     </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
 
-		{% csrf_token %}
+        </div>
+        <br/>
+        <input type="hidden" id="card-nonce" name="nonce">
+        {% csrf_token %}
 		<div class="form-group" style="margin-right:0px;">
 			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
 		</div>
@@ -286,14 +354,21 @@
 
 		$("#checkout").attr("disabled", "disabled");
 
+        {% if total > 0 %}
+            paymentForm.requestCardNonce();
+        {% else %}
+            doCheckout();
+        {% endif %}
+	});
+
+    function doCheckout() {
 		{% if total > 0 %}
 		var data = {
 		    'billingData': {
-			'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
-			'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
-			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                        'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                        'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                'nonce': $("#card-nonce").val(),
+			    'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
+                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
 		    },
 		    'charityDonation': $("#donateCharity").val(),
 		    'orgDonation': $("#donateOrg").val()
@@ -313,21 +388,25 @@
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
-			$("#checkout").removeAttr("disabled");
+                alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
+	    		$("#checkout").removeAttr("disabled");
 		    },
-                    "success": function (result, status) {
-                        if (result.success) {
-				window.location = "{% url 'doneUpgrade' %}";
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
-			    $("#checkout").removeAttr("disabled");
-			}
+            "success": function (result, status) {
+                if (result.success) {
+			    	window.location = "{% url 'doneUpgrade' %}";
+                } else {
+                    if (result.mesage.indexOf("email") > -1) {
+                            alert(result.message);
+                            window.location = "{% url 'doneUpgrade' %}";
+                    } else {
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
+			            $("#checkout").removeAttr("disabled");
                     }
+			    }
+            }
 		});
 
-
-	});
+    }
 
 
 function getCookie(name) {
