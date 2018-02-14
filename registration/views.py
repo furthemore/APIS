@@ -14,12 +14,15 @@ import os
 import json
 import random
 import string
+import logging
 
 from .emails import *
 from .models import *
 from .payments import chargePayment
 
 # Create your views here.
+logger = logging.getLogger("django.request")
+
 
 def index(request):
     event = Event.objects.get(name__icontains="2018")
@@ -189,6 +192,7 @@ def findStaff(request):
     request.session['staff_id'] = staff.id
     return JsonResponse({'success': True, 'message':'STAFF'})
   except Exception as e:
+    logger.exception("Unable to find staff.")
     return HttpResponseServerError(str(e))
 
 def infoStaff(request):
@@ -262,6 +266,7 @@ def addStaff(request):
     try:
         attendee.save()
     except Exception as e:
+        logger.exception("Error saving staff attendee record.")
         return JsonResponse({'success': False, 'message': 'Attendee not saved: ' + e})
 
     staff = Staff.objects.get(id=pds['id'])
@@ -286,6 +291,7 @@ def addStaff(request):
     try:
         staff.save()
     except Exception as e:
+        logger.exception("Error saving staff record.")
         return JsonResponse({'success': False, 'message': 'Staff not saved: ' + str(e)})
 
     event = staff.event
@@ -299,6 +305,7 @@ def addStaff(request):
     try:
         badge.save()
     except Exception as e:
+        logger.exception("Error saving staff badge record.")
         return JsonResponse({'success': False, 'message': 'Badge not saved: ' + str(e)})
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
@@ -341,6 +348,7 @@ def checkoutStaff(request):
       try:
           sendStaffRegistrationEmail(order.id)
       except Exception as e:
+          logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
           return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
       return JsonResponse({'success': True})
 
@@ -364,6 +372,7 @@ def checkoutStaff(request):
         try:
             sendStaffRegistrationEmail(order.id)
         except Exception as e:
+            logger.exception("Error emailing StaffRegistrationEmail.")
             return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
@@ -447,6 +456,7 @@ def findDealer(request):
     request.session['dealer_id'] = dealer.id
     return JsonResponse({'success': True, 'message':'DEALER'})
   except Exception as e:
+    logger.exception("Error finding dealer.")
     return HttpResponseServerError(str(e))
 
 def findAsstDealer(request):
@@ -462,6 +472,7 @@ def findAsstDealer(request):
     request.session['dealer_id'] = dealer.id
     return JsonResponse({'success': True, 'message':'DEALER'})
   except Exception as e:
+    logger.exception("Error finding assistant dealer.")
     return HttpResponseServerError(str(e))
 
 
@@ -532,6 +543,7 @@ def checkoutAsstDealer(request):
         try:
             sendDealerAsstEmail(dealer.id)
         except Exception as e:
+            logger.exception("Error emailing DealerAsstEmail.")
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact marketplace@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
@@ -577,6 +589,7 @@ def addDealer(request):
     try:
         dealer.save()
     except Exception as e:
+        logger.exception("Error saving dealer record.")
         return HttpResponseServerError(str(e))
 
     ## Update Attendee info
@@ -597,6 +610,7 @@ def addDealer(request):
     try:
         attendee.save()
     except Exception as e:
+        logger.exception("Error saving dealer attendee record.")
         return HttpResponseServerError(str(e))
 
 
@@ -606,6 +620,7 @@ def addDealer(request):
     try:
         badge.save()
     except Exception as e:
+        logger.exception("Error saving dealer badge record.")
         return HttpResponseServerError(str(e))
 
 
@@ -653,6 +668,7 @@ def checkoutDealer(request):
       try:
           sendDealerPaymentEmail(dealer, order)
       except Exception as e:
+          logger.exception("Error sending DealerPaymentEmail - zero sum.")
           return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
       return JsonResponse({'success': True})
 
@@ -674,12 +690,14 @@ def checkoutDealer(request):
         try:
             sendDealerPaymentEmail(dealer, order)
         except Exception as e:
+            logger.exception("Error sending DealerPaymentEmail.")
             return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
         return JsonResponse({'success': True})
     else:
         order.delete()
         return JsonResponse({'success': False, 'message': message})
   except Exception as e:
+    logger.exception("Error in dealer checkout.")
     return HttpResponseServerError(str(e))
 
 
@@ -718,10 +736,12 @@ def addNewDealer(request):
     try:
         sendDealerApplicationEmail(dealer.id)
     except Exception as e:
+        logger.exception("Error sending DealerApplicationEmail.")
         return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
     return JsonResponse({'success': True})
 
   except Exception as e:
+    logger.exception("Error in dealer addition.")
     return HttpResponseServerError(str(e))
 
 
@@ -794,6 +814,7 @@ def infoUpgrade(request):
     request.session['badge_id'] = badge.id
     return JsonResponse({'success': True, 'message':'ATTENDEE'})
   except Exception as e:
+    logger.exception("Error in starting upgrade.")
     return HttpResponseServerError(str(e))
 
 def findUpgrade(request):
@@ -898,6 +919,7 @@ def checkoutUpgrade(request):
         try:
             sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
+            logger.exception("Error sending UpgradePaymentEmail - zero sum.")
             return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
 
@@ -919,6 +941,7 @@ def checkoutUpgrade(request):
         try:
             sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
+            logger.exception("Error sending UpgradePaymentEmail.")
             return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
@@ -926,6 +949,7 @@ def checkoutUpgrade(request):
         return JsonResponse({'success': False, 'message': response})
 
   except Exception as e:
+    logger.exception("Error in attendee upgrade.")
     return HttpResponseServerError(str(e))
 
 
@@ -955,6 +979,7 @@ def addToCart(request):
 
     banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
     if banCheck:
+        logger.exception("***ban list registration attempt***")
         return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furthemore 2018. If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
 
     tz = timezone.get_current_timezone()
@@ -1037,6 +1062,7 @@ def checkout(request):
         try:
             sendRegistrationEmail(order, att.email)
         except Exception as e:
+            logger.exception("Error sending RegistrationEmail - zero sum.")
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
 
@@ -1073,6 +1099,7 @@ def checkout(request):
         try:
             sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
+            logger.exception("Error sending RegistrationEmail.")
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
