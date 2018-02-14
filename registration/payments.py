@@ -4,6 +4,7 @@ from decimal import *
 import json
 import os
 import uuid
+import logging
 
 from .models import *
 
@@ -16,6 +17,8 @@ from squareconnect.apis.locations_api import LocationsApi
 squareconnect.configuration.access_token = 'sandbox-sq0atb-OiZSIsVbxQ3w40DWT09ZIQ'
 location_id = 'CBASED7NPDEnW3rjrTkuZBqR9vYgAQ'
 
+
+logger = logging.getLogger("django.request")
 
 # Returns two variabies: 
 #    True/False  - general success flag
@@ -58,6 +61,7 @@ def chargePayment(orderId, ccData, ipAddress):
     print("---- Transaction Failed ----")
     print e
     print("---- End Transaction ----")
+    logger.exception("!!Failed Square Transaction!!")
     return False, "An unexpected error has occurred."
 
 
