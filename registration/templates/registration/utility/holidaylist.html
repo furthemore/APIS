@@ -13,6 +13,7 @@
   <th>Real Name</th>
   <th>Address</th>
   <th>Phone</th>
+  <th>Email</th>
   <th>Options </th>
 </tr>
 {% for att in ev.attendees %}
@@ -23,6 +24,7 @@
     <td>{{att.firstName}} {{att.lastName}}</td>
     <td>{{att.address}} {{att.city}} {{att.state}} {{att.postal}} {{att.country}}</td>
     <td>{{att.phone}}</td>
+    <td>{{att.email}}</td>
     <td>
         {% for oi in att.orderItems %}
             {{oi.name}} - {{oi.value}}

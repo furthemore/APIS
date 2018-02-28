@@ -1157,7 +1157,8 @@ def vipBadges(request):
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
               'address': badge.attendee.address1 + " " + badge.attendee.address2, 'phone': badge.attendee.phone,
               'city': badge.attendee.city, 'state': badge.attendee.state, 'postal': badge.attendee.postalCode,
-              'country': badge.attendee.country, 'event': badge.event.name, 'orderItems': getOptionsDict(badge.orderitem_set.all()) }
+              'country': badge.attendee.country, 'event': badge.event.name, 'email': badge.attendee.email,
+              'orderItems': getOptionsDict(badge.orderitem_set.all()) }
              for badge in badges if badge.effectiveLevel() != None]
 
     sdata = sorted(bdata, key=lambda x:(x['event'],x['level'],x['lastName']))
