@@ -1,2 +1,2 @@
-Welcome to Furthemore Staff! 
-Use this link to register as staff: https://www.furthemore.org/apis/registration/staff/{{registrationToken}}
+Welcome to Furrydelphia Staff! 
+Use this link to register as staff: https://www.furrydelphia.org/apis/registration/staff/{{registrationToken}}

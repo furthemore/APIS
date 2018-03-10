@@ -23,7 +23,6 @@ from .payments import chargePayment
 # Create your views here.
 logger = logging.getLogger("django.request")
 
-
 def index(request):
     event = Event.objects.get(name__icontains="2018")
     tz = timezone.get_current_timezone()
@@ -36,7 +35,6 @@ def index(request):
 def flush(request):
     request.session.flush()
     return JsonResponse({'success': True})
-
 
 ###################################
 # Payments
@@ -141,10 +139,13 @@ def getDealerTotal(orderItems, discount, dealer):
     if partnerCount > 0 and dealer.asstBreakfast:
       partnerBreakfast = 60*partnerCount
     wifi = 0
+    power = 0
     if dealer.needWifi:
         wifi = 50
+    if dealer.needPower:
+        power = 15
     paidTotal = dealer.paidTotal()
-    total = subTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi - dealer.discount - paidTotal
+    total = subTotal + 35*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi + power - dealer.discount - paidTotal
     if total < 0:
       return 0
     return total
@@ -349,7 +350,7 @@ def checkoutStaff(request):
           sendStaffRegistrationEmail(order.id)
       except Exception as e:
           logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
-          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
+          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furrydelphia.org to get your confirmation number."})
       return JsonResponse({'success': True})
 
 
@@ -373,7 +374,7 @@ def checkoutStaff(request):
             sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
-            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -544,7 +545,7 @@ def checkoutAsstDealer(request):
             sendDealerAsstEmail(dealer.id)
         except Exception as e:
             logger.exception("Error emailing DealerAsstEmail.")
-            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact marketplace@furthemore.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact marketplace@furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -669,7 +670,7 @@ def checkoutDealer(request):
           sendDealerPaymentEmail(dealer, order)
       except Exception as e:
           logger.exception("Error sending DealerPaymentEmail - zero sum.")
-          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
+          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furrydelphia.org."})
       return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -691,7 +692,7 @@ def checkoutDealer(request):
             sendDealerPaymentEmail(dealer, order)
         except Exception as e:
             logger.exception("Error sending DealerPaymentEmail.")
-            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
+            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furrydelphia.org."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -737,7 +738,7 @@ def addNewDealer(request):
         sendDealerApplicationEmail(dealer.id)
     except Exception as e:
         logger.exception("Error sending DealerApplicationEmail.")
-        return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
+        return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furrydelphia.org."})
     return JsonResponse({'success': True})
 
   except Exception as e:
@@ -920,7 +921,7 @@ def checkoutUpgrade(request):
             sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
             logger.exception("Error sending UpgradePaymentEmail - zero sum.")
-            return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -942,7 +943,7 @@ def checkoutUpgrade(request):
             sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
             logger.exception("Error sending UpgradePaymentEmail.")
-            return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -980,7 +981,7 @@ def addToCart(request):
     banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
     if banCheck:
         logger.exception("***ban list registration attempt***")
-        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furthemore 2018. If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
+        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furrydelphia 2018. If you have any questions, or would like further information or assistance, please contact Registration at reg@furrydelphia.org."})
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
@@ -1007,7 +1008,8 @@ def addToCart(request):
         if plOption.optionExtraType == 'int' and option['value'] == '':
             attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue='0')
         else:
-            attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
+            if option['value'] != '':
+                attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
 
     #add attendee to session order
@@ -1063,7 +1065,7 @@ def checkout(request):
             sendRegistrationEmail(order, att.email)
         except Exception as e:
             logger.exception("Error sending RegistrationEmail - zero sum.")
-            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
 
     porg = Decimal(postData["orgDonation"].strip() or 0.00)
@@ -1100,7 +1102,7 @@ def checkout(request):
             sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             logger.exception("Error sending RegistrationEmail.")
-            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -1123,11 +1125,11 @@ def basicBadges(request):
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
               'printed': badge.printed, 'discount': badge.getDiscount(),
               'assoc': badge.abandoned(), 'orderItems': getOptionsDict(badge.orderitem_set.all()) }
-             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2018"]
+             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furrydelphia 2018"]
 
     staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
                   'title': s.title, 'id': s.id}
-                for s in staff if s.event.name == "Furthemore 2018"]
+                for s in staff if s.event.name == "Furrydelphia 2018"]
 
     for staff in staffdata:
         sbadge = Staff.objects.get(id=staff['id']).getBadge()
@@ -1151,7 +1153,7 @@ def basicBadges(request):
 @staff_member_required
 def vipBadges(request):
     badges = Badge.objects.all()
-    vipLevels = ('God-mode','God-Mode','Player','Raven God', 'Elite Sponsor')
+    vipLevels = ('Pastry Chef', 'Manager')
 
     bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(),
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
