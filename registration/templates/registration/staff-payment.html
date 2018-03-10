@@ -11,23 +11,23 @@
       </div>
       <div class="modal-body">
     	<p>Staff must be over the age of 18.</p>
-	    <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
+	    <p>Please contact <a href="mailto:registration@furrydelphia.org">registration@furrydelphia.org</a> if you have any questions.</p>
       </div>
     </div>
   </div>
 </div>
 
 	{% if not staff %}
-		<h1>Staff Registration - Furthemore 2018</h1>
+		<h1>Staff Registration - Furrydelphia 2018</h1>
 		<p>Your session has expired. Please use the link in your registration email again to start over.</p>
 	{% else %}
 
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Staff Registration - Furthemore 2018</h1>
+		<h1>Staff Registration - Furrydelphia 2018</h1>
 
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furrydelphia.org'>registration@furrydelphia.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
 		<hr>
 			
@@ -201,7 +201,7 @@
                 <div class="form-group">
                     <div class="col-sm-12">
                         <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
-			I agree to abide by Furthemore's Code of Conduct.
+			I agree to abide by Furrydelphia's Code of Conduct.
                     </div>
 		    <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
@@ -487,7 +487,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18) {
-            alert("You must be 18 by the first day of Furthemore to register online.")
+            alert("You must be 18 by the first day of Furrydelphia to register online.")
             return;
         }
 
@@ -511,7 +511,7 @@
 				'contactRelation': $("#contactRel").val(),
 			},
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furthemore 2018'
+            'event': 'Furrydelphia 2018'
 		};
 		
 
@@ -528,7 +528,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                        	alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
+                        	alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furrydelphia.org for assistence.")
 			}
 			$("#register").removeAttr("disabled");
 		    },
@@ -538,7 +538,7 @@
  	                    window.location = "{% url 'invoiceStaff' %}";
                         } else {
 			    $("#register").removeAttr("disabled");
-                    	    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
+                    	    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furrydelphia.org for assistence.")
 			}
                     }
 		});
