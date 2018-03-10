@@ -1,4 +1,5 @@
 {% extends "registration/master.html" %}
+{% load settings %}
 
 {% block head %}
     <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
@@ -6,8 +7,9 @@
     <script type="text/javascript">
 var paymentForm = new SqPaymentForm({
   // Initialize the payment form elements
-  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
-  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+
   inputClass: 'form-control',
   // Initialize the credit card placeholders
   cardNumber: {
@@ -168,7 +170,7 @@ var paymentForm = new SqPaymentForm({
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Furthemore</label>
+                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Furrydelphia</label>
 		    <div class="col-sm-4">
             <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate"  data-error="Please use only numbers and a decimal." />
 		    </div>
@@ -312,7 +314,7 @@ var paymentForm = new SqPaymentForm({
 		if (cancel == false) { return;}
 		
                 $.getJSON("{% url 'cancelOrder' %}", function(data) {
-			window.location = "www.furthemore.org";
+			window.location = "www.furrydelphia.org";
                 });
 	});
 	
@@ -364,7 +366,7 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
+                        alert("An error has occurred. If this error continues, please contact registration@furrydelphia.org for assistence.")
 			$("#checkout").removeAttr("disabled");
 		    },
             "success": function (result, status) {
@@ -375,7 +377,7 @@ function doCheckout() {
                         alert(result.message);
                         window.location = "{% url 'doneStaff' %}";
                     } else {
-                        alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furrydelphia.org for assistence.");
                         $("#checkout").removeAttr("disabled");
                     }
                 }
