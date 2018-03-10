@@ -8,43 +8,40 @@ import logging
 
 from .models import *
 
-
 import squareconnect
 from squareconnect.rest import ApiException
 from squareconnect.apis.transactions_api import TransactionsApi
 from squareconnect.apis.locations_api import LocationsApi
 
-squareconnect.configuration.access_token = 'sandbox-sq0atb-OiZSIsVbxQ3w40DWT09ZIQ'
-location_id = 'CBASED7NPDEnW3rjrTkuZBqR9vYgAQ'
-
+squareconnect.configuration.access_token = settings.SQUARE_ACCESS_TOKEN
 
 logger = logging.getLogger("django.request")
 
-# Returns two variabies: 
+# Returns two variabies:
 #    True/False  - general success flag
-#    message - type of failure. 
+#    message - type of failure.
 def chargePayment(orderId, ccData, ipAddress):
   try:
     order = Order.objects.get(id=orderId)
     idempotency_key = str(uuid.uuid1())
     convertedTotal = int(order.total*100)
-    
-    amount = {'amount': convertedTotal, 'currency': 'USD'}
+
+    amount = {'amount': convertedTotal, 'currency': settings.SQUARE_CURRENCY}
 
     billing_address = {'address_line_1': ccData["address1"], 'address_line_2': ccData["address2"],
                        'locality': ccData["city"], 'administrative_district_level_1': ccData["state"],
-                       'postal_code': ccData["postal"], 'country': ccData["country"], 
-                       'buyer_email_address': ccData["email"], 
+                       'postal_code': ccData["postal"], 'country': ccData["country"],
+                       'buyer_email_address': ccData["email"],
                        'first_name': ccData["cc_firstname"], 'last_name': ccData["cc_lastname"]}
 
-    body = {'idempotency_key': idempotency_key, 'card_nonce': ccData["nonce"], 'amount_money': amount, 
+    body = {'idempotency_key': idempotency_key, 'card_nonce': ccData["nonce"], 'amount_money': amount,
             'reference_id': order.reference, 'billing_address': billing_address}
 
     print("---- Begin Transaction ----")
     print(body)
 
     api_instance = TransactionsApi()
-    api_response = api_instance.charge(location_id, body)
+    api_response = api_instance.charge(settings.SQUARE_LOCATION_ID, body)
 
     print("---- Charge Submitted ----")
     print(api_response)
@@ -101,7 +98,7 @@ def chargePayment_authnet(orderId, ccData, ipAddress):
 #    creditCard = apicontractsv1.creditCardType()
 #    creditCard.cardNumber = ccData['cc_number']
 #    creditCard.expirationDate = ccData['cc_year'] + '-' + ccData['cc_month']
- 
+
 #    billTo = apicontractsv1.customerAddressType()
 #    billTo.firstName = ccData['cc_firstname']
 #    billTo.lastName = ccData['cc_lastname']
@@ -114,10 +111,10 @@ def chargePayment_authnet(orderId, ccData, ipAddress):
 #    ordertype = apicontractsv1.orderType()
 #    ordertype.invoiceNumber = order.reference
 #    ordertype.description = "APIS"
- 
+
 #    payment = apicontractsv1.paymentType()
 #    payment.creditCard = creditCard
- 
+
 #    transactionrequest = apicontractsv1.transactionRequestType()
 #    transactionrequest.transactionType ="authCaptureTransaction"
 #    transactionrequest.amount = order.total
@@ -125,7 +122,7 @@ def chargePayment_authnet(orderId, ccData, ipAddress):
 #    transactionrequest.billTo = billTo
 #    transactionrequest.order = ordertype
 #    transactionrequest.customerIP = clientIP
- 
+
 #    createtransactionrequest = apicontractsv1.createTransactionRequest()
 #    createtransactionrequest.merchantAuthentication = merchantAuth
 #    createtransactionrequest.refId = order.reference
@@ -133,7 +130,7 @@ def chargePayment_authnet(orderId, ccData, ipAddress):
 #    createtransactionrequest.transactionRequest = transactionrequest
 #    createtransactioncontroller = createTransactionController(createtransactionrequest)
 #    createtransactioncontroller.execute()
- 
+
 #    response = createtransactioncontroller.getresponse()
 #    if response is not None:
 #        if response.messages.resultCode == "Ok":
@@ -157,6 +154,6 @@ def chargePayment_authnet(orderId, ccData, ipAddress):
 #                print ('Error message: %s' % response.messages.message[0]['text'].text);
 #    else:
 #        print ('Null Response.');
-    
+
 #    return response
-    return None 
+    return None
