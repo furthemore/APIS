@@ -144,7 +144,7 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Checkout</h1>
-		<div>There are no attendees in your order. Please check your email link and try again, or contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> for help.</div>
+		<div>There are no attendees in your order. Please check your email link and try again, or contact <a href="mailto:registration@furrydelphia.org">registration@furrydelphia.org</a> for help.</div>
 	</div>
 	</div>
 
@@ -223,14 +223,14 @@
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
+                        alert("An error has occurred. If this error continues, please contact registration@furrydelphia.org for assistence.")
 			$("#checkout").removeAttr("disabled");
 		    },
                     "success": function (result, status) {
                         if (result.success) {
 				window.location = "/apis/registration/jersey/done/";
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furrydelphia.org for assistence.");
 			    $("#checkout").removeAttr("disabled");
 			}
                     }

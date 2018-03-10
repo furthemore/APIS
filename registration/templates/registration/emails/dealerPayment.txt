@@ -3,7 +3,7 @@ Salutations Sakura Festival Vendors,
 
 Thank you for participating in Fur The More's Fantasy in the Sakura Forest! 
 We look forward to meeting under the Cherry Blossoms on April 20-22nd. If you have any questions or 
-concerns, please email marketplace@furthemore.org.
+concerns, please email marketplace@furrydelphia.org.
 
 Your confirmation number is: {{order.reference}}
 Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}
@@ -40,7 +40,7 @@ Previous Level {{dealer.attendee.effectiveLevel}}: -${{dealer.attendee.effective
 Charity Donation: ${{order.charityDonation}}
 {% endif %}
 {% if order.orgDonation > 0 %}
-Furthemore Donation: ${{order.orgDonation}}
+Furrydelphia Donation: ${{order.orgDonation}}
 {% endif %}
 
 Total: ${{order.total}}

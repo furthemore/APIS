@@ -9,7 +9,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furthemore 2018</h1>
+		<h1>Registration Upgrade - Furrydelphia 2018</h1>
 
 		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
@@ -27,7 +27,7 @@
 
 		<h3>Choose a different attendee level</h3>
 
-        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level (such as extra GOH tickets) you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a>.</div>
+        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level (such as extra GOH tickets) you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:registration@furrydelphia.org">registration@furrydelphia.org</a>.</div>
 
 		<div class="row" id="levelContainer"></div>
 
@@ -45,7 +45,7 @@
 
 {% else %}
 
-<h1>Registration Upgrade - Furthemore 2018</h1>
+<h1>Registration Upgrade - Furrydelphia 2018</h1>
 <p>Your session has expired. Please use the link in your email again to start over.</p>
 
 {% endif %}
@@ -315,7 +315,7 @@
 		var data = {
 			'attendee': {'id': attendee.id,}, 
             'badge': {'id': badge.id,},
-            'event': 'Furthemore 2018',
+            'event': 'Furrydelphia 2018',
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
 		};
 		
@@ -333,7 +333,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.")
+                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.")
 			}
 			$("#checkout").removeAttr("disabled");
 		    },
@@ -343,7 +343,7 @@
                             window.location = "{% url 'invoiceUpgrade' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.");
 			}
                     }
 		});
