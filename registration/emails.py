@@ -13,7 +13,7 @@ def sendRegistrationEmail(order, email):
     data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
     msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
     msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
-    sendEmail("registration@furrydelphia.org", [email],
+    sendEmail("registration@reg.furrydelphia.org", [email],
               "Furrydelphia 2018 Registration Payment", msgTxt, msgHtml)
 
     # send registration confirmations to all people in the order
@@ -21,7 +21,7 @@ def sendRegistrationEmail(order, email):
         data = {'reference': order.reference, 'orderItem': oi}
         msgTxt = render_to_string('registration/emails/registration.txt', data)
         msgHtml = render_to_string('registration/emails/registration.html', data)
-        sendEmail("registration@furrydelphia.org", [oi.badge.attendee.email],
+        sendEmail("registration@reg.furrydelphia.org", [oi.badge.attendee.email],
                  "Furrydelphia 2018 Registration Confirmation", msgTxt, msgHtml)
 
         # send vip notification if necessary
@@ -29,7 +29,7 @@ def sendRegistrationEmail(order, email):
             data = {'badge': oi.badge}
             msgTxt = render_to_string('registration/emails/vipNotification.txt', data)
             msgHtml = render_to_string('registration/emails/vipNotification.html', data)
-            sendEmail("registration@furrydelphia.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')],
+            sendEmail("registration@reg.furrydelphia.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')],
                  "Furrydelphia 2018 VIP Registration", msgTxt, msgHtml)
 
 
@@ -38,7 +38,7 @@ def sendUpgradePaymentEmail(attendee, order):
     orderItems = OrderItem.objects.filter(order=order)
     msgTxt = render_to_string('registration/emails/upgrade.txt', data)
     msgHtml = render_to_string('registration/emails/upgrade.html', data)
-    sendEmail("registration@furrydelphia.org", [attendee.email], "Furrydelphia 2018 Upgrade Payment",
+    sendEmail("registration@reg.furrydelphia.org", [attendee.email], "Furrydelphia 2018 Upgrade Payment",
               msgTxt, msgHtml)
 
     for oi in orderItems:
@@ -46,7 +46,7 @@ def sendUpgradePaymentEmail(attendee, order):
             data = {'badge': oi.badge}
             msgTxt = render_to_string('registration/emails/vipNotification.txt', data)
             msgHtml = render_to_string('registration/emails/vipNotification.html', data)
-            sendEmail("registration@furrydelphia.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')],
+            sendEmail("registration@reg.furrydelphia.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')],
                  "Furrydelphia 2018 VIP Registration", msgTxt, msgHtml)
 
 
@@ -56,14 +56,14 @@ def sendStaffRegistrationEmail(orderId):
     data = {'reference': order.reference}
     msgTxt = render_to_string('registration/emails/staffRegistration.txt', data)
     msgHtml = render_to_string('registration/emails/staffRegistration.html', data)
-    sendEmail("registration@furrydelphia.org", [email], "Furrydelphia 2018 Staff Registration",
+    sendEmail("registration@reg.furrydelphia.org", [email], "Furrydelphia 2018 Staff Registration",
               msgTxt, msgHtml)
 
 def sendStaffPromotionEmail(staff):
     data = {'registrationToken': staff.registrationToken}
     msgTxt = render_to_string('registration/emails/staffPromotion.txt', data)
     msgHtml = render_to_string('registration/emails/staffPromotion.html', data)
-    sendEmail("registration@furrydelphia.org", [staff.attendee.email], "Welcome to Furrydelphia Staff!",
+    sendEmail("registration@reg.furrydelphia.org", [staff.attendee.email], "Welcome to Furrydelphia Staff!",
               msgTxt, msgHtml)
 
 def sendDealerApplicationEmail(dealerId):
