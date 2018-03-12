@@ -107,7 +107,7 @@
             <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
                     <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" />
+                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" />
             <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
@@ -205,7 +205,7 @@
                     <div class="col-sm-9">
                         <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
                         <p class="help-block">
-                            If the table/booth type I selected is no longer available, I am willing to be assigned a different spot type (Table to booth or booth to table). You can decide to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept, you will be responsible for any difference in price.
+                            If the length of table you request in this application is no longer available by the time you are accepted, we may have to shrink you to a smaller table size. By checking this box you are requesting that we contact you with alternative options for table sizing in the event this is the case. You will only be responsible for paying for the length of table that you actually receive.
                         </p>
                     </div>
                 </div>
@@ -256,12 +256,12 @@
                  <div>
                      <p>
                         <h2>Terms and Conditions</h2>
-                        <ol>
+                        <ol id="terms">
                             <li>
                                 Anyone approved to be a dealer at Furrydelphia MUST register for the convention and pay for their approved table within three weeks (21 days) of their acceptance. After three weeks (21 days), your spot will be offered to the next person on the wait list, and at that point the table will go to whichever of you pays for the spot first. Register and pay immediately upon approval in order to best secure your spot!
                             </li>
                             <li>
-                                Dealers MUST have a valid Pennsylvania sales tax license in order to sell items at their own tables. It is illegal to sell anything that is subject to Pennsylvania sales tax without one. It is also illegal for multiple dealerships to share a single tax license. As an event promoter under the Commonwealth of Pennsylvania, we are obligated to strictly enforce these laws, and to that end anyone found attempting to purposefully circumvent tax law will be ejected from the Dealer's Den without refund.
+                                If you do not have a valid tax license at the time of your application, you must obtain one in advance of the convention and provide us with a photocopy of your valid tax license when you check into the Dealer's Den. Dealers <b>MUST</b> have a valid Pennsylvania sales tax license in order to sell items at their own tables. It is illegal to sell anything that is subject to Pennsylvania sales tax without one. It is also illegal for multiple dealerships to share a single tax license. As an event promoter under the Commonwealth of Pennsylvania, we are obligated to strictly enforce these laws, and to that end anyone found attempting to purposefully circumvent tax law will be ejected from the Dealer's Den without refund.
                             </li>
                             <li>
                                 Furrydelphia, like most conventions of its sort, only allows ONE vendor to operate per table registration. You may have others behind your table, but they must be helping you to sell your things, and not selling things of their own. Individuals found to be sharing a single table registration between two or more dealers (for example, trying to save money by splitting one table registration between two dealers) will be ejected from the Dealer's Den without refund. 
@@ -305,6 +305,7 @@
     $( "body" ).ready(function() {
         if (!Modernizr.inputtypes.date) {
             $("#birthDate").datepicker({
+                format: 'yyyy-mm-dd',
                 changeMonth: true,
                 changeYear: true
             });
