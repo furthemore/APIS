@@ -8,3 +8,6 @@ configobj
 payeezy
 django-extensions
 django-guardian
+squareconnect
+Werkzeug
+django-flat-responsive
