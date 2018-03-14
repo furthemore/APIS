@@ -155,7 +155,7 @@ class Badge(models.Model):
 
     def getOrderItems(self):
         orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
-        return orderItems        
+        return orderItems
 
     def save(self, *args, **kwargs):
       if not self.id and not self.registeredDate:
@@ -261,7 +261,7 @@ class PriceLevelOption(models.Model):
     active = models.BooleanField(default=False)
 
     def __str__(self):
-      return '%s' % (self.optionName)
+        return '{0} (${1})'.format(self.optionName, self.optionPrice)
 
     def getList(self):
         if self.optionExtraType in ["int", "bool", "string"]:
