@@ -472,7 +472,8 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ('event', 'printed')
-    list_display = ('attendee', 'badgeName', 'badgeNumber', 'printed', 'paidTotal', 'effectiveLevel', 'abandoned', 'get_age_range')
+    list_display = ('attendee', 'badgeName', 'badgeNumber', 'printed', 'paidTotal', 'effectiveLevel', 'abandoned',
+                    'get_age_range', 'registeredDate')
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName', 'badgeName', 'badgeNumber']
     readonly_fields = ['get_age_range', ]
     actions = [assign_badge_numbers, print_badges, print_dealerasst_badges, assign_numbers_and_print,
