@@ -536,7 +536,7 @@ def checkoutAsstDealer(request):
         total = total + Decimal(60*partners)
     ip = get_client_ip(request)
 
-    status, message, order = doCheckout(pbill, total, None, orderItems, 0, 0, ip)
+    status, message, order = doCheckout(pbill, total, None, [orderItem], 0, 0, ip)
 
     if status:
         request.session.flush()
