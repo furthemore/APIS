@@ -159,3 +159,9 @@ SQUARE_CURRENCY = 'USD'
 EMAIL_HOST = 'smtp.mailgun.org'
 EMAIL_HOST_USER = 'postmaster@apis.example.com'
 EMAIL_HOST_PASSWORD = '470c8710296572192aebeafcafedead2-2b4c5a6c-8c58af2d'
+
+# Return channel for Android register application
+REGISTER_KEY = 'df14e4d5469e801dbc8e1df4eebd97b3'
+
+# Firebase/Pushy.me cloud-push API key
+CLOUD_MESSAGING_KEY = "AAA..."

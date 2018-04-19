@@ -1,0 +1,46 @@
+<table>
+{% for badge in result %}
+<tr>
+  <td>
+    {{ badge.firstName }} {{ badge.lastName }}<br>
+    <b>"{{ badge.badgeName }}"</b><br>
+    {{ badge.effectiveLevel.name }} Registration
+  </td>
+  <td>${{ badge.effectiveLevel.price }}</td>
+{% endfor %}
+</table>
+<table>
+<hr>
+<tr>
+  <td>Charity Donation</td>
+  <td>${{ charityDonation }}</td>
+</tr>
+<tr>
+  <td>Organisation Donation</td>
+  <td>${{ orgDonation }}</td>
+</tr>
+</table>
+<hr>
+<div class="total">Total: ${{ total }}</div>
+<style>
+table {
+  width: 100%;
+  font-size: 18pt;
+}
+tr td:nth-child(1) {
+  width: 80%;
+}
+tr td:nth-child(2) {
+  width: 20%;
+  text-align: right;
+  padding-right: 10px;
+  vertical-align: bottom;
+}
+.total {
+  float: right;
+  font-size: 26pt;
+  font-weight: bold;
+  margin-right:10px;
+}
+</style>
+

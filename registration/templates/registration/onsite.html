@@ -99,7 +99,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" required data-error="Date of birth is required.">
+                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (YYYY-MM-DD)" required data-error="Date of birth is required.">
             <p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -244,6 +244,7 @@
         // only init the javascript datepicker if none is provided by the browser natively
         if (!Modernizr.inputtypes.date) {
             $("#birthDate").datepicker({
+                format: 'yyyy-mm-dd',
                 changeMonth: true,
                 changeYear: true
             });
@@ -515,7 +516,7 @@
                 'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': toDateFormat(birthdate),
+                'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': $("#birthDate").val(),
                 'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
                 'surveyOk' : $("#survey").is(':checked'), 'volDepts': '', 'asl' : '',
                 'onsite' : true

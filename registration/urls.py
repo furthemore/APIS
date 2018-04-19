@@ -1,9 +1,12 @@
 from django.conf.urls import url
+from django.contrib.auth import views as auth_views
 
 from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+
+    url(r'^logout/$', auth_views.logout, name='logout'),
 
     url(r'^upgrade/lookup/?$', views.findUpgrade, name='findUpgrade'),
     url(r'^upgrade/info/?$', views.infoUpgrade, name='infoUpgrade'),
@@ -43,6 +46,19 @@ urlpatterns = [
     url(r'^onsite/cart/?$', views.onsiteCart, name='onsiteCart'),
     url(r'^onsite/done/?$', views.onsiteDone, name='onsiteDone'),
     url(r'^onsite/register/?$', views.onsiteAdmin, name='onsiteAdmin'),
+    url(r'^onsite/register/search/?$', views.onsiteAdminSearch, name='onsiteAdminSearch'),
+    url(r'^onsite/register/cart/?$', views.onsiteAdminCart, name='onsiteAdminCart'),
+    url(r'^onsite/register/cart/add/?$', views.onsiteAddToCart, name='onsiteAddToCart'),
+    url(r'^onsite/register/cart/remove/?$', views.onsiteRemoveFromCart, name='onsiteRemoveFromCart'),
+    url(r'^onsite/register/open/?$', views.openTerminal, name='openTerminal'),
+    url(r'^onsite/register/close/?$', views.closeTerminal, name='closeTerminal'),
+    url(r'^onsite/register/payment/?$', views.enablePayment, name='enablePayment'),
+    url(r'^onsite/register/clear/?$', views.onsiteAdminClearCart, name='onsiteAdminClearCart'),
+    url(r'^onsite/register/badge/assign/?$', views.assignBadgeNumber, name='assignBadgeNumber'),
+    url(r'^onsite/register/badge/print/?$', views.onsitePrintBadges, name='onsitePrintBadges'),
+    url(r'^onsite/square/complete/?$', views.completeSquareTransaction, name='completeSquareTransaction'),
+
+    url(r'^onsite/signature/?$', views.onsiteSignature, name='onsiteSignature'),
 
     url(r'^cart/?$', views.getCart, name='cart'),
     url(r'^cart/add/?$', views.addToCart, name='addToCart'),
@@ -70,4 +86,8 @@ urlpatterns = [
 
     url(r'^pdf/?$', views.servePDF, name='pdf'),
     url(r'^print/?$', views.printNametag, name='print'),
+
+    url(r'^firebase/register/?', views.firebaseRegister, name='firebaseRegister'),
+    url(r'^firebase/lookup/?', views.firebaseLookup, name='firebaseLookup'),
+
 ]
