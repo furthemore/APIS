@@ -22,7 +22,7 @@
                 <div class="col-sm-5 col-sm-offset-1">{{item.badge.badgeName}} - {{item.priceLevel}}</div>
                 <div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
                 <div class="col-sm-2">
-                    <a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
+                    <a class="deleteAttendee" id="delete_{{item.id}}" href="#">Remove</a>
                 </div>
             </div>
             {% if 'Minor' in item.priceLevel.name%}
@@ -211,7 +211,7 @@
             },
                     "success": function (result, status) {
                         if (result.success) {
-                window.location = "{% url 'done' %}";
+                window.location = "{% url 'onsiteDone' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
                 $("#checkout").removeAttr("disabled");
