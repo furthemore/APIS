@@ -2,42 +2,37 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <!-- <link rel="stylesheet" href="http://localhost:8000/stylesheet.css" type="text/css" charset="utf-8" /> -->
-    <!--<link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono:400' rel='stylesheet' type='text/css'>-->
 
     <style>
       body {
         margin: 0px 0px;
         background-color: white;
-        font-family: 'Computer Pixel-7';
-        word-spacing: -10px;
+        font-family: sans-serif;
       }
 
       .container {
-        width: 400px;
+        width: 300px;
         padding-left: 12px;
       }
-      
+
       .name {
-        font-size: 3.5em;
-        width: 100%;
+	position: absolute;
+	left: 30px;
+        max-height: 75px;
+        width: 350px;
         text-align: center;
-        line-height: 70%;
+        font-size: 80px;
+        border: 1px solid black;
       }
 
-      .title {
-        text-align: center;
-        font-size: 2.0em;
-        margin-top: 10px;
-        position: absolute;
-        top: 70px;
-        width: 400px;
+      span {
+        vertical-align: middle;
       }
 
       .pull-right {
         float: right;
         position: absolute;
-        top: 80px;
+        top: 90px;
         left: 325px;
         font-size: 2.0em;
       }
@@ -45,15 +40,20 @@
       .pull-left {
         float: left;
         position: absolute;
-        top: 80px;
+        top: 90px;
         left: 40px;
         font-size: 2.0em;
       }
 
       .name-container {
+        position: absolute;
+        top: 0px;
+        left: 10px;
         height: 80px;
-        width: 400px;
+        width: 380px;
         overflow: hidden;
+        vertical-align: middle;
+
       }
     </style>
 
@@ -62,10 +62,7 @@
 
   <div class="container">
     <!-- max 10 characters: 5em -->
-    <div class="name-container">
-      <div id="name" class="name">%NAME%</div>
-    </div>
-    <div class="title">%TITLE%</div>
+       <div class="name resize">%NAME%</div>
     <span class="pull-left">%LEVEL%</span>
     <span class="pull-right">%NUMBER%</span>
   </div>
@@ -76,17 +73,37 @@
 -->
 
   <script>
-  var name = $('#name').text();
-  var size = '3.5em';
-  if (name.length <= 8) {
-    size = '7em';
-  } else if ((name.length > 8) && (name.length <= 11)) {
-    size = '5em';
-  } 
-  $(".name").css('font-size', size);
-  //$(document).ready(function () {
-    //$(".name").fitText(1, { minFontSize: '3.5em' });
-  //});
+var autoSizeText;
+autoSizeText = function() {
+  var el, elements, _i, _len, _results;
+  elements = $('.resize');
+  console.log(elements);
+  if (elements.length < 0) {
+    return;
+  }
+  _results = [];
+  for (_i = 0, _len = elements.length; _i < _len; _i++) {
+    el = elements[_i];
+    _results.push((function(el) {
+      var resizeText, _results1;
+      resizeText = function() {
+        var elNewFontSize;
+        elNewFontSize = (parseInt($(el).css('font-size').slice(0, -2)) - 1) + 'px';
+        return $(el).css('font-size', elNewFontSize);
+      };
+      _results1 = [];
+      while (el.scrollHeight > el.offsetHeight) {
+        _results1.push(resizeText());
+      }
+      return _results1;
+    })(el));
+  }
+  return _results;
+};
+
+$(document).ready(function () {
+    autoSizeText();
+});
   </script>
 </body>
 </html>

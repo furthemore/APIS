@@ -70,7 +70,7 @@ class OrdersTestCases(TestCase):
                            staffRegStart=now-ten_days, staffRegEnd=now+ten_days,
                            attendeeRegStart=now-ten_days, attendeeRegEnd=now+ten_days,
                            onlineRegStart=now-ten_days, onlineRegEnd=now+ten_days, 
-                           eventStart=now-ten_days, eventEnd=now+ten_days)
+                           eventStart=now-ten_days, eventEnd=now+ten_days, staffDiscount=self.staffdiscount)
         self.event.save()
 
         self.table_130 = TableSize(name="Booth", description="description here", chairMin=0, chairMax=1,
