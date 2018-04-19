@@ -97,8 +97,12 @@ class Attendee(models.Model):
     def __str__(self):
       if self is None:
           return "--"
-      return '%s %s' % (self.firstName, self.lastName)
-
+      try:
+        test1 = self.firstName.decode('ascii')
+        test2 = self.lastName.decode('ascii')
+        return '%s %s' % (self.firstName, self.lastName)
+      except:
+        return '--attendee--'
 
 class Badge(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
