@@ -24,6 +24,11 @@ admin.site.register(ShirtSizes)
 admin.site.register(Event)
 admin.site.register(TableSize)
 
+class FirebaseAdmin(admin.ModelAdmin):
+    list_display = ('name', 'token', 'closed')
+
+admin.site.register(Firebase, FirebaseAdmin)
+
 class BanListAdmin(admin.ModelAdmin):
     list_display = ('firstName', 'lastName', 'email')
 

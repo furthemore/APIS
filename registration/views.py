@@ -4,9 +4,15 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 from django.utils import timezone
+from django.conf import settings
+from django.urls import reverse
 
-from datetime import datetime
+import time
+from datetime import datetime, date
 from decimal import *
 from operator import itemgetter
 import itertools
@@ -19,6 +25,8 @@ import logging
 from .emails import *
 from .models import *
 from .payments import chargePayment
+from .pushy import PushyAPI
+import printing
 
 # Create your views here.
 logger = logging.getLogger("django.request")
@@ -123,12 +131,18 @@ def getTotal(orderItems, disc = ""):
             total += itemTotal
     return total
 
-def getStaffTotal(orderItems, discount, staff):
+def getStaffTotal(orderItems, staff):
     badge = Badge.objects.get(attendee=staff.attendee,event=staff.event)
+    discount = staff.event.staffDiscount
     if badge.effectiveLevel():
-        discount = None
-    subTotal = getTotal(orderItems, discount)
+        subTotal = getTotal(orderItems, None)
+    else:
+        subTotal = getTotal(orderItems, discount)
+
     alreadyPaid = badge.paidTotal()
+    if alreadyPaid < discount.amountOff:
+        alreadyPaid = discount.amountOff
+
     total = subTotal - alreadyPaid
     if total < 0:
       return 0
@@ -207,6 +221,9 @@ def infoStaff(request):
         staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
         badges = Badge.objects.filter(attendee=staff.attendee,event=staff.event)
+        discount = {}
+        if staff.event.staffDiscount and staff.event.staffDiscount.isValid():
+            discount = model_to_dict(staff.event.staffDiscount)
         lvl_dict = {}
         badge = {}
         if badges.count() > 0:
@@ -217,12 +234,11 @@ def infoStaff(request):
         context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
                    'jsonLevel': json.dumps(lvl_dict, default=handler),
-                   'badge': badge}
+                   'badge': badge, 'jsonDiscount': json.dumps(discount, default=handler)}
     return render(request, 'registration/staff-payment.html', context)
 
 def invoiceStaff(request):
     sessionItems = request.session.get('order_items', [])
-    sessionDiscount = request.session.get('discount', "")
     if not sessionItems:
         context = {'orderItems': [], 'total': 0, 'discount': {}}
         request.session.flush()
@@ -230,8 +246,8 @@ def invoiceStaff(request):
         staffId = request.session['staff_id']
         staff = Staff.objects.get(id=staffId)
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        discount = Discount.objects.get(codeName=sessionDiscount)
-        total = getStaffTotal(orderItems, discount, staff)
+        discount = staff.event.staffDiscount
+        total = getStaffTotal(orderItems, staff)
         context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'staff': staff}
     return render(request, 'registration/staff-checkout.html', context)
 
@@ -322,7 +338,6 @@ def addStaff(request):
     orderItems = request.session.get('order_items', [])
     orderItems.append(orderItem.id)
     request.session['order_items'] = orderItems
-    request.session["discount"] = "StaffDiscount"
 
     return JsonResponse({'success': True})
 
@@ -330,14 +345,13 @@ def addStaff(request):
 
 def checkoutStaff(request):
     sessionItems = request.session.get('order_items', [])
-    pdisc = request.session.get('discount', "")
     staffId = request.session['staff_id']
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
 
-    discount = Discount.objects.get(codeName="StaffDiscount")
     staff = Staff.objects.get(id=staffId)
-    subtotal = getStaffTotal(orderItems, discount, staff)
+    discount = staff.event.staffDiscount
+    subtotal = getStaffTotal(orderItems, staff)
 
     if subtotal == 0:
       status, message, order = doZeroCheckout(staff.attendee, discount, orderItems)
@@ -431,10 +445,10 @@ def infoDealer(request):
         attendee_dict = model_to_dict(dealer.attendee)
         badge_dict = model_to_dict(badge)
         table_dict = model_to_dict(dealer.tableSize)
+        lvl_dict = {}
         if badge.effectiveLevel():
-            lvl_dict = model_to_dict(badge.effectiveLevel())
-        else:
-            lvl_dict = {}
+            lvl_dict["basePrice"] = badge.effectiveLevel().basePrice
+
         context = {'dealer': dealer, 'badge': badge,
                    'jsonDealer': json.dumps(dealer_dict, default=handler),
                    'jsonTable': json.dumps(table_dict, default=handler),
@@ -774,10 +788,358 @@ def onsiteDone(request):
     request.session.flush()
     return render(request, 'registration/onsite-done.html', context)
 
-#@staff_member_required
+@staff_member_required
 def onsiteAdmin(request):
-    context = {}
+    # Modify a dummy session variable to keep it alive
+    request.session['heartbeat'] = time.time()
+
+    terminals = list(Firebase.objects.all())
+    term = request.session.get('terminal', None)
+    query = request.GET.get('search', None)
+
+    errors = []
+    results = None
+
+    # Set default payment terminal to use:
+    if term is None and len(terminals) > 0:
+        request.session['terminal'] = terminals[0].id
+
+    # No terminal selection saved in session - see if one's
+    # on the URL (that way it'll survive session timeouts)
+    url_terminal = request.GET.get('terminal', None)
+    logger.info("Terminal from GET parameter: {0}".format(url_terminal))
+    if url_terminal is not None:
+        try:
+            terminal_obj = Firebase.objects.get(id=int(url_terminal))
+            request.session['terminal'] = terminal_obj.id
+        except Firebase.DoesNotExist:
+            errors.append({'type' : 'warning', 'text' : 'The payment terminal specified has not registered with the server'})
+        except ValueError:
+            # weren't passed an integer
+            errors.append({'type' : 'danger', 'text' : 'Invalid terminal specified'})
+
+
+    logger.info("Terminal from session: {0}".format(request.session['terminal']))
+
+
+    if query is not None:
+        results = Badge.objects.filter(
+            Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
+            Q(event__name__icontains='2018')
+        )
+        if len(results) == 0:
+            errors.append({'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)})
+
+    context = {
+        'terminals' : terminals,
+        'errors' : errors,
+        'results' : results
+    }
+
     return render(request, 'registration/onsite-admin.html', context)
+
+@staff_member_required
+def onsiteAdminSearch(request):
+    terminals = list(Firebase.objects.all())
+    query = request.POST.get('search', None)
+    if query is None:
+        return redirect('onsiteAdmin')
+
+    errors = []
+    results = Badge.objects.filter(
+        Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
+        Q(event__name__icontains='2018')
+    )
+    if len(results) == 0:
+        errors = [{'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)}]
+
+    context = {
+        'terminals' : terminals,
+        'errors' : errors,
+        'results' : results
+    }
+    return render(request, 'registration/onsite-admin.html', context)
+
+def get_age(obj):
+    born = obj.attendee.birthdate
+    today = date.today()
+    age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+    return age
+
+@staff_member_required
+def onsiteAdminCart(request):
+    # Returns dataset to render onsite cart preview
+    request.session['heartbeat'] = time.time()  # Keep session alive
+    cart = request.session.get('cart', None)
+    if cart is None:
+        return JsonResponse({'success' : False, 'reason' : 'Cart not initialized'})
+
+    badges = []
+    for id in cart:
+        try:
+            badge = Badge.objects.get(id=id)
+            badges.append(badge)
+        except Badge.DoesNotExist:
+            cart.remove(id)
+            logger.error("ID {0} was in cart but doesn't exist in the database".format(id))
+
+    order = None
+    subtotal = 0
+    result = []
+    for badge in badges:
+        oi = badge.getOrderItems()
+        level = None
+        for item in oi:
+            level = item.priceLevel
+            if item.order is not None:
+                order = item.order
+        if level is None:
+            effectiveLevel = None
+        else:
+            effectiveLevel = {
+                'name' : level.name,
+                'price' : level.basePrice
+            }
+            subtotal += level.basePrice
+
+        item = {
+            'id' : badge.id,
+            'firstName' : badge.attendee.firstName,
+            'lastName' : badge.attendee.lastName,
+            'badgeName' : badge.badgeName,
+            'abandoned' : badge.abandoned,
+            'effectiveLevel' : effectiveLevel,
+            'discount' : badge.getDiscount(),
+            'age' : get_age(badge)
+        }
+        result.append(item)
+
+    total = subtotal
+    charityDonation = '?'
+    orgDonation = '?'
+    if order is not None:
+        total += order.orgDonation + order.charityDonation
+        charityDonation = order.charityDonation
+        orgDonation = order.orgDonation
+
+    data = {
+        'success' : True,
+        'result' : result,
+        'total' : total,
+        'charityDonation' : charityDonation,
+        'orgDonation' : orgDonation,
+    }
+
+    if order is not None:
+        data['order_id'] = order.id
+        data['reference'] = order.reference
+
+    notifyTerminal(request, data)
+
+    return JsonResponse(data)
+
+@staff_member_required
+def onsiteAddToCart(request):
+    id = request.GET.get('id', None)
+    if id is None or id == '':
+        return JsonResponse({'success' : False, 'reason' : 'Need ID parameter'}, status=400)
+
+    cart = request.session.get('cart', None)
+    if cart is None:
+        request.session['cart'] = [id,]
+        return JsonResponse({'success' : True, 'cart' : [id]})
+
+    if id in cart:
+        return JsonResponse({'success' : True, 'cart' : cart})
+
+    cart.append(id)
+    request.session['cart'] = cart
+
+    return JsonResponse({'success' : True, 'cart' : cart})
+
+@staff_member_required
+def onsiteRemoveFromCart(request):
+    id = request.GET.get('id', None)
+    if id is None or id == '':
+        return JsonResponse({'success' : False, 'reason' : 'Need ID parameter'}, status=400)
+
+    cart = request.session.get('cart', None)
+    if cart is None:
+        return JsonResponse({'success' : False, 'reason' : 'Cart is empty'})
+
+    try:
+        cart.remove(id)
+        request.session['cart'] = cart
+    except ValueError:
+        return JsonResponse({'success' : False, 'cart' : cart, 'reason' : 'Not in cart'})
+
+    return JsonResponse({'success' : True, 'cart' : cart})
+
+@staff_member_required
+def onsiteAdminClearCart(request):
+    request.session["cart"] = [];
+    sendMessageToTerminal(request, {"command" : "clear"})
+    return onsiteAdmin(request)
+
+@staff_member_required
+def closeTerminal(request):
+    data = { "command" : "close" }
+    return sendMessageToTerminal(request, data)
+
+@staff_member_required
+def openTerminal(request):
+    data = { "command" : "open" }
+    return sendMessageToTerminal(request, data)
+
+def sendMessageToTerminal(request, data):
+    request.session['heartbeat'] = time.time()  # Keep session alive
+    url_terminal = request.GET.get('terminal', None)
+    logger.info("Terminal from GET parameter: {0}".format(url_terminal))
+    session_terminal = request.session.get('terminal', None)
+
+    if url_terminal is not None:
+        try:
+            active = Firebase.objects.get(id=int(url_terminal))
+            request.session['terminal'] = active.id
+        except Firebase.DoesNotExist:
+            return JsonResponse({'success' : False, 'message' : 'The payment terminal specified has not registered with the server'}, status=500)
+        except ValueError:
+            # weren't passed an integer
+            return JsonResponse({'success' : False, 'message' : 'Invalid terminal specified'}, status=400)
+
+    try:
+        active = Firebase.objects.get(id=session_terminal)
+    except Firebase.DoesNotExist:
+        return JsonResponse({'success' : False, 'message' : 'No terminal specified and none in session'}, status=400)
+
+    logger.info("Terminal from session: {0}".format(request.session['terminal']))
+
+    to = [active.token,]
+
+    PushyAPI.sendPushNotification(data, to, None)
+    return JsonResponse({'success' : True})
+
+@staff_member_required
+def enablePayment(request):
+    data = { "command" : "enable_payment" }
+    return sendMessageToTerminal(request, data)
+
+
+def notifyTerminal(request, data):
+    # Generates preview layout based on cart items and sends the result
+    # to the apropriate payment terminal for display to the customer
+    term = request.session.get('terminal', None)
+    if term is None:
+        return
+    try:
+        active = Firebase.objects.get(id=term)
+    except Firebase.DoesNotExist:
+        return
+
+    html = render_to_string('registration/customer-display.html', data, request)
+    note = render_to_string('registration/customer-note.txt', data, request)[:500]
+
+    if len(data['result']) == 0:
+        display = { "command" : "clear" }
+    else:
+        display = {
+            "command" : "display",
+            "html" : html,
+            "note" : note,
+            "total" : int(data['total'] * 100),
+            "order" : data['reference']
+        }
+
+    logger.info(display)
+
+    # Send cloud push message
+    logger.debug(note)
+    to = [active.token,]
+
+    PushyAPI.sendPushNotification(display, to, None)
+
+
+@staff_member_required
+def onsiteSelectTerminal(request):
+    selected = request.POST.get('terminal', None)
+    try:
+        active = Firebase.objects.get(id=selected)
+    except Firebase.DoesNotExist:
+        return JsonResponse({'success' : False, 'reason' : 'Terminal does not exist'}, status=404)
+    request.session['terminal'] = selected
+    return JsonResponse({'success' : True})
+
+#@staff_member_required
+def assignBadgeNumber(request):
+    badge_id = request.GET.get('id');
+    badge_number = request.GET.get('number')
+
+    if badge_id is None or badge_number is None:
+        return JsonResponse({'success' : False, 'reason' : 'id and number are required parameters'}, status=400)
+
+    try:
+        badge_number = int(badge_number)
+    except ValueError:
+        return JsonResponse({'success': False, 'message': 'Badge number must be an integer'}, status=400)
+
+    try:
+        badge = Badge.objects.get(id=int(badge_id))
+    except Badge.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Badge ID specified does not exist'}, status=404)
+    except ValueError:
+        return JsonResponse({'success': False, 'message': 'Badge ID must be an integer'}, status=400)
+
+    try:
+        badge.badgeNumber = badge_number
+        badge.save()
+    except Exception as e:
+        return JsonResponse({'success' : False, 'message' : 'Error while saving badge number'}, status=500)
+
+    return JsonResponse({'success' : True})
+
+@staff_member_required
+def onsitePrintBadges(request):
+    badge_list = request.GET.getlist('id')
+    con = printing.Main(local=True)
+    tags = []
+
+    for badge_id in badge_list:
+        try:
+            badge = Badge.objects.get(id=badge_id)
+        except Badge.DoesNotExist:
+            return JsonResponse({'success' : False, 'message' : 'Badge id {0} does not exist'.format(badge_id)}, status=404)
+
+        if badge.badgeNumber is None:
+            badgeNumber = ''
+        else:
+            badgeNumber = '{:04}'.format(badge.badgeNumber)
+
+        tags.append({
+            'name' : badge.badgeName,
+            'number' : badgeNumber,
+            'level' : str(badge.effectiveLevel()),
+            'title' : ''
+        })
+        badge.printed = True
+        badge.save()
+
+    con.nametags(tags, theme='apis')
+    pdf_path = con.pdf.split('/')[-1]
+
+    file_url = reverse(printNametag) + '?file={0}'.format(pdf_path)
+
+    return JsonResponse({
+        'success' : True,
+        'file' : pdf_path,
+        'next' : request.get_full_path(),
+        'url' : file_url
+    })
+
+
+#@staff_member_required
+def onsiteSignature(request):
+    context = {}
+    return render(request, 'registration/signature.html', context)
 
 
 ###################################
@@ -999,7 +1361,10 @@ def addToCart(request):
 
     priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
+    via = "WEB"
+    if postData['attendee'].get('onsite', False):
+        via = "ONSITE"
+    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy=via)
     orderItem.save()
 
     for option in pdp['options']:
@@ -1018,10 +1383,10 @@ def addToCart(request):
 
 
 def removeFromCart(request):
-    #locate attendee in session order
-    order = request.session.get('order_items', [])
     postData = json.loads(request.body)
     id = postData['id']
+    #locate attendee in session order
+    order = request.session.get('order_items', [])
     #remove attendee from session order
     for item in order:
         if str(item) == str(id):
@@ -1081,18 +1446,41 @@ def checkout(request):
     onsite = postData["onsite"]
     if onsite:
         att = orderItems[0].badge.attendee
-        status, message, order = doCheckout(pbill, total, discount, orderItems, 0, 0, ip)
-        if status:
-            order.status = "Onsite Pending"
-            order.save()
-            request.session.flush()
-            return JsonResponse({'success': True})
-        else:
-            order.delete()
-            return JsonResponse({'success': False, 'message': message})
+        billingData = {
+            'cc_firstname' : att.firstName,
+            'cc_lastname' : att.lastName,
+            'email' : att.email,
+            'address1' : att.address1,
+            'address2' : att.address2,
+            'city' : att.city,
+            'state' : att.state,
+            'country' : att.country,
+            'postal' : att.postalCode
+        }
+        reference = getConfirmationToken()
+        while Order.objects.filter(reference=reference).count() > 0:
+            reference = getConfirmationToken()
 
+        order = Order(total=Decimal(total), reference=reference, discount=discount,
+                      orgDonation=porg, charityDonation=pcharity, billingType=Order.UNPAID,
+                      billingName=billingData['cc_firstname'] + " " + billingData['cc_lastname'],
+                      billingAddress1=billingData['address1'], billingAddress2=billingData['address2'],
+                      billingCity=billingData['city'], billingState=billingData['state'], billingCountry=billingData['country'],
+                      billingPostal=billingData['postal'], billingEmail=billingData['email'])
+        order.status = "Onsite Pending"
+        order.save()
 
-    status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
+
+        status = True
+        message = "Onsite success"
+    else:
+        status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
 
     if status:
         request.session.flush()
@@ -1214,7 +1602,8 @@ def getOptionsDict(orderItems):
         for ao in aos:
             if ao.optionValue == 0 or ao.optionValue == None or ao.optionValue == "" or ao.optionValue == False: pass
 
-            orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue, 'id': ao.option.id})
+            orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue,
+                              'id': ao.option.id, 'type': ao.option.optionExtraType})
 
     return orderDict
 
@@ -1321,6 +1710,100 @@ def getSessionAddresses(request):
                  'postalCode': oi.badge.attendee.postalCode} for oi in orderItems]
         context = {'addresses': data}
     return HttpResponse(json.dumps(data), content_type='application/json')
+
+@csrf_exempt
+def completeSquareTransaction(request):
+    key = request.GET.get('key', '')
+    reference = request.GET.get('reference', None)
+    clientTransactionId = request.GET.get('clientTransactionId', None)
+    serverTransactionId = request.GET.get('serverTransactionId', None)
+
+    if key != settings.REGISTER_KEY:
+        return JsonResponse({'success' : False, 'reason' : 'Incorrect API key'}, status=401)
+
+    if reference is None or clientTransactionId is None:
+        return JsonResponse({'success' : False, 'reason' : 'Reference and clientTransactionId are required parameters'}, status=400)
+
+    # Things we need:
+    #   orderID or reference (passed to square by metadata)
+    # Square returns:
+    #   clientTransactionId (offline payments)
+    #   serverTransactionId (online payments)
+
+    try:
+        order = Order.objects.get(reference=reference)
+    except Order.DoesNotExist:
+        return JsonResponse({'success' : False, 'reason' : 'No order matching the reference specified exists'}, status=404)
+
+    order.billingType = Order.CREDIT
+    order.status = "Complete"
+    order.settledDate = datetime.now()
+    order.notes = json.dumps({
+        'clientTransactionId' : clientTransactionId,
+        'serverTransactionId' : serverTransactionId
+    })
+    order.save()
+
+    return JsonResponse({'success' : True})
+
+
+@csrf_exempt
+def firebaseRegister(request):
+    key = request.GET.get('key', '')
+    if key != settings.REGISTER_KEY:
+        return JsonResponse({'success' : False, 'reason' : 'Incorrect API key'}, status=401)
+
+    token = request.GET.get('token', None)
+    name = request.GET.get('name', None)
+    if token is None or name is None:
+        return JsonResponse({'success' : False, 'reason' : 'Must specify token and name parameter'}, status=400)
+
+    # Upsert if a new token with an existing name tries to register
+    try:
+        old_terminal = Firebase.objects.get(name=name)
+        old_terminal.token = token
+        old_terminal.save()
+        return JsonResponse({'success' : True, 'updated' : True})
+    except Firebase.DoesNotExist:
+        pass
+    except Exception as e:
+        return JsonResponse({'success' : False, 'reason' : 'Failed while attempting to update existing name entry'}, status=500)
+
+    # Upsert if a new name with an existing token tries to register
+    try:
+        old_terminal = Firebase.objects.get(token=token)
+        old_terminal.name = name
+        old_terminal.save()
+        return JsonResponse({'success' : True, 'updated' : True})
+    except Firebase.DoesNotExist:
+        pass
+    except Exception as e:
+        return JsonResponse({'success' : False, 'reason' : 'Failed while attempting to update existing token entry'}, status=500)
+
+    try:
+        terminal = Firebase(token=token, name=name)
+        terminal.save()
+    except Exception as e:
+        logger.exception(e)
+        logger.error("Error while saving Firebase token to database")
+        return JsonResponse({'success' : False, 'reason' : 'Error while saving to database'}, status=500)
+
+    return JsonResponse({'success' : True, 'updated' : False})
+
+@csrf_exempt
+def firebaseLookup(request):
+    # Returns the common name stored for a given firebase token
+    # (So client can notify server if either changes)
+    token = request.GET.get('token', None)
+    if token is None:
+        return JsonResponse({'success' : False, 'reason' : 'Must specify token parameter'}, status=400)
+
+    try:
+        terminal = Firebase.objects.get(token=token)
+        return JsonResponse({'success' : True, 'name' : terminal.name, 'closed' : terminal.closed})
+    except Firebase.DoesNotExist:
+        return JsonResponse({'success' : False, 'reason' : 'No such token registered'}, status=404)
+
 
 
 ##################################
