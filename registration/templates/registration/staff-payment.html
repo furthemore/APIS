@@ -307,6 +307,7 @@
 	var staff = {{ jsonStaff|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
 	var currentLevel = {{ jsonLevel|safe }}
+    var discount = {{ jsonDiscount|safe }}
 	var shirtSizes = [];
 
 	$( "body" ).ready(function() {
@@ -320,10 +321,16 @@
         }
 		$.getJSON("{% url 'pricelevels' %}", function(data) {
 			levelData = data;
-			var prevLevel = 50;
+			var prevLevel = 0;
 			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
 				prevLevel = parseFloat(currentLevel.basePrice);
 			}
+            if (discount && discount.hasOwnProperty("amountOff")){
+                var discountAmount = parseFloat(discount.amountOff);
+                if (discountAmount > prevLevel){
+                    prevLevel = discountAmount;
+                }
+            }
 			$.each( data, function( key, val ) {
 				levelTemplateData.push({
 					name: val.name,
