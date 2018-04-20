@@ -3,18 +3,20 @@
     <head>
         <title>Print Dialog</title>
     </head>
-    
+
     <body>
         <script>
             var w = window.open("{% url 'pdf' %}" + "/?file={{ file }}");
             w.onload = function () {
                 w.print();
-                w.onfocus = function () { 
-                    setTimeout(function () { 
+                w.onfocus = function () {
+                    setTimeout(function () {
                         w.close();
-                        window.location.replace('{{ next }}');
-                    }, 10); 
-                }; 
+                        {% if next %}
+                            window.location.replace('{{ next }}');
+                        {% endif %}
+                    }, 10);
+                };
             };
         </script>
 
