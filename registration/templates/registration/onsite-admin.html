@@ -1,0 +1,511 @@
+{% extends "registration/master_admin.html" %}
+
+{% block content %}
+
+
+    <div class="row">
+        <div class="col-md-6">
+          <h2>APIS Register</h2>
+        </div>
+        <div class="col-md-2 col-md-offset-2 col-top">
+            <form class="form-inline" id="terminal_form" method="get">
+                <label for="pos" class="sr-only">Register Position</label>
+                <select class="form-control" id="pos" name="terminal">
+                {% for terminal in terminals %}
+                  {% if request.session.terminal == terminal.id %}
+                    <option selected value="{{ terminal.id }}">{{ terminal.name }}</option>
+                  {% else %}
+                    <option value="{{ terminal.id }}">{{ terminal.name }}</option>
+                  {% endif %}
+                {% endfor %}
+                </select>
+            </form>
+        </div>
+        <div class="col-md-1 col-top">
+            <div class="dropdown">
+                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="user">
+                    <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
+                    <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+                </ul>
+            </div>        
+        </div>
+        <div class="col-md-1 col-top">
+            <div class="dropdown">
+                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-user"></i><span class="sr-only">User options</span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="user">
+                    <li><a href="{% url 'logout' %}?next={% url 'onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
+                </ul>
+            </div>        
+        </div>
+    </div>
+
+    <hr>
+
+    {% for error in errors %}
+    <div class="alert alert-{{ error.type }}" role="alert">{{ error.text }}</div>
+    {% endfor %}
+
+    <div class="alert alert-danger" id="client-error">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span class="sr-only">Error:</span>
+      <b>There was a problem while connecting to the server.</b>
+       <a class="alert-link" href="{% url 'onsiteAdmin' %}">Reload</a>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-md-12">
+            <form class="form-inline my-lg-0" action="{% url 'onsiteAdmin' %}" method="get">
+                <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
+                <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
+                    autofocus="autofocus" autocomplete="off" name="search">
+                <button class="btn btn-secondary my-2 my-sm-0" type="submit">
+                    Search <i class="fas fa-search"></i>
+                </button>
+                <a href="/apis/admin/registration/attendee/add/" class="btn btn-success my-2 my-sm-0" target="_blank">
+                    Add Attendee <i class="fas fa-plus-circle"></i>
+                </a>
+            </form>
+          </div>
+        </div>
+        <div class="row">
+          <div class="panel panel-default">
+            <div class="panel-heading">Search results</div>
+            
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Attendee Name</th>
+                  <th>Badge Name</th>
+                  <th>Status</th>
+                  <th><span class="sr-only">Action</span></th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for badge in results %}
+                <tr>
+                  <td class="results">{{ badge.attendee.firstName }} {{ badge.attendee.lastName }}</td>
+                  <td class="results">{{ badge.badgeName }}</td>
+                  <td>{{ badge.abandoned }}</td>
+                  <td style="text-align: right">
+                    <a target="_blank" href="/apis/admin/registration/badge/{{ badge.id }}" class="btn btn-info" title="Edit attendee"><i class="fas fa-edit"></i></a>
+                    {% if badge.abandoned == "Paid" or badge.abandoned == "Comp" %}
+                      <a href="#" disabled="disabled" class="btn btn-success" title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
+                    {% else %}
+                      <a href="#" class="btn btn-success add-badge" data-id="{{ badge.id }}" title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="well">
+          <div class="row"><div class="col-md-8">
+            <h2>Cart&nbsp;
+              <a id="refresh_button" href="#" title="Refresh">
+                <i class="fas fa-sync"></i><span class="sr-only">Refresh</span>
+              </a>
+            </h2>
+          </div><div class="col-md-4" style="margin-top: 20px">
+            <a href="{% url 'onsiteAdminClearCart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}" class="btn btn-danger right">Clear</a>
+          </div></div>
+          <div id="cart"></div>
+          <div class="total" id="total"></div>
+
+            <div class="row button-group">
+                <div class="col-md-6">
+                    <button class="btn btn-block btn-primary" id="cash_button" disabled>
+                        <i class="fas fa-money-bill-alt"></i> Tender Cash 
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-block btn-warning" id="credit_button" disabled>
+                        <i class="fas fa-credit-card"></i> Credit/Debit 
+                    </button>
+                </div>
+            </div>
+            <div class="row button-group">
+              <div class="col-md-12">
+                <button class="btn btn-block btn-primary" id="print_button" disabled>
+                  <i class="fas fa-print"></i> Print Badges
+                </button>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+        .well, .panel {
+            margin-top: 20px;
+        }
+
+        #refresh_button {
+            font-size: 50%;
+        }
+
+        #pos {
+            width: 100%;
+        }
+
+        .price-line {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .price-line::before {
+            content: '$';
+        }
+
+        .age {
+            float: right;
+        }
+
+        .right {
+            float: right;
+        }
+
+        .cart-table td {
+            font-size: 1.6em;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .results {
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+        }
+
+        .total {
+            margin-bottom: 22px;
+        }
+
+        .button-group {
+            margin-bottom: 20px;
+        }
+
+        .total-table {
+            font-size: 22px;
+            width: 100%;
+        }
+
+        .total-table td {
+            padding-right: 10px;
+        }
+
+        .total-table tr td:nth-child(1) {
+            float: right;
+        }
+
+        .remove-badge {
+            color: darkred;
+            float: right;
+            padding-left: 10px;
+        }
+
+        .col-top {
+            margin-top: 20px;
+        }
+
+        #client-error {
+            display: none;
+        }
+    </style>
+
+  <script type="text/html" id="cartTemplate">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <span data-content="abandoned" data-format="PaidBadgeFormatter"></span>
+        <span data-content="name"></span>
+        <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-minus-circle"></i></a>
+        <span data-content="age" data-format="MinorFormFormatter" class="age"></span>
+      </div>
+      <table class="table cart-table">
+        <thead>
+          <tr data-class="state">
+            <th>Badge Name</th>
+            <th>Level</th>
+            <th>Price</th>
+           </tr>
+        </thead>
+        <tbody>
+          <tr data-class="state">
+            <td data-content="badgeName"></td>
+            <td data-content="level"></td>
+            <td><span class="price-line" data-content="price"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </script>
+
+  <script type="text/html" id="totalTemplate">
+    <table class="total-table">
+      <tr>
+        <td>Donation to Charity:
+        <td>$<span data-content="charityDonation"></span>
+      </tr>
+      <tr>
+        <td>Donation to Convention:
+        <td>$<span data-content="orgDonation"></span>
+      </tr>
+      <tr>
+        <td><b>Total:</b>
+        <td class="success"><b>$<span data-content="total"></span></b>
+      </tr>
+    </table>
+  </script>
+{% endblock %}
+
+{% block javascript %}
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var refresh_cart;
+var cartData = [];
+var cartTemplateData = [];
+
+var get_printable = function () {
+    // Anything in the cart marked as paid is eligable for printing
+    var printQueue = [];
+    $.each(cartData.result, function(key, value) {
+      if (value.abandoned.toUpperCase() == "PAID") {
+          printQueue.push(value);
+      }
+    });
+
+    if (printQueue.length > 0) {
+        $("#print_button").removeAttr("disabled");
+    } else {
+        $("#print_button").attr("disabled", "disabled");
+    }
+
+    return printQueue;
+};
+
+var print_badges = function(e) {
+    var printQueue = get_printable();
+    var badge_preview = "";
+    var stop = false;
+    $.each(printQueue, function(idx, badge) {
+        badge_number = prompt("Scan or key in badge stock number for " + badge.badgeName);
+        if (badge_number == null) {
+            stop = true;
+            return false;
+        }
+        badge.badgeNumber = badge_number;
+        badge_preview += badge_number  + ' - ' + badge.badgeName + "\n";
+    });
+
+    if (stop) {
+        return;
+    }
+
+    conf = confirm("Assign badge numbers?\n\n" + badge_preview);
+    if (conf) {
+        // assign badge number
+
+        var printIDs = []
+        $.each(printQueue, function(idx, badge) {
+            printIDs.push(badge.id);
+            $.getJSON("{% url 'assignBadgeNumber' %}", { id : badge.id, number : badge.badgeNumber }, function (data) {
+                if (!data.success) {
+                    alert("Error while assigning badge number: " + data.message);
+                }
+            });
+        });
+        
+        // print badges
+        $.getJSON("{% url 'onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
+            if (!data.success) {
+                alert("Error while printing badges");
+            }
+            window.open(data.url);
+        });
+        // clear cart
+
+        $.getJSON("{% url 'onsiteAdminClearCart' %}");
+        refresh_cart();
+    }
+};
+
+$(document).ready(function () {
+    $.addTemplateFormatter("MinorFormFormatter",
+        function(value, template) {
+          if (parseInt(value) < 18) {
+            return '<span style="color: red">MINOR FORM REQUIRED</span>';
+          }
+          return "18+";
+    });
+
+    $.addTemplateFormatter("PaidBadgeFormatter",
+        function(value, template) {
+            if (value == "Paid") {
+                return '<span class="label label-success">Paid</span>';
+            } else {
+                return '<span class="label label-warning">' + value + '</span>';
+            }
+    });
+    
+    
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    });
+
+    refresh_cart = function() {
+      $.getJSON("{% url 'onsiteAdminCart' %}", function(data) {
+        cartData = data;
+        var enable_print = false;
+        if (data.success) {
+          cartTemplateData = [];
+          $.each( data.result, function( key, val ) {
+            var level = "?";
+            var price = "?";
+            var state = "danger";
+            if (val.effectiveLevel != null) {
+                    level = val.effectiveLevel.name;
+                    price = val.effectiveLevel.price;
+                    state = "";
+            }
+                
+            cartTemplateData.push({
+                  name : val.firstName + ' ' + val.lastName,
+                  badgeName : val.badgeName,
+                  age : val.age,
+                  abandoned : val.abandoned,
+                  level : level,
+                  price : price,
+                  delete_id : "delete-" + val.id,
+                  state : state
+            });
+            
+          });
+          $("#total").html(""); 
+          $("#cart").html("");
+          $("#cart").loadTemplate($("#cartTemplate"), cartTemplateData);
+          $(".remove-badge").click(remove_badge);
+
+          var price = parseFloat(data.total);
+          if ((!isNaN(price)) && (price != 0)) {
+              $("#total").loadTemplate($("#totalTemplate"), data);
+              $("#cash_button").removeAttr("disabled");
+              $("#credit_button").removeAttr("disabled");
+          } else {
+              $("#cash_button").attr("disabled", "disabled");
+              $("#credit_button").attr("disabled", "disabled");
+          }
+        
+          get_printable();
+        }
+
+      });
+    };
+
+    refresh_cart();
+    $("#refresh_button").click(function (e) {
+        e.preventDefault();
+        $("#cart").fadeOut(function () {
+            refresh_cart();
+            $(this).fadeIn();
+        })
+    });
+
+    $(".add-badge").click(function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        $(this).attr("disabled", "disabled");
+        $.getJSON("{% url 'onsiteAddToCart' %}", { id : id }, function (data) {
+            if (data.success) {
+                refresh_cart();
+            } else {
+                alert("Error while adding to cart");
+            }
+        });
+    });
+    
+    $("#open-terminal").click(function (e) {
+        e.preventDefault();
+        $.getJSON("{% url 'openTerminal' %}", {}, function (data) {
+            if (!data.success) {
+                alert("Error while opening terminal: " + data.message);
+            }
+        });
+    });
+    
+    $("#close-terminal").click(function (e) {
+        e.preventDefault();
+        $.getJSON("{% url 'closeTerminal' %}", {}, function (data) {
+            if (!data.success) {
+                alert("Error while closing terminal: " + data.message);
+            }
+        });
+    });
+
+
+    $("#credit_button").click(function (e) {
+        e.preventDefault();
+        $.getJSON("{% url 'enablePayment' %}", {}, function (data) {
+            if (!data.success) {
+                alert("Error while closing terminal: " + data.message);
+            }
+        });
+    });
+    
+    var remove_badge = function (e) {
+        e.preventDefault();
+        var id = $(this).attr("id").split("-")[1];
+        $.getJSON("{% url 'onsiteRemoveFromCart' %}", { id : id }, function (data) {
+            if (data.success) {
+                refresh_cart();
+            } else {
+                alert("Error while removing from cart");
+            }
+        }).fail(function() {
+            window.reload();
+        });
+    };
+
+    $("#pos").change(function () {
+      $("#terminal_form").submit();
+    });
+
+    $("#print_button").click(print_badges);
+    
+});
+
+</script>
+{% endblock %}
+
