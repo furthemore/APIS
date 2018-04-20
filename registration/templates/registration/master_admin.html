@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>APIS Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
+	<link href="/static/css/bs-yeti.css" rel="stylesheet" media="screen">
+	<link href="/static/css/bootstrap-formhelpers.css" rel="stylesheet" media="screen">
+	<link href="/static/css/bootstrap-datepicker.css" rel="stylesheet" media="screen">
+	<link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    {% block head %}{% endblock %}
+
+  </head>
+  <body>
+
+<!-- Subhead
+================================================== -->
+
+<div class="container">
+
+	{% block content %}
+
+	{% endblock %}
+</div>
+
+<script src="/static/js/modernizr-custom.js"></script>
+<script src="/static/js/main.js"></script>
+<script src="/static/js/jquery.js"></script>
+ <script src="/static/js/jquery.loadTemplate.min.js"></script>
+<script src="/static/js/bs.min.js"></script>
+ <script src="/static/js/bootstrap-formhelpers.js"></script>
+ <script src="/static/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.5/validator.js"></script>
+
+{% block javascript  %}
+
+{% endblock %}
+
+  </body>
+</html>
