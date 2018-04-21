@@ -408,7 +408,7 @@ def print_staff_badges(modeladmin, request, queryset):
             badgeNumber = ''
         else:
             badgeNumber = 'S{:03}'.format(badge.badgeNumber)
-        staff = badge.attendee.staff
+        staff = Staff.objects.filter(attendee=badge.attendee,event=badge.event)
         tags.append({
             'name'   : badge.badgeName,
             'number' : badgeNumber,
