@@ -367,7 +367,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         else:
             badgeNumber = 'S{:03}'.format(badge.badgeNumber)
         tags.append({
-            'name'   : att.badgeName,
+            'name'   : badge.badgeName,
             'number' : '',
             'level'  : '',
             'title'  : ''
