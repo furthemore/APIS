@@ -1539,22 +1539,17 @@ def basicBadges(request):
 @staff_member_required
 def vipBadges(request):
     badges = Badge.objects.all()
-    vipLevels = ('God-mode','God-Mode','Player','Raven God', 'Elite Sponsor')
+    vipLevels = ('God-mode','God-Mode','Player','Raven God','Elite Sponsor','Super Sponsor')
 
-    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(),
-              'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
-              'address': badge.attendee.address1 + " " + badge.attendee.address2, 'phone': badge.attendee.phone,
-              'city': badge.attendee.city, 'state': badge.attendee.state, 'postal': badge.attendee.postalCode,
-              'country': badge.attendee.country, 'event': badge.event.name, 'email': badge.attendee.email,
-              'orderItems': getOptionsDict(badge.orderitem_set.all()) }
-             for badge in badges if badge.effectiveLevel() != None]
+    bdata = [{'badge': badge, 'orderItems': getOptionsDict(badge.orderitem_set.all()),
+              'level': badge.effectiveLevel().name, 'assoc': badge.abandoned}
+             for badge in badges if badge.effectiveLevel() != None and badge.effectiveLevel() != 'Unpaid' and 
+               badge.effectiveLevel().name in vipLevels and badge.abandoned != 'Staff']
 
-    sdata = sorted(bdata, key=lambda x:(x['event'],x['level'],x['lastName']))
-    attendees = [att for att in sdata if att['assoc'] != 'Staff' and att['level'] in vipLevels]
-    events = [{'event': key, 'attendees': list(group)} for (key, group) in itertools.groupby(attendees, key=lambda x:x['event'])]
+    events = Event.objects.all()
     events.reverse()
 
-    return render(request, 'registration/utility/holidaylist.html', {'attendees': attendees, 'events': events})
+    return render(request, 'registration/utility/holidaylist.html', {'badges': bdata, 'events': events})
 
 
 
