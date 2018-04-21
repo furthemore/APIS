@@ -3,7 +3,7 @@
 
 {% for ev in events %}
 
-<h2>{{ev.event}}</h2>
+<h2>{{ev.name}}</h2>
 
 <table border="1" cellspacing="0" cellpadding="6">
 <tr>
@@ -16,23 +16,25 @@
   <th>Email</th>
   <th>Options </th>
 </tr>
-{% for att in ev.attendees %}
+{% for b in badges %}
+  {% if b.badge.event == ev %}
   <tr>
-    <td>{{att.level}}</td>
-    <td>{{att.assoc}}</td>
-    <td>{{att.badgeName}}</td>
-    <td>{{att.firstName}} {{att.lastName}}</td>
-    <td>{{att.address}} {{att.city}} {{att.state}} {{att.postal}} {{att.country}}</td>
-    <td>{{att.phone}}</td>
-    <td>{{att.email}}</td>
+    <td>{{b.level}}</td>
+    <td>{{b.assoc}}</td>
+    <td>{{b.badge.badgeName}}</td>
+    <td>{{b.badge.attendee.firstName}} {{b.badge.attendee.lastName}}</td>
+    <td>{{b.badge.attendee.address1}} {{b.badge.attendee.city}} {{b.badge.attendee.state}} {{b.badge.attendee.postal}} {{b.badge.attendee.country}}</td>
+    <td>{{b.badge.attendee.phone}}</td>
+    <td>{{b.badge.attendee.email}}</td>
     <td>
-        {% for oi in att.orderItems %}
+        {% for oi in b.orderItems %}
             {{oi.name}} - {{oi.value}}
             </br> 
         {% endfor %}
 
     </td>
   </tr>
+  {% endif %}
 {% endfor %}
 
 </table>
