@@ -9,7 +9,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
-from django.urls import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 import time
 from datetime import datetime, date
@@ -1036,8 +1039,10 @@ def notifyTerminal(request, data):
     except Firebase.DoesNotExist:
         return
 
-    html = render_to_string('registration/customer-display.html', data, request)
-    note = render_to_string('registration/customer-note.txt', data, request)[:500]
+    html = render_to_string('registration/customer-display.html', data)
+    note = render_to_string('registration/customer-note.txt', data)
+
+    logger.info(note)
 
     if len(data['result']) == 0:
         display = { "command" : "clear" }
@@ -1047,7 +1052,7 @@ def notifyTerminal(request, data):
             "html" : html,
             "note" : note,
             "total" : int(data['total'] * 100),
-            "order" : data['reference']
+            "reference" : data['reference']
         }
 
     logger.info(display)
@@ -1073,21 +1078,32 @@ def onsiteSelectTerminal(request):
 def assignBadgeNumber(request):
     badge_id = request.GET.get('id');
     badge_number = request.GET.get('number')
+    badge_name = request.GET.get('badge', None)
+    badge = None
 
-    if badge_id is None or badge_number is None:
-        return JsonResponse({'success' : False, 'reason' : 'id and number are required parameters'}, status=400)
+    if badge_name is not None:
+        try:
+            badge = Badge.objects.filter(badgeName__icontains=badge_name, event__name="Furthemore 2018").first()
+            
+        except:
+            return JsonResponse({'success' : False, 'reason' : 'Badge name search returned no results'})
+    else:
+        if badge_id is None or badge_number is None:
+            return JsonResponse({'success' : False, 'reason' : 'id and number are required parameters'}, status=400)
 
     try:
         badge_number = int(badge_number)
     except ValueError:
         return JsonResponse({'success': False, 'message': 'Badge number must be an integer'}, status=400)
 
-    try:
-        badge = Badge.objects.get(id=int(badge_id))
-    except Badge.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Badge ID specified does not exist'}, status=404)
-    except ValueError:
-        return JsonResponse({'success': False, 'message': 'Badge ID must be an integer'}, status=400)
+    
+    if badge is None:
+        try:
+            badge = Badge.objects.get(id=int(badge_id))
+        except Badge.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Badge ID specified does not exist'}, status=404)
+        except ValueError:
+            return JsonResponse({'success': False, 'message': 'Badge ID must be an integer'}, status=400)
 
     try:
         badge.badgeNumber = badge_number
