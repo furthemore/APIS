@@ -1539,7 +1539,7 @@ def basicBadges(request):
 @staff_member_required
 def vipBadges(request):
     badges = Badge.objects.all()
-    vipLevels = ('God-mode','God-Mode','Player','Raven God','Elite Sponsor')
+    vipLevels = ('God-mode','God-Mode','Player','Raven God','Elite Sponsor','Super Sponsor')
 
     bdata = [{'badge': badge, 'orderItems': getOptionsDict(badge.orderitem_set.all()),
               'level': badge.effectiveLevel().name, 'assoc': badge.abandoned}
