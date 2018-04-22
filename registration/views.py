@@ -36,7 +36,7 @@ logger = logging.getLogger("django.request")
 
 
 def index(request):
-    event = Event.objects.get(name__icontains="2018")
+    event = Event.objects.get(name__icontains="2019")
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}

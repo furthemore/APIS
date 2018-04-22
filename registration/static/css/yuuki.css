@@ -14,15 +14,16 @@
 
 }
 .artisan2 {
-    background-image: linear-gradient(235deg, rgba(194,155,114,0.65) 35%, transparent 0%);
-    background-size: 100% 100%;
-    background-position: 100% 0%;
-    background-repeat: no-repeat;
-    height: 100vh;
+    height: 100%;
 }
 
 body {
-    background: url('../img/2017/sakura.png') center center white;
+/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e60000+0,640000+100 */
+background: #e60000; /* Old browsers */
+background: -moz-linear-gradient(top, #e60000 0%, #640000 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top, #e60000 0%,#640000 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom, #e60000 0%,#640000 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e60000', endColorstr='#640000',GradientType=0 ); /* IE6-9 */
 }
 
 .containter {
@@ -32,7 +33,7 @@ body {
 #content-holder {
     background: white;
     padding: 3%;
-    border: #f8bfef 5px solid;
+    border: #e60000 5px solid;
 }
 
 #content{
