@@ -36,7 +36,7 @@ logger = logging.getLogger("django.request")
 
 
 def index(request):
-    event = Event.objects.get(name__icontains="2019")
+    event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}
@@ -134,23 +134,6 @@ def getTotal(orderItems, disc = ""):
             total += itemTotal
     return total
 
-def getStaffTotal(orderItems, staff):
-    badge = Badge.objects.get(attendee=staff.attendee,event=staff.event)
-    discount = staff.event.staffDiscount
-    if badge.effectiveLevel():
-        subTotal = getTotal(orderItems, None)
-    else:
-        subTotal = getTotal(orderItems, discount)
-
-    alreadyPaid = badge.paidTotal()
-    if alreadyPaid < discount.amountOff:
-        alreadyPaid = discount.amountOff
-
-    total = subTotal - alreadyPaid
-    if total < 0:
-      return 0
-    return total
-
 def getDealerTotal(orderItems, discount, dealer):
     subTotal = getTotal(orderItems, discount)
     partnerCount = dealer.getPartnerCount()
@@ -189,12 +172,14 @@ def applyDiscount(request):
 # Staff
 
 def staff(request, guid):
-    context = {'token': guid}
-    return render(request, 'registration/staff-locate.html', context)
+    event = Event.objects.get(default=True)
+    context = {'token': guid, 'event': event}
+    return render(request, 'registration/staff/staff-locate.html', context)
 
 def staffDone(request):
-    context = {}
-    return render(request, 'registration/staff-done.html', context)
+    event = Event.objects.get(default=True)
+    context = {'event': event}
+    return render(request, 'registration/staff/staff-done.html', context)
 
 def findStaff(request):
   try:
@@ -213,7 +198,8 @@ def findStaff(request):
     return HttpResponseServerError(str(e))
 
 def infoStaff(request):
-    context = {'staff': None}
+    event = Event.objects.get(default=True)
+    context = {'staff': None, 'event': event}
     try:
       staffId = request.session['staff_id']
     except Exception as e:
@@ -224,42 +210,20 @@ def infoStaff(request):
         staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
         badges = Badge.objects.filter(attendee=staff.attendee,event=staff.event)
-        discount = {}
-        if staff.event.staffDiscount and staff.event.staffDiscount.isValid():
-            discount = model_to_dict(staff.event.staffDiscount)
-        lvl_dict = {}
+
         badge = {}
         if badges.count() > 0:
             badge = badges[0]
-            if badge.effectiveLevel():
-                lvl_dict["basePrice"] = badge.effectiveLevel().basePrice
 
         context = {'staff': staff, 'jsonStaff': json.dumps(staff_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
-                   'jsonLevel': json.dumps(lvl_dict, default=handler),
-                   'badge': badge, 'jsonDiscount': json.dumps(discount, default=handler)}
-    return render(request, 'registration/staff-payment.html', context)
-
-def invoiceStaff(request):
-    sessionItems = request.session.get('order_items', [])
-    if not sessionItems:
-        context = {'orderItems': [], 'total': 0, 'discount': {}}
-        request.session.flush()
-    else:
-        staffId = request.session['staff_id']
-        staff = Staff.objects.get(id=staffId)
-        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        discount = staff.event.staffDiscount
-        total = getStaffTotal(orderItems, staff)
-        context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'staff': staff}
-    return render(request, 'registration/staff-checkout.html', context)
-
+                   'badge': badge, 'event': event}
+    return render(request, 'registration/staff/staff-payment.html', context)
 
 def addStaff(request):
     postData = json.loads(request.body)
     #create attendee from request post
     pda = postData['attendee']
-    pdp = postData['priceLevel']
     pds = postData['staff']
 
     attendee = Attendee.objects.get(id=pda['id'])
@@ -321,81 +285,21 @@ def addStaff(request):
     else:
         badge = badges[0]
         badge.badgeName = pda['badgeName']
+
     try:
         badge.save()
+        staff.resetToken()
     except Exception as e:
         logger.exception("Error saving staff badge record.")
         return JsonResponse({'success': False, 'message': 'Badge not saved: ' + str(e)})
 
-    priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
-
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
-
-    for option in pdp['options']:
-        plOption = PriceLevelOption.objects.get(id=int(option['id']))
-        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
-        attendeeOption.save()
-
-    #add to session order
-    orderItems = request.session.get('order_items', [])
-    orderItems.append(orderItem.id)
-    request.session['order_items'] = orderItems
+    try:
+        sendStaffRegistrationEmail(order.id)
+    except Exception as e:
+        logger.exception("Error emailing StaffRegistrationEmail.")
+        return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
 
     return JsonResponse({'success': True})
-
-
-
-def checkoutStaff(request):
-    sessionItems = request.session.get('order_items', [])
-    staffId = request.session['staff_id']
-    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-    postData = json.loads(request.body)
-
-    staff = Staff.objects.get(id=staffId)
-    discount = staff.event.staffDiscount
-    subtotal = getStaffTotal(orderItems, staff)
-
-    if subtotal == 0:
-      status, message, order = doZeroCheckout(staff.attendee, discount, orderItems)
-      if not status:
-          return JsonResponse({'success': False, 'message': message})
-
-      request.session.flush()
-      try:
-          sendStaffRegistrationEmail(order.id)
-      except Exception as e:
-          logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
-          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
-      return JsonResponse({'success': True})
-
-
-
-    pbill = postData["billingData"]
-    porg = Decimal(postData["orgDonation"].strip() or 0.00)
-    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
-    if porg < 0:
-      porg = 0
-    if pcharity < 0:
-      pcharity = 0
-
-    total = subtotal + porg + pcharity
-    ip = get_client_ip(request)
-
-    status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
-
-    if status:
-        request.session.flush()
-        try:
-            sendStaffRegistrationEmail(order.id)
-        except Exception as e:
-            logger.exception("Error emailing StaffRegistrationEmail.")
-            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
-        return JsonResponse({'success': True})
-    else:
-        order.delete()
-        return JsonResponse({'success': False, 'message': message})
-
 
 
 ###################################
