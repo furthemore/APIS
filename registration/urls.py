@@ -18,10 +18,8 @@ urlpatterns = [
 
     url(r'^staff/done/?$', views.staffDone, name='doneStaff'),
     url(r'^staff/lookup/?$', views.findStaff, name='findStaff'),
-    url(r'^staff/add/?$', views.addStaff, name='addStaff'),
     url(r'^staff/info/?$', views.infoStaff, name='infoStaff'),
-    url(r'^staff/invoice/?$', views.invoiceStaff, name='invoiceStaff'),
-    url(r'^staff/checkout/?$', views.checkoutStaff, name='checkoutStaff'),
+    url(r'^staff/add/?$', views.addStaff, name='addStaff'),
     url(r'^staff/(?P<guid>\w+)/?$', views.staff, name='staff'),
 
     url(r'^dealer/?$', views.newDealer, name='newDealer'),

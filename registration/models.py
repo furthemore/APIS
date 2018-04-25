@@ -62,6 +62,7 @@ class Event(LookupTable):
     onlineRegEnd = models.DateTimeField()
     eventStart = models.DateField()
     eventEnd = models.DateField()
+    default = models.BooleanField(default=False)
     dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerDiscount_event")
     staffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="staffDiscount_event")
     dealerAsstDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerAsstDiscount_event")
@@ -230,6 +231,11 @@ class Staff(models.Model):
         badge = Badge.objects.filter(attendee=self.attendee,event=self.event).last()
         return badge
 
+    def resetToken(self):
+        self.registrationToken = getRegistrationToken()
+        self.save()
+        return
+
 
 class Dealer(models.Model):
     attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
@@ -286,6 +292,12 @@ class Dealer(models.Model):
     def getBadge(self):
         badge = Badge.objects.filter(attendee=self.attendee,event=self.event).last()
         return badge
+
+    def resetToken(self):
+        self.registrationToken = getRegistrationToken()
+        self.save()
+        return
+
 
 # Start order tables
 
