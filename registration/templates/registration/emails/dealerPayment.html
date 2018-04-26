@@ -23,22 +23,10 @@
 <tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:60}}.00</td></tr>
 {% endif %}
 <tr><td>Attendee Level - {{orderItem.priceLevel}}</td><td>${{orderItem.priceLevel.basePrice}}</td></tr>
-<tr><td>Dealer Discount</td><td>-${{order.discount.amountOff}}</td></tr>
 
 {% if dealer.discount > 0 %}
 <tr><td>Other Discount {{dealer.discountReason}}</td><td>-${{dealer.discount}}</td></tr>
 {% endif %}
-{% if dealer.attendee.effectiveLevel %}
-<tr><td>Previous Level {{dealer.attendee.effectiveLevel}}</td><td>-${{dealer.attendee.effectiveLevel.basePrice}}</td></tr>
-{% endif %}
-
-{% for option in options %}
-  {% if option.option.optionExtraType == 'int'%}
-<tr><td>{{option.option.optionName}} x{{option.optionValue}}</td><td>${{option.option.optionPrice|mul:option.optionValue}}</td></tr>
-  {% else %}
-<tr><td>{{option.option.optionName}}</td><td>${{option.option.optionPrice}}</td></tr>
-  {% endif %}
-{% endfor %}
 
 {% if order.charityDonation > 0 %}
 <tr><td>Charity Donation</td><td>${{order.charityDonation}}</td></tr>
