@@ -21,21 +21,9 @@ Partners x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:45}}.00
 Partner Breakfast x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:60}}.00
 {% endif %}
 Attendee Level - {{orderItem.priceLevel}}: ${{orderItem.priceLevel.basePrice}}
-Dealer Discount: -${{order.discount.amountOff}}
-{% if dealer.discount > 0%}
+{% if dealer.discount > 0 %}
 Other Discount - {{dealer.discountReason}}: -${{dealer.discount}}
 {% endif %}
-{% if dealer.attendee.effectiveLevel %}
-Previous Level {{dealer.attendee.effectiveLevel}}: -${{dealer.attendee.effectiveLevel.basePrice}}
-{% endif %}
-{% for option in options %}
-  {% if option.option.optionExtraType == 'int'%}
-{{option.option.optionName}} x{{option.optionValue}}: ${{option.option.optionPrice|mul:option.optionValue}}
-  {% else %}
-{{option.option.optionName}}: ${{option.option.optionPrice}}
-  {% endif %}
-{% endfor %}
-
 {% if order.charityDonation > 0 %}
 Charity Donation: ${{order.charityDonation}}
 {% endif %}

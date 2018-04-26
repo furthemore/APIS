@@ -95,7 +95,7 @@ var paymentForm = new SqPaymentForm({
 		<h3>Your Order</h3>
 			
 			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1"><h4>Attendee</h4></div>
+				<div class="col-sm-6 col-sm-offset-1"><h4>Dealer</h4></div>
 				<div class="col-sm-2"><h4>Price</h4></div>   
 			</div>
 			<div class="row">
@@ -138,46 +138,6 @@ var paymentForm = new SqPaymentForm({
 				</div>
 			</div>
 			{% endif %}
-			{% for option in item.getOptions %}
-			<div class="row">
-				{% if option.option.optionExtraType == "int" %}
-
-				  <div class="col-sm-6 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
-				  {% if option.option.optionPrice == 0 %}
-				    <div class="col-sm-2">Free</div>
-				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-				  {% endif %}
-
-				{% else %}
-
-				  <div class="col-sm-6 col-sm-offset-1">{{option.option}}</div>
-				  {% if option.option.optionPrice == 0 %}
-				    <div class="col-sm-2">Free</div>
-				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}}</div>
-				  {% endif %}
-
-				{% endif %}
-
-			</div>
-			{% endfor %}
-			{% if dealer.attendee.effectiveLevel %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{item.priceLevel}}</div>
-				<div class="col-sm-2">- $45.00</div>   
-				<div class="col-sm-2">
-				</div>
-			</div>
-			{% endif %}
-			{% if discount and not dealer.paidTotal %}
-				<div class="row">
-					<div class="col-sm-6 col-sm-offset-1">Discount - {{discount.codeName}}</div>
-					<div class="col-sm-2">- ${{discount.amountOff}}</div>   
-					<div class="col-sm-2">
-					</div>
-				</div>
-			{% endif%}
 			{% if dealer.discount %}
 				<div class="row">
 					<div class="col-sm-6 col-sm-offset-1">Discount - {{dealer.discountReason}}</div>
@@ -186,14 +146,6 @@ var paymentForm = new SqPaymentForm({
 					</div>
 				</div>
 			{% endif%}
-			{% if dealer.paidTotal %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Previously Paid</div>
-				<div class="col-sm-2">- ${{dealer.paidTotal}}</div>   
-				<div class="col-sm-2">
-				</div>
-			</div>
-			{% endif %}
 			<div class="row" style="height:10px;">&nbsp;</div>
 
 		{% endfor %}

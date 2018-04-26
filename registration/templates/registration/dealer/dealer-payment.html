@@ -262,11 +262,6 @@
                         <input type="text" id="far" value="{{dealer.farFrom}}" name="far" placeholder="Business or Person" class="form-control form-control-text" />
                     </div>
                 </div>
-                <hr/>
-		<h3>Choose a different attendee level</h3>
-		<div>If you would like to choose a higher badge level, and receive the extra perks that go along with it, please select one here:</div>
-
-		<div class="row" id="levelContainer"></div>
 
 		<div class="form-group">
                     <div class="col-sm-6 col-sm-offset-6">
@@ -289,124 +284,11 @@
 {% endblock %}
 
 {% block javascript %}
-<script type="text/html" id="levelTemplate">
-	<div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
-	<div class="panel price">
-		<div class="panel-heading  text-center">
-		<h3 data-content="name"></h3>
-		</div>
-		<div class="panel-body text-center">
-			<p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
-		</div>
-		<div class="panel-footer">
-			<a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
-			<a class="btn btn-default btn-block changeLevel" >Change Level?</a>
-		</div>
-	</div>
-	</div>
-</script>
-
-<script type="text/html" id="optionBoolTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
-		</div>
-	</div>
-<div>
-<script type="text/html" id="optionBoolReqTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
-		</div>
-	</div>
-<div>
-
-</script>
-<script type="text/html" id="optionIntTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
-		</div>
-	</div>
-
-</script>
-<script type="text/html" id="optionIntReqTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
-		</div>
-	</div>
-
-</script>
-<script type="text/html" id="optionStringTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
-			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-		</div>
-	</div>
-</script>
-<script type="text/html" id="optionStringReqTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
-			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-		</div>
-	</div>
-</script>
-<script type="text/html" id="optionListTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<select data-id="id" class="form-control form-control-select levelOptions" 
-			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-		</div>
-	</div>
-</script>
-
  <script type="text/javascript">
 	var dealer = {{ jsonDealer|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
 	var badge = {{ jsonBadge|safe }} 
 	var table = {{ jsonTable|safe }} 
-	var currentLevel = {{ jsonLevel|safe }}
-	var levelTemplateData = [];
-    var shirtSizes = [];
-
-	$( "body" ).ready(function() {
-		$.getJSON("{% url 'pricelevels' %}", function(data) {
-			levelData = data;
-			var prevLevel = 50;
-			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
-				prevLevel = parseFloat(currentLevel.basePrice);
-			}
-			$.each( data, function( key, val ) {
-				levelTemplateData.push({
-					name: val.name,
-					price: "$" + (val.base_price - prevLevel),
-					levelId: "level_" + val.id,
-				});
-			});
-			$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-			$(".changeLevel").hide();
-			if (shirtSizes.length > 0){
-				$(".selectLevel")[0].click();
-			}
-
-		});
-		$.getJSON("{% url 'shirtsizes' %}", function(data) {
-			shirtSizes = data;
-			if (levelTemplateData.length > 0){
-				$(".selectLevel")[0].click();
-			}
-		});
-	});
 
     var partners = dealer.partners.split(', ');
   	var partnerCount = 0;
@@ -500,115 +382,6 @@
 	});
 
 
-	$("#levelContainer").on('click', 'a.selectLevel', function(){
-		clearLevels();
-		var levelId = $(this).attr('id').split('_')[1];
-		$.each( levelTemplateData, function( key, val ) {
-			var id = val.levelId.split('_')[1];
-			if (id == levelId){
-				$("#regLevel").val(val.name);
-				$("#levelContainer").loadTemplate($("#levelTemplate"), val);
-				$(".changeLevel").show();
-				$(".selectLevel").text("Selected!");
-				generateOptions(id);
-				return false;
-			}
-		});
-	});
-	$("#levelContainer").on('click', 'a.changeLevel', function() {
-		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
-		$("#regLevel").val("");
-		$(".changeLevel").hide();
-	});
-	var clearLevels = function(){
-		$.each( levelTemplateData, function( key, val ) {
-			$("#"+val.levelId).text("Select " + val.name);
-		});
-		$("form").validator('update');
-	};
-	var generateOptions = function(levelId){
-		var data = [];
-		$.each(levelData, function(key, thing){
-			if (thing.id == levelId){
-				data = thing.options;
-				return false;
-			}
-		});
-		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
-		$("#levelContainer").append(container);
-		$.each( data, function(key, val) {
-			if (val.value == "0.00"){
-				var price = " (Free) ";
-			} else {
-				var price = " (+$" + val.value + ") "
-			}
-			var required = "";
-			if (val.required) {required = "required";}
-			switch (val.type){
-				case "bool":
-					var template = $("#optionBoolTemplate");
-					if (val.required) {template = $("#optionBoolReqTemplate");}
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id
-					}, {append: true});
-					break;
-				case "int":
-					var template = $("#optionIntTemplate");
-					if (val.required) {template = $("#optionIntReqTemplate");}
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id
-					}, {append: true});
-					break;
-				case "string":
-					var template = $("#optionStringTemplate");
-					if (val.required) {template = $("#optionStringReqTemplate");}
-					var placeholder = val.name;
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id,
-						'placeholder': placeholder,
-					}, {append: true});
-					break;
-				case "Jersey":
-					break;
-				case "StaffJersey":
-					break;
-				default:
-					if (val.list == []){break;}
-					var options = [];
-					if (!val.required) {options.push({"content": "Select One...", "value": ""});}
-					$.each(val.list, function (key, item) {
-						options.push({"content": item.name, "value": item.id})
-					});
-					$("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id,
-						'options': options
-					}, {append: true});
-					break;
-			}
-		});
-		
-		$("form").validator('update');
-	};
-	var getOptions = function() {
-		var options = $(".levelOptions");
-                var data = [];
-		$.each(options, function(key, option) {
-			if ($(option).is(':checkbox')){
-				data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
-			} else if($(option).val() == "") {
-				
-			} else {
-				data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-			}
-		});
-		return data;
-	};
-
-
 	$("#checkout").click(doRegister);
 	
 
@@ -640,8 +413,7 @@
 				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
 				'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked'),
 			},
-			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furthemore 2018'
+            'event': 'Furthemore 2019'
 		};
 		
 
