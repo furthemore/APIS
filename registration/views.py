@@ -134,8 +134,10 @@ def getTotal(orderItems, disc = ""):
             total += itemTotal
     return total
 
-def getDealerTotal(orderItems, discount, dealer):
-    subTotal = getTotal(orderItems, discount)
+def getDealerTotal(orderItems, dealer):
+    itemSubTotal = 0
+    for item in orderItems:
+        itemSubTotal = item.priceLevel.basePrice
     partnerCount = dealer.getPartnerCount()
     partnerBreakfast = 0
     if partnerCount > 0 and dealer.asstBreakfast:
@@ -143,8 +145,7 @@ def getDealerTotal(orderItems, discount, dealer):
     wifi = 0
     if dealer.needWifi:
         wifi = 50
-    paidTotal = dealer.paidTotal()
-    total = subTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi - dealer.discount - paidTotal
+    total = itemSubTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi - dealer.discount
     if total < 0:
       return 0
     return total
@@ -307,27 +308,27 @@ def addStaff(request):
 
 def dealers(request, guid):
     context = {'token': guid}
-    return render(request, 'registration/dealer-locate.html', context)
-
-def dealerAsst(request, guid):
-    context = {'token': guid}
-    return render(request, 'registration/dealerasst-locate.html', context)
+    return render(request, 'registration/dealer/dealer-locate.html', context)
 
 def thanksDealer(request):
     context = {}
-    return render(request, 'registration/dealer-thanks.html', context)
+    return render(request, 'registration/dealer/dealer-thanks.html', context)
 
 def updateDealer(request):
     context = {}
-    return render(request, 'registration/dealer-update.html', context)
+    return render(request, 'registration/dealer/dealer-update.html', context)
 
 def doneDealer(request):
     context = {}
-    return render(request, 'registration/dealer-done.html', context)
+    return render(request, 'registration/dealer/dealer-done.html', context)
+
+def dealerAsst(request, guid):
+    context = {'token': guid}
+    return render(request, 'registration/dealer/dealerasst-locate.html', context)
 
 def doneAsstDealer(request):
     context = {}
-    return render(request, 'registration/dealerasst-done.html', context)
+    return render(request, 'registration/dealer/dealerasst-done.html', context)
 
 def newDealer(request):
     event = Event.objects.last()
@@ -335,15 +336,15 @@ def newDealer(request):
     today = tz.localize(datetime.now())
     context = {}
     if event.dealerRegStart <= today <= event.dealerRegEnd:
-        return render(request, 'registration/dealer-form.html', context)
-    return render(request, 'registration/dealer-closed.html', context)
+        return render(request, 'registration/dealer/dealer-form.html', context)
+    return render(request, 'registration/dealer/dealer-closed.html', context)
 
 def infoDealer(request):
     context = {'dealer': None}
     try:
       dealerId = request.session['dealer_id']
     except Exception as e:
-      return render(request, 'registration/dealer-payment.html', context)
+      return render(request, 'registration/dealer/dealer-payment.html', context)
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer:
@@ -352,17 +353,13 @@ def infoDealer(request):
         attendee_dict = model_to_dict(dealer.attendee)
         badge_dict = model_to_dict(badge)
         table_dict = model_to_dict(dealer.tableSize)
-        lvl_dict = {}
-        if badge.effectiveLevel():
-            lvl_dict["basePrice"] = badge.effectiveLevel().basePrice
 
         context = {'dealer': dealer, 'badge': badge,
                    'jsonDealer': json.dumps(dealer_dict, default=handler),
                    'jsonTable': json.dumps(table_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
-                   'jsonBadge': json.dumps(badge_dict, default=handler),
-                   'jsonLevel': json.dumps(lvl_dict, default=handler)}
-    return render(request, 'registration/dealer-payment.html', context)
+                   'jsonBadge': json.dumps(badge_dict, default=handler)}
+    return render(request, 'registration/dealer/dealer-payment.html', context)
 
 def findDealer(request):
   try:
@@ -397,37 +394,17 @@ def findAsstDealer(request):
     return HttpResponseServerError(str(e))
 
 
-def invoiceDealer(request):
-    sessionItems = request.session.get('order_items', [])
-    sessionDiscount = request.session.get('discount', "")
-    if not sessionItems:
-        context = {'orderItems': [], 'total': 0, 'discount': {}}
-        request.session.flush()
-    else:
-        dealerId = request.session.get('dealer_id', -1)
-        if dealerId == -1:
-            context = {'orderItems': [], 'total': 0, 'discount': {}}
-            request.session.flush()
-        else:
-            dealer = Dealer.objects.get(id=dealerId)
-            orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-            discount = Discount.objects.get(codeName=sessionDiscount)
-            total = getDealerTotal(orderItems, discount, dealer)
-            context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'dealer': dealer}
-    return render(request, 'registration/dealer-checkout.html', context)
-
-
 def addAsstDealer(request):
     context = {'attendee': None, 'dealer': None}
     try:
       dealerId = request.session['dealer_id']
     except Exception as e:
-      return render(request, 'registration/dealerasst-add.html', context)
+      return render(request, 'registration/dealer/dealerasst-add.html', context)
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer.attendee:
       context = {'attendee': dealer.attendee, 'dealer': dealer}
-    return render(request, 'registration/dealerasst-add.html', context)
+    return render(request, 'registration/dealer/dealerasst-add.html', context)
 
 def checkoutAsstDealer(request):
     postData = json.loads(request.body)
@@ -476,7 +453,6 @@ def addDealer(request):
     postData = json.loads(request.body)
     pda = postData['attendee']
     pdd = postData['dealer']
-    pdp = postData['priceLevel']
     evt = postData['event']
     event = Event.objects.get(name=evt)
 
@@ -545,28 +521,37 @@ def addDealer(request):
         return HttpResponseServerError(str(e))
 
 
-    priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
+    priceLevel = event.dealerBasePriceLevel
 
     orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
-    for option in pdp['options']:
-        plOption = PriceLevelOption.objects.get(id=int(option['id']))
-        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
-        attendeeOption.save()
-
     orderItems = request.session.get('order_items', [])
     orderItems.append(orderItem.id)
     request.session['order_items'] = orderItems
-    request.session["discount"] = "DealerDiscount"
 
     return JsonResponse({'success': True})
 
+def invoiceDealer(request):
+    sessionItems = request.session.get('order_items', [])
+    if not sessionItems:
+        context = {'orderItems': [], 'total': 0}
+        request.session.flush()
+    else:
+        dealerId = request.session.get('dealer_id', -1)
+        if dealerId == -1:
+            context = {'orderItems': [], 'total': 0}
+            request.session.flush()
+        else:
+            dealer = Dealer.objects.get(id=dealerId)
+            orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+            total = getDealerTotal(orderItems, dealer)
+            context = {'orderItems': orderItems, 'total': total, 'dealer': dealer}
+    return render(request, 'registration/dealer/dealer-checkout.html', context)
 
 def checkoutDealer(request):
   try:
     sessionItems = request.session.get('order_items', [])
-    pdisc = request.session.get('discount', "")
     orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     orderItem = orderItems[0]
     if 'dealer_id' not in request.session:
@@ -575,18 +560,18 @@ def checkoutDealer(request):
     dealer = Dealer.objects.get(id=request.session.get('dealer_id'))
     postData = json.loads(request.body)
 
-    discount = Discount.objects.get(codeName=pdisc)
-    subtotal = getDealerTotal(orderItems, discount, dealer)
+    subtotal = getDealerTotal(orderItems, dealer)
 
     if subtotal == 0:
 
-      status, message, order = doZeroCheckout(dealer.attendee, discount, orderItems)
+      status, message, order = doZeroCheckout(dealer.attendee, None, orderItems)
       if not status:
           return JsonResponse({'success': False, 'message': message})
 
       request.session.flush()
 
       try:
+          dealer.resetToken()
           sendDealerPaymentEmail(dealer, order)
       except Exception as e:
           logger.exception("Error sending DealerPaymentEmail - zero sum.")
@@ -604,11 +589,12 @@ def checkoutDealer(request):
 
     pbill = postData['billingData']
     ip = get_client_ip(request)
-    status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
+    status, message, order = doCheckout(pbill, total, None, orderItems, porg, pcharity, ip)
 
     if status:
         request.session.flush()
         try:
+            dealer.resetToken()
             sendDealerPaymentEmail(dealer, order)
         except Exception as e:
             logger.exception("Error sending DealerPaymentEmail.")

@@ -50,6 +50,43 @@ class Discount(models.Model):
             return False
         return True
 
+class PriceLevelOption(models.Model):
+    optionName = models.CharField(max_length=200)
+    optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
+    optionExtraType = models.CharField(max_length=100, blank=True)
+    optionExtraType2 = models.CharField(max_length=100, blank=True)
+    optionExtraType3 = models.CharField(max_length=100, blank=True)
+    required = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '{0} (${1})'.format(self.optionName, self.optionPrice)
+
+    def getList(self):
+        if self.optionExtraType in ["int", "bool", "string"]:
+            return []
+        elif self.optionExtraType == "ShirtSizes":
+            return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
+        else:
+            return []
+
+class PriceLevel(models.Model):
+    name = models.CharField(max_length=100)
+    priceLevelOptions = models.ManyToManyField(PriceLevelOption, blank=True)
+    description = models.TextField()
+    basePrice = models.DecimalField(max_digits=6, decimal_places=2)
+    startDate = models.DateTimeField()
+    endDate = models.DateTimeField()
+    public = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    group = models.TextField(blank=True)
+    emailVIP = models.BooleanField(default=False)
+    emailVIPEmails = models.CharField(max_length=400, blank=True, default='')
+
+    def __str__(self):
+      return self.name
+
+
 
 class Event(LookupTable):
     dealerRegStart = models.DateTimeField()
@@ -63,9 +100,8 @@ class Event(LookupTable):
     eventStart = models.DateField()
     eventEnd = models.DateField()
     default = models.BooleanField(default=False)
-    dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerDiscount_event")
-    staffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="staffDiscount_event")
-    dealerAsstDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerAsstDiscount_event")
+    dealerBasePriceLevel = models.ForeignKey(PriceLevel, null=True, blank=True, on_delete=models.SET_NULL)
+
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -300,42 +336,6 @@ class Dealer(models.Model):
 
 
 # Start order tables
-
-class PriceLevelOption(models.Model):
-    optionName = models.CharField(max_length=200)
-    optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
-    optionExtraType = models.CharField(max_length=100, blank=True)
-    optionExtraType2 = models.CharField(max_length=100, blank=True)
-    optionExtraType3 = models.CharField(max_length=100, blank=True)
-    required = models.BooleanField(default=False)
-    active = models.BooleanField(default=False)
-
-    def __str__(self):
-        return '{0} (${1})'.format(self.optionName, self.optionPrice)
-
-    def getList(self):
-        if self.optionExtraType in ["int", "bool", "string"]:
-            return []
-        elif self.optionExtraType == "ShirtSizes":
-            return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
-        else:
-            return []
-
-class PriceLevel(models.Model):
-    name = models.CharField(max_length=100)
-    priceLevelOptions = models.ManyToManyField(PriceLevelOption, blank=True)
-    description = models.TextField()
-    basePrice = models.DecimalField(max_digits=6, decimal_places=2)
-    startDate = models.DateTimeField()
-    endDate = models.DateTimeField()
-    public = models.BooleanField(default=False)
-    notes = models.TextField(blank=True)
-    group = models.TextField(blank=True)
-    emailVIP = models.BooleanField(default=False)
-    emailVIPEmails = models.CharField(max_length=400, blank=True, default='')
-
-    def __str__(self):
-      return self.name
 
 class Order(models.Model):
     UNPAID = 'Unpaid'
