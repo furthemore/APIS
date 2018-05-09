@@ -331,7 +331,7 @@ def doneAsstDealer(request):
     return render(request, 'registration/dealer/dealerasst-done.html', context)
 
 def newDealer(request):
-    event = Event.objects.last()
+    event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}
@@ -656,8 +656,7 @@ def addNewDealer(request):
 # Attendees - Onsite
 
 def onsite(request):
-    # FIXME: need mechanism for getting the current event, not just the first row in the db
-    event = Event.objects.get(name__icontains="2018")
+    event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {}
@@ -1174,7 +1173,7 @@ def checkoutUpgrade(request):
 
     attendee = Attendee.objects.get(id=request.session.get('attendee_id'))
     postData = json.loads(request.body)
-    event = Event.objects.first()
+    event = Event.objects.get(default=True)
 
     subtotal = getTotal(orderItems)
 
@@ -1593,7 +1592,7 @@ def getShirtSizes(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getTableSizes(request):
-    event = Event.objects.last()
+    event = Event.objects.get(default=True)
     sizes = TableSize.objects.filter(event=event)
     data = [{'name': size.name, 'id': size.id, 'description': size.description, 'chairMin': size.chairMin, 'chairMax': size.chairMax, 'tableMin': size.tableMin, 'tableMax': size.tableMax, 'partnerMin': size.partnerMin, 'partnerMax': size.partnerMax, 'basePrice': str(size.basePrice)} for size in sizes]
     return HttpResponse(json.dumps(data), content_type='application/json')

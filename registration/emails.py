@@ -1,4 +1,4 @@
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from .models import *
 
@@ -9,19 +9,22 @@ def sendRegistrationEmail(order, email):
         ao = AttendeeOptions.objects.filter(orderItem=oi)
         orderDict[oi] = ao
 
-    # send payment receipt
-    data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
-    msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
-    msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
-    sendEmail("registration@furthemore.org", [email], 
-              "Furthemore 2018 Registration Payment", msgTxt, msgHtml)
 
     # send registration confirmations to all people in the order
     for oi in orderItems:
-        data = {'reference': order.reference, 'orderItem': oi}
-        msgTxt = render_to_string('registration/emails/registration.txt', data)
-        msgHtml = render_to_string('registration/emails/registration.html', data)
-        sendEmail("registration@furthemore.org", [oi.badge.attendee.email], 
+        if oi.badge.attendee.email == email:
+            # send payment receipt to the payor
+            data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
+            msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
+            msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
+            sendEmail("registration@furthemore.org", [email], 
+                 "Furthemore 2018 Registration Payment", msgTxt, msgHtml)
+        else: 
+            # send regular emails to everyone else
+            data = {'reference': order.reference, 'orderItem': oi}
+            msgTxt = render_to_string('registration/emails/registration.txt', data)
+            msgHtml = render_to_string('registration/emails/registration.html', data)
+            sendEmail("registration@furthemore.org", [oi.badge.attendee.email], 
                  "Furthemore 2018 Registration Confirmation", msgTxt, msgHtml)
 
         # send vip notification if necessary
@@ -128,12 +131,13 @@ def sendApprovalEmail(dealerQueryset):
                   "Fur The More 2018 Dealer Application", msgTxt, msgHtml)
 
 
-def sendEmail(fromAddress, toAddressList, subject, message, htmlMessage):
-    send_mail(
+def sendEmail(replyAddress, toAddressList, subject, message, htmlMessage):
+    mailMessage = EmailMultiAlternatives(
       subject,
       message,
-      fromAddress,
+      'dragon@furthemore.org',
       toAddressList,
-      fail_silently=False,
-      html_message=htmlMessage
+      reply_to=[replyAddress]
     )
+    mailMessage.attach_alternative(htmlMessage, "text/html")
+    mailMessage.send()
