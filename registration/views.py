@@ -443,7 +443,10 @@ def infoDealer(request):
         badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
         dealer_dict = model_to_dict(dealer)
         attendee_dict = model_to_dict(dealer.attendee)
-        badge_dict = model_to_dict(badge)
+        if badge is not None:
+            badge_dict = model_to_dict(badge)
+        else:
+            badge_dict = {}
         table_dict = model_to_dict(dealer.tableSize)
         if badge.effectiveLevel():
             lvl_dict = model_to_dict(badge.effectiveLevel())
@@ -504,7 +507,7 @@ def invoiceDealer(request):
         else:
             dealer = Dealer.objects.get(id=dealerId)
             orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-            discount = Discount.objects.get(codeName=sessionDiscount)
+            discount = Discount.objects.filter(codeName=sessionDiscount).first()
             total = getDealerTotal(orderItems, discount, dealer)
             context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'dealer': dealer}
     return render(request, 'registration/dealer-checkout.html', context)
@@ -681,7 +684,7 @@ def checkoutDealer(request):
             logger.error("Unable to decode JSON for checkoutDealer()")
             return JsonResponse({'success': False})
 
-        discount = Discount.objects.get(codeName=pdisc)
+        discount = Discount.objects.filter(codeName=pdisc).first()
         subtotal = getDealerTotal(orderItems, discount, dealer)
 
         if subtotal == 0:
@@ -1274,8 +1277,11 @@ def getOptionsDict(orderItems):
         aos = oi.getOptions()
         for ao in aos:
             if ao.optionValue == 0 or ao.optionValue == None or ao.optionValue == "" or ao.optionValue == False: pass
+            try:
+                orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue, 'id': ao.option.id, 'image': ao.option.optionImage.url})
+            except:
+                orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue, 'id': ao.option.id, 'image': None})
 
-            orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue, 'id': ao.option.id})
 
     return orderDict
 
@@ -1307,6 +1313,7 @@ def getPriceLevelList(levels):
             'required': option.required,
             'active': option.active,
             'type': option.optionExtraType,
+            'image': option.getOptionImage(),
             'list': option.getList()
             } for option in level.priceLevelOptions.order_by('optionPrice').all() ]
           } for level in levels ]

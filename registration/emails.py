@@ -49,6 +49,14 @@ def sendUpgradePaymentEmail(attendee, order):
             sendEmail("registration@reg.furrydelphia.org", [email for email in oi.priceLevel.emailVIPEmails.split(',')],
                  "Furrydelphia 2018 VIP Registration", msgTxt, msgHtml)
 
+def sendUpgradeFormEmail(badge):
+    attendee = badge.attendee
+    data = {'registrationToken' : badge.registrationToken}
+    msgTxt = render_to_string('registration/emails/registrationImport.txt', data)
+    msgHtml = render_to_string('registration/emails/registrationImport.html', data)
+    sendEmail("registration@reg.furrydelphia.org", [attendee.email], "Furrydelphia 2018 Registration",
+              msgTxt, msgHtml)
+
 
 def sendStaffRegistrationEmail(orderId):
     order = Order.objects.get(id=orderId)

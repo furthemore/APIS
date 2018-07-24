@@ -251,12 +251,16 @@ class Dealer(models.Model):
 
 # Start order tables
 
+def content_file_name(instance, filename):
+    return '/'.join(['priceleveloption',str(instance.pk),filename])
+
 class PriceLevelOption(models.Model):
     optionName = models.CharField(max_length=200)
     optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
     optionExtraType = models.CharField(max_length=100, blank=True)
     optionExtraType2 = models.CharField(max_length=100, blank=True)
     optionExtraType3 = models.CharField(max_length=100, blank=True)
+    optionImage = models.ImageField(upload_to=content_file_name,blank=True,null=True)
     required = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
 
@@ -270,6 +274,11 @@ class PriceLevelOption(models.Model):
             return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
         else:
             return []
+    def getOptionImage(self):
+	if self.optionImage == None:
+		return None
+	else:
+		return self.optionImage.url
 
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
