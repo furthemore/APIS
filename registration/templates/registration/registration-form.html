@@ -9,15 +9,16 @@
         <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
       </div>
       <div class="modal-body">
-    <p>Only those over the age of 18 by the start of the convention (born on or before August 10, 2000) may register online.</p>
+        <p>Those over the age of 15 by the start of the convention (born on or before August 10, 2003) may register online, 
+           but only individuals 18 years or older (born on or before August 10, 2000) can pick up their own badges.</p>
         <p>Individuals at least 15 years of age at the time of the event (born on or before August 10, 2003), must either:
             <ul>
                 <li>Have a parent or legal guardian present at time of registration<br>&nbsp;<b>-or-</b>
-                    <li>Bring <a href="https://lambda.furrydelphia.org/static/Furrydelphia_Parental_Consent_Form.pdf" target="_blank">this consent form</a>, completed by a parent or legal guardian, and notarized
+                    <li>Bring <a href="https://www.furrydelphia.org/Furrydelphia_Parental_Consent_Form.pdf" target="_blank">this consent form</a>, completed by a parent or legal guardian, and notarized
             </ul>
         </p>
         <p>A parent or guardian must also register for the convention to accompany anyone under the age of 15 at the time of the event (born after August 10, 2003).</p>
-    <p>Please contact <a href="mailto:registration@furrydelphia.org">registration@furrydelphia.org</a> if you have any questions.</p>
+    <p>Please contact <a href="mailto:registration@reg.furrydelphia.org">registration@reg.furrydelphia.org</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -116,7 +117,7 @@
                 <div class="form-group">
                     <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
+                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required="required" autocomplete="nope">
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -307,14 +308,18 @@
     var generateOptions = function(levelId){
         var data = [];
         var description = "";
+	var image = null;
         $.each(levelData, function(key, thing){
             if (thing.id == levelId){
                 data = thing.options;
                 description = thing.description;
+		if(thing.image === undefined){ }else{
+		image = "<br><button data-url='"+thing.image+"' class='open-image btn btn-sm btn-link btn-block'>(View Image)</button>";
+		}
                 return false;
             }
         });
-        var container = $("<div id='optionsContainer' class='col-xs-12 col-sm-6 col-md-8 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
+        var container = $("<div id='optionsContainer' class='col-xs-12 col-sm-6 col-md-8 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description +"</div></div></div>");
         $("#levelContainer").append(container);
         $.each( data, function(key, val) {
             if (val.value == "0.00"){
@@ -322,14 +327,20 @@
             } else {
                 var price = " (+$" + val.value + ") "
             }
+            if (val.image == null) {
+                var image = ""
+            }else{
+                var image = "<br><a href='javascript:;' data-image='"+val.image+"' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>"
+            }
             var required = "";
+            console.log(val);
             if (val.required) {required = "required";}
             switch (val.type){
                 case "bool":
                     var template = $("#optionBoolTemplate");
                     if (val.required) {template = $("#optionBoolReqTemplate");}
                     $("#optionsContainer").loadTemplate(template, {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id
                     }, {append: true});
                     if (val.value == "0.00") {
@@ -340,7 +351,7 @@
                     var template = $("#optionIntTemplate");
                     if (val.required) {template = $("#optionIntReqTemplate");}
                     $("#optionsContainer").loadTemplate(template, {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id
                     }, {append: true});
                     break;
@@ -349,7 +360,7 @@
                     if (val.required) {template = $("#optionStringReqTemplate");}
                     var placeholder = val.name;
                     $("#optionsContainer").loadTemplate(template, {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id,
                         'placeholder': placeholder,
                     }, {append: true});
@@ -366,7 +377,7 @@
                         options.push({"content": item.name, "value": item.id})
                     });
                     $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id,
                         'options': options
                     }, {append: true});
@@ -412,8 +423,8 @@
             var birthdate = new Date(Date.parse($("#birthDate").val()));
         }
         var age = getAge(birthdate);
-        if (age < 18) {
-            alert("You must be 18 by the first day of Furrydelphia to register online.")
+        if (age < 15) {
+            alert("You must be 15 by the first day of Furrydelphia to register online.")
             return;
         }
         var data = {
@@ -477,6 +488,9 @@ $.ajaxSetup({
     }
 });
 
+$(document).on("click",".open-image", function(event){
+	window.open($(event.target).data("image"),"_blank","width=750,height=750,left=35%,top=25%,menubar=no,statusbar=no");
+});
 
 </script>
 

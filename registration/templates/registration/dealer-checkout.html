@@ -195,10 +195,13 @@ var paymentForm = new SqPaymentForm({
 				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
 				<div class="col-sm-2"><h4>${{total}}</h4></div>   
 			</div>
+			<div class="row">
+				<div class="col-sm-12"><h3 style="color: red; text-align: center">Please review the total and invoice items above carefully!</h3></div>
+			</div>
 
 	
 		<br/>
-		<a id="cancel" href="#">Cancel</a>
+		<a id="cancel" href="#">Cancel and Restart</a>
 		<hr/>
 		{% if total > 0%}
 

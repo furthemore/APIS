@@ -13,6 +13,9 @@ from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedTabularInline, NestedModelAdmin
 
+from django.contrib.admin.models import LogEntry, DELETION
+from django.utils.html import escape
+
 from .models import *
 from .emails import *
 import views
@@ -33,6 +36,13 @@ def send_approval_email(modeladmin, request, queryset):
     sendApprovalEmail(queryset)
     queryset.update(emailed=True)
 send_approval_email.short_description = "Send approval email and payment instructions"
+
+def mark_as_approved(modeladmin, request, queryset):
+    for dealer in queryset:
+        dealer.approved = True
+        dealer.save()
+mark_as_approved.short_description = "Approve selected dealers"
+
 
 def send_payment_email(modeladmin, request, queryset):
     for dealer in queryset:
@@ -71,7 +81,7 @@ class DealerAdmin(ImportExportModelAdmin):
     list_filter = ('event',)
     save_on_top = True
     resource_class = DealerResource
-    actions = [send_approval_email, send_assistant_form_email, send_payment_email]
+    actions = [mark_as_approved, send_approval_email, send_assistant_form_email, send_payment_email]
     readonly_fields = ['get_email']
     fieldsets = (
         (
@@ -236,6 +246,11 @@ def make_staff(modeladmin, request, queryset):
         staff = Staff(attendee=att,event=event)
         staff.save()
 make_staff.short_description = "Add to Staff"
+
+def send_upgrade_form_email(modeladmin, request, queryset):
+    for badge in queryset:
+        sendUpgradeFormEmail(badge)
+send_upgrade_form_email.short_description = "Send upgrade info email"
 
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
@@ -424,7 +439,6 @@ def print_staff_badges(modeladmin, request, queryset):
     return response
 print_staff_badges.short_description = "Print Staff Badges"
 
-
 class AttendeeOptionInline(NestedTabularInline):
     model=AttendeeOptions
     extra=0
@@ -476,7 +490,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName', 'badgeName', 'badgeNumber']
     readonly_fields = ['get_age_range', ]
     actions = [assign_badge_numbers, print_badges, print_dealerasst_badges, assign_numbers_and_print,
-               print_dealer_badges, assign_staff_badge_numbers, print_staff_badges]
+               print_dealer_badges, assign_staff_badge_numbers, print_staff_badges, send_upgrade_form_email]
     fieldsets = (
         (
 	    None,
@@ -601,3 +615,4 @@ class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'volunteerListOk')
 
 admin.site.register(Department, DepartmentAdmin)
+
