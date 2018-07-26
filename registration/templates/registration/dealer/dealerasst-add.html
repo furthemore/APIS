@@ -1,4 +1,5 @@
 {% extends "registration/master.html" %}
+{% load settings %}
 
 {% block head %}
     <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
@@ -6,8 +7,9 @@
     <script type="text/javascript">
 var paymentForm = new SqPaymentForm({
   // Initialize the payment form elements
-  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
-  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+
   inputClass: 'form-control',
   // Initialize the credit card placeholders
   cardNumber: {
@@ -108,7 +110,7 @@ var paymentForm = new SqPaymentForm({
 		<h3>Charges</h3>
 		
 		<div class='form-group' style='margin-left:30px;'>You will be charged $45 for each new partner added via this form.</div>
-		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:marketplace@furthemore.org'>marketplace@futhemore.org</a> instead.</div>
+		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:marketplace@reg.furrydelphia.org'>marketplace@reg.furrydelphia.org</a> instead.</div>
 
         <div class="form-group">
                     <label for="asstbreakfst" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
@@ -213,7 +215,7 @@ var paymentForm = new SqPaymentForm({
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Checkout</h1>
-		<div>There are no attendees in your order. Please check your email link and try again, or contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> for help.</div>
+		<div>There are no attendees in your order. Please check your email link and try again, or contact <a href="mailto:registration@furrydelphia.org">registration@furrydelphia.org</a> for help.</div>
 	</div>
 	</div>
 
@@ -305,7 +307,7 @@ var paymentForm = new SqPaymentForm({
                     }
                     if (partnerCount == item.partnerMax) {
                         $('#billingInfo').empty();
-                        $('#billingInfo').append("You already have the maximum allowed partners for this table type. Please contact <a href='mailto:marketplace@furthemore.org'>marketplace@furthemore.org</a> if you believe this is an error.");                        
+                        $('#billingInfo').append("You already have the maximum allowed partners for this table type. Please contact <a href='mailto:marketplace@furrydelphia.org'>marketplace@furrydelphia.org</a> if you believe this is an error.");                        
                     }
                     $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
                 }
@@ -377,7 +379,7 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                alert("An error has occurred. If this error continues, please contact marketplace@furthemore.org for assistence.")
+                alert("An error has occurred. If this error continues, please contact marketplace@furrydelphia.org for assistence.")
 	    		$("#checkout").removeAttr("disabled");
 		    },
             "success": function (result, status) {
@@ -388,7 +390,7 @@ function doCheckout() {
                         alert(result.message);
     		    		window.location = "{% url 'doneAsstDealer' %}";
                     } else {
-                        alert("An error has occurred: " + result.message + " If this error continues, please contact marketplace@furthemore.org for assistence.");
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact marketplace@furrydelphia.org for assistence.");
     			       $("#checkout").removeAttr("disabled");
                     }
 			    }
