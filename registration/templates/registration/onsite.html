@@ -39,7 +39,7 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Furthemore 2018 Onsite Registration</h1>
+        <h1>Furrydelphia 2018 Onsite Registration</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
@@ -149,7 +149,7 @@
                     <div>
                         <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I agree to abide by Furthemore's <a href="#" data-toggle="modal" data-target="#codeOfConduct">Code of Conduct</a>.
+			I agree to abide by Furrydelphia's <a href="http://www.furrydelphia.org/policies/code-of-conduct/" target="_blank">Code of Conduct</a>.
                         </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -544,7 +544,7 @@
                 'onsite' : true
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'jersey': {}, 'event': 'Furthemore 2018'
+            'jersey': {}, 'event': 'Furrydelphia 2018'
         };
         $.ajax({
             "type": "POST",
@@ -559,7 +559,7 @@
                 window.location = "{% url 'onsiteCart' %}";
             },
             "error": function(result, status) {
-            alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
+            alert("An error has occurred. Please contact registration@furrydelphia.org and we will correct the problem.")
             }
         })
 

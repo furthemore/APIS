@@ -1,7 +1,5 @@
 Thank you for registering as staff.
 Your registration confirmation number is: {{reference}}
-If you have any questions about your registration, please contact your supervisor or registration@furthemore.org.
+If you have any questions about your registration, please contact your supervisor or registration@reg.furrydelphia.org.
 Thank you!
 
-Chazzfox
-Head of Staff Services
