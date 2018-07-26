@@ -46,10 +46,20 @@ def chargePayment(orderId, ccData, ipAddress):
     print("---- Charge Submitted ----")
     print(api_response)
 
+    try:
+        order.lastFour = api_response['transaction']['tenders']['card_details']['last_4']
+        order.notes = order.notes + "Square: #" + api_response['transaction']['tenders']['id'][:4]
+    except Exception as e:
+        print(dir(e))
+        print(e)
+    order.save()
+
     if api_response.errors and len(api_response.errors) > 0:
         message = api_response.errors[0].details
         print("---- Transaction Failed ----")
         return False, message
+
+
 
     print("---- End Transaction ----")
 

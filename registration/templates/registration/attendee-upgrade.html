@@ -9,7 +9,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furthemore 2018</h1>
+		<h1>Registration Upgrade - Furrydelphia 2018</h1>
 
 		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
@@ -27,7 +27,7 @@
 
 		<h3>Choose a different attendee level</h3>
 
-        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level (such as extra GOH tickets) you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a>.</div>
+        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:registration@reg.furrydelphia.org">registration@reg.furrydelphia.org</a>.</div>
 
 		<div class="row" id="levelContainer"></div>
 
@@ -45,7 +45,7 @@
 
 {% else %}
 
-<h1>Registration Upgrade - Furthemore 2018</h1>
+<h1>Registration Upgrade - Furrydelphia 2018</h1>
 <p>Your session has expired. Please use the link in your email again to start over.</p>
 
 {% endif %}
@@ -54,83 +54,84 @@
 
 {% block javascript %}
 <script type="text/html" id="levelTemplate">
-	<div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
-	<div class="panel price">
-		<div class="panel-heading  text-center">
-		<h3 data-content="name"></h3>
-		</div>
-		<div class="panel-body text-center">
-			<p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
-		</div>
-		<div class="panel-footer">
-			<a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
-			<a class="btn btn-default btn-block changeLevel" >Change Level?</a>
-		</div>
-	</div>
-	</div>
+    <div id="levelTemplateColumn" class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
+    <div class="panel price">
+        <div class="panel-heading  text-center">
+        <h3 data-content="name"></h3>
+        </div>
+        <div class="panel-body text-center">
+            <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+        </div>
+        <div class="panel-footer">
+            <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
+            <a class="btn btn-default btn-block changeLevel">Change Level?</a>
+        </div>
+    </div>
+    </div>
 </script>
 
 <script type="text/html" id="optionBoolTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
-		</div>
-	</div>
-</script>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
+        </div>
+    </div>
+<div>
 <script type="text/html" id="optionBoolReqTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
-		</div>
-	</div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
+        </div>
+    </div>
+<div>
 
 </script>
 <script type="text/html" id="optionIntTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
-		</div>
-	</div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
+        </div>
+    </div>
 
 </script>
 <script type="text/html" id="optionIntReqTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
-		</div>
-	</div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
+        </div>
+    </div>
 
 </script>
 <script type="text/html" id="optionStringTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
-			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-		</div>
-	</div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+        </div>
+    </div>
 </script>
 <script type="text/html" id="optionStringReqTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
-			data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-		</div>
-	</div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+        </div>
+    </div>
 </script>
 <script type="text/html" id="optionListTemplate">
-	<div class="form-group">
-		<label class="col-sm-3 control-label" data-content="name"></label>
-		<div class="col-sm-9">
-			<select data-id="id" class="form-control form-control-select levelOptions" 
-			  data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-		</div>
-	</div>
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <select data-id="id" class="form-control form-control-select levelOptions" 
+              data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+        </div>
+    </div>
 </script>
  <script type="text/javascript">
 	var attendee = {{ jsonAttendee|safe }} 
@@ -228,6 +229,9 @@
 						'name': val.name + " " + price,
 						'id': "option_" + val.id
 					}, {append: true});
+                    if (val.value == "0.00") {
+                        $("#option_"+val.id).prop('checked', true);
+                    }
                     var opts = getExistingOptions(val.id);
                     if (opts && opts[0] && opts[0].value == "True") {
                         $("#option_" + val.id).attr("checked", "checked");
@@ -285,21 +289,24 @@
 		
 		$("form").validator('update');
 	};
-	var getOptions = function() {
-		var options = $(".levelOptions");
-                var data = [];
-		$.each(options, function(key, option) {
-			if ($(option).is(':checkbox')){
-				data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
-			} else if($(option).val() == "") {
-				
-			} else {
-				data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-			}
-		});
-		return data;
-	};
 
+
+    var getOptions = function() {
+        var options = $(".levelOptions");
+                var data = [];
+        $.each(options, function(key, option) {
+            if ($(option).is(':checkbox')) {
+                if ($(option).is(':checked')) {
+                    data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
+                }
+            } else {
+                if ($(option).val() != "") {
+                    data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                }
+            }
+        });
+        return data;
+    };
 
 	$("#checkout").click(doRegister);
 	
@@ -315,7 +322,7 @@
 		var data = {
 			'attendee': {'id': attendee.id,}, 
             'badge': {'id': badge.id,},
-            'event': 'Furthemore 2018',
+            'event': 'Furrydelphia 2018',
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
 		};
 		
@@ -333,7 +340,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.")
+                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.")
 			}
 			$("#checkout").removeAttr("disabled");
 		    },
@@ -343,7 +350,7 @@
                             window.location = "{% url 'invoiceUpgrade' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.");
 			}
                     }
 		});
