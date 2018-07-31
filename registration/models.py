@@ -100,8 +100,9 @@ class Event(LookupTable):
     eventStart = models.DateField()
     eventEnd = models.DateField()
     default = models.BooleanField(default=False)
-    dealerBasePriceLevel = models.ForeignKey(PriceLevel, null=True, blank=True, on_delete=models.SET_NULL)
-
+    newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name='newStaffEvent')
+    staffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="staffEvent")
+    dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerEvent")
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -131,6 +132,14 @@ class Department(models.Model):
 
 def getRegistrationToken():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(15))
+
+class TempToken(models.Model):
+    token = models.CharField(max_length=200, default=getRegistrationToken)
+    email = models.CharField(max_length=200)
+    validUntil = models.DateTimeField()
+    used = models.BooleanField(default=False)
+    usedDate = models.DateTimeField(null=True, blank=True)
+    sent = models.BooleanField(default=False)
 
 class Attendee(models.Model):
     firstName = models.CharField(max_length=200)
@@ -259,6 +268,7 @@ class Staff(models.Model):
     needRoom = models.BooleanField(default=False)
     gender = models.CharField(max_length=50, blank=True)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    checkedIn = models.BooleanField(default=False)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
@@ -304,17 +314,14 @@ class Dealer(models.Model):
     emailed = models.BooleanField(default=False)
     asstBreakfast = models.BooleanField(default=False)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    logo = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
 
     def getPartnerCount(self):
-      partners = self.partners.split(', ')
-      partnerCount = 0
-      for part in partners:
-        if part.find("name") > -1 and part.split(':')[1].strip() != "":
-            partnerCount = partnerCount + 1
-      return partnerCount
+      partnercount = self.partner_set.count()
+      return partnercount
 
     def paidTotal(self):
           total = 0
@@ -333,6 +340,17 @@ class Dealer(models.Model):
         self.registrationToken = getRegistrationToken()
         self.save()
         return
+
+
+class DealerAsst(models.Model):
+    dealer = models.ForeignKey(Dealer)
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    name = models.CharField(max_length=400)
+    email = models.CharField(max_length=200)
+    license = models.CharField(max_length=50)
+    sent = models.BooleanField(default=False)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
 
 # Start order tables

@@ -19,21 +19,19 @@
   </div>
 </div>
 
-	{% if not staff %}
-		<h1>Staff Registration - {{event}}</h1>
-		<p>Your session has expired. Please use the link in your registration email again to start over.</p>
-	{% else %}
+    {% if not token %}
+		<h1>New Staff Registration <br/>{{event}}</h1>
+        <p>Your session has expired. Please use the link in your registration email again to start over.</p>
+    {% else %}
 
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Staff Registration - {{event}}</h1>
+		<h1>New Staff Registration <br/>{{event}}</h1>
 
 		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
-		<hr>
-			
-        {% show_attendee_form staff.attendee %}
+        {% show_attendee_form %}
 
         {% show_staff_form staff %}
 
@@ -49,7 +47,7 @@
                     <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
 			        I agree to abide by Furthemore's Code of Conduct.
                 </div>
-		        <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
+		        <div class="col-sm-offset-1 help-block with-errors" style="padding-left:15px;"></div>
 		    </div>
 		    <div class="form-group">
                  <div class="col-sm-12">
@@ -62,20 +60,17 @@
 	</div>
 	</form>
 
-	{% endif %}
+    {% endif %}
 
 {% endblock %}
 
 {% block javascript %}
 <script>
-    var discount = {{event.staffDiscount.amountOff}}
+    var discount = {{event.newStaffDiscount.amountOff}}
 </script>
 <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
 <script type="text/javascript" src="/static/js/templates/staff.js"></script>
  <script type="text/javascript">
-	var staff = {{ jsonStaff|safe }} 
-	var attendee = {{ jsonAttendee|safe }} 
-
 
 	$("#register").click(doRegister);
 	
@@ -100,7 +95,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18) {
-            alert("You must be 18 by the first day of Furthemore to register online.")
+            alert("You must be 18 by the first day of the event to register online.")
             return;
         }
 
@@ -108,15 +103,13 @@
 
 		var data = {
 			'attendee': {
-				'id': attendee.id,
 				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
 				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
 				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(), 
-                'badgeName': $("#badgeName").val()
+                'email':$("#email").val(), 'badgeName': $("#badgeName").val()
 			}, 
 			'staff': {
-				'id': staff.id, 
 				'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
 				'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
 				'specialFood': $("#food").val(), 'specialMedical': $("#medical").val(),
@@ -131,7 +124,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'addStaff' %}",
+		    "url": "{% url 'addNewStaff' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
