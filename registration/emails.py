@@ -69,6 +69,13 @@ def sendStaffPromotionEmail(staff):
     sendEmail("registration@furthemore.org", [staff.attendee.email], "Welcome to Furthemore Staff!", 
               msgTxt, msgHtml)
 
+def sendNewStaffEmail(token):
+    data = {'registrationToken': token.token}
+    msgTxt = render_to_string('registration/emails/newStaff.txt', data)
+    msgHtml = render_to_string('registration/emails/newStaff.html', data)
+    sendEmail("registration@furthemore.org", [token.email], "Welcome to Furthemore Staff!", 
+              msgTxt, msgHtml)
+
 def sendDealerApplicationEmail(dealerId):
     dealer = Dealer.objects.get(id=dealerId)
     data = {}    

@@ -34,6 +34,20 @@ class BanListAdmin(admin.ModelAdmin):
 
 admin.site.register(BanList, BanListAdmin)
 
+def send_staff_token_email(modeladmin, request, queryset):
+    for token in queryset:
+        sendNewStaffEmail(token)
+        token.sent = True
+        token.save()
+send_staff_token_email.short_description = "Send New Staff registration email"
+
+class TempTokenAdmin(admin.ModelAdmin):
+    actions = [send_staff_token_email]
+    list_display = ['email', 'token', 'sent', 'used']
+
+admin.site.register(TempToken, TempTokenAdmin)
+
+
 def send_approval_email(modeladmin, request, queryset):
     sendApprovalEmail(queryset)
     queryset.update(emailed=True)
@@ -91,7 +105,7 @@ class DealerAdmin(ImportExportModelAdmin):
         (
             'Business Info',
             {'fields': (
-                'businessName', 'license', 'website', 'description'
+                'businessName', 'license', 'website', 'logo', 'description'
             )}
         ),
         (
@@ -147,21 +161,22 @@ class StaffResource(resources.ModelResource):
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
     actions = [send_staff_registration_email, 'copy_to_event']
-    list_display = ('attendee', 'get_badge', 'get_email', 'title', 'department', 'shirtsize', 'staff_total', 'event')
+    list_display = ('attendee', 'get_badge', 'get_email', 'title', 'department', 'shirtsize', 'staff_total', 'checkedIn', 'event')
     list_filter = ('event','department')
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName']
     resource_class = StaffResource
-    readonly_fields = ['get_email', 'get_badge']
+    readonly_fields = ['get_email', 'get_badge', 'get_badge_id']
     fieldsets = (
         (
 	    None,
             {'fields':(
                 ('attendee', 'registrationToken'),
-                ('event', 'get_email', 'get_badge'),
+                ('event', 'get_email'), 
+                ('get_badge', 'get_badge_id'),
                 ('title', 'timesheetAccess'),
                 ('department', 'supervisor'),
                 ('twitter','telegram'),
-                'shirtsize',
+                ('shirtsize', 'checkedIn'),
             )}
         ),
         (
@@ -189,6 +204,13 @@ class StaffAdmin(ImportExportModelAdmin):
             return "--"
         return badge.badgeName
     get_badge.short_description = "Badge Name"
+
+    def get_badge_id(self, obj):
+        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge == None:
+            return "--"
+        return badge.badgeNumber
+    get_badge_id.short_description = "Badge Number"
 
     def staff_total(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()

@@ -22,6 +22,12 @@ urlpatterns = [
     url(r'^staff/add/?$', views.addStaff, name='addStaff'),
     url(r'^staff/(?P<guid>\w+)/?$', views.staff, name='staff'),
 
+    url(r'^newstaff/done/?$', views.staffDone, name='doneNewStaff'),
+    url(r'^newstaff/lookup/?$', views.findNewStaff, name='findNewStaff'),
+    url(r'^newstaff/info/?$', views.infoNewStaff, name='infoNewStaff'),
+    url(r'^newstaff/add/?$', views.addNewStaff, name='addNewStaff'),
+    url(r'^newstaff/(?P<guid>\w+)/?$', views.newStaff, name='newstaff'),    
+
     url(r'^dealer/?$', views.newDealer, name='newDealer'),
     url(r'^dealer/addNew/?$', views.addNewDealer, name='addNewDealer'),
     url(r'^dealer/done/?$', views.doneDealer, name='doneDealer'),

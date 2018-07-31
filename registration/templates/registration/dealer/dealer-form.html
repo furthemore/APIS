@@ -1,4 +1,5 @@
 {% extends "registration/master.html" %}
+{% load registration_tags %}
 
 {% block content %}
 
@@ -35,84 +36,10 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Dealer Registration - Furthemore 2018</h1>
+        <h1>Dealer Registration - {{event}}</h1>
         <p>Welcome to the registration system. To continue, enter your information below.</p>
-        <hr>
 
-            
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
-                    <div class="col-sm-4">
-                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
-                    </div>
-            <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
-                        <label>
-                          <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
-                        </label>
-                        <label>
-                          <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the end-of-con survey.</span>
-                        </label>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number</label>
-                    <div class="col-sm-9">
-                        <input type="phone" id="phone" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State</label>
-            <div class="col-sm-4">
-            <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
-            </div>
-                    <div class="col-sm-5">
-            <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
-            <div class="col-sm-3">
-            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
-            </div>
-                    <div class="col-sm-6">
-            <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                
-            <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
-                    <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" />
-            <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
+             {% show_attendee_form emailOptions=True %}
 
             <div class="form-group">
                     <label for="far" class="col-sm-3 control-label">Badge Name</label>
@@ -149,6 +76,14 @@
                         <input type="url" id="website" name="website" placeholder="http://www.mysite.org" class="form-control form-control-text" required data-error="Please enter a full URL here. Ex: http://www.google.com" />
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="website" class="col-sm-3 control-label">Logo</label>
+                    <div class="col-sm-9">
+                        <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png" class="form-control form-control-text" data-error="Please enter a full URL here. Ex: http://www.google.com/image.png" />
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+            <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location map.</div>
                 </div>
                 <div class="form-group">
                     <label for="description" class="col-sm-3 control-label">Description of Wares</label>
@@ -200,7 +135,7 @@
                     <div class="col-sm-9">
                         <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
                     </div>
-            <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. You will receive Wi-Fi access details in your welcome packet at the con.</div>
+               <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. You will receive Wi-Fi access details in your welcome packet at the con.</div>
                 </div>
                 <div class="form-group">
                     <label for="wall" class="col-sm-3 control-label">I would like a wall space<br/>(Space is limited)</label>
@@ -339,10 +274,10 @@
                 $("#partnerList").empty();
                 if (item.partnerMax > 0){
                     for (var i=item.partnerMin; i <= item.partnerMax; i++) {
-                        var partner = '<input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
+                        var partner = '<div id="partnerGroup"><input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
                                   '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
                                   '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
-                                  '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label><br/>'
+                                  '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label></div>'
                         $("#partnerList").append(partner);
                         if (i != item.partnerMax){$("#partnerList").append("<br/>");}
                     }
@@ -384,14 +319,19 @@
     $("#register").click(doRegister);
     
     function getPartners(){
-        var partners = "";
-        var partnerList = $("#partnerList input");
+        var partners = [];
+        var partnerList = $("#partnerGroup");
         $.each(partnerList, function(key, item) {
-            if ($(item).is(':checkbox')) {
-                partners += item.id + ": " + $(item).is(':checked') + ", ";                 
-            } else {
-                partners += item.id + ": " + $(item).val() + ", "; 
-            }
+            var partner = {};
+            var itemList = item.find("input")
+            $.each(itemList, function(key2, item2){
+                if ($(item2).is(':checkbox')) {
+                    partner[item2.id] = $(item2).is(':checked');                 
+                } else {
+                    partner[item2.id] = $(item2).val(); 
+                }
+            });
+            partners.push(partner)
         });
         return partners;
     }
@@ -427,7 +367,7 @@
                 'badgeName': $("#badgename").val()
             }, 
             'dealer': {
-                'businessName':$("#businessName").val(), 'website':$("#website").val(),
+                'businessName':$("#businessName").val(), 'website':$("#website").val(), 'logo':$("#logo").val(),
                 'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
                 'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
@@ -437,7 +377,7 @@
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
                 'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked')
             },
-            'event': 'Furthemore 2018'
+            'event': '{{event}}'
         };
         $.ajax({
             "type": "POST",
