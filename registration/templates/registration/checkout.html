@@ -164,7 +164,9 @@ var paymentForm = new SqPaymentForm({
 
 	
 		<br/>
+        {% if not discount.newStaffEvent and not discount.staffEvent  %}
 		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registraiton</a>
+        {% endif %}
 
 		<hr/>
 		{% if total > 0%}

@@ -6,23 +6,10 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Application Not Found</h4>
+        <h4 class="modal-title" id="myModalLabel">Registration not allowed</h4>
       </div>
       <div class="modal-body">
-        <p>We weren't able to find a dealer record matching the entered email and token. Please check the email you entered and check the url against the instructions you received.</p>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="paidModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Already Paid</h4>
-      </div>
-      <div class="modal-body">
-        <p>Your application has already been verified and paid for. If you need to change any information on your application, contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a>.</p>
+        <p>New staff tokens may only be used once and are only valid for a certain amount of time. Please check the email you entered and check the url against the instructions you received. Please contact your supervisor or staffsvcs@furthemore.org for more help.</p>
       </div>
     </div>
   </div>
@@ -31,8 +18,8 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Registration - {{event}}</h1>
-		<p>Please enter the email on your original application.</p>
+		<h1>New Staff Registration <br/> {{event}}</h1>
+		<p>Please enter your email.</p>
 		<hr>
 
                 <div class="form-group">
@@ -43,7 +30,7 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="token" class="col-sm-3 control-label">Application Token</label>
+                    <label for="token" class="col-sm-3 control-label">Registration Token</label>
                     <div class="col-sm-9">
                         <input type="text" id="token" class="form-control" disabled value="{{token}}"/>
                     </div>
@@ -76,22 +63,18 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'findDealer' %}",
+		    "url": "{% url 'findNewStaff' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-			if (result.responseText.indexOf('Paid') > -1) {
-				$("#paidModal").modal('show');
-			} else {
-				$("#errorModal").modal('show');
-			}
+    			$("#errorModal").modal('show');
 		    },
-                    "success": function () {
-                        window.location = "{% url 'infoDealer' %}";
-                    }
+            "success": function () {
+                window.location = "{% url 'infoNewStaff' %}";
+            }
 		});
 	}
 

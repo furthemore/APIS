@@ -1,0 +1,2 @@
+Welcome to Furthemore Staff! 
+Use this link to register as staff: https://www.furthemore.org/apis/registration/newstaff/{{registrationToken}}
