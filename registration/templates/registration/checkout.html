@@ -168,6 +168,13 @@ var paymentForm = new SqPaymentForm({
 		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registraiton</a>
         {% endif %}
 
+        {% if hasMinors %}
+		<hr/>
+        <h3>Important Information</h3>
+        <div class="col-sm-11 col-sm-offset-1">Text about minors here</div>
+        <hr/>
+        {% endif %}
+
 		<hr/>
 		{% if total > 0%}
 
@@ -218,17 +225,19 @@ var paymentForm = new SqPaymentForm({
 
 		<h3>Billing Information</h3>
 
-
+        {% if not hasMinors %}
 		<div class="form-group">
-                    <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
-                    <div class="col-sm-9">
-                        <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
-			{% for oi in orderItems %}
-			    <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
-			{% endfor %}
-			</select>
-                    </div>
+            <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+            <div class="col-sm-9">
+                <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
+			    {% for oi in orderItems %}
+			        <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
+			    {% endfor %}
+			    </select>
+            </div>
 		</div>
+        {% endif %}
+
 		<div class="form-group">
                     <label for="billingName" class="col-sm-3 control-label">Billing Name<span style="color:red;">*</span></label>
                     <div class="col-sm-4">
