@@ -1,0 +1,48 @@
+{% extends "registration/master_admin.html" %}
+{% load static %}
+
+{% block head %}
+    <link href="{% static "css/signature-pad.css"  %}" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block content %}
+
+<style>
+#badge-search-input {
+    margin-top: 30px;
+}
+</style>
+
+    <h2 style="text-align: center">Badge Collection</h2>
+    <div class="row" id="badge-search-input">
+        <div class="col-md-4 col-md-offset-4 col-sm-6 col-sm-offset-3">
+            <div class="well">
+                <form class="form-inline">
+                    <div class="input-group">
+                        <input type="tel" class="form-control" placeholder="Badge number" autofocus>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">Go!</button>
+                        </span>
+                    </div><!-- /input-group -->
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="signature">
+        <div id="signature-pad" class="signature-pad">
+            <div class="signature-pad--body">
+            <canvas></canvas>
+        </div>
+        <div class="signature-pad--footer">
+            <div class="description">Sign above</div>
+
+            <div class="signature-pad--actions">
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

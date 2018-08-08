@@ -38,7 +38,7 @@ def index(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {}
+    context = {'event':event}
     if event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, 'registration/registration-form.html', context)
     return render(request, 'registration/closed.html', context)
@@ -1371,7 +1371,14 @@ def getCart(request):
 	    discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0: discount = discount.first()
         total = getTotal(orderItems, discount)
-        context = {'orderItems': orderItems, 'total': total, 'discount': discount}
+
+        hasMinors = False
+        for item in orderItems:
+            if item.badge.isMinor():
+              hasMinors = True
+              break
+
+        context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'hasMinors': hasMinors}
     return render(request, 'registration/checkout.html', context)
 
 
@@ -1385,7 +1392,7 @@ def addToCart(request):
     banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
     if banCheck:
         logger.exception("***ban list registration attempt***")
-        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furthemore 2018. If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
+        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for " + evt + ". If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
@@ -1407,6 +1414,7 @@ def addToCart(request):
     via = "WEB"
     if postData['attendee'].get('onsite', False):
         via = "ONSITE"
+
     orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy=via)
     orderItem.save()
 
