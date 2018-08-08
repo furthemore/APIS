@@ -7,11 +7,6 @@ from django.db import models
 from django.utils import timezone
 
 
-#######################################
-# As of Data Model version 27
-#######################################
-
-
 # Lookup and supporting tables.
 class LookupTable(models.Model):
     name = models.CharField(max_length=200)
@@ -103,6 +98,7 @@ class Event(LookupTable):
     newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name='newStaffEvent')
     staffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="staffEvent")
     dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerEvent")
+    allowOnlineMinorReg = models.BooleanField(default=False)
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -193,6 +189,14 @@ class Badge(models.Model):
         if self.registeredDate is not None:
             return "[Orphan {0}]".format(self.registeredDate)
         return "Badge object {0}".format(self.registrationToken)
+
+    def isMinor(self):
+      birthdate = self.attendee.birthdate
+      eventdate = self.event.eventStart
+      age_at_event = eventdate.year - birthdate.year - ((eventdate.month, eventdate.day) < (birthdate.month, birthdate.day))
+      if age_at_event < 18: 
+        return True
+      return False
 
     def getDiscount(self):
       discount = ""
