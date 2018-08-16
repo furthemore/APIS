@@ -12,7 +12,8 @@
       </div>
       <div class="modal-body">
         {% if event.allowOnlineMinorReg %}
-          <p>A parent or legal guardian must **insert things here**.</p>
+          <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the door to sign our consent form.</p>
+          <p>A parent or guardian must register and accompany anyone under the age of 13 (by the start of the convention).</p>
           <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
         {% else %}
           <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
@@ -29,7 +30,6 @@
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Pre-Register for {{event}}!</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
-        <hr>
 
             {% show_attendee_form emailOptions=True %}
 
@@ -332,7 +332,7 @@
             var birthdate = new Date(Date.parse($("#birthDate").val()));
         }
 
-      {% if event.allowOnlineMinorReg %}
+      {% if not event.allowOnlineMinorReg %}
         var age = getAge(birthdate);
         if (age < 18) {
             alert("You must be 18 by the first day of {{event}} to register online.")

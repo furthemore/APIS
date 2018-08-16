@@ -5,16 +5,19 @@ from .models import *
 def sendRegistrationEmail(order, email):
     orderItems = OrderItem.objects.filter(order=order)
     orderDict = {}
+    hasMinors = False
     for oi in orderItems:
         ao = AttendeeOptions.objects.filter(orderItem=oi)
         orderDict[oi] = ao
+        if oi.badge.isMinor:
+            hasMinors = True
 
 
     # send registration confirmations to all people in the order
     for oi in orderItems:
         if oi.badge.attendee.email == email:
             # send payment receipt to the payor
-            data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
+            data = {'reference': order.reference, 'order': order, 'orderItems': orderDict, 'hasMinors': hasMinors}
             msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
             msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
             sendEmail("registration@furthemore.org", [email], 
