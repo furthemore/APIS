@@ -170,9 +170,17 @@ var paymentForm = new SqPaymentForm({
 
         {% if hasMinors %}
 		<hr/>
-        <h3>Important Information</h3>
-        <div class="col-sm-11 col-sm-offset-1">Text about minors here</div>
-        <hr/>
+        <h3>Important Information About Minor Registration</h3>
+        <div class="row">
+          <div class="col-sm-11 col-sm-offset-1">
+           One or more of the attendees in this order will still be minors at the start of the convention. 
+           Please note that we require a parent or guardian to be present at registration to sign our
+           consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention) 
+           must have a parent or guardian also register and accompany them during the event. If you have
+           any questions about our policies, please contact 
+           <a href="mailto:regitration@furthemore.org">registration@furthemore.org</a>.
+          </div>
+        </div>
         {% endif %}
 
 		<hr/>
