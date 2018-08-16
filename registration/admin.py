@@ -135,6 +135,12 @@ admin.site.register(Dealer, DealerAdmin)
 ########################################################
 #   Staff Admin
 
+def checkin_staff(modeladmin, request, queryset):
+   for staff in queryset:
+       staff.checkedIn = True
+       staff.save()
+checkin_staff.short_description = "Check in staff"
+
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
         sendStaffPromotionEmail(staff)
@@ -160,7 +166,7 @@ class StaffResource(resources.ModelResource):
 
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
-    actions = [send_staff_registration_email, 'copy_to_event']
+    actions = [send_staff_registration_email, checkin_staff, 'copy_to_event']
     list_display = ('attendee', 'get_badge', 'get_email', 'title', 'department', 'shirtsize', 'staff_total', 'checkedIn', 'event')
     list_filter = ('event','department')
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName']
