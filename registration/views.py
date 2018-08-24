@@ -770,8 +770,8 @@ def addNewDealer(request):
 
     partners = pdd['partners']
     for partner in partners:
-        dealerPartner = DealerAsst(dealer=dealer, event=event, name=partner.name,
-                                   email=partner.email, license=partner.license)
+        dealerPartner = DealerAsst(dealer=dealer, event=event, name=partner['name'],
+                                   email=partner['email'], license=partner['license'])
         dealerPartner.save()
 
 

@@ -356,6 +356,9 @@ class DealerAsst(models.Model):
     sent = models.BooleanField(default=False)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
+    def __str__(self):
+      return self.name
+
 
 # Start order tables
 

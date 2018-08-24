@@ -67,6 +67,15 @@ def send_assistant_form_email(modeladmin, request, queryset):
 send_assistant_form_email.short_description = "Send assistent addition form email"
 
 
+class DealerAsstAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = ('name', 'email', 'license', 'event' )
+    list_filter = ('event',)
+    search_fields = ['name', 'email']
+
+admin.site.register(DealerAsst, DealerAsstAdmin)
+
+
 class DealerResource(resources.ModelResource):
     class Meta:
         model = Dealer
@@ -91,7 +100,7 @@ class DealerAdmin(ImportExportModelAdmin):
     save_on_top = True
     resource_class = DealerResource
     actions = [send_approval_email, send_assistant_form_email, send_payment_email]
-    readonly_fields = ['get_email']
+    readonly_fields = ['get_email', 'get_assts']
     fieldsets = (
         (
 	    None,
@@ -114,7 +123,7 @@ class DealerAdmin(ImportExportModelAdmin):
                 'tableSize',
                 ('willSwitch', 'needPower', 'needWifi', 'wallSpace', 'reception', 'breakfast'),
                 ('nearTo', 'farFrom'),
-                ('tables', 'chairs'), 'asstBreakfast', 'partners'
+                ('tables', 'chairs'), 'asstBreakfast', 'get_assts'
             )}
         ),
         (
@@ -129,8 +138,16 @@ class DealerAdmin(ImportExportModelAdmin):
         return obj.attendee.email
     get_email.short_description = "Attendee Email"
 
+    def get_assts(self, obj):
+        assts = DealerAsst.objects.filter(dealer=obj, event=obj.event)
+        if assts == None:
+            return "--"
+        return [a.name for a in assts]
+    get_assts.short_description = "Assistants"
+
 
 admin.site.register(Dealer, DealerAdmin)
+
 
 ########################################################
 #   Staff Admin
