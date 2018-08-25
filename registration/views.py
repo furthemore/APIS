@@ -1649,7 +1649,8 @@ def getOptionsDict(orderItems):
             if ao.optionValue == 0 or ao.optionValue == None or ao.optionValue == "" or ao.optionValue == False: pass
 
             orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue,
-                              'id': ao.option.id, 'type': ao.option.optionExtraType})
+                              'id': ao.option.id, 'type': ao.option.optionExtraType,
+                              'description': ao.option.description})
 
     return orderDict
 
@@ -1681,6 +1682,7 @@ def getPriceLevelList(levels):
             'required': option.required,
             'active': option.active,
             'type': option.optionExtraType,
+            'description': option.description,
             'list': option.getList()
             } for option in level.priceLevelOptions.order_by('rank', 'optionPrice').all() ]
           } for level in levels ]
