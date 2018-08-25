@@ -638,7 +638,7 @@ class PriceLevelAdmin(admin.ModelAdmin):
 admin.site.register(PriceLevel, PriceLevelAdmin)
 
 class PriceLevelOptionAdmin(admin.ModelAdmin):
-    list_display = ('optionName', 'optionPrice', 'optionExtraType', 'required', 'active')
+    list_display = ('optionName', 'rank', 'optionPrice', 'optionExtraType', 'required', 'active')
 
 admin.site.register(PriceLevelOption, PriceLevelOptionAdmin)
 

@@ -53,6 +53,7 @@ class PriceLevelOption(models.Model):
     optionExtraType3 = models.CharField(max_length=100, blank=True)
     required = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
+    rank = models.IntegerField(default=0)
 
     def __str__(self):
         return '{0} (${1})'.format(self.optionName, self.optionPrice)
