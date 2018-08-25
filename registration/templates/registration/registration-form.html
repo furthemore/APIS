@@ -97,6 +97,14 @@
     </div>
 </script>
 
+<script type="text/html" id="optionPlainTextTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <div data-content="content"></div>
+        </div>
+    </div>
+</script>
 <script type="text/html" id="optionBoolTemplate">
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
@@ -104,7 +112,7 @@
             <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
         </div>
     </div>
-<div>
+</script>
 <script type="text/html" id="optionBoolReqTemplate">
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
@@ -112,8 +120,6 @@
             <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
         </div>
     </div>
-<div>
-
 </script>
 <script type="text/html" id="optionIntTemplate">
     <div class="form-group">
@@ -249,7 +255,13 @@
             }
             var required = "";
             if (val.required) {required = "required";}
-            switch (val.type){
+            switch (val.type) {
+                case "plaintext":
+                    var template = $("#optionPlainTextTemplate");
+                    $("#optionsContainer").loadTemplate(template, {
+                        'content': val.description
+                    }, {append: true});
+                    break;                    
                 case "bool":
                     var template = $("#optionBoolTemplate");
                     if (val.required) {template = $("#optionBoolReqTemplate");}
