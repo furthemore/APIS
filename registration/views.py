@@ -1682,7 +1682,7 @@ def getPriceLevelList(levels):
             'active': option.active,
             'type': option.optionExtraType,
             'list': option.getList()
-            } for option in level.priceLevelOptions.order_by('optionPrice').all() ]
+            } for option in level.priceLevelOptions.order_by('rank', 'optionPrice').all() ]
           } for level in levels ]
     return data
 
