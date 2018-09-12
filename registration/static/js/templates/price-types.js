@@ -76,6 +76,12 @@ $( "body" ).ready(function() {
             var required = "";
             if (val.required) {required = "required";}
             switch (val.type){
+                case "plaintext":
+                    var template = $("#optionPlainTextTemplate");
+                    $("#optionsContainer").loadTemplate(template, {
+                        'content': val.description
+                    }, {append: true});
+                    break;  
                 case "bool":
                     var template = $("#optionBoolTemplate");
                     if (val.required) {template = $("#optionBoolReqTemplate");}
