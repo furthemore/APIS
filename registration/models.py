@@ -326,7 +326,7 @@ class Dealer(models.Model):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
 
     def getPartnerCount(self):
-      partnercount = self.partner_set.count()
+      partnercount = self.dealerasst_set.count()
       return partnercount
 
     def paidTotal(self):
