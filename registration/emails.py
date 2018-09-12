@@ -9,7 +9,7 @@ def sendRegistrationEmail(order, email):
     for oi in orderItems:
         ao = AttendeeOptions.objects.filter(orderItem=oi)
         orderDict[oi] = ao
-        if oi.badge.isMinor:
+        if oi.badge.isMinor():
             hasMinors = True
 
 
