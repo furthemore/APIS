@@ -136,6 +136,13 @@ def getDealerTotal(orderItems, dealer):
     itemSubTotal = 0
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
+        for option in item.attendeeoptions_set.all():
+            if option.option.optionExtraType == 'int':
+                if option.optionValue:
+                    itemSubTotal += (option.option.optionPrice*Decimal(option.optionValue))
+            else:
+                itemSubTotal += option.option.optionPrice
+
     partnerCount = dealer.getPartnerCount()
     partnerBreakfast = 0
     if partnerCount > 0 and dealer.asstBreakfast:
@@ -438,7 +445,8 @@ def dealers(request, guid):
     return render(request, 'registration/dealer/dealer-locate.html', context)
 
 def thanksDealer(request):
-    context = {}
+    event = Event.objects.get(default=True)
+    context = {'event': event}
     return render(request, 'registration/dealer/dealer-thanks.html', context)
 
 def updateDealer(request):
@@ -446,7 +454,8 @@ def updateDealer(request):
     return render(request, 'registration/dealer/dealer-update.html', context)
 
 def doneDealer(request):
-    context = {}
+    event = Event.objects.get(default=True)
+    context = {'event': event}
     return render(request, 'registration/dealer/dealer-done.html', context)
 
 def dealerAsst(request, guid):
@@ -467,7 +476,8 @@ def newDealer(request):
     return render(request, 'registration/dealer/dealer-closed.html', context)
 
 def infoDealer(request):
-    context = {'dealer': None}
+    event = Event.objects.get(default=True)
+    context = {'dealer': None, 'event':event}
     try:
       dealerId = request.session['dealer_id']
     except Exception as e:
@@ -481,7 +491,7 @@ def infoDealer(request):
         badge_dict = model_to_dict(badge)
         table_dict = model_to_dict(dealer.tableSize)
 
-        context = {'dealer': dealer, 'badge': badge,
+        context = {'dealer': dealer, 'badge': badge, 'event': dealer.event,
                    'jsonDealer': json.dumps(dealer_dict, default=handler),
                    'jsonTable': json.dumps(table_dict, default=handler),
                    'jsonAttendee': json.dumps(attendee_dict, default=handler),
@@ -581,6 +591,7 @@ def addDealer(request):
     pda = postData['attendee']
     pdd = postData['dealer']
     evt = postData['event']
+    pdp = postData['priceLevel']
     event = Event.objects.get(name=evt)
 
     if 'dealer_id' not in request.session:
@@ -649,10 +660,15 @@ def addDealer(request):
         return HttpResponseServerError(str(e))
 
 
-    priceLevel = event.dealerBasePriceLevel
+    priceLevel = PriceLevel.objects.get(id=int(pdp['id']))
 
     orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
+
+    for option in pdp['options']:
+        plOption = PriceLevelOption.objects.get(id=int(option['id']))
+        attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
+        attendeeOption.save()
 
     orderItems = request.session.get('order_items', [])
     orderItems.append(orderItem.id)

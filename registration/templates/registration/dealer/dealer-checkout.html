@@ -104,6 +104,7 @@ var paymentForm = new SqPaymentForm({
 				<div class="col-sm-2">
 				</div>
 			</div>
+
         {% if dealer.needWifi %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Wi-Fi Access</div>
@@ -121,6 +122,35 @@ var paymentForm = new SqPaymentForm({
 				<div class="col-sm-2">
 				</div>
 			</div>
+
+            {% for option in item.getOptions %}
+            <div class="row">
+                {% if option.option.optionExtraType == "int" %}
+                  {% if option.optionValue != '0' %}
+                  <div class="col-sm-6 col-sm-offset-1">{{option.option.optionName}} x {{option.optionValue}}</div>
+                    {% if option.option.optionPrice == 0 %}
+                      <div class="col-sm-2">Free</div>
+                    {% else %}
+                      <div class="col-sm-2">${{option.option.optionPrice}} each</div>
+                    {% endif %}
+                  {% else %}
+                  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x 0</div>
+                  <div class="col-sm-2">--</div>
+                  {% endif %}
+
+                {% else %}
+
+                  <div class="col-sm-6 col-sm-offset-1">{{option.option.optionName}}</div>
+                  {% if option.option.optionPrice == 0 %}
+                    <div class="col-sm-2">Free</div>
+                  {% else %}
+                    <div class="col-sm-2">${{option.option.optionPrice}}</div>
+                  {% endif %}
+
+                {% endif %}
+
+            </div>
+            {% endfor %}
 			
 			{% if dealer.getPartnerCount > 0 %}
 			<div class="row">
