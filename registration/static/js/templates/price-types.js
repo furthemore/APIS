@@ -127,7 +127,7 @@ $( "body" ).ready(function() {
         $("form").validator('update');
     };
 
-    var getOptions = function() {
+   var getOptions = function() {
         var options = $(".levelOptions");
                 var data = [];
         $.each(options, function(key, option) {
@@ -135,9 +135,14 @@ $( "body" ).ready(function() {
                 if ($(option).is(':checked')) {
                     data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
                 }
+            } else if ($(option).is('select')) {
+                if ($(option).val() != "") {
+                    data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                }            
             } else {
                 data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
             }
         });
         return data;
     };
+
