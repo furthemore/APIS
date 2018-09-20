@@ -97,8 +97,9 @@ def doZeroCheckout(attendee, discount, orderItems):
         oitem.order = order
         oitem.save()
 
-    discount.used = discount.used + 1
-    discount.save()
+    if discount:
+        discount.used = discount.used + 1
+        discount.save()
     return True, "", order
 
 
@@ -188,7 +189,7 @@ def findNewStaff(request):
     email = postData['email']
     token = postData['token']
 
-    token = TempToken.objects.get(email=email, token=token)
+    token = TempToken.objects.get(email=__iexactemail, token=token)
     if not token:
         return HttpResponseServerError("No Staff Found")
 
@@ -201,7 +202,7 @@ def findNewStaff(request):
 
     return JsonResponse({'success': True, 'message':'STAFF'})
   except Exception as e:
-    logger.exception("Unable to find staff.")
+    logger.exception("Unable to find staff." + request.body)
     return HttpResponseServerError(str(e))
 
 def infoNewStaff(request):
@@ -271,7 +272,7 @@ def addNewStaff(request):
     if discount:
         request.session["discount"] = discount.codeName
 
-    tokens = TempToken.objects.filter(email=email)
+    tokens = TempToken.objects.filter(email=attendee.email)
     for token in tokens:
         token.used = True
         token.save()
@@ -308,7 +309,7 @@ def findStaff(request):
     request.session['staff_id'] = staff.id
     return JsonResponse({'success': True, 'message':'STAFF'})
   except Exception as e:
-    logger.exception("Unable to find staff.")
+    logger.exception("Unable to find staff." + request.body)
     return HttpResponseServerError(str(e))
 
 
@@ -741,14 +742,14 @@ def checkoutDealer(request):
             dealer.resetToken()
             sendDealerPaymentEmail(dealer, order)
         except Exception as e:
-            logger.exception("Error sending DealerPaymentEmail.")
+            logger.exception("Error sending DealerPaymentEmail." + request.body)
             return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
         return JsonResponse({'success': True})
     else:
         order.delete()
         return JsonResponse({'success': False, 'message': message})
   except Exception as e:
-    logger.exception("Error in dealer checkout.")
+    logger.exception("Error in dealer checkout." + request.body)
     return HttpResponseServerError(str(e))
 
 
@@ -794,12 +795,12 @@ def addNewDealer(request):
     try:
         sendDealerApplicationEmail(dealer.id)
     except Exception as e:
-        logger.exception("Error sending DealerApplicationEmail.")
+        logger.exception("Error sending DealerApplicationEmail." + request.body)
         return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact marketplace@furthemore.org."})
     return JsonResponse({'success': True})
 
   except Exception as e:
-    logger.exception("Error in dealer addition.")
+    logger.exception("Error in dealer addition." + request.body)
     return HttpResponseServerError(str(e))
 
 
@@ -1563,7 +1564,8 @@ def checkout(request):
 
 
 def cartDone(request):
-    context = {}
+    event = Event.objects.get(default=True)
+    context = {'event': event}
     return render(request, 'registration/done.html', context)
 
 ###################################
