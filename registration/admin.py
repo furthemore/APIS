@@ -67,6 +67,10 @@ def send_assistant_form_email(modeladmin, request, queryset):
 send_assistant_form_email.short_description = "Send assistent addition form email"
 
 
+class DealerAsstInline(NestedTabularInline):
+    model=DealerAsst
+    extra=0
+
 class DealerAsstAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = ('name', 'email', 'license', 'event' )
@@ -74,7 +78,6 @@ class DealerAsstAdmin(admin.ModelAdmin):
     search_fields = ['name', 'email']
 
 admin.site.register(DealerAsst, DealerAsstAdmin)
-
 
 class DealerResource(resources.ModelResource):
     class Meta:
@@ -94,13 +97,15 @@ class DealerResource(resources.ModelResource):
                   'charityRaffle', 'breakfast', 'asstBreakfast', 'willSwitch', 'partners', 'buttonOffer', 'discount',
                   'discountReason', 'emailed')
 
-class DealerAdmin(ImportExportModelAdmin):
+
+class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal', 'event')
     list_filter = ('event',)
     save_on_top = True
+    inlines = [DealerAsstInline]
     resource_class = DealerResource
     actions = [send_approval_email, send_assistant_form_email, send_payment_email]
-    readonly_fields = ['get_email', 'get_assts']
+    readonly_fields = ['get_email', ]
     fieldsets = (
         (
 	    None,
@@ -123,7 +128,7 @@ class DealerAdmin(ImportExportModelAdmin):
                 'tableSize',
                 ('willSwitch', 'needPower', 'needWifi', 'wallSpace', 'reception', 'breakfast'),
                 ('nearTo', 'farFrom'),
-                ('tables', 'chairs'), 'asstBreakfast', 'get_assts'
+                ('tables', 'chairs'), 'asstBreakfast'
             )}
         ),
         (
@@ -137,14 +142,6 @@ class DealerAdmin(ImportExportModelAdmin):
     def get_email(self, obj):
         return obj.attendee.email
     get_email.short_description = "Attendee Email"
-
-    def get_assts(self, obj):
-        assts = DealerAsst.objects.filter(dealer=obj, event=obj.event)
-        if assts == None:
-            return "--"
-        return [a.name for a in assts]
-    get_assts.short_description = "Assistants"
-
 
 admin.site.register(Dealer, DealerAdmin)
 
