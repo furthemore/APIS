@@ -1752,6 +1752,33 @@ def getPriceLevels(request):
     data = getPriceLevelList(levels)
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
+def getAdultPriceLevels(request):
+    dealer = request.session.get('dealer_id', -1)
+    staff = request.session.get('staff_id', -1)
+    attendee = request.session.get('attendee_id', -1)
+    #hide any irrelevant price levels if something in session
+    att = None
+    if dealer > 0:
+        deal = Dealer.objects.get(id=dealer)
+        att = deal.attendee
+        event = deal.event
+        badge = Badge.objects.filter(attendee=att,event=event).last()
+    if staff > 0:
+        sta = Staff.objects.get(id=staff)
+        att = sta.attendee
+        event = sta.event
+        badge = Badge.objects.filter(attendee=att,event=event).last()
+    if attendee > 0:
+        att = Attendee.objects.get(id=attendee)
+        badge = Badge.objects.filter(attendee=att).last()
+
+    now = timezone.now()
+    levels = PriceLevel.objects.filter(public=True, isMinor=False, startDate__lte=now, endDate__gte=now).order_by('basePrice')
+    if att and badge and badge.effectiveLevel():
+        levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
+    data = getPriceLevelList(levels)
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')    
+
 def getShirtSizes(request):
     sizes = ShirtSizes.objects.all()
     data = [{'name': size.name, 'id': size.id} for size in sizes]
