@@ -76,6 +76,7 @@ urlpatterns = [
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),
+    url(r'^adultpricelevels/?$', views.getAdultPriceLevels, name='adultpricelevels'),
     url(r'^minorpricelevels/?$', views.getMinorPriceLevels, name='minorpricelevels'),
     url(r'^accompaniedpricelevels/?$', views.getAccompaniedPriceLevels, name='accompaniedpricelevels'),
     url(r'^freepricelevels/?$', views.getFreePriceLevels, name='freepricelevels'),

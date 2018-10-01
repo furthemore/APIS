@@ -4,8 +4,12 @@ var shirtSizes = [];
 
 
 $( "body" ).ready(function() {
+        var url = "/apis/registration/pricelevels";
+        if(adult){
+            url = "/apis/registration/adultpricelevels";
+        }
 
-        $.getJSON("/apis/registration/pricelevels", function(data) {
+        $.getJSON(url, function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
                 var price = val.base_price;

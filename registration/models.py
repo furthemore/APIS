@@ -79,6 +79,7 @@ class PriceLevel(models.Model):
     group = models.TextField(blank=True)
     emailVIP = models.BooleanField(default=False)
     emailVIPEmails = models.CharField(max_length=400, blank=True, default='')
+    isMinor = models.BooleanField(default=False)
 
     def __str__(self):
       return self.name

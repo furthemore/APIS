@@ -173,8 +173,9 @@
                 <div class="form-group">
                     <label for="tables" class="col-sm-3 control-label">Partner Information</label>
                     <div class="col-sm-9" id="partnerList">
-                        <input type="text" id="partner1" name="tables" class="form-control form-control-text" disabled />
-                        <input type="text" id="partner2" name="tables" class="form-control form-control-text" disabled />
+                        {% for asst in dealer.dealerasst_set.all %}
+                        <input type="text" value="{{asst}}, {{asst.email}}" class="form-control form-control-text" disabled />
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="form-group">
@@ -227,6 +228,7 @@
 {% block javascript %}
 <script>
     var discount = {{event.dealerDiscount.amountOff|default:0.0}}
+    var adult=true;
 </script>
 <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
  <script type="text/javascript">
