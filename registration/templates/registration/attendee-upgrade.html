@@ -9,7 +9,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furthemore 2018</h1>
+		<h1>Registration Upgrade - {{badge.event}}</h1>
 
 		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
@@ -70,6 +70,14 @@
 	</div>
 </script>
 
+<script type="text/html" id="optionPlainTextTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <div data-content="content"></div>
+        </div>
+    </div>
+</script>
 <script type="text/html" id="optionBoolTemplate">
 	<div class="form-group">
 		<label class="col-sm-3 control-label" data-content="name"></label>
@@ -221,6 +229,12 @@
 			var required = "";
 			if (val.required) {required = "required";}
 			switch (val.type){
+                case "plaintext":
+                    var template = $("#optionPlainTextTemplate");
+                    $("#optionsContainer").loadTemplate(template, {
+                        'content': val.description
+                    }, {append: true});
+                    break;
 				case "bool":
 					var template = $("#optionBoolTemplate");
 					if (val.required) {template = $("#optionBoolReqTemplate");}
@@ -258,10 +272,6 @@
                     if (opts && opts[0]) {
                         $("#option_" + val.id).val(opts[0].value);
                     }
-					break;
-				case "Jersey":
-					break;
-				case "StaffJersey":
 					break;
 				default:
 					if (val.list == []){break;}

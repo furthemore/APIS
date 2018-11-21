@@ -51,7 +51,7 @@ def flush(request):
 ###################################
 # Payments
 
-def doCheckout(billingData, total, discount, orderItems, donationOrg, donationCharity, ip):
+def doCheckout(billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity, ip):
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
         reference = getConfirmationToken()
@@ -67,20 +67,31 @@ def doCheckout(billingData, total, discount, orderItems, donationOrg, donationCh
     status, response = chargePayment(order.id, billingData, ip)
 
     if status:
+      if cartItems:
+        for item in cartItems:
+            orderItem = saveCart(item)
+            orderItem.order = order
+            orderItem.save()
+      elif orderItems:
         for oitem in orderItems:
             oitem.order = order
             oitem.save()
-        order.status = 'Paid'
-        order.save()
-        if discount:
-            discount.used = discount.used + 1
-            discount.save()
-        return True, "", order
+      order.status = 'Paid'
+      order.save()
+      if discount:
+          discount.used = discount.used + 1
+          discount.save()
+      return True, "", order
 
     return False, response, order
 
 
-def doZeroCheckout(attendee, discount, orderItems):
+def doZeroCheckout(discount, cartItems, orderItems):
+    if cartItems:
+        attendee = json.loads(cartItems[0]['attendee'])
+    elif orderItems:
+        attendee = orderItems[0].badge.attendee
+
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
         reference = getConfirmationToken()
@@ -91,11 +102,16 @@ def doZeroCheckout(attendee, discount, orderItems):
                   billingCity=attendee.city, billingState=attendee.state, billingCountry=attendee.country,
                   billingPostal=attendee.postalCode, billingEmail=attendee.email, status="Complete")
     order.save()
-    email = attendee.email
 
-    for oitem in orderItems:
-        oitem.order = order
-        oitem.save()
+    if cartItems:
+        for item in cartItems:
+            orderItem = saveCart(item)
+            orderItem.order = order
+            orderItem.save()
+    elif orderItems:
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
 
     if discount:
         discount.used = discount.used + 1
@@ -103,9 +119,55 @@ def doZeroCheckout(attendee, discount, orderItems):
     return True, "", order
 
 
-def getTotal(orderItems, disc = ""):
+def getCartItemOptionTotal(options):
+    optionTotal = 0
+    for option in options:
+        optionData = PriceLevelOption.objects.get(id=option['id'])
+        if optionData.optionExtraType == 'int':
+            if option['value']:
+                optionTotal += (optionData.optionPrice*Decimal(option['value']))
+        else:
+            optionTotal += optionData.optionPrice
+    return optionTotal
+
+def getOrderItemOptionTotal(options):
+    optionTotal = 0
+    for option in options:
+        if option.option.optionExtraType == 'int':
+            if option.optionValue:
+                optionTotal += (option.option.optionPrice*Decimal(option.optionValue))
+        else:
+            optionTotal += option.option.optionPrice
+    return optionTotal
+
+def getDiscountTotal(disc, subtotal):
+    discount = Discount.objects.get(codeName=disc)
+    if discount.isValid():
+        if discount.amountOff:
+            return discount.amountOff
+        elif discount.percentOff:
+            return Decimal(float(subtotal) * float(discount.percentOff)/100)
+
+
+
+def getTotal(cartItems, orderItems, disc = ""):
     total = 0
-    if not orderItems: return total
+    if not cartItems and not orderItems: return total
+    for item in cartItems:
+        postData = json.loads(str(item.formData))
+        pdp = postData['priceLevel']
+        priceLevel = PriceLevel.objects.get(id=pdp['id'])
+        itemTotal = priceLevel.basePrice
+
+        options = pdp['options']
+        itemTotal += getCartItemOptionTotal(options)
+
+        if disc:
+            itemTotal -= getDiscountTotal(disc, itemTotal)
+
+        if itemTotal > 0:
+            total += itemTotal
+
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
         effLevel = item.badge.effectiveLevel()
@@ -114,23 +176,14 @@ def getTotal(orderItems, disc = ""):
         else:
             itemTotal = itemSubTotal
 
-        for option in item.attendeeoptions_set.all():
-            if option.option.optionExtraType == 'int':
-                if option.optionValue:
-                    itemTotal += (option.option.optionPrice*Decimal(option.optionValue))
-            else:
-                itemTotal += option.option.optionPrice
+        itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
 
         if disc:
-            discount = Discount.objects.get(codeName=disc)
-            if discount.isValid():
-              if discount.amountOff:
-                itemTotal -= discount.amountOff
-              elif discount.percentOff:
-                itemTotal -= Decimal(float(itemTotal) * float(discount.percentOff)/100)
+            itemTotal -= getDiscountTotal(disc, itemTotal)
 
         if itemTotal > 0:
             total += itemTotal
+
     return total
 
 def getDealerTotal(orderItems, dealer):
@@ -189,7 +242,7 @@ def findNewStaff(request):
     email = postData['email']
     token = postData['token']
 
-    token = TempToken.objects.get(email=__iexactemail, token=token)
+    token = TempToken.objects.get(email__iexact=email, token=token)
     if not token:
         return HttpResponseServerError("No Staff Found")
 
@@ -541,7 +594,11 @@ def addAsstDealer(request):
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer.attendee:
-      context = {'attendee': dealer.attendee, 'dealer': dealer}
+      assts = list(DealerAsst.objects.filter(dealer=dealer))
+      assistants = []
+      if assts:
+          assistants = model_to_dict(assts)
+      context = {'attendee': dealer.attendee, 'dealer': dealer, 'assistants': assistants}
     return render(request, 'registration/dealer/dealerasst-add.html', context)
 
 def checkoutAsstDealer(request):
@@ -572,7 +629,7 @@ def checkoutAsstDealer(request):
         total = total + Decimal(60*partners)
     ip = get_client_ip(request)
 
-    status, message, order = doCheckout(pbill, total, None, [orderItem], 0, 0, ip)
+    status, message, order = doCheckout(pbill, total, None, [], [orderItem], 0, 0, ip)
 
     if status:
         request.session.flush()
@@ -709,7 +766,7 @@ def checkoutDealer(request):
 
     if subtotal == 0:
 
-      status, message, order = doZeroCheckout(dealer.attendee, None, orderItems)
+      status, message, order = doZeroCheckout(None, None, orderItems)
       if not status:
           return JsonResponse({'success': False, 'message': message})
 
@@ -734,7 +791,7 @@ def checkoutDealer(request):
 
     pbill = postData['billingData']
     ip = get_client_ip(request)
-    status, message, order = doCheckout(pbill, total, None, orderItems, porg, pcharity, ip)
+    status, message, order = doCheckout(pbill, total, None, [], orderItems, porg, pcharity, ip)
 
     if status:
         request.session.flush()
@@ -823,7 +880,7 @@ def onsiteCart(request):
         request.session.flush()
     else:
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        total = getTotal(orderItems)
+        total = getTotal([], orderItems)
         context = {'orderItems': orderItems, 'total': total}
     return render(request, 'registration/onsite-checkout.html', context)
 
@@ -1311,7 +1368,7 @@ def invoiceUpgrade(request):
             lvl = badge.effectiveLevel()
             lvl_dict = {'basePrice': lvl.basePrice}
             orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-            total = getTotal(orderItems)
+            total = getTotal([], orderItems)
             context = {'orderItems': orderItems, 'total': total, 'attendee': attendee, 'prevLevel': lvl_dict}
     return render(request, 'registration/upgrade-checkout.html', context)
 
@@ -1330,10 +1387,11 @@ def checkoutUpgrade(request):
     postData = json.loads(request.body)
     event = Event.objects.get(default=True)
 
-    subtotal = getTotal(orderItems)
+    subtotal = getTotal([], orderItems)
 
     if subtotal == 0:
-        status, message, order = doZeroCheckout(attendee, discount, orderItems)
+        status, message, order = doZeroCheckout(None, None, orderItems)
+
         if not status:
             return JsonResponse({'success': False, 'message': message})
 
@@ -1356,7 +1414,7 @@ def checkoutUpgrade(request):
 
     pbill = postData['billingData']
     ip = get_client_ip(request)
-    status, message, order = doCheckout(pbill, total, None, orderItems, porg, pcharity, ip)
+    status, message, order = doCheckout(pbill, total, None, [], orderItems, porg, pcharity, ip)
 
     if status:
         request.session.flush()
@@ -1377,17 +1435,18 @@ def checkoutUpgrade(request):
 
 
 def getCart(request):
-    sessionItems = request.session.get('order_items', [])
+    sessionItems = request.session.get('cart_items', [])
+    sessionOrderItems = request.session.get('order_items', [])
     discount = request.session.get('discount', "")
-    if not sessionItems:
+    if not sessionItems and not sessionOrderItems:
         context = {'orderItems': [], 'total': 0, 'discount': {}}
         request.session.flush()
-    else:
-        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    elif sessionOrderItems:
+        orderItems = list(OrderItem.objects.filter(id__in=sessionOrderItems))
         if discount:
-	    discount = Discount.objects.filter(codeName=discount)
+            discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0: discount = discount.first()
-        total = getTotal(orderItems, discount)
+        total = getTotal([], orderItems, discount)
 
         hasMinors = False
         for item in orderItems:
@@ -1396,20 +1455,52 @@ def getCart(request):
               break
 
         context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'hasMinors': hasMinors}
+
+    elif sessionItems:
+        cartItems = list(Cart.objects.filter(id__in=sessionItems))
+        orderItems = []
+        if discount:
+	    discount = Discount.objects.filter(codeName=discount)
+            if discount.count() > 0: discount = discount.first()
+        total = getTotal(cartItems, [], discount)
+
+        hasMinors = False
+        for cart in cartItems:
+            cartJson = json.loads(cart.formData)
+            pda = cartJson['attendee']
+            evt = Event.objects.get(name=cartJson['event']).eventStart
+            tz = timezone.get_current_timezone()
+            birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
+            age_at_event = evt.year - birthdate.year - ((evt.month, evt.day) < (birthdate.month, birthdate.day))
+            if age_at_event < 18:
+              hasMinors = True
+
+            pdp = cartJson['priceLevel']
+            priceLevel = PriceLevel.objects.get(id=pdp['id'])
+            pdo = pdp['options']
+            options = []
+            for option in pdo:
+                dataOption = {}
+                optionData = PriceLevelOption.objects.get(id=option['id'])
+                if optionData.optionExtraType == 'int':
+                    if option['value']:
+                        itemTotal = (optionData.optionPrice*Decimal(option['value']))
+                        dataOption = {'name': optionData.optionName, 'number': option['value'], 'total': itemTotal}
+                else:
+                    itemTotal = optionData.optionPrice
+                    dataOption = {'name': optionData.optionName, 'total': itemTotal}
+                options.append(dataOption)
+            orderItem = {'attendee': pda, 'priceLevel': priceLevel, 'options': options}
+            orderItems.append(orderItem)
+
+        context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'hasMinors': hasMinors}
     return render(request, 'registration/checkout.html', context)
 
-
-def addToCart(request):
-    postData = json.loads(request.body)
-    #create attendee from request post
+def saveCart(cart):
+    postData = json.loads(cart.formData)
     pda = postData['attendee']
     pdp = postData['priceLevel']
     evt = postData['event']
-
-    banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
-    if banCheck:
-        logger.exception("***ban list registration attempt***")
-        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for " + evt + ". If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
@@ -1443,10 +1534,28 @@ def addToCart(request):
             attendeeOption = AttendeeOptions(option=plOption, orderItem=orderItem, optionValue=option['value'])
         attendeeOption.save()
 
+    cart.transferedDate = datetime.now()
+    cart.save()
+
+    return orderItem
+
+def addToCart(request):
+    postData = json.loads(request.body)
+    #create attendee from request post
+    pda = postData['attendee']
+
+    banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
+    if banCheck:
+        logger.exception("***ban list registration attempt***")
+        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for " + evt + ". If you have any questions, or would like further information or assistance, please contact Registration at registration@furthemore.org."})
+
+    cart = Cart(form=Cart.ATTENDEE, formData=request.body, formHeaders=getRequestMeta(request))
+    cart.save()
+
     #add attendee to session order
-    orderItems = request.session.get('order_items', [])
-    orderItems.append(orderItem.id)
-    request.session['order_items'] = orderItems
+    cartItems = request.session.get('cart_items', [])
+    cartItems.append(cart.id)
+    request.session['cart_items'] = cartItems
     return JsonResponse({'success': True})
 
 
@@ -1472,28 +1581,32 @@ def cancelOrder(request):
     return JsonResponse({'success': True})
 
 def checkout(request):
-    sessionItems = request.session.get('order_items', [])
+    sessionItems = request.session.get('cart_items', [])
+    cartItems = list(Cart.objects.filter(id__in=sessionItems))
+    orderItems = request.session.get('order_items', [])
     pdisc = request.session.get('discount', "")
-    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
     postData = json.loads(request.body)
 
     discount = Discount.objects.filter(codeName=pdisc)
     if discount.count() > 0 and discount.first().isValid():
-        subtotal = getTotal(orderItems, discount.first())
         discount = discount.first()
     else:
         discount = None
-        subtotal = getTotal(orderItems)
+
+    if orderItems:
+        orderItems = list(OrderItem.objects.filter(id__in=orderItems))
+
+    subtotal = getTotal(cartItems, orderItems, discount)
+
 
     if subtotal == 0:
-        att = orderItems[0].badge.attendee
-        status, message, order = doZeroCheckout(att, discount, orderItems)
+        status, message, order = doZeroCheckout(discount, cartItems, orderItems)
         if not status:
             return JsonResponse({'success': False, 'message': message})
 
         request.session.flush()
         try:
-            sendRegistrationEmail(order, att.email)
+            sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             logger.exception("Error sending RegistrationEmail - zero sum.")
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact registration@furthemore.org to get your confirmation number."})
@@ -1548,7 +1661,7 @@ def checkout(request):
         status = True
         message = "Onsite success"
     else:
-        status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
+        status, message, order = doCheckout(pbill, total, discount, cartItems, orderItems, porg, pcharity, ip)
 
     if status:
         request.session.flush()
@@ -1659,16 +1772,22 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+def getRequestMeta(request):
+    values = {}
+    values['HTTP_REFERER'] = request.META.get('HTTP_REFERER')
+    values['HTTP_USER_AGENT'] = request.META.get('HTTP_USER_AGENT')
+    values['IP'] = get_client_ip(request)
+    return json.dumps(values)
+
 def getOptionsDict(orderItems):
     orderDict = []
     for oi in orderItems:
         aos = oi.getOptions()
         for ao in aos:
             if ao.optionValue == 0 or ao.optionValue == None or ao.optionValue == "" or ao.optionValue == False: pass
-
             orderDict.append({'name': ao.option.optionName, 'value': ao.optionValue,
-                              'id': ao.option.id, 'type': ao.option.optionExtraType,
-                              'description': ao.option.description})
+                              'id': ao.option.id, 'type': ao.option.optionExtraType})
+
 
     return orderDict
 
@@ -1777,7 +1896,7 @@ def getAdultPriceLevels(request):
     if att and badge and badge.effectiveLevel():
         levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
     data = getPriceLevelList(levels)
-    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')    
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
 
 def getShirtSizes(request):
     sizes = ShirtSizes.objects.all()
@@ -1791,16 +1910,32 @@ def getTableSizes(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getSessionAddresses(request):
-    sessionItems = request.session.get('order_items', [])
+    sessionItems = request.session.get('cart_items', [])
     if not sessionItems:
-        data = {}
-    else:
-        orderItems = OrderItem.objects.filter(id__in=sessionItems)
-        data = [{'id': oi.badge.attendee.id, 'fname': oi.badge.attendee.firstName,
+        #might be from dealer workflow, which is order items in the session
+        sessionItems = request.session.get('order_items', [])
+        if not sessionItems:
+            data = {}
+        else:
+            orderItems = OrderItem.objects.filter(id__in=sessionItems)
+            data = [{'id': oi.badge.attendee.id, 'fname': oi.badge.attendee.firstName,
                  'lname': oi.badge.attendee.lastName, 'email': oi.badge.attendee.email,
                  'address1': oi.badge.attendee.address1, 'address2': oi.badge.attendee.address2,
                  'city': oi.badge.attendee.city, 'state': oi.badge.attendee.state, 'country': oi.badge.attendee.country,
                  'postalCode': oi.badge.attendee.postalCode} for oi in orderItems]
+        context = {'addresses': data}
+    else:
+        data = []
+        cartItems = list(Cart.objects.filter(id__in=sessionItems))
+        for cart in cartItems:
+            cartJson = json.loads(cart.formData)
+            pda = cartJson['attendee']
+            cartItem = {'fname': pda['firstName'], 'lname': pda['lastName'], 'email': pda['email'],
+                        'address1': pda['address1'], 'address2': pda['address2'],
+                        'city': pda['city'], 'state': pda['state'], 'postalCode': pda['postal'],
+                        'country': pda['country']}
+
+            data.append(cartItem)
         context = {'addresses': data}
     return HttpResponse(json.dumps(data), content_type='application/json')
 
@@ -1861,17 +1996,6 @@ def firebaseRegister(request):
         pass
     except Exception as e:
         return JsonResponse({'success' : False, 'reason' : 'Failed while attempting to update existing name entry'}, status=500)
-
-    # Upsert if a new name with an existing token tries to register
-    try:
-        old_terminal = Firebase.objects.get(token=token)
-        old_terminal.name = name
-        old_terminal.save()
-        return JsonResponse({'success' : True, 'updated' : True})
-    except Firebase.DoesNotExist:
-        pass
-    except Exception as e:
-        return JsonResponse({'success' : False, 'reason' : 'Failed while attempting to update existing token entry'}, status=500)
 
     try:
         terminal = Firebase(token=token, name=name)
