@@ -365,6 +365,19 @@ class DealerAsst(models.Model):
 
 # Start order tables
 
+class Cart(models.Model):
+    ATTENDEE = 'Attendee'
+    STAFF = 'Staff'
+    DEALER = 'Dealer'
+    ASST = 'Dealer Assistant'
+    FORM_CHOICES = ((ATTENDEE, 'Attendee'), (STAFF, 'Staff'), (DEALER, 'Dealer'), (ASST, 'Dealer Assistant'))
+    token = models.CharField(max_length=200, blank=True, null=True)
+    form = models.CharField(max_length=50, choices=FORM_CHOICES)
+    formData = models.TextField()
+    formHeaders = models.TextField()
+    enteredDate = models.DateTimeField(auto_now_add=True, null=True)
+    transferedDate = models.DateTimeField(null=True)
+
 class Order(models.Model):
     UNPAID = 'Unpaid'
     CREDIT = 'Credit'
