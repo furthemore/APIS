@@ -324,15 +324,21 @@
         $.each(partnerList, function(key, item) {
             var partner = {};
             var itemList = $(item).find("input")
+            var hasValues = false;
             $.each(itemList, function(key2, item2){
                 var id = item2.id.split('_')[0];
                 if ($(item2).is(':checkbox')) {
                     partner[id] = $(item2).is(':checked');                 
+                    if (partner[id]){ hasValues = true; }
                 } else {
                     partner[id] = $(item2).val(); 
+                    if ($(item2).val() != ""){ hasValues = true; }
                 }
+                
             });
-            partners.push(partner)
+            if (hasValues) {
+                partners.push(partner)
+            }
         });
         return partners;
     }

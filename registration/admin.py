@@ -23,6 +23,7 @@ admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
 admin.site.register(TableSize)
+admin.site.register(Cart)
 
 class FirebaseAdmin(admin.ModelAdmin):
     list_display = ('name', 'token', 'closed')

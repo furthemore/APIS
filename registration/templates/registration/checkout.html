@@ -112,37 +112,28 @@ var paymentForm = new SqPaymentForm({
 
 		{% for item in orderItems %}
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
+                {% if item.attendee %}
+				  <div class="col-sm-5 col-sm-offset-1">{{item.attendee.firstName}} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
+                {% else %}
+				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
+                {% endif %}
 				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
 				<div class="col-sm-2">
 					<a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
 				</div>
 			</div>
-			{% for option in item.getOptions %}
+			{% for option in item.options %}
 			<div class="row">
-				{% if option.option.optionExtraType == "int" %}
-                  {% if option.optionValue != '0' %}
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
-				    {% if option.option.optionPrice == 0 %}
-				      <div class="col-sm-2">Free</div>
-				    {% else %}
-				      <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-				    {% endif %}
+                  {% if option.number %}
+    				  <div class="col-sm-5 col-sm-offset-1">{{option.name}} x{{option.number}}</div>
                   {% else %}
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x 0</div>
-				  <div class="col-sm-2">--</div>
+    				  <div class="col-sm-5 col-sm-offset-1">{{option.name}}</div>
                   {% endif %}
-
-				{% else %}
-
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}}</div>
-				  {% if option.option.optionPrice == 0 %}
+				  {% if option.total == 0 %}
 				    <div class="col-sm-2">Free</div>
 				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}}</div>
+				    <div class="col-sm-2">${{option.total}}</div>
 				  {% endif %}
-
-				{% endif %}
 
 			</div>
 			{% endfor %}
@@ -239,7 +230,11 @@ var paymentForm = new SqPaymentForm({
             <div class="col-sm-9">
                 <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
 			    {% for oi in orderItems %}
-			        <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
+                    {% if oi.attendee %}
+			          <option value="{{forloop.counter0}}">{{oi.attendee.firstName}} {{oi.attendee.lastName}}</option>
+                    {% else %}
+			          <option value="{{forloop.counter0}}">{{oi.badge.attendee}}</option>
+                    {% endif %}
 			    {% endfor %}
 			    </select>
             </div>
@@ -458,16 +453,14 @@ var paymentForm = new SqPaymentForm({
 		var userName = $("#useFrom option[value='" + userId + "']").text();
 		$("#fname").val(userName.split(' ')[0]);
 		$("#lname").val(userName.split(' ')[1]);
-		$.each(addresses, function (key, item) {
-			if (item.id != userId) { return; }
-			$("#email").val(item.email);
-			$("#add1").val(item.address1);
-			$("#add2").val(item.address2);
-			$("#city").val(item.city);
-			$("#state").val(item.state);
-			$("#zip").val(item.postalCode);
-			$("#country").val(item.country);
-		});
+        var address = addresses[userId];
+    	$("#email").val(address.email);
+		$("#add1").val(address.address1);
+		$("#add2").val(address.address2);
+		$("#city").val(address.city);
+		$("#state").val(address.state);
+		$("#zip").val(address.postalCode);
+		$("#country").val(address.country);
 	});
 
 	$("#checkout").click(function (e) {
