@@ -139,12 +139,10 @@ $( "body" ).ready(function() {
                 if ($(option).is(':checked')) {
                     data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
                 }
-            } else if ($(option).is('select')) {
+            } else {
                 if ($(option).val() != "") {
                     data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
                 }            
-            } else {
-                data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
             }
         });
         return data;
