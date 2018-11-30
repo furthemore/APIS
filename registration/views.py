@@ -560,12 +560,12 @@ def findDealer(request):
 
     dealer = Dealer.objects.get(attendee__email__iexact=email, registrationToken=token)
     if not dealer:
-      return HttpResponseServerError("No Dealer Found")
+      return HttpResponseServerError("No Dealer Found" + email)
 
     request.session['dealer_id'] = dealer.id
     return JsonResponse({'success': True, 'message':'DEALER'})
   except Exception as e:
-    logger.exception("Error finding dealer.")
+    logger.exception("Error finding dealer." + email)
     return HttpResponseServerError(str(e))
 
 def findAsstDealer(request):
@@ -926,7 +926,7 @@ def onsiteAdmin(request):
     if query is not None:
         results = Badge.objects.filter(
             Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
-            Q(event__name__icontains='2018')
+            Q(event__name__icontains='2019')
         )
         if len(results) == 0:
             errors.append({'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)})
@@ -949,7 +949,7 @@ def onsiteAdminSearch(request):
     errors = []
     results = Badge.objects.filter(
         Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
-        Q(event__name__icontains='2018')
+        Q(event__name__icontains='2019')
     )
     if len(results) == 0:
         errors = [{'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)}]
@@ -1689,10 +1689,10 @@ def basicBadges(request):
     badges = Badge.objects.all()
     staff = Staff.objects.all()
 
-    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned(),
+    bdata = [{'badgeName': badge.badgeName, 'level': badge.effectiveLevel().name, 'assoc':badge.abandoned,
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
               'printed': badge.printed, 'discount': badge.getDiscount(),
-              'assoc': badge.abandoned(), 'orderItems': getOptionsDict(badge.orderitem_set.all()) }
+              'orderItems': getOptionsDict(badge.orderitem_set.all()) }
              for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furthemore 2018"]
 
     staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
@@ -1707,7 +1707,7 @@ def basicBadges(request):
                 staff['level'] = sbadge.effectiveLevel().name
             else:
                 staff['level'] = "none"
-            staff['assoc'] = sbadge.abandoned()
+            staff['assoc'] = sbadge.abandoned
             staff['orderItems'] = getOptionsDict(sbadge.orderitem_set.all())
 
     sdata = sorted(bdata, key=lambda x:(x['level'],x['lastName']))
