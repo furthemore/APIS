@@ -30,7 +30,7 @@ class FirebaseAdmin(admin.ModelAdmin):
 admin.site.register(Firebase, FirebaseAdmin)
 
 class BanListAdmin(admin.ModelAdmin):
-    list_display = ('firstName', 'lastName', 'email')
+    list_display = ('firstName', 'lastName', 'email', 'reason')
 
 admin.site.register(BanList, BanListAdmin)
 
@@ -140,7 +140,9 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
     )
 
     def get_email(self, obj):
+      if obj.attendee:
         return obj.attendee.email
+      return "--"
     get_email.short_description = "Attendee Email"
 
 admin.site.register(Dealer, DealerAdmin)
@@ -191,11 +193,10 @@ class StaffAdmin(ImportExportModelAdmin):
 	    None,
             {'fields':(
                 ('attendee', 'registrationToken'),
-                ('event', 'get_email'), 
+                ('event', 'get_email'),
                 ('get_badge', 'get_badge_id'),
-                ('title', 'timesheetAccess'),
-                ('department', 'supervisor'),
-                ('twitter','telegram'),
+                ('title', 'department'),
+                ('twitter', 'telegram'),
                 ('shirtsize', 'checkedIn'),
             )}
         ),
@@ -215,7 +216,9 @@ class StaffAdmin(ImportExportModelAdmin):
     )
 
     def get_email(self, obj):
+      if obj.attendee:
         return obj.attendee.email
+      return "--"
     get_email.short_description = "Email"
 
     def get_badge(self, obj):
