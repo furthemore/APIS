@@ -445,6 +445,7 @@ class BanList(models.Model):
     firstName = models.CharField(max_length=200, blank=True)
     lastName = models.CharField(max_length=200, blank=True)
     email = models.CharField(max_length=400, blank=True)
+    reason = models.TextField(blank=True)
 
 class Firebase(models.Model):
     token = models.CharField(max_length=500)
