@@ -87,21 +87,41 @@ class PriceLevel(models.Model):
 
 
 class Event(LookupTable):
-    dealerRegStart = models.DateTimeField()
-    dealerRegEnd = models.DateTimeField()
-    staffRegStart = models.DateTimeField()
-    staffRegEnd = models.DateTimeField()
-    attendeeRegStart = models.DateTimeField()
-    attendeeRegEnd = models.DateTimeField()
-    onlineRegStart = models.DateTimeField()
-    onlineRegEnd = models.DateTimeField()
-    eventStart = models.DateField()
-    eventEnd = models.DateField()
-    default = models.BooleanField(default=False)
-    newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name='newStaffEvent')
-    staffDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="staffEvent")
-    dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, on_delete=models.SET_NULL, related_name="dealerEvent")
-    allowOnlineMinorReg = models.BooleanField(default=False)
+    dealerRegStart = models.DateTimeField(verbose_name="Dealer Registration Start",
+        help_text="Start date and time for dealer applications")
+    dealerRegEnd = models.DateTimeField(verbose_name="Dealer Registration End")
+    staffRegStart = models.DateTimeField(verbose_name="Staff Registration Start",
+        help_text="(Not currently enforced)")
+    staffRegEnd = models.DateTimeField(verbose_name="Staff Registration End")
+    attendeeRegStart = models.DateTimeField(verbose_name="Attendee Registration Start")
+    attendeeRegEnd = models.DateTimeField(verbose_name="Attendee Registration End")
+    onlineRegStart = models.DateTimeField("On-site Registration Start",
+        help_text="Start time for /registration/onsite form")
+    onlineRegEnd = models.DateTimeField(verbose_name="On-site Registration End")
+    eventStart = models.DateField(verbose_name="Event Start Date")
+    eventEnd = models.DateField(verbose_name="Event End Date")
+    default = models.BooleanField(default=False, verbose_name="Default",
+        help_text="The first default event will be used as the basis for all current event configuration")
+    newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='newStaffEvent',
+        verbose_name="New Staff Discount",
+        help_text="Apply a discount for new staff registrations")
+    staffDiscount = models.ForeignKey(Discount, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="staffEvent",
+        verbose_name="Staff Discount",
+        help_text="Apply a discount for any staff registrations")
+    dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, 
+        on_delete=models.SET_NULL, related_name="dealerEvent",
+        verbose_name="Dealer Discount",
+        help_text="Apply a discount for any dealer registrations")
+    allowOnlineMinorReg = models.BooleanField(default=False,
+        verbose_name="Allow online minor registration",
+        help_text="Allow registration for anyone age 13 and older online. "
+        "Otherwise, registration is restricted to those 18 or older.")
+    collectAddress = models.BooleanField(default=True,
+        verbose_name="Collect Address",
+        help_text="Disable to skip collecting a mailing address for each "
+        "attendee.")
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -143,12 +163,12 @@ class TempToken(models.Model):
 class Attendee(models.Model):
     firstName = models.CharField(max_length=200)
     lastName = models.CharField(max_length=200)
-    address1 = models.CharField(max_length=200)
+    address1 = models.CharField(max_length=200, blank=True)
     address2 = models.CharField(max_length=200, blank=True)
-    city = models.CharField(max_length=200)
-    state = models.CharField(max_length=200)
-    country = models.CharField(max_length=200)
-    postalCode = models.CharField(max_length=20)
+    city = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=200, blank=True)
+    country = models.CharField(max_length=200, blank=True)
+    postalCode = models.CharField(max_length=20, blank=True)
     phone = models.CharField(max_length=20)
     email = models.CharField(max_length=200)
     birthdate = models.DateField()
@@ -168,6 +188,7 @@ class Attendee(models.Model):
     def __str__(self):
       if self is None:
           return "--"
+      # FIXME: Why are we afraid of Unicode here?
       try:
         test1 = self.firstName.decode('ascii')
         test2 = self.lastName.decode('ascii')
@@ -472,3 +493,5 @@ class Cashdrawer(models.Model):
     total = models.DecimalField(max_digits=8, decimal_places=2)
     tendered = models.DecimalField(max_digits=8, decimal_places=2, blank=True)
     user = models.CharField(max_length=200, blank=True)
+
+# vim: ts=4 sts=4 sw=4 expandtab smartindent
