@@ -1,0 +1,31 @@
+{% extends "u2f/base.html" %}
+{% load i18n %}
+{% block title %}{% trans 'U2F Keys' %}{% endblock %}
+{% block content %}
+{{ block.super }}
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+
+    <h1>Two Factor Settings</h1>
+    <a class="btn btn-default" href="{% url 'u2f:two-factor-settings' %}">{% trans '&larr; Back to settings' %}</a>
+
+    <h2>Backup Codes</h2>
+    {% if object_list %}
+      <div class="well">
+      {% for code in object_list %}
+        {{ code.code }}<br/>
+      {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-danger">{% trans 'You do not have any backup codes! Please create some!' %}</div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <input class="btn btn-primary col-md-8 col-md-offset-2" type="submit" value="{% trans 'Create some backup codes' %}">
+    </form>
+  </div>
+</div>
+
+{% endblock %}
