@@ -18,6 +18,9 @@ from .emails import *
 import views
 import printing
 
+admin.site.site_url = None
+admin.site.site_header = 'APIS Backoffice'
+
 # Register your models here.
 admin.site.register(HoldType)
 admin.site.register(ShirtSizes)

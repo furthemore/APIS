@@ -1,5 +1,6 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 
 from . import views
 
@@ -96,3 +97,9 @@ urlpatterns = [
     url(r'^firebase/lookup/?', views.firebaseLookup, name='firebaseLookup'),
 
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
