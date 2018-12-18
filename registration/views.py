@@ -35,7 +35,12 @@ import printing
 logger = logging.getLogger("django.request")
 
 def index(request):
-    event = Event.objects.get(default=True)
+    try:
+        event = Event.objects.get(default=True)
+    except Event.DoesNotExist:
+        return render(request, 'registration/docs/no-event.html')
+        
+        
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {'event':event}
@@ -2046,3 +2051,4 @@ def handler(obj):
     else:
         raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
 
+# vim: ts=4 sts=4 sw=4 expandtab
