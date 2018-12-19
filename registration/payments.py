@@ -47,10 +47,10 @@ def chargePayment(orderId, ccData, ipAddress):
     print(api_response)
 
     try:
-        order.lastFour = api_response['transaction']['tenders']['card_details']['last_4']
-        order.notes = order.notes + "Square: #" + api_response['transaction']['tenders']['id'][:4]
+        order.lastFour = api_response.transaction.tenders[0].card_details.card.last_4
+        order.notes = order.notes + "Square: #" + api_response.transaction.tenders[0].id[:4]
     except Exception as e:
-        print(dir(e))
+        print(dir(api_response))
         print(e)
     order.save()
 
