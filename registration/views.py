@@ -1,4 +1,4 @@
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.admin.views.decorators import staff_member_required, user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.utils import timezone
 from django.conf import settings
 try:
@@ -38,7 +38,7 @@ def index(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {}
+    context = { 'event' : event }
     if event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, 'registration/registration-form.html', context)
     return render(request, 'registration/closed.html', context)
@@ -46,6 +46,16 @@ def index(request):
 def flush(request):
     request.session.flush()
     return JsonResponse({'success': True})
+
+# Generator to require a user to be part of a group to access a view
+# e.g. apply with:
+#   @user_passes_test(in_group('Manager'))
+# to require user to be a member of the 'Manager' group to continue
+def in_group(groupname):
+    def inner(user):
+        return user.groups.filter(name=groupname).exists()
+    return inner
+
 
 ###################################
 # Payments
@@ -234,6 +244,8 @@ def addStaff(request):
         logger.error("Unable to decode JSON for addStaff()")
         return JsonResponse({'success': False})
 
+    event = Event.objects.get(default=True)
+
     #create attendee from request post
     pda = postData['attendee']
     pds = postData['staff']
@@ -289,7 +301,6 @@ def addStaff(request):
         logger.exception("Error saving staff record.")
         return JsonResponse({'success': False, 'message': 'Staff not saved: ' + str(e)})
 
-    event = staff.event
 
     badges = Badge.objects.filter(attendee=attendee,event=event)
     if badges.count() == 0:
@@ -305,11 +316,13 @@ def addStaff(request):
         logger.exception("Error saving staff badge record.")
         return JsonResponse({'success': False, 'message': 'Badge not saved: ' + str(e)})
 
+    order = badge.getOrder()
+
     try:
         sendStaffRegistrationEmail(order.id)
     except Exception as e:
-        logger.exception("Error emailing StaffRegistrationEmail.")
-        return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furthemore.org to get your confirmation number."})
+        logger.exception("Error sending StaffRegistrationEmail.")
+        return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact registration@reg.furrydelphia.org to get your confirmation number."})
 
     return JsonResponse({'success': True})
 
@@ -338,7 +351,7 @@ def checkoutStaff(request):
           sendStaffRegistrationEmail(order.id)
       except Exception as e:
           logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
-          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furrydelphia.org to get your confirmation number."})
+          return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact registration@reg.furrydelphia.org to get your confirmation number."})
       return JsonResponse({'success': True})
 
 
@@ -362,7 +375,7 @@ def checkoutStaff(request):
             sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
-            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@furrydelphia.org to get your confirmation number."})
+            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact staffsvcs@reg.furrydelphia.org to get your confirmation number."})
         return JsonResponse({'success': True})
     else:
         order.delete()
@@ -818,14 +831,17 @@ def onsiteAdmin(request):
             # weren't passed an integer
             errors.append({'type' : 'danger', 'text' : 'Invalid terminal specified'})
 
-
-    logger.info("Terminal from session: {0}".format(request.session['terminal']))
+    try:
+        logger.info("Terminal from session: {0}".format(request.session['terminal']))
+    except KeyError:
+        errors.append({'type' : 'danger', 'text' : 'It looks like no payment terminals have been configured for this server yet. ' +
+            'Check that the APIS Terminal app is running, and has been configured for the correct URL and API key.'})
 
 
     if query is not None:
         results = Badge.objects.filter(
             Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
-            Q(event__name__icontains='2018')
+            Q(event__name__icontains='2019')
         )
         if len(results) == 0:
             errors.append({'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)})
@@ -848,7 +864,7 @@ def onsiteAdminSearch(request):
     errors = []
     results = Badge.objects.filter(
         Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
-        Q(event__name__icontains='2018')
+        Q(event__name__icontains='2019')
     )
     if len(results) == 0:
         errors = [{'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)}]
@@ -886,11 +902,13 @@ def onsiteAdminCart(request):
     order = None
     subtotal = 0
     result = []
+    first_order = None
     for badge in badges:
         oi = badge.getOrderItems()
         level = None
         for item in oi:
             level = item.priceLevel
+            # WHY?
             if item.order is not None:
                 order = item.order
         if level is None:
@@ -901,6 +919,15 @@ def onsiteAdminCart(request):
                 'price' : level.basePrice
             }
             subtotal += level.basePrice
+
+        order = badge.getOrder()
+        if first_order is None:
+            first_order = order
+        else:
+            # Reassign order references of items in cart to match first:
+            order = badge.getOrder()
+            order.reference = first_order.reference
+            order.save()
 
         item = {
             'id' : badge.id,
@@ -1077,10 +1104,11 @@ def assignBadgeNumber(request):
     badge_number = request.GET.get('number')
     badge_name = request.GET.get('badge', None)
     badge = None
+    event = Event.objects.get(default=True)
 
     if badge_name is not None:
         try:
-            badge = Badge.objects.filter(badgeName__icontains=badge_name, event__name="Furthemore 2018").first()
+            badge = Badge.objects.filter(badgeName__icontains=badge_name, event__name=event.name).first()
 
         except:
             return JsonResponse({'success' : False, 'reason' : 'Badge name search returned no results'})
@@ -1103,12 +1131,26 @@ def assignBadgeNumber(request):
             return JsonResponse({'success': False, 'message': 'Badge ID must be an integer'}, status=400)
 
     try:
-        badge.badgeNumber = badge_number
+        if badge_number < 0:
+            # Auto assign
+            badges = Badge.objects.filter(event=badge.event)
+            highest = badges.aggregate(Max('badgeNumber'))['badgeNumber__max']
+            highest = highest + 1
+            badge.badgeNumber = highest
+        else:
+            badge.badgeNumber = badge_number
         badge.save()
     except Exception as e:
-        return JsonResponse({'success' : False, 'message' : 'Error while saving badge number'}, status=500)
+        return JsonResponse({'success' : False, 'message' : 'Error while saving badge number', 'error' : str(e)}, status=500)
 
     return JsonResponse({'success' : True})
+
+def get_attendee_age(attendee):
+    born = attendee.birthdate
+    today = date.today()
+    age = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+    return age
+
 
 @staff_member_required
 def onsitePrintBadges(request):
@@ -1131,12 +1173,13 @@ def onsitePrintBadges(request):
             'name' : badge.badgeName,
             'number' : badgeNumber,
             'level' : str(badge.effectiveLevel()),
-            'title' : ''
+            'title' : '',
+            'age'    : get_attendee_age(badge.attendee)
         })
         badge.printed = True
         badge.save()
 
-    con.nametags(tags, theme='apis')
+    con.nametags(tags, theme='furrydelphia')
     pdf_path = con.pdf.split('/')[-1]
 
     file_url = reverse(printNametag) + '?file={0}'.format(pdf_path)
@@ -1153,6 +1196,12 @@ def onsitePrintBadges(request):
 def onsiteSignature(request):
     context = {}
     return render(request, 'registration/signature.html', context)
+
+@staff_member_required
+@user_passes_test(in_group('Manager'))
+def manualDiscount(request):
+    # FIXME stub
+    raise NotImplementedError
 
 
 ###################################
@@ -1375,7 +1424,7 @@ def addToCart(request):
     banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
     if banCheck:
         logger.exception("***ban list registration attempt***")
-        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furrydelphia 2018. If you have any questions, or would like further information or assistance, please contact Registration at reg@furrydelphia.org."})
+        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for Furrydelphia 2019. If you have any questions, or would like further information or assistance, please contact Registration at reg@furrydelphia.org."})
 
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
@@ -1555,11 +1604,11 @@ def basicBadges(request):
               'firstName': badge.attendee.firstName.lower(), 'lastName': badge.attendee.lastName.lower(),
               'printed': badge.printed, 'discount': badge.getDiscount(),
               'assoc': badge.abandoned(), 'orderItems': getOptionsDict(badge.orderitem_set.all()) }
-             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furrydelphia 2018"]
+             for badge in badges if badge.effectiveLevel() != None and badge.event.name == "Furrydelphia 2019"]
 
     staffdata = [{'firstName': s.attendee.firstName.lower(), 'lastName':s.attendee.lastName.lower(),
                   'title': s.title, 'id': s.id}
-                for s in staff if s.event.name == "Furrydelphia 2018"]
+                for s in staff if s.event.name == "Furrydelphia 2019"]
 
     for staff in staffdata:
         sbadge = Staff.objects.get(id=staff['id']).getBadge()
@@ -1774,18 +1823,46 @@ def completeSquareTransaction(request):
     #   serverTransactionId (online payments)
 
     try:
+        #order = Order.objects.get(reference=reference)
+        orders = Order.objects.filter(reference=reference)
+    except Order.DoesNotExist:
+        return JsonResponse({'success' : False, 'reason' : 'No order matching the reference specified exists'}, status=404)
+
+    for order in orders:
+        order.billingType = Order.CREDIT
+        order.status = "Complete"
+        order.settledDate = datetime.now()
+        order.notes = json.dumps({
+            'clientTransactionId' : clientTransactionId,
+            'serverTransactionId' : serverTransactionId
+        })
+        order.save()
+
+    return JsonResponse({'success' : True})
+
+def completeCashTransaction(request):
+    reference = request.GET.get('reference', None)
+    total = request.GET.get('total', None)
+    tendered = request.GET.get('tendered', None)
+
+    if reference is None or tendered is None or total is None:
+        return JsonResponse({'success' : False, 'reason' : 'Reference, tendered, and total are required parameters'}, status=400)
+
+    try:
         order = Order.objects.get(reference=reference)
     except Order.DoesNotExist:
         return JsonResponse({'success' : False, 'reason' : 'No order matching the reference specified exists'}, status=404)
 
-    order.billingType = Order.CREDIT
+    order.billingType = Order.CASH
     order.status = "Complete"
     order.settledDate = datetime.now()
     order.notes = json.dumps({
-        'clientTransactionId' : clientTransactionId,
-        'serverTransactionId' : serverTransactionId
+        'tendered' : tendered
     })
     order.save()
+
+    txn = Cashdrawer(action=Cashdrawer.TRANSACTION, total=total, tendered=tendered, user=request.user)
+    txn.save()
 
     return JsonResponse({'success' : True})
 

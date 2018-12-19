@@ -11,7 +11,7 @@
       </div>
       <div class="modal-body">
     	<p>Staff must be over the age of 18.</p>
-	    <p>Please contact <a href="mailto:registration@furrydelphia.org">registration@furrydelphia.org</a> if you have any questions.</p>
+	    <p>Please contact <a href="mailto:registration@reg.furrydelphia.org">registration@reg.furrydelphia.org</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -26,7 +26,8 @@
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Staff Registration - {{event}}</h1>
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furrydelphia.org'>registration@furrydelphia.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
+
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@reg.furrydelphia.org'>registration@reg.furrydelphia.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
 		<hr>
 			
@@ -192,22 +193,12 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
 
-		<hr/>
-        <h3>Attendee Level</h3>
-
-		<div class="row" id="levelContainer"></div>
-
-                <div class="form-group">
-                    <div class="col-sm-12">
-                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
-                        I agree to abide by {event}'s Code of Conduct.
-                    </div>
-		    <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<div class="form-group">
-                    <div class="col-sm-12">
-                        <button id="register" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Register</button>
-		    </div>
+            <div class="form-group">
+                <div class="col-sm-12">
+                    <label>
+                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required>
+                        I agree to abide by {{ event }}'s <a href="https://docs.google.com/document/d/e/2PACX-1vQwPV-toFZdjPJioZjlUGTWoLeC3kssVd8YRPGTKP99337JMCnQP94gpRWygr5dA9J9DITQE6ChdRWU/pub" target="_blank">Code of Conduct</a>.
+                    </label>
                 </div>
 		        <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
 		    </div>
@@ -283,7 +274,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18) {
-            alert("You must be 18 by the first day of Furrydelphia to register online.")
+            alert("You must be 18 by the first day of Furthemore to register online.")
             return;
         }
 
@@ -306,8 +297,7 @@
 				'contactPhone': $("#contactPhone").val(), 'contactName': $("#contactName").val(),
 				'contactRelation': $("#contactRel").val(),
 			},
-			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furrydelphia 2018'
+            'event': 'Furthemore 2019'
 		};
 		
 
@@ -321,21 +311,24 @@
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-			if (result.responseText == "") {
-				alert("Your session has expired.");
-			} else {
-                        	alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furrydelphia.org for assistence.")
-			}
-			$("#register").removeAttr("disabled");
-		    },
-                    "success": function (result, status) {
-                        if (result.success)
-                        {
- 	                    window.location = "{% url 'invoiceStaff' %}";
-                        } else {
+			    if (result.responseText == "") {
+				    alert("Your session has expired.");
+			    } else {
+                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@reg.furrydelphia.org for assistence.")
+			    }
 			    $("#register").removeAttr("disabled");
-                    	    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furrydelphia.org for assistence.")
-			}
+		    },
+            "success": function (result, status) {
+                if (result.success)
+                {
+ 	                window.location = "{% url 'doneStaff' %}";
+                } else {
+                    if (result.message.indexOf("email") > -1) {
+                        alert(result.message);
+                        window.location = "{% url 'doneStaff' %}";
+                    } else {
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact registration@reg.furrydelphia.org for assistence.");
+                        $("#checkout").removeAttr("disabled");
                     }
 			    }
             }
