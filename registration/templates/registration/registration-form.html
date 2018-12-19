@@ -27,7 +27,7 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Pre-Register for Furrydelphia 2018!</h1>
+        <h1>Pre-Register for Furrydelphia 2019!</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
@@ -106,7 +106,7 @@
                 <div class="form-group">
                     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (mm/dd/yyyy)" required data-error="Date of birth is required.">
+                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required.">
             <p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -438,7 +438,7 @@
                 'asl': false,
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furrydelphia 2018'
+            'event': 'Furrydelphia 2019'
         };
         $.ajax({
             "type": "POST",

@@ -33,6 +33,11 @@ SERVER_EMAIL = "no-reply@example.com"
 
 ALLOWED_HOSTS = ['locahost', '127.0.0.1', 'apis.example.com']
 
+if os.environ.get('DJANGO_DEBUG'):
+    print("Debug enabled")
+    DEBUG = True
+
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
 
 # Application definition
 

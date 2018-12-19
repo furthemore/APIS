@@ -17,15 +17,15 @@ def sendRegistrationEmail(order, email):
             data = {'reference': order.reference, 'order': order, 'orderItems': orderDict}
             msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
             msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
-            sendEmail("registration@furthemore.org", [email],
-                 "Furthemore 2018 Registration Payment", msgTxt, msgHtml)
+            sendEmail("registration@reg.furrydelphia.org", [email],
+                 "Furrydelphia 2018 Registration Payment", msgTxt, msgHtml)
         else:
             # send regular emails to everyone else
             data = {'reference': order.reference, 'orderItem': oi}
             msgTxt = render_to_string('registration/emails/registration.txt', data)
             msgHtml = render_to_string('registration/emails/registration.html', data)
-            sendEmail("registration@furthemore.org", [oi.badge.attendee.email],
-                 "Furthemore 2018 Registration Confirmation", msgTxt, msgHtml)
+            sendEmail("registration@reg.furrydelphia.org", [oi.badge.attendee.email],
+                 "Furrydelphia 2018 Registration Confirmation", msgTxt, msgHtml)
 
         # send vip notification if necessary
         if oi.priceLevel.emailVIP:
@@ -143,7 +143,7 @@ def sendEmail(replyAddress, toAddressList, subject, message, htmlMessage):
     mailMessage = EmailMultiAlternatives(
       subject,
       message,
-      'dragon@furthemore.org',
+      'registration@reg.furrydelphia.org',
       toAddressList,
       reply_to=[replyAddress]
     )
