@@ -1,0 +1,98 @@
+<div class="row" id="levelContainer"></div>
+
+
+
+
+<script type="text/html" id="levelTemplate">
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
+    <div class="panel price">
+        <div class="panel-heading  text-center">
+            <h3 data-content="name"></h3>
+        </div>
+        <div class="panel-body text-center">
+            <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+        </div>
+        <div class="panel-footer">
+            <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
+            <a class="btn btn-default btn-block changeLevel">Change Level?</a>
+        </div>
+    </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionPlainTextTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <div data-content="content"></div>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionBoolTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionBoolReqTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionIntTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionIntReqTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionStringTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionStringReqTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="optionListTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <select data-id="id" class="form-control form-control-select levelOptions" 
+              data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+        </div>
+    </div>
+</script>
+
+

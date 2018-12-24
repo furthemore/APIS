@@ -113,37 +113,28 @@ var paymentForm = new SqPaymentForm({
 
 		{% for item in orderItems %}
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
+                {% if item.attendee %}
+				  <div class="col-sm-5 col-sm-offset-1">{{item.attendee.firstName}} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
+                {% else %}
+				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
+                {% endif %}
 				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
 				<div class="col-sm-2">
 					<a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
 				</div>
 			</div>
-			{% for option in item.getOptions %}
+			{% for option in item.options %}
 			<div class="row">
-				{% if option.option.optionExtraType == "int" %}
-                  {% if option.optionValue != '0' %}
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
-				    {% if option.option.optionPrice == 0 %}
-				      <div class="col-sm-2">Free</div>
-				    {% else %}
-				      <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-				    {% endif %}
+                  {% if option.number %}
+    				  <div class="col-sm-5 col-sm-offset-1">{{option.name}} x{{option.number}}</div>
                   {% else %}
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x 0</div>
-				  <div class="col-sm-2">--</div>
+    				  <div class="col-sm-5 col-sm-offset-1">{{option.name}}</div>
                   {% endif %}
-
-				{% else %}
-
-				  <div class="col-sm-5 col-sm-offset-1">{{option.option}}</div>
-				  {% if option.option.optionPrice == 0 %}
+				  {% if option.total == 0 %}
 				    <div class="col-sm-2">Free</div>
 				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}}</div>
+				    <div class="col-sm-2">${{option.total}}</div>
 				  {% endif %}
-
-				{% endif %}
 
 			</div>
 			{% endfor %}
@@ -165,7 +156,24 @@ var paymentForm = new SqPaymentForm({
 
 	
 		<br/>
+        {% if not discount.newStaffEvent and not discount.staffEvent  %}
 		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registraiton</a>
+        {% endif %}
+
+        {% if hasMinors %}
+		<hr/>
+        <h3>Important Information About Minor Registration</h3>
+        <div class="row">
+          <div class="col-sm-11 col-sm-offset-1">
+           One or more of the attendees in this order will still be minors at the start of the convention. 
+           Please note that we require a parent or guardian to be present at registration to sign our
+           consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention) 
+           must have a parent or guardian also register and accompany them during the event. If you have
+           any questions about our policies, please contact 
+           <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>.
+          </div>
+        </div>
+        {% endif %}
 
 		<hr/>
 		{% if total > 0%}
@@ -190,20 +198,30 @@ var paymentForm = new SqPaymentForm({
 		<div class="container" style="width: inherit">
 		<form class="form-horizontal" role="form" data-toggle="validator">
 		
-		<h3>Extra Donations</h3>
-        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you would like to make an extra gift to our annual charity, <a href="https://www.bellareedpbr.com/">Bella-Reed Pit Bull Rescue</a>, or to the convention, please enter it below.</div>
+        <h3>Extra Donations</h3>
+        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+        {% if event.charity %}
+            If you would like to make an extra gift to our annual charity, 
+            {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
+        {% else %}
+            If you would like to make an extra gift to the convention, please enter it below.
+        {% endif %}
+        </div>
+        {% if event.charity %}
         <div class="form-group">
-            <label for="donateCharity" class="col-sm-3 control-label">Donate to Bella-Reed Pit Bull Rescue</label>
+            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
                     <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
                 </div>
             </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
         </div>
+        {% endif %}
+        
         <div class="form-group">
-            <label for="donateOrg" class="col-sm-3 control-label">Donate to Furrydelphia</label>
+            <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
@@ -217,17 +235,23 @@ var paymentForm = new SqPaymentForm({
 
 		<h3>Billing Information</h3>
 
-
+        {% if not hasMinors %}
 		<div class="form-group">
-                    <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
-                    <div class="col-sm-9">
-                        <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
-			{% for oi in orderItems %}
-			    <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
-			{% endfor %}
-			</select>
-                    </div>
+            <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+            <div class="col-sm-9">
+                <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
+			    {% for oi in orderItems %}
+                    {% if oi.attendee %}
+			          <option value="{{forloop.counter0}}">{{oi.attendee.firstName}} {{oi.attendee.lastName}}</option>
+                    {% else %}
+			          <option value="{{forloop.counter0}}">{{oi.badge.attendee}}</option>
+                    {% endif %}
+			    {% endfor %}
+			    </select>
+            </div>
 		</div>
+        {% endif %}
+
 		<div class="form-group">
                     <label for="billingName" class="col-sm-3 control-label">Billing Name<span style="color:red;">*</span></label>
                     <div class="col-sm-4">
@@ -366,13 +390,13 @@ var paymentForm = new SqPaymentForm({
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact reg@furrydelphia.org for assistance.")
+                        alert("An error has occurred. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
 		    },
                     "success": function (result, status) {
                         if (result.success) {
 				window.location.reload();
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact reg@furrydelphia.org for assistance.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
 			}
                     }
 		});
@@ -410,13 +434,13 @@ var paymentForm = new SqPaymentForm({
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact reg@furrydelphia.org for assistance.")
+                        alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
 		    },
                     "success": function (result, status) {
                         if (result.success) {
 				window.location.reload();
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact reg@furrydelphia.org for assistance.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
 			}
                     }
 		});
@@ -442,16 +466,14 @@ var paymentForm = new SqPaymentForm({
 		var userName = $("#useFrom option[value='" + userId + "']").text();
 		$("#fname").val(userName.split(' ')[0]);
 		$("#lname").val(userName.split(' ')[1]);
-		$.each(addresses, function (key, item) {
-			if (item.id != userId) { return; }
-			$("#email").val(item.email);
-			$("#add1").val(item.address1);
-			$("#add2").val(item.address2);
-			$("#city").val(item.city);
-			$("#state").val(item.state);
-			$("#zip").val(item.postalCode);
-			$("#country").val(item.country);
-		});
+        var address = addresses[userId];
+    	$("#email").val(address.email);
+		$("#add1").val(address.address1);
+		$("#add2").val(address.address2);
+		$("#city").val(address.city);
+		$("#state").val(address.state);
+		$("#zip").val(address.postalCode);
+		$("#country").val(address.country);
 	});
 
 	$("#checkout").click(function (e) {
@@ -498,7 +520,7 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                alert("An error has occurred. If this error continues, please contact reg@furrydelphia.org for assistance.")
+                alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
     			$("#checkout").removeAttr("disabled");
     		},
             "success": function (result, status) {
@@ -510,7 +532,7 @@ function doCheckout() {
                         alert(result.message);
                         window.location = "{% url 'done' %}";
                     } else {
-                        alert("An error has occurred: " + result.message + " If this error continues, please contact reg@furrydelphia.org for assistance.")
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.")
                     }
                 }
             }

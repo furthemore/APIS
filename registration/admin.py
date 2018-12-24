@@ -21,14 +21,17 @@ from .models import *
 from .emails import *
 import views
 import printing
-
 import cgi
+
+admin.site.site_url = None
+admin.site.site_header = 'APIS Backoffice'
 
 # Register your models here.
 admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
 admin.site.register(TableSize)
+admin.site.register(Cart)
 
 class FirebaseAdmin(admin.ModelAdmin):
     list_display = ('name', 'token', 'closed')
@@ -39,6 +42,20 @@ class BanListAdmin(admin.ModelAdmin):
     list_display = ('firstName', 'lastName', 'email')
 
 admin.site.register(BanList, BanListAdmin)
+
+def send_staff_token_email(modeladmin, request, queryset):
+    for token in queryset:
+        sendNewStaffEmail(token)
+        token.sent = True
+        token.save()
+send_staff_token_email.short_description = "Send New Staff registration email"
+
+class TempTokenAdmin(admin.ModelAdmin):
+    actions = [send_staff_token_email]
+    list_display = ['email', 'token', 'sent', 'used']
+
+admin.site.register(TempToken, TempTokenAdmin)
+
 
 def send_approval_email(modeladmin, request, queryset):
     sendApprovalEmail(queryset)
@@ -66,6 +83,18 @@ def send_assistant_form_email(modeladmin, request, queryset):
 send_assistant_form_email.short_description = "Send assistent addition form email"
 
 
+class DealerAsstInline(NestedTabularInline):
+    model=DealerAsst
+    extra=0
+
+class DealerAsstAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = ('name', 'email', 'license', 'event' )
+    list_filter = ('event',)
+    search_fields = ['name', 'email']
+
+admin.site.register(DealerAsst, DealerAsstAdmin)
+
 class DealerResource(resources.ModelResource):
     class Meta:
         model = Dealer
@@ -84,10 +113,12 @@ class DealerResource(resources.ModelResource):
                   'charityRaffle', 'breakfast', 'asstBreakfast', 'willSwitch', 'partners', 'buttonOffer', 'discount',
                   'discountReason', 'emailed')
 
-class DealerAdmin(ImportExportModelAdmin):
+
+class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal', 'event')
     list_filter = ('event',)
     save_on_top = True
+    inlines = [DealerAsstInline]
     resource_class = DealerResource
     actions = [mark_as_approved, send_approval_email, send_assistant_form_email, send_payment_email]
     readonly_fields = ['get_email']
@@ -104,7 +135,7 @@ class DealerAdmin(ImportExportModelAdmin):
         (
             'Business Info',
             {'fields': (
-                'businessName', 'license', 'website', 'description'
+                'businessName', 'license', 'website', 'logo', 'description'
             )}
         ),
         (
@@ -113,7 +144,7 @@ class DealerAdmin(ImportExportModelAdmin):
                 'tableSize',
                 ('willSwitch', 'needPower', 'needWifi', 'wallSpace', 'reception', 'breakfast'),
                 ('nearTo', 'farFrom'),
-                ('tables', 'chairs'), 'asstBreakfast', 'partners'
+                ('tables', 'chairs'), 'asstBreakfast'
             )}
         ),
         (
@@ -125,14 +156,22 @@ class DealerAdmin(ImportExportModelAdmin):
     )
 
     def get_email(self, obj):
+      if obj.attendee:
         return obj.attendee.email
+      return "--"
     get_email.short_description = "Attendee Email"
-
 
 admin.site.register(Dealer, DealerAdmin)
 
+
 ########################################################
 #   Staff Admin
+
+def checkin_staff(modeladmin, request, queryset):
+   for staff in queryset:
+       staff.checkedIn = True
+       staff.save()
+checkin_staff.short_description = "Check in staff"
 
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
@@ -159,22 +198,22 @@ class StaffResource(resources.ModelResource):
 
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
-    actions = [send_staff_registration_email, 'copy_to_event']
-    list_display = ('attendee', 'get_badge', 'get_email', 'title', 'department', 'shirtsize', 'staff_total', 'event')
+    actions = [send_staff_registration_email, checkin_staff, 'copy_to_event']
+    list_display = ('attendee', 'get_badge', 'get_email', 'title', 'department', 'shirtsize', 'staff_total', 'checkedIn', 'event')
     list_filter = ('event','department')
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName']
     resource_class = StaffResource
-    readonly_fields = ['get_email', 'get_badge']
+    readonly_fields = ['get_email', 'get_badge', 'get_badge_id']
     fieldsets = (
         (
 	    None,
             {'fields':(
                 ('attendee', 'registrationToken'),
-                ('event', 'get_email', 'get_badge'),
-                ('title', 'timesheetAccess'),
-                ('department', 'supervisor'),
+                ('event', 'get_email'), 
+                ('get_badge', 'get_badge_id'),
+                ('title', 'department'),
                 ('twitter','telegram'),
-                'shirtsize',
+                ('shirtsize', 'checkedIn'),
             )}
         ),
         (
@@ -193,7 +232,9 @@ class StaffAdmin(ImportExportModelAdmin):
     )
 
     def get_email(self, obj):
+      if obj.attendee:
         return obj.attendee.email
+      return "--"
     get_email.short_description = "Email"
 
     def get_badge(self, obj):
@@ -202,6 +243,13 @@ class StaffAdmin(ImportExportModelAdmin):
             return "--"
         return badge.badgeName
     get_badge.short_description = "Badge Name"
+
+    def get_badge_id(self, obj):
+        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge == None:
+            return "--"
+        return badge.badgeNumber
+    get_badge_id.short_description = "Badge Number"
 
     def staff_total(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
@@ -303,7 +351,7 @@ def assign_numbers_and_print(modeladmin, request, queryset):
         })
         badge.printed = True
         badge.save()
-    con.nametags(tags, theme='furrydelphia')
+    con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
     response = HttpResponseRedirect(reverse(views.printNametag))
@@ -346,7 +394,7 @@ def print_badges(modeladmin, request, queryset):
             })
             badge.printed = True
             badge.save()
-    con.nametags(tags, theme='furrydelphia')
+    con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
     response = HttpResponseRedirect(reverse(views.printNametag))
@@ -412,7 +460,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
         })
         badge.printed = True
         badge.save()
-    con.nametags(tags, theme='furrydelphia')
+    con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
     response = HttpResponseRedirect(reverse(views.printNametag))
@@ -450,7 +498,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         badge.printed = True
         badge.save()
     if len(tags) > 0:
-        con.nametags(tags, theme='furrydelphia')
+        con.nametags(tags, theme=badge.event.badgeTheme)
         # serve up this file
         pdf_path = con.pdf.split('/')[-1]
         response = HttpResponseRedirect(reverse(views.printNametag))
@@ -503,7 +551,7 @@ def print_staff_badges(modeladmin, request, queryset):
         })
         badge.printed = True
         badge.save()
-    con.nametags(tags, theme='furrydelphia')
+    con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split('/')[-1]
     response = HttpResponseRedirect(reverse(views.printNametag))
@@ -687,7 +735,7 @@ class PriceLevelAdmin(admin.ModelAdmin):
 admin.site.register(PriceLevel, PriceLevelAdmin)
 
 class PriceLevelOptionAdmin(admin.ModelAdmin):
-    list_display = ('optionName', 'optionPrice', 'optionExtraType', 'required', 'active')
+    list_display = ('optionName', 'rank', 'optionPrice', 'optionExtraType', 'required', 'active')
 
 admin.site.register(PriceLevelOption, PriceLevelOptionAdmin)
 

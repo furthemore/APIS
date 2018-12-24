@@ -18,7 +18,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furrydelphia 2019</h1>
+		<h1>Registration Upgrade - {{ event }}</h1>
 		<p>Please enter the email you used to register.</p>
 		<hr>
 
@@ -59,7 +59,7 @@
 
 		var data = {
 			'email': $("#email").val(), 'token': $("#token").val(),
-            'event': 'Furrydelphia 2019'
+            'event': '{{ event }}'
 		};
 		$.ajax({
 		    "type": "POST",

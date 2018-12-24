@@ -7,11 +7,6 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 
-#######################################
-# As of Data Model version 27
-#######################################
-
-
 # Lookup and supporting tables.
 class LookupTable(models.Model):
     name = models.CharField(max_length=200)
@@ -62,6 +57,8 @@ class PriceLevelOption(models.Model):
     optionImage = models.ImageField(upload_to=content_file_name,blank=True,null=True)
     required = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
+    rank = models.IntegerField(default=0)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return '{0} (${1})'.format(self.optionName, self.optionPrice)
@@ -91,24 +88,80 @@ class PriceLevel(models.Model):
     group = models.TextField(blank=True)
     emailVIP = models.BooleanField(default=False)
     emailVIPEmails = models.CharField(max_length=400, blank=True, default='')
+    isMinor = models.BooleanField(default=False)
 
     def __str__(self):
       return self.name
 
 class Event(LookupTable):
-    dealerRegStart = models.DateTimeField()
-    dealerRegEnd = models.DateTimeField()
-    staffRegStart = models.DateTimeField()
-    staffRegEnd = models.DateTimeField()
-    attendeeRegStart = models.DateTimeField()
-    attendeeRegEnd = models.DateTimeField()
-    onlineRegStart = models.DateTimeField()
-    onlineRegEnd = models.DateTimeField()
-    eventStart = models.DateField()
-    eventEnd = models.DateField()
-    default = models.BooleanField(default=False)
-    dealerBasePriceLevel = models.ForeignKey(PriceLevel, null=True, blank=True, on_delete=models.SET_NULL)
+    dealerRegStart = models.DateTimeField(verbose_name="Dealer Registration Start",
+        help_text="Start date and time for dealer applications")
+    dealerRegEnd = models.DateTimeField(verbose_name="Dealer Registration End")
+    staffRegStart = models.DateTimeField(verbose_name="Staff Registration Start",
+        help_text="(Not currently enforced)")
+    staffRegEnd = models.DateTimeField(verbose_name="Staff Registration End")
+    attendeeRegStart = models.DateTimeField(verbose_name="Attendee Registration Start")
+    attendeeRegEnd = models.DateTimeField(verbose_name="Attendee Registration End")
+    onlineRegStart = models.DateTimeField("On-site Registration Start",
+        help_text="Start time for /registration/onsite form")
+    onlineRegEnd = models.DateTimeField(verbose_name="On-site Registration End")
+    eventStart = models.DateField(verbose_name="Event Start Date")
+    eventEnd = models.DateField(verbose_name="Event End Date")
+    default = models.BooleanField(default=False, verbose_name="Default",
+        help_text="The first default event will be used as the basis for all current event configuration")
+    newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='newStaffEvent',
+        verbose_name="New Staff Discount",
+        help_text="Apply a discount for new staff registrations")
+    staffDiscount = models.ForeignKey(Discount, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="staffEvent",
+        verbose_name="Staff Discount",
+        help_text="Apply a discount for any staff registrations")
+    dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, 
+        on_delete=models.SET_NULL, related_name="dealerEvent",
+        verbose_name="Dealer Discount",
+        help_text="Apply a discount for any dealer registrations")
+    allowOnlineMinorReg = models.BooleanField(default=False,
+        verbose_name="Allow online minor registration",
+        help_text="Allow registration for anyone age 13 and older online. "
+        "Otherwise, registration is restricted to those 18 or older.")
+    collectAddress = models.BooleanField(default=True,
+        verbose_name="Collect Address",
+        help_text="Disable to skip collecting a mailing address for each "
+        "attendee.")
+    registrationEmail = models.CharField(length=200,
+        verbose_name="Registration Email",
+        help_text="Email to display on error messages for attendee registration",
+        blank=True,
+        default=settings.APIS_DEFAULT_EMAIL)
+    staffEmail = models.CharField(length=200,
+        verbose_name="Staff Email",
+        help_text="Email to display on error messages for staff registration",
+        blank=True,
+        default=settings.APIS_DEFAULT_EMAIL)
+    dealerEmail = models.CharField(length=200,
+        verbose_name="Dealer Email",
+        help_text="Email to display on error messages for dealer registration",
+        blank=True,
+        default=settings.APIS_DEFAULT_EMAIL)
+    badgeTheme = models.CharField(length=200,
+        verbose_name="Badge Theme",
+        help_text="Name of badge theme to use for printing",
+        blank=False,
+        default='apis')
+    codeOfConduct = models.CharField(length=500,
+        verbose_name="Code of Conduct",
+        help_text="Link to code of conduct agreement",
+        blank=True,
+        default='/code-of-conduct')
+    charity = models.ForeignKey(Charity, null=True, blank=True, on_delete=models.SET_NULL)
 
+
+class Charity(Models.model):
+    url = models.CharField(length=500,
+        verbose_name="URL",
+        help_text="Charity link",
+        blank=True)
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -139,15 +192,23 @@ class Department(models.Model):
 def getRegistrationToken():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(15))
 
+class TempToken(models.Model):
+    token = models.CharField(max_length=200, default=getRegistrationToken)
+    email = models.CharField(max_length=200)
+    validUntil = models.DateTimeField()
+    used = models.BooleanField(default=False)
+    usedDate = models.DateTimeField(null=True, blank=True)
+    sent = models.BooleanField(default=False)
+
 class Attendee(models.Model):
     firstName = models.CharField(max_length=200)
     lastName = models.CharField(max_length=200)
-    address1 = models.CharField(max_length=200)
+    address1 = models.CharField(max_length=200, blank=True)
     address2 = models.CharField(max_length=200, blank=True)
-    city = models.CharField(max_length=200)
-    state = models.CharField(max_length=200)
-    country = models.CharField(max_length=200)
-    postalCode = models.CharField(max_length=20)
+    city = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=200, blank=True)
+    country = models.CharField(max_length=200, blank=True)
+    postalCode = models.CharField(max_length=20, blank=True)
     phone = models.CharField(max_length=20)
     email = models.CharField(max_length=200)
     birthdate = models.DateField()
@@ -167,6 +228,7 @@ class Attendee(models.Model):
     def __str__(self):
       if self is None:
           return "--"
+      # FIXME: Why are we afraid of Unicode here?
       try:
         test1 = self.firstName.decode('ascii')
         test2 = self.lastName.decode('ascii')
@@ -191,6 +253,14 @@ class Badge(models.Model):
         if self.registeredDate is not None:
             return "[Orphan {0}]".format(self.registeredDate)
         return "Badge object {0}".format(self.registrationToken)
+
+    def isMinor(self):
+      birthdate = self.attendee.birthdate
+      eventdate = self.event.eventStart
+      age_at_event = eventdate.year - birthdate.year - ((eventdate.month, eventdate.day) < (birthdate.month, birthdate.day))
+      if age_at_event < 18: 
+        return True
+      return False
 
     def getDiscount(self):
       discount = ""
@@ -270,6 +340,7 @@ class Staff(models.Model):
     needRoom = models.BooleanField(default=False)
     gender = models.CharField(max_length=50, blank=True)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    checkedIn = models.BooleanField(default=False)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
@@ -315,17 +386,14 @@ class Dealer(models.Model):
     emailed = models.BooleanField(default=False)
     asstBreakfast = models.BooleanField(default=False)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    logo = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
       return '%s %s' % (self.attendee.firstName, self.attendee.lastName)
 
     def getPartnerCount(self):
-      partners = self.partners.split(', ')
-      partnerCount = 0
-      for part in partners:
-        if part.find("name") > -1 and part.split(':')[1].strip() != "":
-            partnerCount = partnerCount + 1
-      return partnerCount
+      partnercount = self.dealerasst_set.count()
+      return partnercount
 
     def paidTotal(self):
           total = 0
@@ -346,7 +414,34 @@ class Dealer(models.Model):
         return
 
 
+class DealerAsst(models.Model):
+    dealer = models.ForeignKey(Dealer)
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    name = models.CharField(max_length=400)
+    email = models.CharField(max_length=200)
+    license = models.CharField(max_length=50)
+    sent = models.BooleanField(default=False)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+      return self.name
+
+
 # Start order tables
+
+class Cart(models.Model):
+    ATTENDEE = 'Attendee'
+    STAFF = 'Staff'
+    DEALER = 'Dealer'
+    ASST = 'Dealer Assistant'
+    FORM_CHOICES = ((ATTENDEE, 'Attendee'), (STAFF, 'Staff'), (DEALER, 'Dealer'), (ASST, 'Dealer Assistant'))
+    token = models.CharField(max_length=200, blank=True, null=True)
+    form = models.CharField(max_length=50, choices=FORM_CHOICES)
+    formData = models.TextField()
+    formHeaders = models.TextField()
+    enteredDate = models.DateTimeField(auto_now_add=True, null=True)
+    transferedDate = models.DateTimeField(null=True)
 
 class Order(models.Model):
     UNPAID = 'Unpaid'
@@ -453,3 +548,4 @@ class Cashdrawer(models.Model):
             blank=True
         )
 
+# vim: ts=4 sts=4 sw=4 expandtab smartindent

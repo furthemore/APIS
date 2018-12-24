@@ -1,5 +1,7 @@
 {% extends "registration/master.html" %}
 
+{% load registration_tags %}
+
 {% block content %}
 <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
@@ -9,16 +11,15 @@
         <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
       </div>
       <div class="modal-body">
-        <p>Those over the age of 15 by the start of the convention (born on or before August 10, 2003) may register online, 
-           but only individuals 18 years or older (born on or before August 10, 2000) can pick up their own badges.</p>
-        <p>Individuals at least 15 years of age at the time of the event (born on or before August 10, 2003), must either:
-            <ul>
-                <li>Have a parent or legal guardian present at time of registration<br>&nbsp;<b>-or-</b>
-                    <li>Bring <a href="https://www.furrydelphia.org/Furrydelphia_Parental_Consent_Form.pdf" target="_blank">this consent form</a>, completed by a parent or legal guardian, and notarized
-            </ul>
-        </p>
-        <p>A parent or guardian must also register for the convention to accompany anyone under the age of 15 at the time of the event (born after August 10, 2003).</p>
-    <p>Please contact <a href="mailto:registration@reg.furrydelphia.org">registration@reg.furrydelphia.org</a> if you have any questions.</p>
+        {% if event.allowOnlineMinorReg %}
+          <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the door to sign our consent form.</p>
+          <p>A parent or guardian must register and accompany anyone under the age of 13 (by the start of the convention).</p>
+          <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
+        {% else %}
+          <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
+          <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 20, 2000). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 20, 2005).</p>
+          <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -27,90 +28,10 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Pre-Register for Furrydelphia 2019!</h1>
+        <h1>Pre-Register for {{event}}!</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
-        <hr>
 
-            
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
-                    <div class="col-sm-4">
-                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
-                    </div>
-		    <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" required data-error="Last name is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-3">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <label>
-                            <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the post-con survey.</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="tel" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9]{1,}$" data-minlength="10" maxlength=10 data-error="A 10-digit phone number is required. Please enter only numbers.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP <span style="color:red;">*</span></label>
-            <div class="col-sm-4">
-            <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
-            </div>
-                    <div class="col-sm-2">
-            <select class="form-control bfh-states" id="state" data-country="US" data-state="PA" name="state"></select>
-                    </div>
-            <div class="col-sm-3">
-            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
-            </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-            <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-                </div>
-                
-        <hr>
-
-                <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required.">
-            <p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
+            {% show_attendee_form emailOptions=True %}
 
         <h3><a name="level"></a>Select your registration options and level.</h3>
         <hr>
@@ -138,7 +59,7 @@
                     <div>
                         <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I agree to abide by Furrydelphia's <a href="https://docs.google.com/document/d/e/2PACX-1vQwPV-toFZdjPJioZjlUGTWoLeC3kssVd8YRPGTKP99337JMCnQP94gpRWygr5dA9J9DITQE6ChdRWU/pub" target="_blank">Code of Conduct</a>.
+			I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>.
                         </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -172,6 +93,14 @@
     </div>
 </script>
 
+<script type="text/html" id="optionPlainTextTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <div data-content="content"></div>
+        </div>
+    </div>
+</script>
 <script type="text/html" id="optionBoolTemplate">
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
@@ -179,7 +108,7 @@
             <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
         </div>
     </div>
-<div>
+</script>
 <script type="text/html" id="optionBoolReqTemplate">
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
@@ -187,8 +116,6 @@
             <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
         </div>
     </div>
-<div>
-
 </script>
 <script type="text/html" id="optionIntTemplate">
     <div class="form-group">
@@ -335,7 +262,13 @@
             var required = "";
             console.log(val);
             if (val.required) {required = "required";}
-            switch (val.type){
+            switch (val.type) {
+                case "plaintext":
+                    var template = $("#optionPlainTextTemplate");
+                    $("#optionsContainer").loadTemplate(template, {
+                        'content': val.description
+                    }, {append: true});
+                    break;                    
                 case "bool":
                     var template = $("#optionBoolTemplate");
                     if (val.required) {template = $("#optionBoolReqTemplate");}
@@ -422,11 +355,14 @@
             // American middle-endian format put out by datepicker javascript
             var birthdate = new Date(Date.parse($("#birthDate").val()));
         }
+
+      {% if not event.allowOnlineMinorReg %}
         var age = getAge(birthdate);
-        if (age < 15) {
-            alert("You must be 15 by the first day of Furrydelphia to register online.")
+        if (age < 18) {
+            alert("You must be 18 by the first day of {{event}} to register online.")
             return;
         }
+      {% endif %}
         var data = {
             'attendee': {
                 'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
@@ -438,7 +374,7 @@
                 'asl': false,
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furrydelphia 2019'
+            'event': '{{event}}'
         };
         $.ajax({
             "type": "POST",
@@ -457,7 +393,7 @@
                 }
             },
             "error": function(result, status) {
-                alert("An error has occurred. Please contact registration@furrydelphia.org and we will correct the problem.")
+                alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.")
             }
         })
 

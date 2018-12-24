@@ -14,9 +14,9 @@ Thank you for your payment.
   {% endfor %}
   {% if oi.priceLevel.emailVip %}
     ** This person qualifies for our VIP experience. Please complete your hotel reservation and email 
-       your hotel confirmation code to guests@furrydelphia.org. Our VIP department has also been notified
+       your hotel confirmation code to {{ event.registrationEmail }}. Our VIP department has also been notified
        of your registration and should be contacting you directly with more information. If you have 
-       questions regarding perks please contact guests@furrydelphia.org. Thank you for your support!
+       questions regarding perks please contact {{ event.registrationEmail }}. Thank you for your support!
   {% endif %}
 
 {% endfor %}
@@ -34,9 +34,15 @@ Thank you for your payment.
 ---------------------------------
 
 Your payment confirmation is: {{reference}}
-If you have any questions about your order, please contact us at registration@furrydelphia.org.
+
+{% if hasMinors %}
+One or more of the attendees in this order will still be minors at the start of {{event}}.
+Please note that we require a parent or guardian to be present at registration to sign our
+consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention)
+must have a parent or guardian also register and accompany them during the event.
+{% endif %}
+
+If you have any questions about your order, please contact us at {{ event.registrationEmail }}.
 
 Thank you! 
 
-Kyle
-Head of Registration

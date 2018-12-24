@@ -106,6 +106,7 @@ var paymentForm = new SqPaymentForm({
 				<div class="col-sm-2">
 				</div>
 			</div>
+
         {% if dealer.needPower %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Power</div>
@@ -123,6 +124,35 @@ var paymentForm = new SqPaymentForm({
 				<div class="col-sm-2">
 				</div>
 			</div>
+
+            {% for option in item.getOptions %}
+            <div class="row">
+                {% if option.option.optionExtraType == "int" %}
+                  {% if option.optionValue != '0' %}
+                  <div class="col-sm-6 col-sm-offset-1">{{option.option.optionName}} x {{option.optionValue}}</div>
+                    {% if option.option.optionPrice == 0 %}
+                      <div class="col-sm-2">Free</div>
+                    {% else %}
+                      <div class="col-sm-2">${{option.option.optionPrice}} each</div>
+                    {% endif %}
+                  {% else %}
+                  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x 0</div>
+                  <div class="col-sm-2">--</div>
+                  {% endif %}
+
+                {% else %}
+
+                  <div class="col-sm-6 col-sm-offset-1">{{option.option.optionName}}</div>
+                  {% if option.option.optionPrice == 0 %}
+                    <div class="col-sm-2">Free</div>
+                  {% else %}
+                    <div class="col-sm-2">${{option.option.optionPrice}}</div>
+                  {% endif %}
+
+                {% endif %}
+
+            </div>
+            {% endfor %}
 			
 			{% if dealer.getPartnerCount > 0 %}
 			<div class="row">
@@ -200,16 +230,29 @@ var paymentForm = new SqPaymentForm({
 		<form class="form-horizontal" role="form" data-toggle="validator">
 		
 		<h3>Extra Donations</h3>
-		<div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you would like to make an extra gift to our annual charity, Bella-Reed Pit Bull Rescue, or to the convention, please enter it below.</div>
-		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Bella-Reed Pit Bull Rescue</label>
-		    <div class="col-sm-4">
-            <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate" data-error="Please use only numbers and a decimal." />
-		    </div>
+        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+        {% if event.charity %}
+            If you would like to make an extra gift to our annual charity, 
+            {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
+        {% else %}
+            If you would like to make an extra gift to the convention, please enter it below.
+        {% endif %}
+        </div>
+        {% if event.charity %}
+        <div class="form-group">
+            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+            <div class="col-sm-4">
+                <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
+                </div>
+            </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
+        </div>
+        {% endif %}
+
 		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Furrydelphia</label>
+                    <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
 		    <div class="col-sm-4">
             <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate" data-error="Please use only numbers and a decimal." />
 		    </div>
@@ -432,7 +475,7 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                    alert("An error has occurred. If this error continues, please contact help@reg.furrydelphia.org for assistence.")
+                    alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
 	        		$("#checkout").removeAttr("disabled");
 		    },
             "success": function (result, status) {
@@ -443,7 +486,7 @@ function doCheckout() {
                             alert(result.message);
                             window.location = "{% url 'doneDealer' %}";
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact help@reg.furrydelphia.org for assistence.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
 			                $("#checkout").removeAttr("disabled");
                         }
 			        }
