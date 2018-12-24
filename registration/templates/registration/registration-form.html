@@ -31,7 +31,7 @@
         <h1>Pre-Register for {{event}}!</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
-            {% show_attendee_form emailOptions=True %}
+            {% show_attendee_form event=event emailOptions=True %}
 
         <h3><a name="level"></a>Select your registration options and level.</h3>
         <hr>
@@ -51,7 +51,13 @@
                 </div>
 		<hr/>
         <div class="container-fluid">
-    		<div class="row" id="levelContainer"></div>
+    		<div class="row" id="levelContainer">
+                <noscript>Javascript is required for this site.</noscript>
+                <div id="levelContainerAlert" class="alert alert-danger" style="display:none">
+                    <b>No price levels have been set up yet!</b>
+                    If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add some</a> before this form will work.
+                </div>
+            </div>
         </div>
 		<br/>
 		<hr/>
@@ -168,6 +174,22 @@
     var levelData = [];
     var deptData = [];
     var shirtSizes = [];
+    
+    var select_level = function (levelId) {
+        $.each( levelTemplateData, function( key, val ) {
+            var id = val.levelId.split('_')[1];
+            if (id == levelId){
+                $("#regLevel").val(val.name);
+                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                $(".changeLevel").show();
+                $(".selectLevel").text("Selected!");
+                $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
+                generateOptions(id);
+                return false;
+            }
+        });
+    };
+
     $( "body" ).ready(function() {
         // only init the javascript datepicker if none is provided by the browser natively
         if (!Modernizr.inputtypes.date) {
@@ -187,7 +209,14 @@
                     selectText: "Select " + val.name
                 });
             });
-            $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+            if (levelTemplateData.length == 0) {
+                $("#levelContainerAlert").show();
+            } else {
+                $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+                if (levelTemplateData.length == 1) {
+                    select_level(1);
+                }
+            }
             $(".changeLevel").hide();
             
         });
@@ -205,18 +234,7 @@
     $("#levelContainer").on('click', 'a.selectLevel', function(){
         clearLevels();
         var levelId = $(this).attr('id').split('_')[1];
-        $.each( levelTemplateData, function( key, val ) {
-            var id = val.levelId.split('_')[1];
-            if (id == levelId){
-                $("#regLevel").val(val.name);
-                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                $(".changeLevel").show();
-                $(".selectLevel").text("Selected!");
-                $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
-                generateOptions(id);
-                return false;
-            }
-        });
+        select_level(levelId);
     });
 
     $("#levelContainer").on('click', 'a.changeLevel', function() {
