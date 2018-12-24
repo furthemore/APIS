@@ -1,23 +1,12 @@
 .artisan {
 /**
-    background-image: linear-gradient(203deg, rgba(194,155,114,0.65) 35%, transparent 0%);
-    background-size: 100% 100%;
-    background-position: 100% 0%;
-    background-repeat: no-repeat;
-    display: flex;
-    height: 100vh;
-    padding-top: 2%;
-**/
-
     background: url('../img/2017/logo.jpg') no-repeat top right;
+**/
     min-height: 900px;  /* So logo isn't cut off on short-content pages */
 
 }
 
 body {
-    /* 
-    background: url('../img/2017/logo.jpg') center center white;
-    */
     background: #3D67B1;
 }
 
@@ -99,4 +88,11 @@ body {
 
 #terms li {
     margin-bottom: 1em;
+}
+
+/* Use with bs-yetti theme */
+.alert a {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
 }
