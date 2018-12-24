@@ -25,7 +25,7 @@ import random
 import string
 import logging
 
-from .emails import *
+from emails import *
 from .models import *
 from .payments import chargePayment
 from .pushy import PushyAPI
@@ -102,19 +102,19 @@ def doCheckout(billingData, total, discount, cartItems, orderItems, donationOrg,
 
 def doZeroCheckout(discount, cartItems, orderItems):
     if cartItems:
-        attendee = json.loads(cartItems[0]['attendee'])
+        attendee = json.loads(cartItems[0].formData)['attendee']
     elif orderItems:
-        attendee = orderItems[0].badge.attendee
+        attendee = dict(orderItems[0].badge.attendee)
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
         reference = getConfirmationToken()
 
+    logger.debug(attendee)
     order = Order(total=0, reference=reference, discount=discount,
-                  orgDonation=0, charityDonation=0, billingName=attendee.firstName + " " + attendee.lastName,
-                  billingAddress1=attendee.address1, billingAddress2=attendee.address2,
-                  billingCity=attendee.city, billingState=attendee.state, billingCountry=attendee.country,
-                  billingPostal=attendee.postalCode, billingEmail=attendee.email, status="Complete")
+                  orgDonation=0, charityDonation=0, status="Complete",
+                  billingType=Order.COMP, billingEmail=attendee['email'],
+                  billingName="{firstName} {lastName}".format(**attendee))
     order.save()
 
     if cartItems:
@@ -166,6 +166,7 @@ def getDiscountTotal(disc, subtotal):
 
 def getTotal(cartItems, orderItems, disc = ""):
     total = 0
+    total_discount = 0
     if not cartItems and not orderItems: return total
     for item in cartItems:
         postData = json.loads(str(item.formData))
@@ -177,7 +178,9 @@ def getTotal(cartItems, orderItems, disc = ""):
         itemTotal += getCartItemOptionTotal(options)
 
         if disc:
-            itemTotal -= getDiscountTotal(disc, itemTotal)
+            discount = getDiscountTotal(disc, itemTotal)
+            total_discount += discount
+            itemTotal -= discount
 
         if itemTotal > 0:
             total += itemTotal
@@ -193,12 +196,14 @@ def getTotal(cartItems, orderItems, disc = ""):
         itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
 
         if disc:
-            itemTotal -= getDiscountTotal(disc, itemTotal)
+            discount = getDiscountTotal(disc, itemTotal)
+            total_discount += discount
+            itemTotal -= discount
 
         if itemTotal > 0:
             total += itemTotal
 
-    return total
+    return total, total_discount
 
 def getDealerTotal(orderItems, dealer):
     itemSubTotal = 0
@@ -695,23 +700,27 @@ def invoiceDealer(request):
             discount = Discount.objects.filter(codeName=sessionDiscount).first()
             total = getDealerTotal(orderItems, discount, dealer)
             context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'dealer': dealer}
+    event = Event.objects.get(default=True)
+    context['event'] = event
     return render(request, 'registration/dealer-checkout.html', context)
 
 
 def addAsstDealer(request):
     context = {'attendee': None, 'dealer': None}
     try:
-      dealerId = request.session['dealer_id']
+        dealerId = request.session['dealer_id']
     except Exception as e:
-      return render(request, 'registration/dealer/dealerasst-add.html', context)
+        return render(request, 'registration/dealer/dealerasst-add.html', context)
 
     dealer = Dealer.objects.get(id=dealerId)
     if dealer.attendee:
-      assts = list(DealerAsst.objects.filter(dealer=dealer))
-      assistants = []
-      if assts:
-          assistants = model_to_dict(assts)
-      context = {'attendee': dealer.attendee, 'dealer': dealer, 'assistants': assistants}
+        assts = list(DealerAsst.objects.filter(dealer=dealer))
+        assistants = []
+        if assts:
+            assistants = model_to_dict(assts)
+        context = {'attendee': dealer.attendee, 'dealer': dealer, 'assistants': assistants}
+    event = Event.objects.get(default=True)
+    context['event'] = event
     return render(request, 'registration/dealer/dealerasst-add.html', context)
 
 def checkoutAsstDealer(request):
@@ -1640,6 +1649,7 @@ def getCart(request):
     sessionItems = request.session.get('cart_items', [])
     sessionOrderItems = request.session.get('order_items', [])
     discount = request.session.get('discount', "")
+    event = None
     if not sessionItems and not sessionOrderItems:
         context = {'orderItems': [], 'total': 0, 'discount': {}}
         request.session.flush()
@@ -1664,13 +1674,14 @@ def getCart(request):
         if discount:
 	    discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0: discount = discount.first()
-        total = getTotal(cartItems, [], discount)
+        total, total_discount = getTotal(cartItems, [], discount)
 
         hasMinors = False
         for cart in cartItems:
             cartJson = json.loads(cart.formData)
             pda = cartJson['attendee']
-            evt = Event.objects.get(name=cartJson['event']).eventStart
+            event = Event.objects.get(name=cartJson['event'])
+            evt = event.eventStart
             tz = timezone.get_current_timezone()
             birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
             age_at_event = evt.year - birthdate.year - ((evt.month, evt.day) < (birthdate.month, birthdate.day))
@@ -1695,7 +1706,16 @@ def getCart(request):
             orderItem = {'attendee': pda, 'priceLevel': priceLevel, 'options': options}
             orderItems.append(orderItem)
 
-        context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'hasMinors': hasMinors}
+        if event is None:
+            event = Event.objects.get(default=True)
+        context = {
+            'event' : event,
+            'orderItems': orderItems,
+            'total': total,
+            'total_discount' : total_discount,
+            'discount': discount,
+            'hasMinors': hasMinors
+        }
     return render(request, 'registration/checkout.html', context)
 
 def saveCart(cart):
@@ -1709,11 +1729,21 @@ def saveCart(cart):
 
     event = Event.objects.get(name=evt)
 
-    attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], address1=pda['address1'], address2=pda['address2'],
-                        city=pda['city'], state=pda['state'], country=pda['country'], postalCode=pda['postal'],
+    attendee = Attendee(firstName=pda['firstName'], lastName=pda['lastName'], 
                         phone=pda['phone'], email=pda['email'], birthdate=birthdate,
                         emailsOk=bool(pda['emailsOk']), volunteerContact=len(pda['volDepts']) > 0, volunteerDepts=pda['volDepts'],
                         surveyOk=bool(pda['surveyOk']), aslRequest=bool(pda['asl']))
+    
+    if event.collectAddress:
+        try:
+            attendee.address1=pda['address1']
+            attendee.address2=pda['address2']
+            attendee.city=pda['city']
+            attendee.state=pda['state']
+            attendee.country=pda['country']
+            attendee.postalCode=pda['postal']
+        except KeyError:
+            logging.error("Supposed to be collecting addresses, but wasn't provided by form!")
     attendee.save()
 
     badge = Badge(badgeName=pda['badgeName'], event=event, attendee=attendee)
@@ -1791,6 +1821,7 @@ def cancelOrder(request):
     return JsonResponse({'success': True})
 
 def checkout(request):
+    event = Event.objects.get(default=True)
     sessionItems = request.session.get('cart_items', [])
     cartItems = list(Cart.objects.filter(id__in=sessionItems))
     orderItems = request.session.get('order_items', [])
@@ -1810,7 +1841,7 @@ def checkout(request):
     if orderItems:
         orderItems = list(OrderItem.objects.filter(id__in=orderItems))
 
-    subtotal = getTotal(cartItems, orderItems, discount)
+    subtotal, _ = getTotal(cartItems, orderItems, discount)
 
     if subtotal == 0:
         status, message, order = doZeroCheckout(discount, cartItems, orderItems)
@@ -1821,7 +1852,8 @@ def checkout(request):
         try:
             sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
-            logger.exception("Error sending RegistrationEmail - zero sum.")
+            logger.error("Error sending RegistrationEmail - zero sum.")
+            logger.exception(e)
             registrationEmail = getRegistrationEmail(event)
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail)})
         return JsonResponse({'success': True})
@@ -1878,17 +1910,18 @@ def checkout(request):
         status, message, order = doCheckout(pbill, total, discount, cartItems, orderItems, porg, pcharity, ip)
 
     if status:
+        # Delete cart when done
+        cartItems = Cart.objects.filter(id__in=sessionItems)
+        cartItems.delete()
         request.session.flush()
         try:
             sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
-            try: 
-                event = Event.objects.get(default=True)
-                registrationEmail = event.registrationEmail
-            except:
-                registrationEmail = settings.APIS_DEFAULT_EMAIL
+            event = Event.objects.get(default=True)
+            getRegistrationEmail(event)
             
-            logger.exception("Error sending RegistrationEmail.")
+            logger.error("Error sending RegistrationEmail.")
+            logger.exception(e)
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail)})
         return JsonResponse({'success': True})
     else:
@@ -2135,6 +2168,7 @@ def getTableSizes(request):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 def getSessionAddresses(request):
+    event = Event.objects.get(default=True)
     sessionItems = request.session.get('cart_items', [])
     if not sessionItems:
         #might be from dealer workflow, which is order items in the session
@@ -2148,20 +2182,29 @@ def getSessionAddresses(request):
                  'address1': oi.badge.attendee.address1, 'address2': oi.badge.attendee.address2,
                  'city': oi.badge.attendee.city, 'state': oi.badge.attendee.state, 'country': oi.badge.attendee.country,
                  'postalCode': oi.badge.attendee.postalCode} for oi in orderItems]
-        context = {'addresses': data}
     else:
         data = []
         cartItems = list(Cart.objects.filter(id__in=sessionItems))
         for cart in cartItems:
             cartJson = json.loads(cart.formData)
             pda = cartJson['attendee']
-            cartItem = {'fname': pda['firstName'], 'lname': pda['lastName'], 'email': pda['email'],
-                        'address1': pda['address1'], 'address2': pda['address2'],
-                        'city': pda['city'], 'state': pda['state'], 'postalCode': pda['postal'],
-                        'country': pda['country']}
+            cartItem = {
+                'fname': pda['firstName'],
+                'lname': pda['lastName'],
+                'email': pda['email'],
+                'phone': pda['phone'],
+            }
+            if event.collectAddress:
+                cartItem.update({
+                    'address1': pda['address1'],
+                    'address2': pda['address2'],
+                    'city': pda['city'], 
+                    'state': pda['state'],
+                    'postalCode': pda['postal'],
+                    'country': pda['country']
+                })
 
             data.append(cartItem)
-        context = {'addresses': data}
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 @csrf_exempt
@@ -2194,6 +2237,7 @@ def completeSquareTransaction(request):
         order.status = "Complete"
         order.settledDate = datetime.now()
         order.notes = json.dumps({
+            'type' : 'square',
             'clientTransactionId' : clientTransactionId,
             'serverTransactionId' : serverTransactionId
         })
@@ -2218,6 +2262,7 @@ def completeCashTransaction(request):
     order.status = "Complete"
     order.settledDate = datetime.now()
     order.notes = json.dumps({
+        'type'     : 'cash',
         'tendered' : tendered
     })
     order.save()

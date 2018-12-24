@@ -13,7 +13,7 @@ from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedTabularInline, NestedModelAdmin
 
-from django.contrib import messages
+from django.contrib import messages, auth
 from django.contrib.admin.models import LogEntry, DELETION
 from django.utils.html import escape
 
@@ -30,8 +30,33 @@ admin.site.site_header = 'APIS Backoffice'
 admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
 admin.site.register(Event)
+admin.site.register(Charity)
 admin.site.register(TableSize)
 admin.site.register(Cart)
+
+def disable_two_factor(modeladmin, request, queryset):
+    for user in queryset:
+        obj = user.totp_devices.filter(user=user)
+        obj.delete()
+        obj = user.u2f_keys.filter(user=user)
+        obj.delete()
+        obj = user.backup_codes.filter(user=user)
+        obj.delete()
+disable_two_factor.short_description = 'Disable 2FA'
+
+class UserProfileAdmin(auth.admin.UserAdmin):
+    model = User
+    list_display = ('username', 'email', 'first_name', 'last_name', 'two_factor_enabled')
+    actions = [disable_two_factor,]
+
+    def two_factor_enabled(self, obj):
+        return obj.totp_devices.first() is not None or \
+               obj.u2f_keys.first() is not None
+    two_factor_enabled.boolean = True
+    two_factor_enabled.short_description = '2FA'
+
+admin.site.unregister(User)
+admin.site.register(User, UserProfileAdmin)
 
 class FirebaseAdmin(admin.ModelAdmin):
     list_display = ('name', 'token', 'closed')
