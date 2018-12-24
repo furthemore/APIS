@@ -1,0 +1,19 @@
+{% extends "registration/master.html" %}
+
+{% block content %}
+	<div class="tab-content">
+	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+		<h1>Welcome</h1>
+		<hr>
+                <p>
+                  APIS has been succesfully set up, but no default event was found.
+                  APIS uses the values of the default event to control how these pages work,
+                  and what time each page should be available.
+                </p>
+                <p>
+                  To get started, please <a href="{% url 'admin:registration_event_add' %}">add an event</a>
+                  and set it as the default in the admin panel.
+                </p>
+	</div>
+	</div>
+{% endblock %}

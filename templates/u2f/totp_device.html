@@ -1,0 +1,47 @@
+{% extends "u2f/base.html" %}
+{% load argonauts %}
+{% load widget_tweaks %}
+{% load i18n %}
+{% block title %}{% trans "Add TOTP Device" %}{% endblock title %}
+
+{% block content %}
+{{ block.super }}
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4">
+      <h1>Two Factor Settings</h1>
+      <p>{% trans 'Scan this in your authenticator app:' %}</p>
+
+      {{ qr_svg|safe }}
+
+      <p>
+        {% trans "Or, if you can't scan a QR Code, enter this key as a time-based account:" %} <tt>{{ base32_key }}</tt>
+      </p>
+
+      <p>
+        {% trans 'Then, enter the token it gives you.' %}
+      </p>
+
+      <form method="POST" class="form-inline">
+        {% csrf_token %}
+        
+        {% for hidden_field in form.hidden_fields %}
+          {{ hidden_field }}
+        {% endfor %}
+        <input type="hidden" name="base32_key" value="{{ base32_key }}">
+
+        {% for field in form.visible_fields %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {% render_field field class="form-control" autofocus="autofocus" %}
+            {% if field.help_text %}
+              <small class="help-block">{{ field.help_text }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+        
+        <button class="btn btn-success" value="backup" name="type">{% trans 'Submit' %}</button>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}

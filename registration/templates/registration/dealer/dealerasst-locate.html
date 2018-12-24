@@ -22,7 +22,7 @@
         <h4 class="modal-title" id="myModalLabel">Already Paid</h4>
       </div>
       <div class="modal-body">
-        <p>Your application has already been verified and paid for. If you need to change any information on your application, contact <a href="mailto:exhibitions@furrydelphia.org">exhibitions@furrydelphia.org</a>.</p>
+        <p>Your application has already been verified and paid for. If you need to change any information on your application, contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a>.</p>
       </div>
     </div>
   </div>
@@ -31,7 +31,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Partners - Furrydelphia 2017</h1>
+		<h1>Dealer Partners - {{ event }}</h1>
 		<p>Please enter the email on your dealer application.</p>
 		<hr>
 

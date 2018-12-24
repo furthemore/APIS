@@ -1,4 +1,5 @@
 {% extends "registration/master_admin.html" %}
+{% load admin_urls %}
 
 {% block content %}
 
@@ -68,7 +69,7 @@
                 <button class="btn btn-secondary my-2 my-sm-0" type="submit">
                     Search <i class="fas fa-search"></i>
                 </button>
-                <a href="/apis/admin/registration/attendee/add/" class="btn btn-success my-2 my-sm-0" target="_blank">
+                <a href="{% url 'admin:registration_attendee_add' %}" class="btn btn-success my-2 my-sm-0" target="_blank">
                     Add Attendee <i class="fas fa-plus-circle"></i>
                 </a>
             </form>
@@ -94,7 +95,7 @@
                   <td class="results">{{ badge.badgeName }}</td>
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
-                    <a target="_blank" href="/apis/admin/registration/badge/{{ badge.id }}" class="btn btn-info" title="Edit attendee"><i class="fas fa-edit"></i></a>
+                    <a target="_blank" href="{% url 'admin:registration_badge_change' badge.id %}" class="btn btn-info" title="Edit attendee"><i class="fas fa-edit"></i></a>
                     {% if badge.abandoned == "Paid" or badge.abandoned == "Comp" %}
                       <a href="#" disabled="disabled" class="btn btn-success" title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
                     {% else %}
@@ -110,6 +111,9 @@
       </div>
       <div class="col-md-6">
         <div class="well">
+        <div class="alert alert-danger" id="cart-error" role="alert">
+          An error occurred.
+        </div>
           <div class="row"><div class="col-md-8">
             <h2>Cart&nbsp;
               <a id="refresh_button" href="#" title="Refresh">
@@ -221,6 +225,10 @@
         }
 
         #client-error {
+            display: none;
+        }
+
+        #cart-error {
             display: none;
         }
     </style>
@@ -391,6 +399,7 @@ $(document).ready(function () {
     });
 
     refresh_cart = function() {
+      $("#cart-error").fadeOut();
       $.getJSON("{% url 'onsiteAdminCart' %}", function(data) {
         cartData = data;
         var enable_print = false;
@@ -436,6 +445,9 @@ $(document).ready(function () {
           get_printable();
         }
 
+      })
+      .fail(function () {
+          $("#cart-error").html("A server error occured while refreshing the cart").fadeIn();
       });
     };
 
@@ -523,12 +535,11 @@ $(document).ready(function () {
             'change' : change
         }
 
-        $.getJSON("https://10.0.18.123:5000/print/drawer", data);
+        $.getJSON("{{ printer_uri }}/print/drawer", data);
 
         alert("Change: $" + change);
 
     });
-
 
     
     var remove_badge = function (e) {

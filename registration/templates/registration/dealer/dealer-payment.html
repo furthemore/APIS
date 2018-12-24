@@ -1,12 +1,14 @@
 {% extends "registration/master.html" %}
 
+{% load registration_tags %}
+
 {% block content %}
 
 
 {% if dealer and not dealer.approved%}
 
-<h1>Dealer Registration - Furrydelphia 2019</h1>
-<p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furrydelphia.org">exhibitions@furrydelphia.org</a> if you feel this is in error or have any questions.</p>
+<h1>Dealer Registration - {{event}}</h1>
+<p>Your dealer application was not approved. Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if you feel this is in error or have any questions.</p>
 
 {% elif dealer and dealer.approved %}
 
@@ -31,7 +33,7 @@
       </div>
       <div class="modal-body">
         <p>Due to state and federal laws, minors may not sell merchandice in our Marketplace. You must be 18 years of age or older before the start of the convention to be a dealer. </p>
-	<p>Please contact <a href="mailto:exhibitions@furrydelphia.org">exhibitions@furrydelphia.org</a> if you have any questions.</p>
+	<p>Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -39,89 +41,12 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Registration - Furrydelphia 2019</h1>
+		<h1>Dealer Registration - {{event}}</h1>
 
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furrydelphia.org'>exhibitions@furrydelphia.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
-		<hr>
-			
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
-                    <div class="col-sm-4">
-                        <input type="text" id="firstName" value="{{dealer.attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
-                    </div>
-		    <div class="col-sm-5">
-                        <input type="text" id="lastName" value={{dealer.attendee.lastName}} placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" value="{{dealer.attendee.email}}" class="form-control" disabled />
-                        <label>
-                            <input type="checkbox" id="contact"> <span class="control-label" >Please keep me up to date with convention related information.</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" id="survey"> <span class="control-label" >Please send me the post-con survey.</span>
-                        </label>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-                <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="phone" id="phone" value="{{dealer.attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" value="{{dealer.attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" value="{{dealer.attendee.address2}}" placeholder="Address Line 2" class="form-control">
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State <span style="color:red;">*</span></label>
-		    <div class="col-sm-4">
-			<input type="text" name="city" id="city" value="{{dealer.attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
-		    </div>
-                    <div class="col-sm-5">
-			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">ZIP/Country <span style="color:red;">*</span></label>
-		    <div class="col-sm-3">
-			<input type="text" name="zip" id="zip" value="{{dealer.attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
-		    </div>
-                    <div class="col-sm-6">
-			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
-				
-		<hr/>
+        {% show_attendee_form badge.attendee emailOptions=True %}
 
-                <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" id="birthDate" value="{{dealer.attendee.birthdate|date:"m/d/Y"}}" class="form-control" placeholder="mm/dd/yyyy" required disabled>
-			<p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
-
-		<hr/>
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
@@ -160,6 +85,15 @@
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
+            <div class="form-group">
+                    <label for="website" class="col-sm-3 control-label">Logo</label>
+                    <div class="col-sm-9">
+                        <input type="url" id="logo" name="logo" value="{{dealer.logo}}" placeholder="http://www.mysite.org/logo.png" class="form-control form-control-text" data-error="Please enter a full URL here. Ex: http://www.google.com/image.png" />
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+            <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location map.</div>
+                </div>
+
                 <div class="form-group">
                     <label for="description" class="col-sm-3 control-label">Description of Wares <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
@@ -219,8 +153,9 @@
                 <div class="form-group">
                     <label for="tables" class="col-sm-3 control-label">Assistant Information</label>
                     <div class="col-sm-9" id="partnerList">
-                        <input type="text" id="partner1" name="tables" class="form-control form-control-text" disabled />
-                        <input type="text" id="partner2" name="tables" class="form-control form-control-text" disabled />
+                        {% for asst in dealer.dealerasst_set.all %}
+                        <input type="text" value="{{asst}}, {{asst.email}}" class="form-control form-control-text" disabled />
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="form-group">
@@ -228,7 +163,7 @@
                     <div class="col-sm-9">
                         <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
                         <p class="help-block">
-                            If there is anyone who you would like your table placed next to or close to, please list them here. If they list you on their application form as well, we will do our best to put you together. Furrydelphia cannot guarantee these preferences will be met, but we will certainly try! Make sure anyone that you list in your application, lists you on their application as well!
+                            If there is anyone who you would like your table placed next to or close to, please list them here. If they list you on their application form as well, we will do our best to put you together. We cannot guarantee these preferences will be met, but we will certainly try! Make sure anyone that you list in your application, lists you on their application as well!
                         </p>
                     </div>
                 </div>
@@ -237,10 +172,17 @@
                     <div class="col-sm-9">
                         <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text" />
                         <p class="help-block">
-                            If there is anyone you are feuding with who you would like your table placed far away from, please list them here. You don't have to tell us why, just list their names. Furrydelphia cannot guarantee these preferences will be met, but we will certainly try!
+                            If there is anyone you are feuding with who you would like your table placed far away from, please list them here. You don't have to tell us why, just list their names. We cannot guarantee these preferences will be met, but we will certainly try!
                         </p>
                     </div>
                 </div>
+
+        <hr/>
+        <h3>Badge Level</h3>
+        <br/>
+        {% show_price_types %}
+        <br/>
+        <hr/>
 
 		<div class="form-group">
                     <div class="col-sm-6 col-sm-offset-6">
@@ -255,7 +197,7 @@
 
 {% else %}
 
-<h1>Dealer Registration - Furrydelphia 2019</h1>
+<h1>Dealer Registration - {{event}}</h1>
 <p>Your session has expired. Please use the link in your application acceptance email again to start over.</p>
 
 {% endif %}
@@ -263,6 +205,11 @@
 {% endblock %}
 
 {% block javascript %}
+<script>
+    var discount = {{event.dealerDiscount.amountOff|default:0.0}}
+    var adult=true;
+</script>
+<script type="text/javascript" src="/static/js/templates/price-types.js"></script>
  <script type="text/javascript">
 	var dealer = {{ jsonDealer|safe }} 
 	var attendee = {{ jsonAttendee|safe }} 
@@ -332,39 +279,6 @@
 			$("#license").val("needed").attr("disabled", "disabled");
 		} else {
 			$("#license").val("").removeAttr("disabled");
-		}
-	});
-
-	$("#billing").on("change", function() {		
-		if ($(this).is(":checked")) {
-			$("#billingfirstname").val(attendee.firstName).attr("disabled", "disabled");
-			$("#billinglastname").val(attendee.lastName).attr("disabled", "disabled");
-			$("#billingadd1").val(attendee.address1).attr("disabled", "disabled");
-			$("#billingadd2").val(attendee.address2).attr("disabled", "disabled");
-			$("#billingcity").val(attendee.city).attr("disabled", "disabled");
-			$("#billingstate").val(attendee.state).attr("disabled", "disabled");
-			$("#billingzip").val(attendee.postalCode).attr("disabled", "disabled");
-			$("#billingcountry").val(attendee.country).attr("disabled", "disabled");
-			$("form").validator('validate');
-		} else {
-			$("#billingfirstname").val("").removeAttr("disabled");
-			$("#billinglastname").val("").removeAttr("disabled");
-			$("#billingadd1").val("").removeAttr("disabled");
-			$("#billingadd2").val("").removeAttr("disabled");
-			$("#billingcity").val("").removeAttr("disabled");
-			$("#billingstate").val("VA").removeAttr("disabled");
-			$("#billingzip").val("").removeAttr("disabled");
-			$("#billingcountry").val("US").removeAttr("disabled");
-		}
-	});
-
-	$("#billingcountry").on("change", function() {
-		if ($(this).val() == "US"){
-			$("#billingstate").val("VA").removeAttr("disabled").attr("required", "required");
-			$("#billingzip").val("").removeAttr("disabled").attr("required", "required");
-		} else {
-			$("#billingstate").val("").attr("disabled", "disabled").removeAttr("required");
-			$("#billingzip").val("").attr("disabled", "disabled").removeAttr("required");
 		}
 	});
 
@@ -505,14 +419,14 @@
 				'businessName':$("#businessName").val(), 'website':$("#website").val(),
 				'license':$("#license").val(), 'wifi': false, 'power':$("#power").is(':checked'),
                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
-				'description': $("#description").val(),  
-				'reception': false, 'artShow': false, 
+				'description': $("#description").val(), 'logo': $("#logo").val(),
+				'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
 				'breakfast': false, 'switch': $('#switch').is(':checked'),
 				'buttonOffer': false, 'asstbreakfast': false,
 			},
-			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': 'Furrydelphia 2019'
+            'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
+            'event': '{{event}}'
 		};
 		
 
@@ -529,7 +443,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.")
+                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.dealerEmail }} for assistance.")
 			}
 			$("#checkout").removeAttr("disabled");
 		    },
@@ -539,7 +453,7 @@
                             window.location = "{% url 'invoiceDealer' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.dealerEmail }} for assistance.");
 			}
                     }
 		});

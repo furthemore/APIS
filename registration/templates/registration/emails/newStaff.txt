@@ -1,0 +1,5 @@
+Welcome to Furthemore Staff! 
+If you have already registered as an attendee, do not use this form. Contact staff services to get a link to the correct registration form.
+Use this link to register as staff: https://www.furthemore.org/apis/registration/newstaff/{{registrationToken}}
+
+Signature
