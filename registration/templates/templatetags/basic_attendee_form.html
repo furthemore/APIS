@@ -1,0 +1,92 @@
+
+<hr>
+    
+<div class="form-group">
+    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
+    <div class="col-sm-4">
+        <input type="text" id="firstName" value="{{attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
+    </div>
+    <div class="col-sm-5">
+        <input type="text" id="lastName" value="{{attendee.lastName}}" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
+    <div class="col-sm-9">
+        <input type="email" id="email" value="{{attendee.email}}" class="form-control" />
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+</div>
+
+{% if emailOptions %}
+<div class="form-group">
+   <label class="col-sm-3">&nbsp;</label>
+   <div class="col-sm-9">
+       <label>
+           <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+       </label>
+       <label>
+           <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the post-con survey.</span>
+       </label>
+   </div>
+</div>
+{% endif %}
+
+<div class="form-group">
+    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
+    <div class="col-sm-9">
+        <input type="phone" id="phone" value="{{attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
+    <div class="col-sm-9">
+        <input type="text" name="add1" id="add1" value="{{attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+    <div class="col-sm-9">
+        <input type="text" name="add2" id="add2" value="{{attendee.address2}}" placeholder="Address Line 2" class="form-control">
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="city" class="col-sm-3 control-label">City/State <span style="color:red;">*</span></label>
+    <div class="col-sm-4">
+        <input type="text" name="city" id="city" value="{{attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
+    </div>
+    <div class="col-sm-5">
+        <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="country" class="col-sm-3 control-label">ZIP/Country <span style="color:red;">*</span></label>
+    <div class="col-sm-3">
+        <input type="text" name="zip" id="zip" value="{{attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
+    </div>
+    <div class="col-sm-6">
+        <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
+    <div class="col-sm-9">
+        <input type="date" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required."/>
+        <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+</div>
+
+

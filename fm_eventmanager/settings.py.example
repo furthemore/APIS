@@ -15,10 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-TEMPLATE_DIRS = (
-        BASE_DIR + '/templates/',
-)
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
@@ -50,13 +46,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'widget_tweaks',
     'mathfilters',
     'nested_inline',
-    'registration',
-    'volunteer.apps.VolunteerConfig',
     'events.apps.EventsConfig',
     'import_export',
     'django_extensions',
+    'django_u2f',
+    'registration',
+    'volunteer.apps.VolunteerConfig',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -140,6 +138,10 @@ USE_TZ = True
 
 SITE_ID = 1
 
+# Login handling for 2-Factor authentication
+LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
+LOGIN_URL = 'u2f:login'
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
@@ -150,23 +152,30 @@ STATIC_ROOT = '/var/www/APIS/static/'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60*60  # 1hr
 
-# Sandbox values - DO NOT check in production ids
+# Authorize.net (deprecated) 
 AUTHNET_NAME = '426rwVfr3G47'
 AUTHNET_TRANSACTIONKEY = '399UTfznCVrsa224'
 
-# Sandbox values = DO NOT check in production ids
-SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_zrseak3Van14Stv3c3w'
-SQUARE_ACCESS_TOKEN = 'sandbox-sq0atb-Nearskgf128592ksreeQ9A'
-SQUARE_LOCATION_ID = 'CBASEJrWL7cRwRMYgrDn6G8A70ogAQ'
+# Square API keys
+SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_xxxxxxxxxxxxxxxxxxx'
+SQUARE_ACCESS_TOKEN = 'sandbox-sq0atb-xxxxxxxxxxxxxxxxxxxxxx'
+SQUARE_LOCATION_ID = 'xxxxxxxxx...'
 SQUARE_CURRENCY = 'USD'
 
-# Sandbox values - DO NOT check in production credentials
+# Default email to display as part of error messages
+APIS_DEFAULT_EMAIL = "registration@example.com"
+APIS_DEALER_HEAD = "marketplace@example.com"
+APIS_STAFF_HEAD = "staff@example.com"
+
 EMAIL_HOST = 'smtp.mailgun.org'
 EMAIL_HOST_USER = 'postmaster@apis.example.com'
 EMAIL_HOST_PASSWORD = '470c8710296572192aebeafcafedead2-2b4c5a6c-8c58af2d'
 
 # Return channel for Android register application
 REGISTER_KEY = 'df14e4d5469e801dbc8e1df4eebd97b3'
+
+# Print handler for cash drawer and receipts
+REGISTER_PRINTER_URI = 'https://print.example.com:5000'
 
 # Firebase/Pushy.me cloud-push API key
 CLOUD_MESSAGING_KEY = "AAA..."

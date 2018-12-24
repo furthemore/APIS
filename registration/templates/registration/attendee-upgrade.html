@@ -5,11 +5,10 @@
 
 {% if attendee %}
 
-
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furrydelphia 2019</h1>
+		<h1>Registration Upgrade - {{badge.event}}</h1>
 
 		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
@@ -27,7 +26,7 @@
 
 		<h3>Choose a different attendee level</h3>
 
-        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:registration@reg.furrydelphia.org">registration@reg.furrydelphia.org</a>.</div>
+        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:{{badge.event.registrationEmail}}">{{ badge.event.registrationEmail }}</a>.</div>
 
 		<div class="row" id="levelContainer"></div>
 
@@ -45,7 +44,7 @@
 
 {% else %}
 
-<h1>Registration Upgrade - Furrydelphia 2019</h1>
+<h1>Registration Upgrade - {{ event.name }}</h1>
 <p>Your session has expired. Please use the link in your email again to start over.</p>
 
 {% endif %}
@@ -70,6 +69,14 @@
     </div>
 </script>
 
+<script type="text/html" id="optionPlainTextTemplate">
+    <div class="form-group">
+        <label class="col-sm-3 control-label" data-content="name"></label>
+        <div class="col-sm-9">
+            <div data-content="content"></div>
+        </div>
+    </div>
+</script>
 <script type="text/html" id="optionBoolTemplate">
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
@@ -222,6 +229,12 @@
 			var required = "";
 			if (val.required) {required = "required";}
 			switch (val.type){
+                case "plaintext":
+                    var template = $("#optionPlainTextTemplate");
+                    $("#optionsContainer").loadTemplate(template, {
+                        'content': val.description
+                    }, {append: true});
+                    break;
 				case "bool":
 					var template = $("#optionBoolTemplate");
 					if (val.required) {template = $("#optionBoolReqTemplate");}
@@ -262,10 +275,6 @@
                     if (opts && opts[0]) {
                         $("#option_" + val.id).val(opts[0].value);
                     }
-					break;
-				case "Jersey":
-					break;
-				case "StaffJersey":
 					break;
 				default:
 					if (val.list == []){break;}
@@ -322,7 +331,7 @@
 		var data = {
 			'attendee': {'id': attendee.id,}, 
             'badge': {'id': badge.id,},
-            'event': 'Furrydelphia 2019',
+            'event': '{{ event }}',
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
 		};
 		
@@ -340,7 +349,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.")
+                alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistence.")
 			}
 			$("#checkout").removeAttr("disabled");
 		    },
@@ -350,7 +359,7 @@
                             window.location = "{% url 'invoiceUpgrade' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furrydelphia.org for assistence.");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistence.");
 			}
                     }
 		});

@@ -3,12 +3,11 @@
 {% block content %}
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration - Furrydelphia 2019</h1>
+		<h1>Registration - {{event}}</h1>
 		<hr>
-        <p>Registration for Furrydelphia 2019 is closed. For onsite registration, click <a href="{% url 'onsite' %}">here</a> to complete 
-        your onsite registration information.  If you have any questions please contact 
-		   <a href='mailto:registration@furrydelphia.org'>registration@reg.furrydelphia.org</a></p>
-		<p style='float:right;'><a href='http://www.furrydelphia.org'>Back to Main Page</a></p>
+		<p>Registration for {{event}} is closed. If you have any questions please contact 
+		   <a href='mailto:{{event.registrationEmail}}'>{{event.registrationEmail}}</a></p>
+		<p style='float:right;'><a href='/'>Back to Main Page</a></p>
 	</div>
 	</div>
 {% endblock %}

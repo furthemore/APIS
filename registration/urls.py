@@ -1,5 +1,6 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 
 from . import views
 
@@ -21,6 +22,12 @@ urlpatterns = [
     url(r'^staff/info/?$', views.infoStaff, name='infoStaff'),
     url(r'^staff/add/?$', views.addStaff, name='addStaff'),
     url(r'^staff/(?P<guid>\w+)/?$', views.staff, name='staff'),
+
+    url(r'^newstaff/done/?$', views.staffDone, name='doneNewStaff'),
+    url(r'^newstaff/lookup/?$', views.findNewStaff, name='findNewStaff'),
+    url(r'^newstaff/info/?$', views.infoNewStaff, name='infoNewStaff'),
+    url(r'^newstaff/add/?$', views.addNewStaff, name='addNewStaff'),
+    url(r'^newstaff/(?P<guid>\w+)/?$', views.newStaff, name='newstaff'),    
 
     url(r'^dealer/?$', views.newDealer, name='newDealer'),
     url(r'^dealer/addNew/?$', views.addNewDealer, name='addNewDealer'),
@@ -71,6 +78,7 @@ urlpatterns = [
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),
+    url(r'^adultpricelevels/?$', views.getAdultPriceLevels, name='adultpricelevels'),
     url(r'^minorpricelevels/?$', views.getMinorPriceLevels, name='minorpricelevels'),
     url(r'^accompaniedpricelevels/?$', views.getAccompaniedPriceLevels, name='accompaniedpricelevels'),
     url(r'^freepricelevels/?$', views.getFreePriceLevels, name='freepricelevels'),
@@ -90,3 +98,9 @@ urlpatterns = [
     url(r'^firebase/lookup/?', views.firebaseLookup, name='firebaseLookup'),
 
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

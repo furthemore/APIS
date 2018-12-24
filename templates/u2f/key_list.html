@@ -1,0 +1,56 @@
+{% extends "u2f/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "U2F Keys" %}{% endblock %}
+
+{% block content %}
+{{ block.super }}
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+
+    <h1>Two Factor Settings</h1>
+    <a class="btn btn-default" href="{% url 'u2f:two-factor-settings' %}"><span class="glyphicon glyphicon-arrow-left"></span> {% trans 'Back to settings' %}</a>
+
+    <h2>U2F Keys</h2>
+    {% if not object_list %}
+      <div class="alert alert-info" role="alert">
+        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+        <span class="sr-only">Error:</span>
+        <b>{% trans "No U2F keys have been added." %}</b>
+      </div>
+    {% else %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>{% trans 'Added on' %}</th>
+          <th>{% trans 'Last used on' %}</th>
+          <th>{% trans 'Delete' %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key in object_list %}
+        <tr>
+          <td>{{ key.created_at }}</td>
+          {% trans 'Never' as never %}
+          <td>{{ key.last_used_at|default:never }}</td>
+          <td>
+            <form method="post">{% csrf_token %}
+              <input name="key_id" type="hidden" value="{{ key.pk }}">
+              <button class="btn btn-danger" type="submit" name="delete">
+                <span class="glyphicon glyphicon-trash"></span>
+                <span class="sr-only">{% trans 'Delete' %}</span>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <a class="btn btn-success" href="{% url 'u2f:add-u2f-key' %}">
+      <span class="glyphicon glyphicon-plus-sign"></span> {% trans 'Add another key' %}
+    </a>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "u2f/base.html" %}
+{% load argonauts %}
+{% load widget_tweaks %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% trans "Login 2-Factor" %}{% endblock %}
+
+{% block content %}
+{{ block.super }}
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+
+    <h1>{% trans "Two Factor Authentication" %}</h1>
+    <div class="alert alert-warning">
+      <span class="glyphicon glyphicon-lock"></span>
+      <b>{% trans 'Please verify one of the authentication methods below.' %}</b>
+    </div>
+
+    {% if forms.u2f %}
+    <div class="method u2f">
+      <h3>
+      {% trans 'Insert your Security Key' %}
+      </h3>
+      <p>
+      {% blocktrans %}
+      If your Security Key has a button, tap it.
+      If it doesn't, remove and re-insert it.
+      {% endblocktrans %}
+      </p>
+
+      <div class="alert alert-danger" id="u2f-status" style="font-weight: bold"></div>
+      <form method="post" id="u2f-form" class="form">
+          {% csrf_token %}
+          
+          {% for hidden_field in forms.backup.hidden_fields %}
+            {{ hidden_field }}
+          {% endfor %}
+
+          {% for field in forms.u2f.visible_fields %}
+            {% render_field field readonly="readonly" class="form-control" placeholder="Waiting for token..." %}
+          {% endfor %}
+          <input type="hidden" name="type" value="u2f">
+      </form>
+
+      <script type="application/json" id="django_u2f_request">
+        {{ forms.u2f.sign_request|json }}
+      </script>
+    </div>
+    {% endif %}
+
+    {% if forms.totp %}
+    <div class="method totp">
+      {% if forms.totp.errors and not forms.totp.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-warning-sign"></span>
+        <b>{% trans 'Check token and try again' %}</b>
+      </div>
+      {% endif %}
+
+      {% if forms.totp.non_field_errors %}
+      {% for error in forms.totp.non_field_errors %}
+      <div class="alert alert-danger">
+          <span class="glyphicon glyphicon-warning-sign"></span>
+	  <b>{{ error }}</b>
+      </div>
+      {% endfor %}
+      {% endif %}
+      <p>{% trans 'Enter an Authenticator (TOTP) Token:' %}</p>
+
+      <form method="post" class="form-inline">
+        {% csrf_token %}
+        
+        {% for hidden_field in forms.totp.hidden_fields %}
+          {{ hidden_field }}
+        {% endfor %}
+
+        {% for field in forms.totp.visible_fields %}
+          <div class="form-group">
+            {% render_field field class="form-control" autofocus="autofocus" placeholder="Token"%}
+            {% if field.help_text %}
+              <small class="help-block">{{ field.help_text }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <button class="btn btn-primary" value="totp" name="type">{% trans 'Submit' %}</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if forms.backup %}
+    <div class="method backup">
+      <h3>{% trans 'Use a backup code:' %}</h3>
+
+      <form method="POST" class="form-inline">
+        {% csrf_token %}
+        
+        {% for hidden_field in forms.backup.hidden_fields %}
+          {{ hidden_field }}
+        {% endfor %}
+
+        {% for field in forms.backup.visible_fields %}
+          <div class="form-group">
+            {% render_field field class="form-control" autofocus="autofocus" placeholder="Backup Code"%}
+            {% if field.help_text %}
+              <small class="help-block">{{ field.help_text }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+          <button class="btn btn-primary" value="backup" name="type">{% trans 'Submit' %}</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="{% static 'django_u2f/django_u2f.js' %}"></script>
+{% endblock %}

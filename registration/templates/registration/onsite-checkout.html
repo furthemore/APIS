@@ -82,19 +82,28 @@
         <form class="form-horizontal" role="form" data-toggle="validator">
         
         <h3>Extra Donations</h3>
-        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you would like to make an extra gift to our annual charity, Frisky's, or to the convention, please enter it below.</div>
+        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+        {% if event.charity %}
+            If you would like to make an extra gift to our annual charity, 
+            {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
+        {% else %}
+            If you would like to make an extra gift to the convention, please enter it below.
+        {% endif %}
+        </div>
+        {% if event.charity %}
         <div class="form-group">
-            <label for="donateCharity" class="col-sm-3 control-label">Donate to Frisky's</label>
+            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
-                    <input type="number" id="donateCharity" class="form-control" placeholder="0.00" min="0" 
-                     step="0.01" pattern="\d*(\.\d{0,2})?">
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
                 </div>
             </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
         </div>
+        {% endif %}
         <div class="form-group">
-            <label for="donateOrg" class="col-sm-3 control-label">Donate to Furrydelphia</label>
+            <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
@@ -156,13 +165,13 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furrydelphia.org for assistence.")
+                        alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
             },
                     "success": function (result, status) {
                         if (result.success) {
                 window.location.reload();
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furrydelphia.org for assistence.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
             }
                     }
         });
@@ -206,14 +215,14 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact registration@furrydelphia.org for assistence.")
+                        alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
             $("#checkout").removeAttr("disabled");
             },
                     "success": function (result, status) {
                         if (result.success) {
                 window.location = "{% url 'onsiteDone' %}";
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furrydelphia.org for assistence.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
                 $("#checkout").removeAttr("disabled");
             }
                     }

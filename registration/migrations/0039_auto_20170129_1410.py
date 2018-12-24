@@ -11,12 +11,16 @@ class Migration(migrations.Migration):
         ('registration', '0038_auto_20170128_1001'),
     ]
 
+   
     operations = [
-        migrations.RemoveField(
-            model_name='staffjersey',
-            name='jersey_ptr',
-        ),
+        # Removing columns isn't possible with sqlite backend:
+        # https://github.com/miguelgrinberg/Flask-Migrate/issues/17
+        #migrations.RemoveField(
+        #    model_name='staffjersey',
+        #    name='jersey_ptr',
+        #),
         migrations.DeleteModel(
             name='StaffJersey',
         ),
     ]
+    
