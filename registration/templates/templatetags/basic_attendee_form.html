@@ -42,6 +42,7 @@
     <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 </div>
 
+{% if event.collectAddress %}
 <div class="form-group">
     <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
     <div class="col-sm-9">
@@ -79,6 +80,14 @@
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
+{% else %}
+    <input type="hidden" name="address1" value="">
+    <input type="hidden" name="address2" value="">
+    <input type="hidden" name="city" value="">
+    <input type="hidden" name="state" value="">
+    <input type="hidden" name="country" value="">
+    <input type="hidden" name="zip" value="">
+{% endif %}
 
 <div class="form-group">
     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>

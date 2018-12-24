@@ -6,6 +6,7 @@ from decimal import *
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
 
 # Lookup and supporting tables.
 class LookupTable(models.Model):
@@ -93,6 +94,12 @@ class PriceLevel(models.Model):
     def __str__(self):
       return self.name
 
+class Charity(LookupTable):
+    url = models.CharField(max_length=500,
+        verbose_name="URL",
+        help_text="Charity link",
+        blank=True)
+
 class Event(LookupTable):
     dealerRegStart = models.DateTimeField(verbose_name="Dealer Registration Start",
         help_text="Start date and time for dealer applications")
@@ -129,39 +136,32 @@ class Event(LookupTable):
         verbose_name="Collect Address",
         help_text="Disable to skip collecting a mailing address for each "
         "attendee.")
-    registrationEmail = models.CharField(length=200,
+    registrationEmail = models.CharField(max_length=200,
         verbose_name="Registration Email",
         help_text="Email to display on error messages for attendee registration",
         blank=True,
         default=settings.APIS_DEFAULT_EMAIL)
-    staffEmail = models.CharField(length=200,
+    staffEmail = models.CharField(max_length=200,
         verbose_name="Staff Email",
         help_text="Email to display on error messages for staff registration",
         blank=True,
         default=settings.APIS_DEFAULT_EMAIL)
-    dealerEmail = models.CharField(length=200,
+    dealerEmail = models.CharField(max_length=200,
         verbose_name="Dealer Email",
         help_text="Email to display on error messages for dealer registration",
         blank=True,
         default=settings.APIS_DEFAULT_EMAIL)
-    badgeTheme = models.CharField(length=200,
+    badgeTheme = models.CharField(max_length=200,
         verbose_name="Badge Theme",
         help_text="Name of badge theme to use for printing",
         blank=False,
         default='apis')
-    codeOfConduct = models.CharField(length=500,
+    codeOfConduct = models.CharField(max_length=500,
         verbose_name="Code of Conduct",
         help_text="Link to code of conduct agreement",
         blank=True,
         default='/code-of-conduct')
     charity = models.ForeignKey(Charity, null=True, blank=True, on_delete=models.SET_NULL)
-
-
-class Charity(Models.model):
-    url = models.CharField(length=500,
-        verbose_name="URL",
-        help_text="Charity link",
-        blank=True)
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -425,7 +425,7 @@ class DealerAsst(models.Model):
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-      return self.name
+        return self.name
 
 
 # Start order tables
@@ -442,6 +442,9 @@ class Cart(models.Model):
     formHeaders = models.TextField()
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
     transferedDate = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return "{0} {1}".format(self.form, self.enteredDate)
 
 class Order(models.Model):
     UNPAID = 'Unpaid'
@@ -475,6 +478,11 @@ class Order(models.Model):
             self.billingType,
             self.status,
             self.reference)
+
+    class Meta:
+        permissions = (
+            ("issue_refund", "Can create refunds"),
+        )
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)

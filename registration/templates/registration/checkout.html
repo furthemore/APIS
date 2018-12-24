@@ -1,97 +1,8 @@
 {% extends "registration/master.html" %}
-{% load settings %}
+{% load settings mathfilters %}
 
+{% block title %}| Checkout{% endblock %}
 {% block head %}
-    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
-
-    <script type="text/javascript">
-var paymentForm = new SqPaymentForm({
-
-  // Initialize the payment form elements
-  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
-  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
-  inputClass: 'form-control',
-
-  // Initialize the credit card placeholders
-  cardNumber: {
-    elementId: 'sq-card-number',
-    placeholder: '•••• •••• •••• ••••'
-  },
-  cvv: {
-    elementId: 'sq-cvv',
-    placeholder: 'CVV'
-  },
-  expirationDate: {
-    elementId: 'sq-expiration-date',
-    placeholder: 'MM/YY'
-  },
-  postalCode: {
-    elementId: 'sq-postal-code',
-    placeholder: '•••••'
-  },
-
-  // SqPaymentForm callback functions
-  callbacks: {
-
-    /*
-     * callback function: cardNonceResponseReceived
-     * Triggered when: SqPaymentForm completes a card nonce request
-     */
-    cardNonceResponseReceived: function(errors, nonce, cardData) {
-      if (errors) {
-        var errorList = "";
-
-        console.log("Encountered errors:");
-        errors.forEach(function(error) {
-          console.log('  ' + error.message);
-          errorList += error.message + "; ";
-        });
-        alert("One or more Square payment errors have occurred: " + errorList);
-		$("#checkout").removeAttr("disabled");
-        return;
-      }
-
-      document.getElementById('card-nonce').value = nonce;
-      doCheckout();
-
-    },
-
-    /*
-     * callback function: unsupportedBrowserDetected
-     * Triggered when: the page loads and an unsupported browser is detected
-     */
-    unsupportedBrowserDetected: function() {
-      /* PROVIDE FEEDBACK TO SITE VISITORS */
-    },
-    inputEventReceived: function(inputEvent) {
-      switch (inputEvent.eventType) {
-        case 'focusClassAdded':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'focusClassRemoved':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'errorClassAdded':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'errorClassRemoved':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'cardBrandChanged':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'postalCodeChanged':
-          /* HANDLE AS DESIRED */
-          break;
-      }
-    },
-  }
-});
-
-
-
-
-    </script>
 {% endblock %}
 
 {% block content %}
@@ -141,7 +52,11 @@ var paymentForm = new SqPaymentForm({
 			{% if discount %}
 				<div class="row">
 					<div class="col-sm-5 col-sm-offset-1">Discount - {{discount.codeName}}</div>
-					<div class="col-sm-2">- ${{discount.amountOff}}</div>   
+                    {% if discount.amountOff == 0 %}
+                    <div class="col-sm-2">- ${{total_discount|floatformat:2}}</div>
+                    {% else %}
+					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>   
+                    {% endif %}
 					<div class="col-sm-2">
 					</div>
 				</div>
@@ -151,7 +66,7 @@ var paymentForm = new SqPaymentForm({
 		{% endfor %}
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
-				<div class="col-sm-2"><h4>${{total}}</h4></div>   
+				<div class="col-sm-2"><h4>${{total|floatformat:2}}</h4></div>
 			</div>
 
 	
@@ -232,7 +147,7 @@ var paymentForm = new SqPaymentForm({
         </div>
 		<hr/>
 
-
+        {% if event.collectAddress %}
 		<h3>Billing Information</h3>
 
         {% if not hasMinors %}
@@ -302,7 +217,9 @@ var paymentForm = new SqPaymentForm({
 			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
                     </div>
 		</div>
-	<hr/>
+	    <hr/>
+        {% endif %}
+
 		<div class="form-group">
                     <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number<span style="color:red;">*</span></label>
                     <div class="col-sm-9">
@@ -332,6 +249,96 @@ var paymentForm = new SqPaymentForm({
 		<!-- </div> -->
  		</form>
 		</div>
+    
+        <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+        <script type="text/javascript">
+    var paymentForm = new SqPaymentForm({
+
+      // Initialize the payment form elements
+      applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+      locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+      inputClass: 'form-control',
+
+      // Initialize the credit card placeholders
+      cardNumber: {
+        elementId: 'sq-card-number',
+        placeholder: '•••• •••• •••• ••••'
+      },
+      cvv: {
+        elementId: 'sq-cvv',
+        placeholder: 'CVV'
+      },
+      expirationDate: {
+        elementId: 'sq-expiration-date',
+        placeholder: 'MM/YY'
+      },
+      postalCode: {
+        elementId: 'sq-postal-code',
+        placeholder: '•••••'
+      },
+
+      // SqPaymentForm callback functions
+      callbacks: {
+
+        /*
+         * callback function: cardNonceResponseReceived
+         * Triggered when: SqPaymentForm completes a card nonce request
+         */
+        cardNonceResponseReceived: function(errors, nonce, cardData) {
+          if (errors) {
+            var errorList = "";
+
+            console.log("Encountered errors:");
+            errors.forEach(function(error) {
+              console.log('  ' + error.message);
+              errorList += error.message + "; ";
+            });
+            alert("One or more Square payment errors have occurred: " + errorList);
+            $("#checkout").removeAttr("disabled");
+            return;
+          }
+
+          document.getElementById('card-nonce').value = nonce;
+          doCheckout();
+
+        },
+
+        /*
+         * callback function: unsupportedBrowserDetected
+         * Triggered when: the page loads and an unsupported browser is detected
+         */
+        unsupportedBrowserDetected: function() {
+          /* PROVIDE FEEDBACK TO SITE VISITORS */
+        },
+        inputEventReceived: function(inputEvent) {
+          switch (inputEvent.eventType) {
+            case 'focusClassAdded':
+              /* HANDLE AS DESIRED */
+              break;
+            case 'focusClassRemoved':
+              /* HANDLE AS DESIRED */
+              break;
+            case 'errorClassAdded':
+              /* HANDLE AS DESIRED */
+              break;
+            case 'errorClassRemoved':
+              /* HANDLE AS DESIRED */
+              break;
+            case 'cardBrandChanged':
+              /* HANDLE AS DESIRED */
+              break;
+            case 'postalCodeChanged':
+              /* HANDLE AS DESIRED */
+              break;
+          }
+        },
+      }
+    });
+
+
+
+
+        </script>
 
 		{% else %}
 
@@ -369,9 +376,11 @@ var paymentForm = new SqPaymentForm({
 	var addresses = [];
 
 	$( "body" ).ready(function() {
+        {% if event.collectAddress %}
         $.getJSON("{% url 'addresses' %}", function(data) {
             addresses = data;
         });
+        {% endif %}
 	});
     
     //$("#donateCharity").change(setTwoNumberDecimal);

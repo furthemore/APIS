@@ -3,3 +3,4 @@ fm_eventmanager/dev.py
 fm_eventmanager/settings.py
 static/
 venv/
+db.sqlite3
