@@ -64,7 +64,7 @@ class FirebaseAdmin(admin.ModelAdmin):
 admin.site.register(Firebase, FirebaseAdmin)
 
 class BanListAdmin(admin.ModelAdmin):
-    list_display = ('firstName', 'lastName', 'email')
+    list_display = ('firstName', 'lastName', 'email', 'reason')
 
 admin.site.register(BanList, BanListAdmin)
 
@@ -234,10 +234,10 @@ class StaffAdmin(ImportExportModelAdmin):
 	    None,
             {'fields':(
                 ('attendee', 'registrationToken'),
-                ('event', 'get_email'), 
+                ('event', 'get_email'),
                 ('get_badge', 'get_badge_id'),
                 ('title', 'department'),
-                ('twitter','telegram'),
+                ('twitter', 'telegram'),
                 ('shirtsize', 'checkedIn'),
             )}
         ),
