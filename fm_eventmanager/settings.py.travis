@@ -201,7 +201,7 @@ AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
 # Sandbox values = DO NOT check in production ids
 SQUARE_APPLICATION_ID = os.environ['SQUARE_APPLICATION_ID']
 SQUARE_ACCESS_TOKEN = os.environ['SQUARE_ACCESS_TOKEN']
-SQUARE_LOCATION_ID = os.environ['SQUARE_LOCATION']
+SQUARE_LOCATION_ID = os.environ['SQUARE_LOCATION_ID']
 SQUARE_CURRENCY = 'USD'
 
 # Sandbox values - DO NOT check in production credentials
