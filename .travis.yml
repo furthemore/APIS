@@ -27,6 +27,11 @@ matrix:
 install:
   - pip install --upgrade pip wheel
   - pip install -r requirements.txt
+  - pip install coveralls
   - pip freeze
   - cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
-script: ./manage.py test registration
+script:
+  - coverage run manage.py test registration
+  - coverage report
+after_success:
+  - coveralls
