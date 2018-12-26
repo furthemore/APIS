@@ -28,5 +28,5 @@ install:
   - pip install --upgrade pip wheel
   - pip install -r requirements.txt
   - pip freeze
-  - cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
+  - cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
 script: ./manage.py test registration
