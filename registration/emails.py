@@ -1,9 +1,14 @@
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+import logging
 from .models import *
-from . import views
+#from . import views
+import views
+
+logger = logging.getLogger('registration.emails')
 
 def sendRegistrationEmail(order, email):
+    logger.debug("Enter sendRegistrationEmail...")
     orderItems = OrderItem.objects.filter(order=order)
     orderDict = {}
     hasMinors = False
@@ -16,10 +21,16 @@ def sendRegistrationEmail(order, email):
 
     # send registration confirmations to all people in the order
     for oi in orderItems:
-        registrationEmail = views.getRegistraionEmail(oi.badge.event)
+        registrationEmail = views.getRegistrationEmail(oi.badge.event)
         if oi.badge.attendee.email == email:
             # send payment receipt to the payor
-            data = {'reference': order.reference, 'order': order, 'orderItems': orderDict, 'hasMinors': hasMinors}
+            data = {
+                'reference': order.reference,
+                'order': order,
+                'orderItems': orderDict,
+                'hasMinors': hasMinors,
+                'event' : oi.badge.event
+            }
             msgTxt = render_to_string('registration/emails/registrationPayment.txt', data)
             msgHtml = render_to_string('registration/emails/registrationPayment.html', data)
             sendEmail(registrationEmail, [email],
@@ -166,12 +177,16 @@ def sendApprovalEmail(dealerQueryset):
 
 
 def sendEmail(replyAddress, toAddressList, subject, message, htmlMessage):
+    logger.debug("Enter sendEmail...")
     mailMessage = EmailMultiAlternatives(
       subject,
       message,
-      APIS_DEFAULT_EMAIL,
+      settings.APIS_DEFAULT_EMAIL,
       toAddressList,
       reply_to=[replyAddress]
     )
+    logger.debug("Message to: {0}".format(toAddressList))
     mailMessage.attach_alternative(htmlMessage, "text/html")
+    logger.debug("Sending...")
     mailMessage.send()
+    logger.debug("Email sent")

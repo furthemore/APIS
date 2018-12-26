@@ -25,10 +25,10 @@ import random
 import string
 import logging
 
-from emails import *
 from .models import *
 from .payments import chargePayment
 from .pushy import PushyAPI
+import emails
 import printing
 
 # Create your views here.
@@ -66,36 +66,53 @@ def in_group(groupname):
 # Payments
 
 def doCheckout(billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity, ip):
+    event = Event.objects.get(default=True)
     reference = getConfirmationToken()
-    while Order.objects.filter(reference=reference).count() > 0:
+    while Order.objects.filter(reference=reference).exists():
         reference = getConfirmationToken()
-
+        
     order = Order(total=Decimal(total), reference=reference, discount=discount,
-                  orgDonation=donationOrg, charityDonation=donationCharity,
-                  billingName=billingData['cc_firstname'] + " " + billingData['cc_lastname'],
-                  billingAddress1=billingData['address1'], billingAddress2=billingData['address2'],
-                  billingCity=billingData['city'], billingState=billingData['state'], billingCountry=billingData['country'],
-                  billingPostal=billingData['postal'], billingEmail=billingData['email'])
-    order.save()
+                  orgDonation=donationOrg, charityDonation=donationCharity)
 
-    status, response = chargePayment(order.id, billingData, ip)
+    # Address collection is marked as required by event
+    if event.collectBillingAddress:
+        try:
+            order.billingName="{0} {1}".format(billingData['cc_firstname'], billingData['cc_lastname'])
+            order.billingAddress1=billingData['address1']
+            order.billingAddress2=billingData['address2']
+            order.billingCity=billingData['city']
+            order.billingState=billingData['state']
+            order.billingCountry=billingData['country']
+            order.billingEmail=billingData['email']
+        except KeyError as e:
+            abort(400, "Address collection is required, but request is missing required field: {0}".format(e))
+
+    # Otherwise, no need for anything except postal code (Square US/CAN)
+    try:
+        card_data = billingData['card_data']
+        order.billingPostal = card_data['billing_postal_code']
+        order.lastFour = card_data['last_4']
+    except KeyError as e:
+        abort(400, "A required field was missing from billingData: {0}".format(e))
+        
+    status, response = chargePayment(order, billingData, ip)
 
     if status:
-      if cartItems:
-        for item in cartItems:
-            orderItem = saveCart(item)
-            orderItem.order = order
-            orderItem.save()
-      elif orderItems:
-        for oitem in orderItems:
-            oitem.order = order
-            oitem.save()
-      order.status = 'Paid'
-      order.save()
-      if discount:
-          discount.used = discount.used + 1
-          discount.save()
-      return True, "", order
+        if cartItems:
+            for item in cartItems:
+                orderItem = saveCart(item)
+                orderItem.order = order
+                orderItem.save()
+        elif orderItems:
+            for oitem in orderItems:
+                oitem.order = order
+                oitem.save()
+        order.status = 'Paid'
+        order.save()
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
+        return True, "", order
 
     return False, response, order
 
@@ -167,7 +184,8 @@ def getDiscountTotal(disc, subtotal):
 def getTotal(cartItems, orderItems, disc = ""):
     total = 0
     total_discount = 0
-    if not cartItems and not orderItems: return total
+    if not cartItems and not orderItems:
+        return 0, 0
     for item in cartItems:
         postData = json.loads(str(item.formData))
         pdp = postData['priceLevel']
@@ -555,8 +573,8 @@ def checkoutStaff(request):
 
 
     pbill = postData["billingData"]
-    porg = Decimal(postData["orgDonation"].strip() or 0.00)
-    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    porg = Decimal(postData["orgDonation"].strip() or '0.00')
+    pcharity = Decimal(postData["charityDonation"].strip() or '0.00')
     if porg < 0:
         porg = 0
     if pcharity < 0:
@@ -568,17 +586,17 @@ def checkoutStaff(request):
     status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
 
     if status:
-        request.session.flush()
+        clear_session(request)
         try:
             sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
             staffEmail = getStaffEmail()
-            return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0} to get your confirmation number.".format(staffEmail)})
-        return JsonResponse({'success': True})
+            return abort(400, "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0} to get your confirmation number.".format(staffEmail))
+        return success()
     else:
         order.delete()
-        return JsonResponse({'success': False, 'message': message})
+        return abort(400, message)
 
 
 
@@ -749,6 +767,7 @@ def checkoutAsstDealer(request):
     dealer.save()
     partnerCount = dealer.getPartnerCount()
 
+    # FIXME: remove hardcoded costs
     partners = partnerCount - originalPartnerCount
     total = Decimal(45*partners)
     if pbill['breakfast']:
@@ -918,8 +937,8 @@ def checkoutDealer(request):
                 return JsonResponse({'success': False, 'message': "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}".format(dealerEmail)})
             return JsonResponse({'success': True})
 
-        porg = Decimal(postData["orgDonation"].strip() or 0.00)
-        pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+        porg = Decimal(postData["orgDonation"].strip() or '0.00')
+        pcharity = Decimal(postData["charityDonation"].strip() or '0.00')
         if porg < 0:
             porg = 0
         if pcharity < 0:
@@ -1613,8 +1632,8 @@ def checkoutUpgrade(request):
             return JsonResponse({'success': False, 'message': "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail)})
         return JsonResponse({'success': True})
 
-    porg = Decimal(postData["orgDonation"].strip() or 0.00)
-    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    porg = Decimal(postData["orgDonation"].strip() or '0.00')
+    pcharity = Decimal(postData["charityDonation"].strip() or '0.00')
     if porg < 0:
         porg = 0
     if pcharity < 0:
@@ -1666,7 +1685,12 @@ def getCart(request):
               hasMinors = True
               break
 
-        context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'hasMinors': hasMinors}
+        context = {
+            'orderItems': orderItems,
+            'total': total,
+            'discount': discount,
+            'hasMinors': hasMinors
+        }
 
     elif sessionItems:
         cartItems = list(Cart.objects.filter(id__in=sessionItems))
@@ -1703,7 +1727,12 @@ def getCart(request):
                     itemTotal = optionData.optionPrice
                     dataOption = {'name': optionData.optionName, 'total': itemTotal}
                 options.append(dataOption)
-            orderItem = {'attendee': pda, 'priceLevel': priceLevel, 'options': options}
+            orderItem = {
+                'id' : cart.id,
+                'attendee': pda,
+                'priceLevel': priceLevel,
+                'options': options
+            }
             orderItems.append(orderItem)
 
         if event is None:
@@ -1773,15 +1802,29 @@ def saveCart(cart):
     return orderItem
 
 def addToCart(request):
-    postData = json.loads(request.body)
-    #create attendee from request post
-    pda = postData['attendee']
+    """
+    Create attendee from request post.
+    """
+    try:
+        postData = json.loads(request.body)
+    except ValueError as e:
+        return abort(400, "Unable to decode JSON body")
+
+    event = Event.objects.get(default=True)
+
+    try:
+        pda = postData['attendee']
+        pda['firstName']
+        pda['lastName']
+        pda['email']
+    except KeyError:
+        return abort(400, "Required parameters not found in POST body")
 
     banCheck = checkBanList(pda['firstName'], pda['lastName'], pda['email'])
     if banCheck:
-        logger.exception("***ban list registration attempt***")
+        logger.error("***ban list registration attempt***")
         registrationEmail = getRegistrationEmail()
-        return JsonResponse({'success': False, 'message': "We are sorry, but you are unable to register for " + evt + ". If you have any questions, or would like further information or assistance, please contact Registration at {0}".format(registrationEmail)})
+        return abort(403, "We are sorry, but you are unable to register for {0}. If you have any questions, or would like further information or assistance, please contact Registration at {1}".format(event, registrationEmail))
 
     cart = Cart(form=Cart.ATTENDEE, formData=request.body, formHeaders=getRequestMeta(request))
     cart.save()
@@ -1790,35 +1833,53 @@ def addToCart(request):
     cartItems = request.session.get('cart_items', [])
     cartItems.append(cart.id)
     request.session['cart_items'] = cartItems
-    return JsonResponse({'success': True})
-
+    return success()
 
 def removeFromCart(request):
     #locate attendee in session order
+    deleted = False
     order = request.session.get('order_items', [])
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for removeFromCart()")
-        return JsonResponse({'success': False})
+        return abort(400, 'Unable to decode JSON parameters')
+    if 'id' not in postData.keys():
+        return abort(400, 'Required parameter `id` not specified')
     id = postData['id']
-    #locate attendee in session order
-    order = request.session.get('order_items', [])
-    #remove attendee from session order
-    for item in order:
+
+    # New cart workflow
+    cartItems = request.session.get('cart_items', [])
+    logger.debug("cartItems: {0}".format(cartItems))
+    for item in cartItems:
         if str(item) == str(id):
-            deleteOrderItem(item)
-            order.remove(item)
-    request.session['order_items'] = order
-    return JsonResponse({'success': True})
+            cart = Cart.objects.get(id=id)
+            cart.delete()
+            deleted = True
+    if not deleted:
+        return abort(404, 'Cart ID not in session')
+    return success()
 
 def cancelOrder(request):
-    #remove order from session
+    # (DEPRECATED) remove order from session
     order = request.session.get('order_items', [])
     for item in order:
         deleteOrderItem(item)
-    request.session.flush()
-    return JsonResponse({'success': True})
+    # Delete carts
+    sessionItems = request.session.get('cart_items', [])
+    cartItems = Cart.objects.filter(id__in=sessionItems)
+    cartItems.delete()
+    # Clear session values
+    clear_session(request)
+    return success() 
+
+def clear_session(request):
+    """
+    Soft-clears session by removing any non-protected session values.
+    (anything prefixed with '_'; keeps Django user logged-in)
+    """
+    for key in request.session.keys():
+        if key[0] != '_':
+            del request.session[key]
 
 def checkout(request):
     event = Event.objects.get(default=True)
@@ -1826,11 +1887,16 @@ def checkout(request):
     cartItems = list(Cart.objects.filter(id__in=sessionItems))
     orderItems = request.session.get('order_items', [])
     pdisc = request.session.get('discount', "")
+
+    # Safety valve (in case session times out before checkout is complete)
+    if len(sessionItems) == 0 and len(orderItems) == 0:
+        abort(400, "Session expired or no session is stored for this client")
+
     try:
         postData = json.loads(request.body)
     except ValueError as e:
         logger.error("Unable to decode JSON for checkout()")
-        return JsonResponse({'success': False, 'message' : 'Unable to parse input options'})
+        return abort(400, 'Unable to parse input options')
 
     discount = Discount.objects.filter(codeName=pdisc)
     if discount.count() > 0 and discount.first().isValid():
@@ -1846,20 +1912,20 @@ def checkout(request):
     if subtotal == 0:
         status, message, order = doZeroCheckout(discount, cartItems, orderItems)
         if not status:
-            return JsonResponse({'success': False, 'message': message})
+            return abort(400, message)
 
         request.session.flush()
         try:
-            sendRegistrationEmail(order, order.billingEmail)
+            emails.sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             logger.error("Error sending RegistrationEmail - zero sum.")
             logger.exception(e)
             registrationEmail = getRegistrationEmail(event)
-            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail)})
-        return JsonResponse({'success': True})
+            return abort(400, "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail))
+        return success()
 
-    porg = Decimal(postData["orgDonation"].strip() or 0.00)
-    pcharity = Decimal(postData["charityDonation"].strip() or 0.00)
+    porg = Decimal(postData["orgDonation"].strip() or '0.00')
+    pcharity = Decimal(postData["charityDonation"].strip() or '0.00')
     pbill = postData["billingData"]
 
     if porg < 0:
@@ -1913,20 +1979,19 @@ def checkout(request):
         # Delete cart when done
         cartItems = Cart.objects.filter(id__in=sessionItems)
         cartItems.delete()
-        request.session.flush()
+        clear_session(request)
         try:
-            sendRegistrationEmail(order, order.billingEmail)
+            emails.sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             event = Event.objects.get(default=True)
-            getRegistrationEmail(event)
+            registrationEmail = getRegistrationEmail(event)
             
             logger.error("Error sending RegistrationEmail.")
             logger.exception(e)
-            return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail)})
-        return JsonResponse({'success': True})
+            return abort(500, "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail))
+        return success()
     else:
-        order.delete()
-        return JsonResponse({'success': False, 'message': message})
+        return abort(400, message)
 
 
 def cartDone(request):
@@ -2324,6 +2389,37 @@ def firebaseLookup(request):
 ##################################
 # Not Endpoints
 
+def abort(status=400, reason="Bad request"):
+    """
+    Returns a JSON response indicating an error to the client.
+
+    status: A valid HTTP status code
+    reason: Human-readable explanation
+    """
+    logger.error("JSON {0}: {1}".format(status, reason))
+    return JsonResponse({
+        'success': False,
+        'reason' : reason
+    }, status=status)
+
+def success(status=200, reason=None):
+    """
+    Returns a JSON response indicating success.
+
+    status: A valid HTTP status code (2xx)
+    reason: (Optional) human-readable explanation
+    """
+    if reason is None:
+        logger.debug("JSON {0}".format(status))
+        return JsonResponse({'success': True}, status=status)
+    else:
+        logger.debug("JSON {0}: {1}".format(status, reason))
+        return JsonResponse({
+            'success': True,
+            'reason': reason,
+            'message': reason   #Backwards compatibility
+        }, status=status)
+
 def getConfirmationToken():
     return ''.join(random.SystemRandom().choice(string.ascii_uppercase+string.digits) for _ in range(6))
 
@@ -2345,6 +2441,12 @@ def handler(obj):
         raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
 
 def getRegistrationEmail(event=None):
+    """
+    Retrieves the email address to show on error messages in the attendee
+    registration form for a specified event.  If no event specified, uses
+    the first default event.  If no email is listed there, returns the
+    default of APIS_DEFAULT_EMAIL in settings.py.
+    """
     if event is None: 
         try:
             event = Event.objects.get(default=True)
@@ -2355,6 +2457,12 @@ def getRegistrationEmail(event=None):
     return event.registrationEmail
 
 def getStaffEmail(event=None):
+    """
+    Retrieves the email address to show on error messages in the staff
+    registration form for a specified event.  If no event specified, uses
+    the first default event.  If no email is listed there, returns the
+    default of APIS_DEFAULT_EMAIL in settings.py.
+    """
     if event is None: 
         try:
             event = Event.objects.get(default=True)
@@ -2365,6 +2473,12 @@ def getStaffEmail(event=None):
     return event.staffEmail
 
 def getDealerEmail(event=None):
+    """
+    Retrieves the email address to show on error messages in the dealer
+    registration form for a specified event.  If no event specified, uses
+    the first default event.  If no email is listed there, returns the
+    default of APIS_DEFAULT_EMAIL in settings.py.
+    """
     if event is None: 
         try:
             event = Event.objects.get(default=True)

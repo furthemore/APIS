@@ -72,10 +72,13 @@ class PriceLevelOption(models.Model):
         else:
             return []
     def getOptionImage(self):
-        if self.optionImage == None:
-                return None
+        if self.optionImage is None:
+            return None
         else:
+            try:
                 return self.optionImage.url
+            except ValueError:
+                return None
 
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
@@ -136,6 +139,11 @@ class Event(LookupTable):
         verbose_name="Collect Address",
         help_text="Disable to skip collecting a mailing address for each "
         "attendee.")
+    collectBillingAddress = models.BooleanField(default=True,
+        verbose_name="Collect Billing Address",
+        help_text="Disable to skip collecting a billing address for each "
+        "order. Note that a billing address and buyer email is required "
+        "to qualify for Square's Chargeback protection.")
     registrationEmail = models.CharField(max_length=200,
         verbose_name="Registration Email",
         help_text="Email to display on error messages for attendee registration",
@@ -172,7 +180,7 @@ class TableSize(LookupTable):
     partnerMin = models.IntegerField(default=1)
     partnerMax = models.IntegerField(default=1)
     basePrice = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
       if self.event is None:
@@ -237,13 +245,14 @@ class Attendee(models.Model):
         return '--attendee--'
 
 class Badge(models.Model):
-    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
-    event = models.ForeignKey(Event)
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     registeredDate = models.DateTimeField(null=True)
     registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
     badgeName = models.CharField(max_length=200, blank=True)
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
+    printCount = models.IntegerField(default=0)
 
     def __str__(self):
         if self.badgeNumber is not None or self.badgeNumber == '':
@@ -321,7 +330,7 @@ class Badge(models.Model):
 
 
 class Staff(models.Model):
-    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.CASCADE)
     registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
     department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.SET_NULL)
     supervisor = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
@@ -339,7 +348,7 @@ class Staff(models.Model):
     contactRelation = models.CharField(max_length=200, blank=True)
     needRoom = models.BooleanField(default=False)
     gender = models.CharField(max_length=50, blank=True)
-    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
     checkedIn = models.BooleanField(default=False)
 
     def __str__(self):
@@ -370,7 +379,7 @@ class Dealer(models.Model):
     wallSpace = models.BooleanField(default=False)
     nearTo = models.CharField(max_length=200, blank=True)
     farFrom = models.CharField(max_length=200, blank=True)
-    tableSize = models.ForeignKey(TableSize)
+    tableSize = models.ForeignKey(TableSize, on_delete=models.SET_NULL, null=True)
     chairs = models.IntegerField(default=0)
     tables = models.IntegerField(default=0)
     reception = models.BooleanField(default=False)
@@ -385,7 +394,7 @@ class Dealer(models.Model):
     discountReason = models.CharField(max_length=200, blank=True)
     emailed = models.BooleanField(default=False)
     asstBreakfast = models.BooleanField(default=False)
-    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
     logo = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
@@ -415,14 +424,14 @@ class Dealer(models.Model):
 
 
 class DealerAsst(models.Model):
-    dealer = models.ForeignKey(Dealer)
-    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.SET_NULL)
+    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
+    attendee = models.ForeignKey(Attendee, null=True, blank=True, on_delete=models.CASCADE)
     registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
     name = models.CharField(max_length=400)
     email = models.CharField(max_length=200)
     license = models.CharField(max_length=50)
     sent = models.BooleanField(default=False)
-    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
+    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -471,6 +480,7 @@ class Order(models.Model):
     billingEmail = models.CharField(max_length=200, blank=True)
     billingType = models.CharField(max_length=20, choices=BILLING_TYPE_CHOICES, default=CREDIT)
     lastFour = models.CharField(max_length=4, blank=True)
+    apiData = models.TextField(blank=True)
 
     def __str__(self):
         return "${0} {1} ({2}) [{3}]".format(
@@ -485,9 +495,9 @@ class Order(models.Model):
         )
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, null=True)
-    badge = models.ForeignKey(Badge, null=True)
-    priceLevel = models.ForeignKey(PriceLevel)
+    order = models.ForeignKey(Order, null=True, on_delete=models.CASCADE)
+    badge = models.ForeignKey(Badge, null=True, on_delete=models.CASCADE)
+    priceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
     enteredBy = models.CharField(max_length=100)
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -511,8 +521,8 @@ class OrderItem(models.Model):
                 return "OrderItem object"
 
 class AttendeeOptions(models.Model):
-    option = models.ForeignKey(PriceLevelOption)
-    orderItem = models.ForeignKey(OrderItem)
+    option = models.ForeignKey(PriceLevelOption, on_delete=models.CASCADE)
+    orderItem = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
     optionValue = models.CharField(max_length=200)
     optionValue2 = models.CharField(max_length=200, blank=True)
     optionValue3 = models.CharField(max_length=200, blank=True)

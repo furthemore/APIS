@@ -25,6 +25,42 @@ SECRET_KEY = '#4jb6($!lns7dm@0$%80q&sk2_d7(qy*f^$ky!4z@1c-gonv8_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+	'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+	},
+    'filters' : {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers' : {
+        'console' : {
+            'level' : 'DEBUG',
+            'filters': ['require_debug_true'],
+            'formatter' : 'verbose',
+            'class': 'logging.StreamHandler',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console',],
+            'level' : 'DEBUG' if DEBUG else 'INFO',
+        },      
+        'registration': {
+            'level' : 'DEBUG' if DEBUG else 'INFO',
+            'propagate' : True,
+        },
+    }
+}
+
 ADMINS = [('Carissa Brittain', 'carissa.brittain@gmail.com'),]
 SERVER_EMAIL = "it_errors@furthemore.org"
 
@@ -97,6 +133,9 @@ DATABASES = {
     'default': {
         'ENGINE' : 'django.db.backends.sqlite3',
         'NAME' : os.path.join(BASE_DIR, 'db.sqlite3'), 
+        'TEST' : {
+            'NAME' : os.path.join(BASE_DIR, 'test-db.sqlite3'),
+        }
     }
 }
 
