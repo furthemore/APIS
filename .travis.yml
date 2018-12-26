@@ -26,7 +26,6 @@ matrix:
 
 install:
   - pip install --upgrade pip wheel
-  - pip install --pre -e .$EXTRAS
   - pip install -r requirements.txt
   - pip freeze
   - cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
