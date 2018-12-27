@@ -1055,6 +1055,7 @@ def onsiteAdmin(request):
     # Modify a dummy session variable to keep it alive
     request.session['heartbeat'] = time.time()
 
+    event = Event.objects.get(default=True)
     terminals = list(Firebase.objects.all())
     term = request.session.get('terminal', None)
     query = request.GET.get('search', None)
@@ -1065,6 +1066,16 @@ def onsiteAdmin(request):
     # Set default payment terminal to use:
     if term is None and len(terminals) > 0:
         request.session['terminal'] = terminals[0].id
+
+    if len(terminals) == 0:
+        errors.append({
+            'type' : 'danger',
+            'code' : 'ERROR_NO_TERMINAL',
+            'text' : 'It looks like no payment terminals have been configured '
+            'for this server yet. Check that the APIS Terminal app is '
+            'running, and has been configured for the correct URL and API key.'
+        })
+
 
     # No terminal selection saved in session - see if one's
     # on the URL (that way it'll survive session timeouts)
@@ -1080,17 +1091,10 @@ def onsiteAdmin(request):
             # weren't passed an integer
             errors.append({'type' : 'danger', 'text' : 'Invalid terminal specified'})
 
-    try:
-        logger.info("Terminal from session: {0}".format(request.session['terminal']))
-    except KeyError:
-        errors.append({'type' : 'danger', 'text' : 'It looks like no payment terminals have been configured for this server yet. ' +
-            'Check that the APIS Terminal app is running, and has been configured for the correct URL and API key.'})
-
-
     if query is not None:
         results = Badge.objects.filter(
             Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
-            Q(event__name__icontains='2019')
+            Q(event=event)
         )
         if len(results) == 0:
             errors.append({'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)})
@@ -1106,6 +1110,7 @@ def onsiteAdmin(request):
 
 @staff_member_required
 def onsiteAdminSearch(request):
+    event = Event.objects.get(default=True)
     terminals = list(Firebase.objects.all())
     query = request.POST.get('search', None)
     if query is None:
@@ -1114,7 +1119,7 @@ def onsiteAdminSearch(request):
     errors = []
     results = Badge.objects.filter(
         Q(attendee__lastName__icontains=query) | Q(attendee__firstName__icontains=query),
-        Q(event__name__icontains='2019')
+        Q(event=event)
     )
     if len(results) == 0:
         errors = [{'type' : 'warning', 'text' : 'No results for query "{0}"'.format(query)}]
