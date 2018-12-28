@@ -1,4 +1,5 @@
 {% extends "registration/master.html" %}
+{% load settings %}
 
 {% block head %}
     <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
@@ -6,8 +7,9 @@
     <script type="text/javascript">
 var paymentForm = new SqPaymentForm({
   // Initialize the payment form elements
-  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
-  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+
   inputClass: 'form-control',
   // Initialize the credit card placeholders
   cardNumber: {
@@ -92,7 +94,7 @@ var paymentForm = new SqPaymentForm({
 
         {% if dealer.tableSize.partnerMax == assistants.count %}
 
-            <div>You already have the maximum partners for this table type. If you feel this is in error, please contact <a href="mailto:marketplace@furthemore.org">marketplace@furthemore.org</a><./div>
+            <div>You already have the maximum partners for this table type. If you feel this is in error, please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a><./div>
 
         {% else %}
 
@@ -115,7 +117,7 @@ var paymentForm = new SqPaymentForm({
 		<h3>Charges</h3>
 		
 		<div class='form-group' style='margin-left:30px;'>You will be charged $45 for each new partner added via this form.</div>
-		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:marketplace@furthemore.org'>marketplace@futhemore.org</a> instead.</div>
+		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a> instead.</div>
 
         <div class="form-group">
                     <label for="asstbreakfst" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
@@ -223,7 +225,7 @@ var paymentForm = new SqPaymentForm({
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Checkout</h1>
-		<div>Your session has expired. Please check your email link and try again, or contact <a href="mailto:marketplace@furthemore.org">marketplace@furthemore.org</a> for help.</div>
+		<div>Your session has expired. Please check your email link and try again, or contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> for help.</div>
 	</div>
 	</div>
 
@@ -304,7 +306,7 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                alert("An error has occurred. If this error continues, please contact marketplace@furthemore.org for assistence.")
+                alert("An error has occurred. If this error continues, please contact {{ event.dealerEmail }} for assistance.")
 	    		$("#checkout").removeAttr("disabled");
 		    },
             "success": function (result, status) {
@@ -315,7 +317,7 @@ function doCheckout() {
                         alert(result.message);
     		    		window.location = "{% url 'doneAsstDealer' %}";
                     } else {
-                        alert("An error has occurred: " + result.message + " If this error continues, please contact marketplace@furthemore.org for assistence.");
+                        alert("An error has occurred: " + result.message + " If this error continues, please contact {{ event.dealerEmail }} for assistance.");
     			       $("#checkout").removeAttr("disabled");
                     }
 			    }

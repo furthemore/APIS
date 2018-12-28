@@ -150,6 +150,11 @@ STATIC_ROOT = '/root/projects/furthemore/static/'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60*60  # 1hr
 
+# Default email to display as part of error messages
+APIS_DEFAULT_EMAIL = "registration@example.com"
+APIS_DEALER_HEAD = "marketplace@example.com"
+APIS_STAFF_HEAD = "staff@example.com"
+
 # Sandbox values - DO NOT check in production ids
 AUTHNET_NAME = '426rwVfr3G47'
 AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
@@ -164,3 +169,12 @@ SQUARE_CURRENCY = 'USD'
 EMAIL_HOST = 'smtp.mailgun.org'
 EMAIL_HOST_USER = 'postmaster@sandboxcdfc4543b9e84e0ea21d82a527e714fc.mailgun.org'
 EMAIL_HOST_PASSWORD = '8aee7562e054466c362ebd84e7227703'
+
+# Return channel for Android register application
+REGISTER_KEY = 'df14e4d5469e801dbc8e1df4eebd97b3'
+
+# Print handler for cash drawer and receipts
+REGISTER_PRINTER_URI = 'https://print.example.com:5000'
+
+# Firebase/Pushy.me cloud-push API key
+CLOUD_MESSAGING_KEY = "AAA..."

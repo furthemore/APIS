@@ -1,4 +1,4 @@
 
 <p>Please use the link below to add additional assistants to your paid dealer registration. </p>
 
-<a href="https://www.furthemore.org/apis/registration/dealerassistant/{{dealer.registrationToken}}">https://www.furthemore.org/apis/registration/dealerassistant/{{dealer.registrationToken}}</a>
+<a href="{% url 'dealers' guid=dealer.registrationToken %}">{% url 'dealers' guid=dealer.registrationToken %}</a>

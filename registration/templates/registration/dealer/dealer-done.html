@@ -6,10 +6,10 @@
 		<h1>Dealer Registration - {{event}}</h1>
 		<h3>Thank you for your Marketplace Payment!</h3>
 		<hr>
-        <p>Salutations Sakura Festival Vendors,</p>
-        <p>Thank you for participating in Fur The More's Fantasy in the Sakura Forest! We look forward to meeting under the Cherry Blossoms on April 20-22nd. If you have any questions or concerns, please email <a href="mailto:marketplace@furthemore.org">marketplace@furthemore.org.</a> </p>
-		<p style='float:right;'><a href='http://www.furthemore.org'>Back to Main Page</a></p>
-                <p>You should be receiving an email confirmation and receipt shortly.</p>
+        <p>Salutations Vendors,</p>
+        <p>Thank you for participating in {{ event }}'s Dealers Den! We look forward to seeing you. If you have any questions or concerns, please email <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}.</a> </p>
+		<p style='float:right;'><a href='/'>Back to Main Page</a></p>
+                <p>You should receive email confirmation and receipt shortly.</p>
 	</div>
 	</div>
 {% endblock %}

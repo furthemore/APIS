@@ -11,7 +11,7 @@
         <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
       </div>
       <div class="modal-body">
-        <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 28, 1999). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 28, 2004).</p>
+        <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event. A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event.</p>
         <p>All attendees, even those too young to attend without a parent or legal guardian, must have a printed badge for safety reasons.</p>
         <p>Please talk to registration staff if you have any questions.</p>
       </div>
@@ -27,7 +27,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
-        <iframe src="https://www.furthemore.org/policies/code-of-conduct/" style="width: 100%; height: 600px"></iframe>
+        <iframe src="{{ event.codeOfConduct }}" style="width: 100%; height: 600px"></iframe>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -39,7 +39,7 @@
     <form class="form-horizontal" role="form" data-toggle="validator">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Furthemore 2018 Onsite Registration</h1>
+        <h1>{{ event }} Onsite Registration</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
@@ -99,7 +99,7 @@
             <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
             </div>
                     <div class="col-sm-2">
-            <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+            <select class="form-control bfh-states" id="state" data-country="US" data-state="PA" name="state"></select>
                     </div>
             <div class="col-sm-3">
             <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
@@ -149,7 +149,7 @@
                     <div>
                         <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I agree to abide by Furthemore's <a href="#" data-toggle="modal" data-target="#codeOfConduct">Code of Conduct</a>.
+			I agree to abide by {{ event }}'s <a href="{{ event.codeOfConduct }}">Code of Conduct</a>.
                         </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -396,7 +396,7 @@
         }
         var age = getAge(birthdate);
 
-        if (age < 7) {
+        if (age < 0) {
             $("#levelContainer").loadTemplate($("#levelTemplate"), freeLevelTemplateData);
             $(".changeLevel").hide();
 
@@ -544,7 +544,7 @@
                 'onsite' : true
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'jersey': {}, 'event': 'Furthemore 2018'
+            'jersey': {}, 'event': '{{ event }}'
         };
         $.ajax({
             "type": "POST",
@@ -559,7 +559,7 @@
                 window.location = "{% url 'onsiteCart' %}";
             },
             "error": function(result, status) {
-            alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
+            alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.")
             }
         })
 

@@ -14,11 +14,11 @@
         {% if event.allowOnlineMinorReg %}
           <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the door to sign our consent form.</p>
           <p>A parent or guardian must register and accompany anyone under the age of 13 (by the start of the convention).</p>
-          <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
+          <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
         {% else %}
           <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
           <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 20, 2000). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 20, 2005).</p>
-          <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
+          <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
         {% endif %}
       </div>
     </div>
@@ -31,14 +31,14 @@
         <h1>Pre-Register for {{event}}!</h1>
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
-            {% show_attendee_form emailOptions=True %}
+            {% show_attendee_form event=event emailOptions=True %}
 
         <h3><a name="level"></a>Select your registration options and level.</h3>
         <hr>
                 <div class="form-group">
                     <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
+                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required="required" autocomplete="nope">
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -49,26 +49,28 @@
                     </div>
                     
                 </div>
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">ASL Interpreters <span style="color:red;"></span></label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="asl" /> <span class="control-label" >Please check this box if you need the services of our interpreters. This will help us determine how many we will need at the convention.</span>
-                    </div>
-                </div>
 		<hr/>
-		<div class="row" id="levelContainer"></div>
+        <div class="container-fluid">
+    		<div class="row" id="levelContainer">
+                <noscript>Javascript is required for this site.</noscript>
+                <div id="levelContainerAlert" class="alert alert-danger" style="display:none">
+                    <b>No price levels have been set up yet!</b>
+                    If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add some</a> before this form will work.
+                </div>
+            </div>
+        </div>
 		<br/>
 		<hr/>
              <div>
                     <div>
                         <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I agree to abide by Furthemore's <a href="http://www.furthemore.org/policies/code-of-conduct/" target="_blank">Code of Conduct</a>.
+			I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>.
                         </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
-		<div>
+		<div class="container-fluid">
        	    <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button> &nbsp;
         </div>
 	</div>
@@ -81,7 +83,7 @@
 {% block javascript %}
 
 <script type="text/html" id="levelTemplate">
-    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-4">
+    <div id="levelTemplateColumn" class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
     <div class="panel price">
         <div class="panel-heading  text-center">
         <h3 data-content="name"></h3>
@@ -109,7 +111,7 @@
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
         <div class="col-sm-9">
-            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" />
+            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
         </div>
     </div>
 </script>
@@ -172,6 +174,22 @@
     var levelData = [];
     var deptData = [];
     var shirtSizes = [];
+    
+    var select_level = function (levelId) {
+        $.each( levelTemplateData, function( key, val ) {
+            var id = val.levelId.split('_')[1];
+            if (id == levelId){
+                $("#regLevel").val(val.name);
+                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                $(".changeLevel").show();
+                $(".selectLevel").text("Selected!");
+                $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
+                generateOptions(id);
+                return false;
+            }
+        });
+    };
+
     $( "body" ).ready(function() {
         // only init the javascript datepicker if none is provided by the browser natively
         if (!Modernizr.inputtypes.date) {
@@ -191,7 +209,14 @@
                     selectText: "Select " + val.name
                 });
             });
-            $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+            if (levelTemplateData.length == 0) {
+                $("#levelContainerAlert").show();
+            } else {
+                $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+                if (levelTemplateData.length == 1) {
+                    select_level(1);
+                }
+            }
             $(".changeLevel").hide();
             
         });
@@ -209,17 +234,7 @@
     $("#levelContainer").on('click', 'a.selectLevel', function(){
         clearLevels();
         var levelId = $(this).attr('id').split('_')[1];
-        $.each( levelTemplateData, function( key, val ) {
-            var id = val.levelId.split('_')[1];
-            if (id == levelId){
-                $("#regLevel").val(val.name);
-                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                $(".changeLevel").show();
-                $(".selectLevel").text("Selected!");
-                generateOptions(id);
-                return false;
-            }
-        });
+        select_level(levelId);
     });
 
     $("#levelContainer").on('click', 'a.changeLevel', function() {
@@ -238,14 +253,18 @@
     var generateOptions = function(levelId){
         var data = [];
         var description = "";
+	var image = null;
         $.each(levelData, function(key, thing){
             if (thing.id == levelId){
                 data = thing.options;
                 description = thing.description;
+		if(thing.image === undefined){ }else{
+		image = "<br><button data-url='"+thing.image+"' class='open-image btn btn-sm btn-link btn-block'>(View Image)</button>";
+		}
                 return false;
             }
         });
-        var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
+        var container = $("<div id='optionsContainer' class='col-xs-12 col-sm-6 col-md-8 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description +"</div></div></div>");
         $("#levelContainer").append(container);
         $.each( data, function(key, val) {
             if (val.value == "0.00"){
@@ -253,7 +272,13 @@
             } else {
                 var price = " (+$" + val.value + ") "
             }
+            if (val.image == null) {
+                var image = ""
+            }else{
+                var image = "<br><a href='javascript:;' data-image='"+val.image+"' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>"
+            }
             var required = "";
+            console.log(val);
             if (val.required) {required = "required";}
             switch (val.type) {
                 case "plaintext":
@@ -266,15 +291,18 @@
                     var template = $("#optionBoolTemplate");
                     if (val.required) {template = $("#optionBoolReqTemplate");}
                     $("#optionsContainer").loadTemplate(template, {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id
                     }, {append: true});
+                    if (val.value == "0.00") {
+                        $("#option_"+val.id).prop('checked', true);
+                    }
                     break;
                 case "int":
                     var template = $("#optionIntTemplate");
                     if (val.required) {template = $("#optionIntReqTemplate");}
                     $("#optionsContainer").loadTemplate(template, {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id
                     }, {append: true});
                     break;
@@ -283,7 +311,7 @@
                     if (val.required) {template = $("#optionStringReqTemplate");}
                     var placeholder = val.name;
                     $("#optionsContainer").loadTemplate(template, {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id,
                         'placeholder': placeholder,
                     }, {append: true});
@@ -300,7 +328,7 @@
                         options.push({"content": item.name, "value": item.id})
                     });
                     $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-                        'name': val.name + " " + price,
+                        'name': val.name + " " + price + image,
                         'id': "option_" + val.id,
                         'options': options
                     }, {append: true});
@@ -320,7 +348,9 @@
                     data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
                 }
             } else {
-                data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                if ($(option).val() != "") {
+                    data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                }
             }
         });
         return data;
@@ -337,7 +367,7 @@
             return;
         }
         if (Modernizr.inputtypes.date) {
-            // native datepicker - expect ISO date
+            // native datepicker - EXPECT iso date
             var birthdate = parseDate($("#birthDate").val());
         } else {
             // American middle-endian format put out by datepicker javascript
@@ -359,7 +389,7 @@
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': $("#birthDate").val(),
                 'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'), 
                 'volDepts': $("#volunteer").val(), 'surveyOk': $("#survey").is(':checked'),
-                'asl': $("#asl").is(':checked'),
+                'asl': false,
             }, 
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
             'event': '{{event}}'
@@ -381,7 +411,7 @@
                 }
             },
             "error": function(result, status) {
-                alert("An error has occurred. Please contact registration@furthemore.org and we will correct the problem.")
+                alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.")
             }
         })
 
@@ -412,6 +442,9 @@ $.ajaxSetup({
     }
 });
 
+$(document).on("click",".open-image", function(event){
+	window.open($(event.target).data("image"),"_blank","width=750,height=750,left=35%,top=25%,menubar=no,statusbar=no");
+});
 
 </script>
 
