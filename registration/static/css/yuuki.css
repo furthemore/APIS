@@ -1,29 +1,13 @@
 .artisan {
 /**
-    background-image: linear-gradient(203deg, rgba(194,155,114,0.65) 35%, transparent 0%);
-    background-size: 100% 100%;
-    background-position: 100% 0%;
-    background-repeat: no-repeat;
-    display: flex;
-    height: 100vh;
-    padding-top: 2%;
+    background: url('../img/2017/logo.jpg') no-repeat top right;
 **/
-
-    background: url('../img/2017/Logo-promo.png') no-repeat top right;
     min-height: 900px;  /* So logo isn't cut off on short-content pages */
 
 }
-.artisan2 {
-    height: 100%;
-}
 
 body {
-/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e60000+0,640000+100 */
-background: #e60000; /* Old browsers */
-background: -moz-linear-gradient(top, #e60000 0%, #640000 100%); /* FF3.6-15 */
-background: -webkit-linear-gradient(top, #e60000 0%,#640000 100%); /* Chrome10-25,Safari5.1-6 */
-background: linear-gradient(to bottom, #e60000 0%,#640000 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e60000', endColorstr='#640000',GradientType=0 ); /* IE6-9 */
+    background: #3D67B1;
 }
 
 .containter {
@@ -33,15 +17,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e60000', end
 #content-holder {
     background: white;
     padding: 3%;
-    border: #e60000 5px solid;
+    border: #8EAFE9 5px solid;
 }
 
-#content{
-    background-color: transparent;
-    background-image:       linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .05) 25%, rgba(255, 255, 255, .05) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .05) 75%, rgba(255, 255, 255, .05) 76%, transparent 77%, transparent);
-    height:100%;
-    background-size:50px 50px;
-}
 
 .badge{  
     min-width:500px;
@@ -49,7 +27,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e60000', end
     box-radius: 10px;
     margin-bottom: 5%;
     background-color: black; 
-}
+ }
 
 #badge-text{
     padding-top: 30%;
@@ -108,3 +86,13 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e60000', end
     box-shadow: 0px 3px 0px rgba(0,0,0, .3);
 }
 
+#terms li {
+    margin-bottom: 1em;
+}
+
+/* Use with bs-yetti theme */
+.alert a {
+    color: white;
+    text-decoration: underline;
+    font-weight: bold;
+}

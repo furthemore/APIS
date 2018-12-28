@@ -1,5 +1,6 @@
 {% extends "registration/master.html" %}
 {% load mathfilters %}
+{% load settings %}
 
 {% block head %}
     <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
@@ -7,8 +8,9 @@
     <script type="text/javascript">
 var paymentForm = new SqPaymentForm({
   // Initialize the payment form elements
-  applicationId: "sandbox-sq0idp-kGRHLRan0Elu80JLAEQqQQ",
-  locationId: "CBASED7NPDEnW3rjrTkuZBqR9vYgAQ",
+  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+
   inputClass: 'form-control',
   // Initialize the credit card placeholders
   cardNumber: {
@@ -105,10 +107,10 @@ var paymentForm = new SqPaymentForm({
 				</div>
 			</div>
 
-        {% if dealer.needWifi %}
+        {% if dealer.needPower %}
 			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Wi-Fi Access</div>
-				<div class="col-sm-2">$50.00</div>   
+				<div class="col-sm-6 col-sm-offset-1">Power</div>
+				<div class="col-sm-2">$15.00</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -155,19 +157,51 @@ var paymentForm = new SqPaymentForm({
 			{% if dealer.getPartnerCount > 0 %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getPartnerCount }}</div>
-				<div class="col-sm-2">${{dealer.getPartnerCount|mul:45}}.00</div>   
+				<div class="col-sm-2">${{dealer.getPartnerCount|mul:35}}.00</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
 			{% endif %}
-			{% if dealer.asstBreakfast %}
+			{% for option in item.getOptions %}
 			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Partner Breakfast x{{ dealer.getPartnerCount }}</div>
-				<div class="col-sm-2">${{dealer.getPartnerCount|mul:60}}.00</div>   
+				{% if option.option.optionExtraType == "int" %}
+
+				  <div class="col-sm-6 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
+				  {% if option.option.optionPrice == 0 %}
+				    <div class="col-sm-2">Free</div>
+				  {% else %}
+				    <div class="col-sm-2">${{option.option.optionPrice}} each</div>
+				  {% endif %}
+
+				{% else %}
+
+				  <div class="col-sm-6 col-sm-offset-1">{{option.option}}</div>
+				  {% if option.option.optionPrice == 0 %}
+				    <div class="col-sm-2">Free</div>
+				  {% else %}
+				    <div class="col-sm-2">${{option.option.optionPrice}}</div>
+				  {% endif %}
+
+				{% endif %}
+
+			</div>
+			{% endfor %}
+			{% if dealer.attendee.effectiveLevel %}
+			<div class="row">
+				<div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{item.priceLevel}}</div>
+				<div class="col-sm-2">- $50.00</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
 			{% endif %}
+			{% if discount and not dealer.paidTotal %}
+				<div class="row">
+					<div class="col-sm-6 col-sm-offset-1">Discount - {{discount.codeName}}</div>
+					<div class="col-sm-2">- ${{discount.amountOff}}</div>   
+					<div class="col-sm-2">
+					</div>
+				</div>
+			{% endif%}
 			{% if dealer.discount %}
 				<div class="row">
 					<div class="col-sm-6 col-sm-offset-1">Discount - {{dealer.discountReason}}</div>
@@ -183,26 +217,42 @@ var paymentForm = new SqPaymentForm({
 				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
 				<div class="col-sm-2"><h4>${{total}}</h4></div>   
 			</div>
+			<div class="row">
+				<div class="col-sm-12"><h3 style="color: red; text-align: center">Please review the total and invoice items above carefully!</h3></div>
+			</div>
 
 	
 		<br/>
-		<a id="cancel" href="#">Cancel</a>
+		<a id="cancel" href="#">Cancel and Restart</a>
 		<hr/>
 		{% if total > 0%}
 
 		<form class="form-horizontal" role="form" data-toggle="validator">
 		
 		<h3>Extra Donations</h3>
-		<div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you would like to make an extra gift to our annual charity, Frisky's, or to the convention, please enter it below.</div>
-		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Frisky's</label>
-		    <div class="col-sm-4">
-            <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate" data-error="Please use only numbers and a decimal." />
-		    </div>
+        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+        {% if event.charity %}
+            If you would like to make an extra gift to our annual charity, 
+            {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
+        {% else %}
+            If you would like to make an extra gift to the convention, please enter it below.
+        {% endif %}
+        </div>
+        {% if event.charity %}
+        <div class="form-group">
+            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+            <div class="col-sm-4">
+                <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
+                </div>
+            </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
+        </div>
+        {% endif %}
+
 		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to Furthemore</label>
+                    <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
 		    <div class="col-sm-4">
             <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate" data-error="Please use only numbers and a decimal." />
 		    </div>
@@ -425,7 +475,7 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                    alert("An error has occurred. If this error continues, please contact registration@furthemore.org for assistence.")
+                    alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
 	        		$("#checkout").removeAttr("disabled");
 		    },
             "success": function (result, status) {
@@ -436,7 +486,7 @@ function doCheckout() {
                             alert(result.message);
                             window.location = "{% url 'doneDealer' %}";
                         } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact registration@furthemore.org for assistence.");
+                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
 			                $("#checkout").removeAttr("disabled");
                         }
 			        }

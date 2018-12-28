@@ -1,7 +1,7 @@
-Thank you for your application to be a dealer at Furthemore 2018.
+Thank you for your application to be a dealer at {{ event }}.
 
-The cut off date for primary applicants will be Nov 19th at 11:59pm, and selections will be made/notifications sent by November 20th. If you have not received an acceptance notification by that date, you will be placed on the waitlist for the next available spot.
-If you have any questions, please feel free to contact us: marketplace@furthemore.org
-If you have listed any parters, they will receive an email with instructions about how to register after your payment has been received.
+The cut off date for primary applicants will be {{ event.dealerRegEnd|date:'I, F jS, Y H:i' }}, and selections will be made at that time. 
+If you have any questions, please feel free to contact us: {{ event.dealerEmail }}
+If you have listed any assistants, they will receive an email with instructions about how to register after your payment has been received.
 
 Thank you!

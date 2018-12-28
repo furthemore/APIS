@@ -62,6 +62,7 @@ urlpatterns = [
     url(r'^onsite/register/badge/assign/?$', views.assignBadgeNumber, name='assignBadgeNumber'),
     url(r'^onsite/register/badge/print/?$', views.onsitePrintBadges, name='onsitePrintBadges'),
     url(r'^onsite/square/complete/?$', views.completeSquareTransaction, name='completeSquareTransaction'),
+    url(r'^onsite/cash/complete/?$', views.completeCashTransaction, name='completeCashTransaction'),
 
     url(r'^onsite/signature/?$', views.onsiteSignature, name='onsiteSignature'),
 
