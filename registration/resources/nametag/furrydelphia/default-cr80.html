@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+    <style>
+        body {
+            margin: 0px 0px;
+            background-color: white;
+            font-family: sans-serif;
+        }
+
+        .barista {
+            background-image: url('barista.png');
+        }
+
+        .customer {
+            background-image: url('customer.png');
+        }
+
+        .pastrychef {
+            background-image: url('pastrychef.png');
+        }
+
+        .manager {
+            background-image: url('manager.png');
+        }
+
+        .friday {
+            background-image: url('friday.png');
+        }
+
+        .saturday {
+            background-image: url('saturday.png');
+        }
+
+        .sunday {
+            background-image: url('sunday.png');
+        }
+
+        .minor {
+            background-color: red;
+        }
+
+        .back {
+            background-image: url('back.png');
+            background-size: cover;
+        }
+
+        .container {
+            width: 85.6mm;
+            height: 55.5mm;
+            padding-left: 12px;
+            background-size: cover;
+        }
+
+        .name {
+            max-height: 10mm;
+            width: 80mm;
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+        }
+
+        span {
+            vertical-align: middle;
+        }
+
+        .pull-right {
+            float: right;
+            position: absolute;
+            top: 50mm;
+            left: 74mm;
+            font-size: 11pt;
+            text-align: right;
+        }
+
+        .pull-left {
+            float: left;
+            position: absolute;
+            top: 50mm;
+            left: 3mm;
+            font-size: 11pt;
+        }
+
+        .title {
+            position: absolute;
+            top: 50mm;
+            left: 21mm;
+            width: 50mm;
+            height: 6mm;
+            overflow: hidden;
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+
+        .name-container {
+            position: absolute;
+            left: 6mm;
+            top: 43.5mm;
+            height: 8mm;
+            width: 80mm;
+            overflow: hidden;
+            vertical-align: middle;
+
+        }
+
+        .badge-background {
+            position: absolute;
+            width: 85.6mm;
+            height: 12mm;
+            left: 1.5mm;
+            top: 43mm;
+            border-radius: 1mm;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+
+</head>
+<body>
+  <div id="badge" class="container barista">
+    <!-- max 10 characters: 5em -->
+    <div id="badge-background" class="badge-background"></div>
+    <div class="name-container">
+        <div class="name resize">%NAME%</div>
+    </div>
+    <span class="pull-left">%LEVEL%</span>
+    <span class="title">%TITLE%</span>
+    <span class="pull-right">%NUMBER%</span>
+  </div>
+  <div class="container back"></div>
+
+  <div class="hidden" id="level">%LEVEL%</div>
+  <div class="hidden" id="age">%AGE%</div>
+
+  <script src="jquery-1.12.0.min.js"></script> 
+
+  <script>
+    function randomChoice(arr) {
+          return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    $(document).ready(function () {
+        // FIXME
+        // autoSizeText();
+        var len = $(".resize").html().length;
+        if (len > 20) {
+            $(".resize").css('font-size', 14);
+        } else if (len > 30) {
+            $(".resize").css('font-size', 12);
+        }
+    });
+
+    var level = $("#level").html();
+
+    $("#badge").removeClass("barista");
+
+    if (level.match(/Barista/)) {
+        $("#badge").addClass("barista");
+    } else if (level.match(/Customer/)) {
+        $("#badge").addClass("customer");
+    } else if (level.match(/Pastry/)) {
+        $("#badge").addClass("pastrychef");
+    } else if (level.match(/Manager/)) {
+        $("#badge").addClass("manager");
+    } else if (level.match(/Friday/)) {
+        $("#badge").addClass("friday");
+    } else if (level.match(/Saturday/)) {
+        $("#badge").addClass("saturday");
+    } else if (level.match(/Sunday/)) {
+        $("#badge").addClass("sunday");
+    }
+
+    if (level.match(/Staff/) || level.match(/Dealer/)) {
+        var choice = randomChoice(['barista', 'customer', 'pastrychef', 'manager']);
+        $("#badge").addClass(choice);
+    }
+
+    
+    var age = parseInt($("#age").html());
+    if (age < 18) {
+        $("#badge-background").addClass("minor");
+    }
+
+  </script>
+</body>
+</html>

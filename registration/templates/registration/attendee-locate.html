@@ -18,7 +18,7 @@
 	<form class="form-horizontal" role="form" data-toggle="validator">
 	<div class="tab-content">
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - Furthemore 2018</h1>
+		<h1>Registration Upgrade - {{ event }}</h1>
 		<p>Please enter the email you used to register.</p>
 		<hr>
 
@@ -39,7 +39,7 @@
 		<div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">	
 			{% csrf_token %}
-                        <button id="lookup" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Find My Application</button>
+                        <button id="lookup" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Find My Registration</button>
 		    </div>
 		</div>	
 	</form>
@@ -59,7 +59,7 @@
 
 		var data = {
 			'email': $("#email").val(), 'token': $("#token").val(),
-            'event': 'Furthemore 2018'
+            'event': '{{ event }}'
 		};
 		$.ajax({
 		    "type": "POST",

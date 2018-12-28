@@ -1,2 +1,2 @@
-Welcome to Furthemore Staff! 
-Use this link to register as staff: https://www.furthemore.org/apis/registration/staff/{{registrationToken}}
+Welcome to {{event}} Staff! 
+Use this link to register as staff: {% url 'staff' guid=registrationToken %}

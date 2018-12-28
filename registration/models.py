@@ -5,7 +5,8 @@ import string
 from decimal import *
 from django.db import models
 from django.utils import timezone
-
+from django.conf import settings
+from django.contrib.auth.models import User
 
 # Lookup and supporting tables.
 class LookupTable(models.Model):
@@ -45,12 +46,16 @@ class Discount(models.Model):
             return False
         return True
 
+def content_file_name(instance, filename):
+    return '/'.join(['priceleveloption',str(instance.pk),filename])
+
 class PriceLevelOption(models.Model):
     optionName = models.CharField(max_length=200)
     optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
     optionExtraType = models.CharField(max_length=100, blank=True)
     optionExtraType2 = models.CharField(max_length=100, blank=True)
     optionExtraType3 = models.CharField(max_length=100, blank=True)
+    optionImage = models.ImageField(upload_to=content_file_name,blank=True,null=True)
     required = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     rank = models.IntegerField(default=0)
@@ -66,6 +71,11 @@ class PriceLevelOption(models.Model):
             return [{'name':s.name, 'id':s.id} for s in ShirtSizes.objects.all()]
         else:
             return []
+    def getOptionImage(self):
+        if self.optionImage == None:
+                return None
+        else:
+                return self.optionImage.url
 
 class PriceLevel(models.Model):
     name = models.CharField(max_length=100)
@@ -84,7 +94,11 @@ class PriceLevel(models.Model):
     def __str__(self):
       return self.name
 
-
+class Charity(LookupTable):
+    url = models.CharField(max_length=500,
+        verbose_name="URL",
+        help_text="Charity link",
+        blank=True)
 
 class Event(LookupTable):
     dealerRegStart = models.DateTimeField(verbose_name="Dealer Registration Start",
@@ -122,6 +136,32 @@ class Event(LookupTable):
         verbose_name="Collect Address",
         help_text="Disable to skip collecting a mailing address for each "
         "attendee.")
+    registrationEmail = models.CharField(max_length=200,
+        verbose_name="Registration Email",
+        help_text="Email to display on error messages for attendee registration",
+        blank=True,
+        default=settings.APIS_DEFAULT_EMAIL)
+    staffEmail = models.CharField(max_length=200,
+        verbose_name="Staff Email",
+        help_text="Email to display on error messages for staff registration",
+        blank=True,
+        default=settings.APIS_DEFAULT_EMAIL)
+    dealerEmail = models.CharField(max_length=200,
+        verbose_name="Dealer Email",
+        help_text="Email to display on error messages for dealer registration",
+        blank=True,
+        default=settings.APIS_DEFAULT_EMAIL)
+    badgeTheme = models.CharField(max_length=200,
+        verbose_name="Badge Theme",
+        help_text="Name of badge theme to use for printing",
+        blank=False,
+        default='apis')
+    codeOfConduct = models.CharField(max_length=500,
+        verbose_name="Code of Conduct",
+        help_text="Link to code of conduct agreement",
+        blank=True,
+        default='/code-of-conduct')
+    charity = models.ForeignKey(Charity, null=True, blank=True, on_delete=models.SET_NULL)
 
 class TableSize(LookupTable):
     description = models.TextField()
@@ -269,6 +309,10 @@ class Badge(models.Model):
         orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
         return orderItems
 
+    def getOrder(self):
+        oi = self.getOrderItems().first()
+        return oi.order
+
     def save(self, *args, **kwargs):
       if not self.id and not self.registeredDate:
         self.registeredDate = timezone.now()
@@ -381,7 +425,7 @@ class DealerAsst(models.Model):
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-      return self.name
+        return self.name
 
 
 # Start order tables
@@ -398,6 +442,9 @@ class Cart(models.Model):
     formHeaders = models.TextField()
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
     transferedDate = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return "{0} {1}".format(self.form, self.enteredDate)
 
 class Order(models.Model):
     UNPAID = 'Unpaid'
@@ -431,6 +478,11 @@ class Order(models.Model):
             self.billingType,
             self.status,
             self.reference)
+
+    class Meta:
+        permissions = (
+            ("issue_refund", "Can create refunds"),
+        )
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True)
@@ -479,6 +531,7 @@ class BanList(models.Model):
     firstName = models.CharField(max_length=200, blank=True)
     lastName = models.CharField(max_length=200, blank=True)
     email = models.CharField(max_length=400, blank=True)
+    reason = models.TextField(blank=True)
 
 class Firebase(models.Model):
     token = models.CharField(max_length=500)
@@ -487,11 +540,21 @@ class Firebase(models.Model):
     cashdrawer = models.BooleanField(default=False)
 
 class Cashdrawer(models.Model):
-    timestamp = models.DateField(auto_now_add=True)
+    OPEN = 'Open'
+    CLOSE = 'Close'
+    TRANSACTION = 'Transaction'
+    DEPOSIT = 'Deposit'
+    ACTION_CHOICES = ((OPEN, u'Open'), (CLOSE, u'Close'), (TRANSACTION, u'Transaction'), (DEPOSIT, u'Deposit'))
+    timestamp = models.DateTimeField(auto_now_add=True)
     # Action: one of - ['OPEN', 'CLOSE', 'TXN', 'DEPOSIT']
-    action = models.CharField(max_length=20)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES, default=OPEN)
     total = models.DecimalField(max_digits=8, decimal_places=2)
-    tendered = models.DecimalField(max_digits=8, decimal_places=2, blank=True)
-    user = models.CharField(max_length=200, blank=True)
+    tendered = models.DecimalField(max_digits=8, decimal_places=2, blank=True, default=0)
+    user = models.ForeignKey(
+            settings.AUTH_USER_MODEL,
+            on_delete=models.SET_NULL,
+            null=True,
+            blank=True
+        )
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent

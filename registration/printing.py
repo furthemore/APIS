@@ -229,6 +229,7 @@ class Nametag:
         self.title_re = re.compile(r'%TITLE%', re.IGNORECASE)        #security code
         self.number_re = re.compile(r'%NUMBER%', re.IGNORECASE)        #security code
         self.level_re = re.compile(r'%LEVEL%', re.IGNORECASE)        #security code
+        self.age_re = re.compile(r'%AGE%', re.IGNORECASE)         #age
 
         self.medicalIcon_re = re.compile(
             r"window\.onload\s=\shide\('medical'\)\;", re.IGNORECASE)
@@ -301,7 +302,7 @@ class Nametag:
         del default
         return config
 
-    def nametag(self, template='apis', name='', number='', title='', level='', barcode=False):
+    def nametag(self, template='apis', name='', number='', title='', level='', age='', barcode=False):
     #def nametag(self, template='default', room='', first='', last='', medical='',
     #            code='', secure='', barcode=True):
 
@@ -359,6 +360,7 @@ class Nametag:
         html = self.level_re.sub(str(level), html)
         html = self.title_re.sub(str(title), html)
         html = self.number_re.sub(str(number), html)
+        html = self.age_re.sub(str(age), html)
 
         return html
 
@@ -447,7 +449,7 @@ class PrinterError(Exception):
 class Main:
     def __init__(self, local=False):
         self.log = logging.getLogger(__name__)
-        self.con = Printer(local)
+        self.con = Printer(True)
         self.tag = Nametag(True)
         self.section = ''
 
@@ -476,7 +478,11 @@ class Main:
 
         html_files = []
         for data in tags:
-            stuff = self.tag.nametag(name=data['name'], number=data['number'], title=data['title'], template=theme, level=data['level'])
+            stuff = self.tag.nametag(
+                    name=data['name'], number=data['number'],
+                    title=data['title'], template=theme, level=data['level'],
+                    age=data['age']
+            )
             temp_path = self.tag._getTemplatePath(theme)
             html = tempfile.NamedTemporaryFile(delete=False, dir=temp_path, suffix='.html')
             html.write(stuff)
@@ -485,7 +491,8 @@ class Main:
 
         self.pdf = self.con.writePdf(self.args, html_files)
         for tmpname in html_files:
-            os.unlink(tmpname)
+            #os.unlink(tmpname)
+            pass
         return self.pdf
 
 
@@ -512,14 +519,15 @@ class Main:
 if __name__ == '__main__':
 
     tags =  [
-      { 'name' : "Barkley Woofington", 'number' : "S-6969", 'level' : "Top Dog", 'title' : '' },
-      { 'name' : "Rechner Foxer", 'number' : "S-0001", 'level' : "Foxo", 'title' : '' }
+            { 'name' : "Barkley Woofington", 'number' : "S-6969", 'level' : "Top Dog", 'title' : '' , 'age' : 20},
+            { 'name' : "Rechner Foxer", 'number' : "S-0001", 'level' : "Foxo", 'title' : '' , 'age' : 12}
     ]
 
-    con = Main()
+    con = Main(False)
     con.nametags(tags, theme='apis')
     #con.nametag(theme='apis', name="Some Kind Of Horse", number="S-0000", title="Staff", level="Player")
-                
+
+    print(con.pdf)
     con.preview()
     #con.printout(printer="LabelWriter-450-Turbo")
 

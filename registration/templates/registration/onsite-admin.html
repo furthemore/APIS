@@ -323,12 +323,16 @@ var print_badges = function(e) {
     var badge_preview = "";
     var stop = false;
     $.each(printQueue, function(idx, badge) {
+        /*
         badge_number = prompt("Scan or key in badge stock number for " + badge.badgeName);
         if (badge_number == null) {
             stop = true;
             return false;
         }
+        */
+        badge_number = -1; //  auto-assign
         badge.badgeNumber = badge_number;
+        badge.badgeNumber = -1;
         badge_preview += badge_number  + ' - ' + badge.badgeName + "\n";
     });
 
@@ -336,7 +340,8 @@ var print_badges = function(e) {
         return;
     }
 
-    conf = confirm("Assign badge numbers?\n\n" + badge_preview);
+    //conf = confirm("Assign badge numbers?\n\n" + badge_preview);
+    conf = true;
     if (conf) {
         // assign badge number
 
@@ -498,14 +503,43 @@ $(document).ready(function () {
 
     $("#cash_button").click(function (e) {
         e.preventDefault();
-        tendered = prompt("Enter amount tendered")
-        if (tendered == null) {
+        tendered = prompt("Enter tendered amount");
+        parsed = parseFloat(tendered.match(/(\d+).?(\d{0,2})?/));
+        total = parseFloat(cartData.total);
+        if (parsed < total) {
+            alert("Insufficient payment. (Split tender unsupported)");
             return;
         }
 
-        tendered = tendered.replace(/\s+/g, '');
-        tendered.match(/^[1-9]\d*(\.\d{1,2})*$/);
-    );
+        change = parsed - total;
+        
+        data = {
+            'reference' : cartData.reference,
+            'total' : total,
+            'tendered' : tendered
+        }
+        $.getJSON("{% url 'completeCashTransaction' %}", data, function (data) {
+            if (data.success) {
+                refresh_cart();
+            } else {
+                alert("Error while posting transaction to server");
+            }
+        });
+
+        data = {
+            'reference' : cartData.reference,
+            'organisation' : cartData.orgDonation,
+            'charity'  : cartData.charityDonation,
+            'total' : total,
+            'tendered' : tendered,
+            'change' : change
+        }
+
+        $.getJSON("{{ printer_uri }}/print/drawer", data);
+
+        alert("Change: $" + change);
+
+    });
 
     
     var remove_badge = function (e) {

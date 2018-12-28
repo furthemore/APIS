@@ -9,5 +9,4 @@ Description of Wares: {{dealer.description}}
 
 Requested Table Size: {{dealer.tableSize}}
 
-View the full dealer record: https://www.furthemore.org/apis/admin/registration/dealer/{{dealer.id}}/change/
-
+View the full dealer record: {% url 'admin:registration_dealer_change' dealer.id %}

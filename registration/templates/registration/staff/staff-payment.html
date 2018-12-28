@@ -13,7 +13,7 @@
       </div>
       <div class="modal-body">
     	<p>Staff must be over the age of 18.</p>
-	    <p>Please contact <a href="mailto:registration@furthemore.org">registration@furthemore.org</a> if you have any questions.</p>
+	    <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -29,7 +29,7 @@
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Staff Registration - {{event}}</h1>
 
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:registration@furthemore.org'>registration@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
+		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:{{event.registrationEmail}}'>{{event.registrationEmail}}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
 		<hr>
 			
@@ -46,8 +46,10 @@
 
             <div class="form-group">
                 <div class="col-sm-12">
-                    <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required />
-			        I agree to abide by Furthemore's Code of Conduct.
+                    <label>
+                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required>
+                        I agree to abide by {{ event }}'s <a href="https://docs.google.com/document/d/e/2PACX-1vQwPV-toFZdjPJioZjlUGTWoLeC3kssVd8YRPGTKP99337JMCnQP94gpRWygr5dA9J9DITQE6ChdRWU/pub" target="_blank">Code of Conduct</a>.
+                    </label>
                 </div>
 		        <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
 		    </div>
@@ -101,7 +103,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18) {
-            alert("You must be 18 by the first day of Furthemore to register online.")
+            alert("You must be 18 by the first day of {{ event }} to register online.")
             return;
         }
 
@@ -142,7 +144,7 @@
 			    if (result.responseText == "") {
 				    alert("Your session has expired.");
 			    } else {
-                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
+                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{event.registrationEmail}} for assistance.")
 			    }
 			    $("#register").removeAttr("disabled");
 		    },
@@ -151,7 +153,7 @@
                 {
  	                window.location = "{% url 'cart' %}";
 			    } else {
-                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact registration@furthemore.org for assistence.")
+                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
 			    }
 			    $("#register").removeAttr("disabled");
             }
