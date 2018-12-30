@@ -1,0 +1,37 @@
+language: python
+
+# Run jobs on container-based infrastructure, can be overridden per job
+sudo: false
+
+# Travis whitelists the installable packages, additions can be requested
+#   https://github.com/travis-ci/apt-package-whitelist
+addons:
+  apt:
+    packages:
+      - swig
+
+# Save pip's downloads/packages/wheels between job runs
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+python:
+  - 2.7
+env:
+  - DJANGO_PACKAGE="Django>=1.11,<1.12"
+
+matrix:
+    exclude:
+       - python 2.7
+
+install:
+  - pip install --upgrade pip wheel
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip freeze
+  - cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+script:
+  - coverage run manage.py test registration
+  - coverage report
+after_success:
+  - coveralls

@@ -96,3 +96,7 @@ body {
     text-decoration: underline;
     font-weight: bold;
 }
+
+.deleteAttendee {
+    cursor: pointer;
+}

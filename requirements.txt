@@ -8,7 +8,7 @@ django-extensions
 django-guardian
 django-flat-responsive
 django-widget-tweaks
-squareconnect
+squareconnect==2.20181212.0
 pyOpenSSL
 django-u2f
 Pillow>=5.3

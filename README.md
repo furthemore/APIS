@@ -1,4 +1,5 @@
 # APIS EventManager
+[![Build Status](https://travis-ci.com/rechner/APIS.svg?branch=master)](https://travis-ci.com/rechner/APIS) [![Coverage Status](https://coveralls.io/repos/github/rechner/APIS/badge.svg?branch=master)](https://coveralls.io/github/rechner/APIS?branch=master)
 
 Data Model: http://www.gliffy.com/go/publish/10890219
 

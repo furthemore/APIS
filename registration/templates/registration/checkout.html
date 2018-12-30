@@ -31,7 +31,7 @@
                 {% endif %}
 				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
 				<div class="col-sm-2">
-					<a class="deleteAttendee" id="delete_{{item.id}}">Remove</a>
+					<a class="deleteAttendee" id="delete_{{item.id}}">&times; Remove</a>
 				</div>
 			</div>
 			{% for option in item.options %}
@@ -72,7 +72,7 @@
 	
 		<br/>
         {% if not discount.newStaffEvent and not discount.staffEvent  %}
-		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registraiton</a>
+		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn btn-danger" id="cancel">Cancel Registration</a>
         {% endif %}
 
         {% if hasMinors %}
@@ -128,7 +128,7 @@
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
-                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
+                    <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
                 </div>
             </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -140,17 +140,17 @@
             <div class="col-sm-4">
                 <div class="input-group">
                     <div class="input-group-addon">$</div>
-                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate"  data-error="Please use only numbers and a decimal." />
+                    <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate"  data-error="Please use only numbers and a decimal." />
                 </div>
             </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
         </div>
 		<hr/>
 
-        {% if event.collectAddress %}
+        {% if event.collectBillingAddress %}
 		<h3>Billing Information</h3>
 
-        {% if not hasMinors %}
+        {% if not hasMinors and event.collectAddress %}
 		<div class="form-group">
             <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
             <div class="col-sm-9">
@@ -299,7 +299,7 @@
           }
 
           document.getElementById('card-nonce').value = nonce;
-          doCheckout();
+          doCheckout(cardData);
 
         },
 
@@ -501,7 +501,7 @@
 
 	});
 
-function doCheckout() {
+function doCheckout(card_data) {
     {% if total > 0 %}
 		var data = {
             'onsite': false,
@@ -509,7 +509,7 @@ function doCheckout() {
        			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                'nonce': $("#card-nonce").val()
+                'nonce': $("#card-nonce").val(), 'card_data': card_data,
 		    },
 		    'charityDonation': $("#donateCharity").val(),
 		    'orgDonation': $("#donateOrg").val()
@@ -529,8 +529,23 @@ function doCheckout() {
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
 		    "error": function(result, status, error) {
-                alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                var redirect = false;
+                var error_message = "An error occurred while attempting to process your order:\n";
+                try {
+                    var message = JSON.parse(result.responseText);
+                    if (('reason' in message) && ('errors' in message.reason)) {
+                        message.reason.errors.forEach(function (element) {
+                            error_message += element.detail + " (" + element.code + ")\n";  
+                        });
+                    }
+                } catch (e) {
+                    redirect = true;
+                    error_message = "An unspecified error occurred while attempting to process your order.\n"
+                }
+                error_message += "If this error continues, please contact {{event.registrationEmail}} for assistance.";
+                alert(error_message);
     			$("#checkout").removeAttr("disabled");
+                window.location = "{% url 'cart' %}";
     		},
             "success": function (result, status) {
                 if (result.success) {
