@@ -722,10 +722,16 @@ admin.site.register(AttendeeOptions)
 
 admin.site.register(OrderItem)
 
+def send_registration_email(modeladmin, request, queryset):
+    for order in queryset:
+        sendRegistrationEmail(order, order.billingEmail)
+send_registration_email.short_description = "Send registration email"
+
 class OrderAdmin(NestedModelAdmin):
     list_display = ('reference', 'createdDate', 'total', 'orgDonation', 'charityDonation', 'discount', 'status')
     save_on_top = True
     inlines = [OrderItemInline]
+    actions = [send_registration_email,]
     fieldsets = (
         (
 	    None,
