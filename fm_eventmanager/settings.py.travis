@@ -199,15 +199,15 @@ AUTHNET_NAME = '426rwVfr3G47'
 AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
 
 # Sandbox values = DO NOT check in production ids
-SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_xxxxxxxxxxxxxxxxxxx'
-SQUARE_ACCESS_TOKEN = 'sandbox-sq0atb-xxxxxxxxxxxxxxxxxxxxxx'
-SQUARE_LOCATION_ID = 'xxxxxxxxx...'
+SQUARE_APPLICATION_ID = os.environ['SQUARE_APPLICATION_ID']
+SQUARE_ACCESS_TOKEN = os.environ['SQUARE_ACCESS_TOKEN']
+SQUARE_LOCATION_ID = os.environ['SQUARE_LOCATION_ID']
 SQUARE_CURRENCY = 'USD'
 
 # Sandbox values - DO NOT check in production credentials
 EMAIL_HOST = 'smtp.mailgun.org'
-EMAIL_HOST_USER = 'postmaster@sandboxcdfc4543b9e84e0ea21d82a527e714fc.mailgun.org'
-EMAIL_HOST_PASSWORD = '8aee7562e054466c362ebd84e7227703'
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 
 # Return channel for Android register application
 REGISTER_KEY = 'df14e4d5469e801dbc8e1df4eebd97b3'
