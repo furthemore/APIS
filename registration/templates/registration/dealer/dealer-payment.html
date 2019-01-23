@@ -8,7 +8,7 @@
 {% if dealer and not dealer.approved%}
 
 <h1>Dealer Registration - {{event}}</h1>
-<p>Your dealer application was not approved. Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if you feel this is in error or have any questions.</p>
+<p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you feel this is in error or have any questions.</p>
 
 {% elif dealer and dealer.approved %}
 
@@ -20,6 +20,8 @@
         <h4 class="modal-title" id="myModalLabel">Buttons for a Cause</h4>
       </div>
       <div class="modal-body">
+        <p>As an effort to further support our selected annual charity, Frisky’s Primate and Wildlife Sanctuary, we are asking Marketplace and Artist Alley participants to provide incentives for those who donate. For a donation of $5 or more, the donator will receive a free "A Furry for Frisky’s" button. We humbly ask as  a community, that we come together and help support this worthy cause. </p>
+	<p>Suggestions for incentives: a percentage or amount off of a purchase or a free gift to attendees posessing the button.  If you are interested, please let us know what incentive you would like to offer and we will list your business and incentive on the Fur The More website along with signs at the charity donation table. </p>
       </div>
     </div>
   </div>
@@ -33,7 +35,7 @@
       </div>
       <div class="modal-body">
         <p>Due to state and federal laws, minors may not sell merchandice in our Marketplace. You must be 18 years of age or older before the start of the convention to be a dealer. </p>
-	<p>Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if you have any questions.</p>
+	<p>Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -43,7 +45,7 @@
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - {{event}}</h1>
 
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
         {% show_attendee_form badge.attendee emailOptions=True %}
 
@@ -65,16 +67,10 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="license" class="col-sm-3 control-label">Pennsylvania Tax License <span style="color:red;">*</span></label>
+                    <label for="license" class="col-sm-3 control-label">Virginia Tax License <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" id="license" value="{{dealer.license}}"  name="license" placeholder="PA Tax License" class="form-control form-control-text" required>
-                        <label>
-                            <input type="checkbox" id="tempLicense" /> I don't have one yet.
-                        </label>
-                        <p class="help-block">Dealers <b>MUST</b> have a valid Pennsylvania sales tax license in order to sell items at their own tables. It is illegal to sell anything that is subject to Pennsylvania sales tax without one. It is also illegal for multiple dealerships to share a single tax license. As an event promoter under the Commonwealth of Pennsylvania, we are obligated to strictly enforce these laws, and to that end anyone found attempting to purposefully circumvent tax law will be ejected from the Dealer's Den without refund.
-                        <br><br>
-                        You may apply for a PA-100 sales tax license on-line at <a href="https://www.pa100.state.pa.us/Registration.htm">https://www.pa100.state.pa.us/</a>.
-                        </p>
+                        <input type="text" id="license" value="{{dealer.license}}"  name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
+			<input type="checkbox" id="tempLicense" /> <small>I need a temporary tax license for VA.</small> 
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -102,6 +98,32 @@
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
+                    <label for="reception" class="col-sm-3 control-label">I would like the daily complimentary continental breakfast</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="breakfast" name="breakfast" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reception" class="col-sm-3 control-label">I will attend the Dealer's Reception</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="reception" name="reception" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="artShow" class="col-sm-3 control-label">I have items to place in the Art Show</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="artShow" name="artShow" class="form-control form-control-checkbox" />
+                    </div>
+		    <div class="col-sm-9 col-sm-offset-3 small">We will contact you seperately with instructions and guidelines for how to submit art to the art show.</div>
+                </div>
+                <div class="form-group">
+                    <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
+                    <div class="col-sm-9">
+                        <textarea id="buttonOffer" name="buttonOffer" class="form-control form-control-textarea">{{dealer.buttonOffer}}</textarea>
+                    </div>
+		    <div class="col-sm-9 col-sm-offset-3 small"><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal" >What's this?</button></div>
+                </div>
+                <div class="form-group">
                     <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity Raffle</label>
                     <div class="col-sm-9">
                         <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea">{{dealer.charityRaffle}}</textarea>
@@ -111,13 +133,11 @@
 
        <hr/>
                 <div class="form-group">
-                    <label for="wifi" class="col-sm-3 control-label">I require power</label>
+                    <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
                     <div class="col-sm-9">
-                        <input type="checkbox" id="power" name="power" class="form-control form-control-checkbox" />
-                        <p class="help-block">
-                            Note that there will be no available power outlets in the Dealers Den unless you get your hookup from us. $15 fee applies. Sharing your electric hookup with neighboring tables via power strips or extension cords is strictly prohibited.
-                        </p>
+                        <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
                     </div>
+		    <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. Details for Wi-Fi access will be in your welcome packet at the con.</div>
                 </div>
                 <div class="form-group">
                     <label for="wall" class="col-sm-3 control-label">I would like a wall space<br/>(Space is limited)</label>
@@ -151,7 +171,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="tables" class="col-sm-3 control-label">Assistant Information</label>
+                    <label for="tables" class="col-sm-3 control-label">Partner Information</label>
                     <div class="col-sm-9" id="partnerList">
                         {% for asst in dealer.dealerasst_set.all %}
                         <input type="text" value="{{asst}}, {{asst.email}}" class="form-control form-control-text" disabled />
@@ -159,21 +179,22 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="near" class="col-sm-3 control-label">Preferred Neighbors</label>
+                    <label for="asstbreakfast" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
                     <div class="col-sm-9">
-                        <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
-                        <p class="help-block">
-                            If there is anyone who you would like your table placed next to or close to, please list them here. If they list you on their application form as well, we will do our best to put you together. We cannot guarantee these preferences will be met, but we will certainly try! Make sure anyone that you list in your application, lists you on their application as well!
-                        </p>
+                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" class="form-control form-control-checkbox" />
+                    </div>
+		    <div class="col-sm-9 col-sm-offset-3 small">You will be charged an additional $60 per partner for this option.</div>
+                </div>
+                <div class="form-group">
+                    <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
+                    <div class="col-sm-9">
+                        <input type="text" id="near" value="{{dealer.nearTo}}" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="far" class="col-sm-3 control-label">Bad Neighbors</label>
+                    <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
                     <div class="col-sm-9">
-                        <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text" />
-                        <p class="help-block">
-                            If there is anyone you are feuding with who you would like your table placed far away from, please list them here. You don't have to tell us why, just list their names. We cannot guarantee these preferences will be met, but we will certainly try!
-                        </p>
+                        <input type="text" id="far" value="{{dealer.farFrom}}" name="far" placeholder="Business or Person" class="form-control form-control-text" />
                     </div>
                 </div>
 
@@ -220,33 +241,25 @@
   	var partnerCount = 0;
     var partner1 = "";
     var partner2 = "";
-    var partner3 = "";
     $.each(partners, function(key, item) {
-		if (item.indexOf("name_0") > -1 && item.split(':')[1].trim() != "") {
-			partnerCount = partnerCount + 1;
-		}
 		if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
 			partnerCount = partnerCount + 1;
 		}
 		if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
 			partnerCount = partnerCount + 1;
 		}
-		if (item.indexOf("_0") > -1) {
-			var p1 = item.split(':');
-            partner1 += " " + p1[1]
-		}
 		if (item.indexOf("_1") > -1) {
-			var p2 = item.split(':');
-            partner2 += " " + p2[1]
+			var p1 = item.split(':');
+			partner1 = partner1 + " " + p1[0] + ": " + p1[1];
 		}
 		if (item.indexOf("_2") > -1) {
-			var p3 = item.split(':');
-            partner3 += " " + p3[1]
+			var p2 = item.split(':');
+			partner2 = partner2 + " " + p2[0] + ": " + p2[1];
 		}
 
 	});
-	$("#partner1").val(partner1.trim());
-	$("#partner2").val(partner2.trim());			
+	$("#partner1").val(partner1);
+	$("#partner2").val(partner2);			
 	$("#partnerCount").text(partnerCount);
 	$("#partnerTotal").text("$" + partnerCount*40 + ".00");
 	$("#contact").attr('checked', attendee.emailsOk);
@@ -259,7 +272,7 @@
 	$("#switch").attr('checked', dealer.willSwitch);
     $("#asstbreakfast").attr('checked', dealer.asstBreakfast);
 
-	if (dealer.license == "needed") {
+	if (dealer.license == "temporary") {
 		$("#license").attr("disabled", "disabled");
 		$("#tempLicense").attr('checked', true);
 	}
@@ -276,123 +289,12 @@
 
 	$("#tempLicense").on("click", function () {
 		if ($(this).is(":checked")) {
-			$("#license").val("needed").attr("disabled", "disabled");
+			$("#license").val("temporary").attr("disabled", "disabled");
 		} else {
 			$("#license").val("").removeAttr("disabled");
 		}
 	});
 
-
-	$("#levelContainer").on('click', 'a.selectLevel', function(){
-		clearLevels();
-		var levelId = $(this).attr('id').split('_')[1];
-		$.each( levelTemplateData, function( key, val ) {
-			var id = val.levelId.split('_')[1];
-			if (id == levelId){
-				$("#regLevel").val(val.name);
-				$("#levelContainer").loadTemplate($("#levelTemplate"), val);
-				$(".changeLevel").show();
-				$(".selectLevel").text("Selected!");
-				generateOptions(id);
-				return false;
-			}
-		});
-	});
-	$("#levelContainer").on('click', 'a.changeLevel', function() {
-		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
-		$("#regLevel").val("");
-		$(".changeLevel").hide();
-	});
-	var clearLevels = function(){
-		$.each( levelTemplateData, function( key, val ) {
-			$("#"+val.levelId).text("Select " + val.name);
-		});
-		$("form").validator('update');
-	};
-	var generateOptions = function(levelId){
-		var data = [];
-		$.each(levelData, function(key, thing){
-			if (thing.id == levelId){
-				data = thing.options;
-				return false;
-			}
-		});
-		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
-		$("#levelContainer").append(container);
-		$.each( data, function(key, val) {
-			if (val.value == "0.00"){
-				var price = " (Free) ";
-			} else {
-				var price = " (+$" + val.value + ") "
-			}
-			var required = "";
-			if (val.required) {required = "required";}
-			switch (val.type){
-				case "bool":
-					var template = $("#optionBoolTemplate");
-					if (val.required) {template = $("#optionBoolReqTemplate");}
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id
-					}, {append: true});
-					break;
-				case "int":
-					var template = $("#optionIntTemplate");
-					if (val.required) {template = $("#optionIntReqTemplate");}
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id
-					}, {append: true});
-					break;
-				case "string":
-					var template = $("#optionStringTemplate");
-					if (val.required) {template = $("#optionStringReqTemplate");}
-					var placeholder = val.name;
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id,
-						'placeholder': placeholder,
-					}, {append: true});
-					break;
-				case "Jersey":
-					break;
-				case "StaffJersey":
-					break;
-				default:
-					if (val.list == []){break;}
-					var options = [];
-					if (!val.required) {options.push({"content": "Select One...", "value": ""});}
-					$.each(val.list, function (key, item) {
-						options.push({"content": item.name, "value": item.id})
-					});
-					$("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id,
-						'options': options
-					}, {append: true});
-					break;
-			}
-		});
-		
-		$("form").validator('update');
-	};
-
-    var getOptions = function() {
-        var options = $(".levelOptions");
-                var data = [];
-        $.each(options, function(key, option) {
-            if ($(option).is(':checkbox')) {
-                if ($(option).is(':checked')) {
-                    data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
-                }
-            } else {
-                if ($(option).val() != "") {
-                    data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-                }
-            }
-        });
-        return data;
-    };
 
 	$("#checkout").click(doRegister);
 	
@@ -417,13 +319,13 @@
 			'dealer': {
 				'id': dealer.id,
 				'businessName':$("#businessName").val(), 'website':$("#website").val(),
-				'license':$("#license").val(), 'wifi': false, 'power':$("#power").is(':checked'),
+				'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
 				'description': $("#description").val(), 'logo': $("#logo").val(),
 				'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
 				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
-				'breakfast': false, 'switch': $('#switch').is(':checked'),
-				'buttonOffer': false, 'asstbreakfast': false,
+				'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
+				'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked'),
 			},
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
             'event': '{{event}}'
@@ -443,7 +345,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.dealerEmail }} for assistance.")
+                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.")
 			}
 			$("#checkout").removeAttr("disabled");
 		    },
@@ -453,7 +355,7 @@
                             window.location = "{% url 'invoiceDealer' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.dealerEmail }} for assistance.");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
 			}
                     }
 		});

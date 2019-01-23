@@ -31,7 +31,7 @@
 
 		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:{{ event.staffEmail }}'>{{ event.staffEmail }}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
-        {% show_attendee_form %}
+        {% show_attendee_form event=event %}
 
         {% show_staff_form staff %}
 

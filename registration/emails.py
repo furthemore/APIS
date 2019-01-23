@@ -51,7 +51,7 @@ def sendRegistrationEmail(order, email):
             msgTxt = render_to_string('registration/emails/vipNotification.txt', data)
             msgHtml = render_to_string('registration/emails/vipNotification.html', data)
             sendEmail(registrationEmail, [email for email in oi.priceLevel.emailVIPEmails.split(',')],
-                 "{0} VIP Registration".format(oi.badge.event.name, msgTxt, msgHtml))
+                 "{0} VIP Registration".format(oi.badge.event.name), msgTxt, msgHtml)
 
 def sendUpgradePaymentEmail(attendee, order):
     orderItems = OrderItem.objects.filter(order=order)
