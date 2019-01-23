@@ -120,8 +120,13 @@ def doCheckout(billingData, total, discount, cartItems, orderItems, donationOrg,
 def doZeroCheckout(discount, cartItems, orderItems):
     if cartItems:
         attendee = json.loads(cartItems[0].formData)['attendee']
+        billingName = "{firstName} {lastName}".format(**attendee)
+        billingEmail = attendee['email']
     elif orderItems:
-        attendee = dict(orderItems[0].badge.attendee)
+        attendee = orderItems[0].badge.attendee
+        billingName = "{0} {1}".format(attendee.firstName, attendee.lastName)
+        billingEmail = attendee.email
+
 
     reference = getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
@@ -130,8 +135,8 @@ def doZeroCheckout(discount, cartItems, orderItems):
     logger.debug(attendee)
     order = Order(total=0, reference=reference, discount=discount,
                   orgDonation=0, charityDonation=0, status="Complete",
-                  billingType=Order.COMP, billingEmail=attendee['email'],
-                  billingName="{firstName} {lastName}".format(**attendee))
+                  billingType=Order.COMP, billingEmail=billingEmail,
+                  billingName=billingName)
     order.save()
 
     if cartItems:
@@ -206,10 +211,11 @@ def getTotal(cartItems, orderItems, disc = ""):
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
         effLevel = item.badge.effectiveLevel()
-        if effLevel:
-            itemTotal = itemSubTotal - effLevel.basePrice
-        else:
-            itemTotal = itemSubTotal
+        # FIXME Why was this here?
+        #if effLevel:
+        #    itemTotal = itemSubTotal - effLevel.basePrice
+        #else:
+        itemTotal = itemSubTotal
 
         itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
 
@@ -218,6 +224,7 @@ def getTotal(cartItems, orderItems, disc = ""):
             total_discount += discount
             itemTotal -= discount
 
+        # FIXME Why?
         if itemTotal > 0:
             total += itemTotal
 
@@ -407,7 +414,7 @@ def findStaff(request):
         request.session['staff_id'] = staff.id
         return JsonResponse({'success': True, 'message':'STAFF'})
     except Exception as e:
-        logger.exception("Unable to find staff. " + request.body)
+        logger.warning("Unable to find staff. " + request.body)
         return HttpResponseServerError(str(e))
 
 
@@ -557,7 +564,7 @@ def checkoutStaff(request):
     subtotal = getStaffTotal(orderItems, discount, staff)
 
     if subtotal == 0:
-      status, message, order = doZeroCheckout(staff.attendee, discount, orderItems)
+      status, message, order = doZeroCheckout(discount, None, orderItems)
       if not status:
           return JsonResponse({'success': False, 'message': message})
 
@@ -751,6 +758,7 @@ def checkoutAsstDealer(request):
     assts = postData['assistants']
     dealerId = request.session['dealer_id']
     dealer = Dealer.objects.get(id=dealerId)
+    event = Event.objects.get(default=True)
 
     badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
 
@@ -763,8 +771,10 @@ def checkoutAsstDealer(request):
     orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
-    dealer.partners = assts
-    dealer.save()
+    #dealer.partners = assts
+    for assistant in assts:
+        dasst = DealerAsst(dealer=dealer,event=event,name=assistant['name'],email=assistant['email'],license=assistant['license'])
+        dasst.save()
     partnerCount = dealer.getPartnerCount()
 
     # FIXME: remove hardcoded costs
@@ -786,7 +796,7 @@ def checkoutAsstDealer(request):
             return JsonResponse({'success': False, 'message': "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(dealerEmail)})
         return JsonResponse({'success': True})
     else:
-        order.delete()
+        orderItem.delete()
         return JsonResponse({'success': False, 'message': message})
 
 
@@ -923,7 +933,7 @@ def checkoutDealer(request):
 
         if subtotal == 0:
 
-            status, message, order = doZeroCheckout(dealer.attendee, discount, orderItems)
+            status, message, order = doZeroCheckout(discount, None, orderItems)
             if not status:
               return JsonResponse({'success': False, 'message': message})
 
@@ -1682,7 +1692,7 @@ def getCart(request):
         if discount:
             discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0: discount = discount.first()
-        total = getTotal([], orderItems, discount)
+        total, total_discount = getTotal([], orderItems, discount)
 
         hasMinors = False
         for item in orderItems:
@@ -1690,9 +1700,12 @@ def getCart(request):
               hasMinors = True
               break
 
+        event = Event.objects.get(default=True)
         context = {
+            'event' : event,
             'orderItems': orderItems,
             'total': total,
+            'total_discount' : total_discount,
             'discount': discount,
             'hasMinors': hasMinors
         }
@@ -1851,6 +1864,15 @@ def removeFromCart(request):
     if 'id' not in postData.keys():
         return abort(400, 'Required parameter `id` not specified')
     id = postData['id']
+
+    # Old workflow
+    logger.debug("order_items: {0}".format(order))
+    logger.debug("delete order from session: {0}".format(id))
+    if int(id) in order:
+        order.remove(int(id))
+        deleted = True
+        request.session['order_items'] = order
+        return success()
 
     # New cart workflow
     cartItems = request.session.get('cart_items', [])
@@ -2045,14 +2067,18 @@ def basicBadges(request):
 @staff_member_required
 def vipBadges(request):
     badges = Badge.objects.all()
-    vipLevels = ('Pastry Chef', 'Manager')
+    # Assumes VIP levels based on being marked as "vip" group, or EmailVIP set
+    priceLevels = PriceLevel.objects.filter(Q(emailVIP=True) | Q(group__iexact='vip'))
+    vipLevels = [ level.name for level in priceLevels ]
 
+    # FIXME list comprehension is sloooooooow - there must be a way to do this in SQL -R
     bdata = [{'badge': badge, 'orderItems': getOptionsDict(badge.orderitem_set.all()),
               'level': badge.effectiveLevel().name, 'assoc': badge.abandoned}
              for badge in badges if badge.effectiveLevel() != None and badge.effectiveLevel() != 'Unpaid' and
                badge.effectiveLevel().name in vipLevels and badge.abandoned != 'Staff']
 
     events = Event.objects.all()
+    # FIXME this doesn't actually affect the order in the resulting template render
     events.reverse()
 
     return render(request, 'registration/utility/holidaylist.html', {'badges': bdata, 'events': events})

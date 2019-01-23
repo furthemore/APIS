@@ -9,10 +9,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Charity modal</h4>
+        <h4 class="modal-title" id="myModalLabel">Buttons for a Cause</h4>
       </div>
       <div class="modal-body">
-          Charity modal
+        <p>As an effort to further support our selected annual charity, Frisky’s Primate and Wildlife Sanctuary, we are asking Marketplace and Artist Alley participants to provide incentives for those who donate. For a donation of $5 or more, the donator will receive a free "A Furry for Frisky’s" button. We humbly ask as  a community, that we come together and help support this worthy cause. </p>
+    <p>Suggestions for incentives: a percentage or amount off of a purchase or a free gift to attendees posessing the button.  If you are interested, please let us know what incentive you would like to offer and we will list your business and incentive on the Fur The More website along with signs at the charity donation table. </p>
       </div>
     </div>
   </div>
@@ -26,7 +27,7 @@
       </div>
       <div class="modal-body">
         <p>Due to state and federal laws, minors may not sell merchandice in our Marketplace. You must be 18 years of age or older before the start of the convention to be a dealer. </p>
-    <p>Please contact <a href="mailto:{{ event.dealerEmail }}">{{event.dealerEmail}}</a> if you have any questions.</p>
+    <p>Please contact <a href="mailto:marketplacehead@furthemore.org">marketplacehead@furthemore.org</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -37,81 +38,6 @@
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Dealer Registration - {{event}}</h1>
         <p>Welcome to the registration system. To continue, enter your information below.</p>
-
-            
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name</label>
-                    <div class="col-sm-4">
-                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
-                    </div>
-            <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
-                        <label>
-                          <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
-                        </label>
-                        <label>
-                          <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the end-of-con survey.</span>
-                        </label>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number</label>
-                    <div class="col-sm-9">
-                        <input type="tel" id="phone" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State</label>
-            <div class="col-sm-4">
-            <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
-            </div>
-                    <div class="col-sm-5">
-            <select class="form-control bfh-states" id="state" data-country="US" data-state="PA" name="state"></select>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">ZIP/Country</label>
-            <div class="col-sm-3">
-            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
-            </div>
-                    <div class="col-sm-6">
-            <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                
-            <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth</label>
-                    <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" />
-            <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
 
              {% show_attendee_form emailOptions=True %}
 
@@ -134,17 +60,13 @@
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="license" class="col-sm-3 control-label">Pennsylvania Tax License</label>
+                    <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
                     <div class="col-sm-9">
-                        <input type="text" id="license" name="license" placeholder="PA Tax License" class="form-control form-control-text" required>
+                        <input type="text" id="license" name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
             
                         <label>
-                            <input type="checkbox" id="tempLicense" /> I don't have one yet
+                            <input type="checkbox" id="tempLicense" /> I need a temporary tax license for VA.
                         </label>
-                        <p class="help-block">Dealers <b>MUST</b> have a valid Pennsylvania sales tax license in order to sell items at their own tables. It is illegal to sell anything that is subject to Pennsylvania sales tax without one. It is also illegal for multiple dealerships to share a single tax license. As an event promoter under the Commonwealth of Pennsylvania, we are obligated to strictly enforce these laws, and to that end anyone found attempting to purposefully circumvent tax law will be ejected from the Dealer's Den without refund.
-                        <br><br>
-                        You may apply for a PA-100 sales tax license on-line at <a href="https://www.pa100.state.pa.us/Registration.htm">https://www.pa100.state.pa.us/</a>.
-                        </p>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -156,9 +78,6 @@
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                <!--
-                    <label for="description" class="col-sm-3 control-label">What kinds of products will you be offering at your table?</label>
-                -->
                     <label for="website" class="col-sm-3 control-label">Logo</label>
                     <div class="col-sm-9">
                         <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png" class="form-control form-control-text" data-error="Please enter a full URL here. Ex: http://www.google.com/image.png" />
@@ -169,23 +88,36 @@
                 <div class="form-group">
                     <label for="description" class="col-sm-3 control-label">Description of Wares</label>
                     <div class="col-sm-9">
-                        <p class="help-block">Select all that apply</p>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Digital Art"> Digital Art (prints, comics, badges, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Traditional Art"> Traditional Art (pencils and markers, paintings, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Fursuits"> Fursuits / Suiting Supplies & Accessories</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Music"> Music or Audio</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Literature"> Books / Literature (other than comics)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Apparel"> Apparel (shirts, hoodies, bandanas, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Accessories"> Accessories (harnesses, collars, jewelry, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Traditional Games"> Traditional Games (board games, card games, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Video Games"> Video Games (games, consoles, accessories, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Sculptures"> Sculptures (figurines, 3D-printed models, etc)</label><br>
-                        <label><input type="checkbox" class="description-checkbox" data-description="Other"> Other: </label><input type="text" id="description-other" class="form-control" placeholder="Please specify">
-                        
+                        <textarea id="description" name="description" class="form-control form-control-textarea" required></textarea>
+                    </div>
+            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="breakfast" class="col-sm-3 control-label">I would like the daily complimentary continental breakfast</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="breakfast" name="breakfast" class="form-control form-control-checkbox" />
                     </div>
                 </div>
-            </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+                <div class="form-group">
+                    <label for="reception" class="col-sm-3 control-label">I will attend the Dealer's Reception</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="reception" name="reception" class="form-control form-control-checkbox" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="artShow" class="col-sm-3 control-label">I have items to place in the Art Show</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="artShow" name="artShow" class="form-control form-control-checkbox" />
+                    </div>
+            <div class="col-sm-9 col-sm-offset-3 small">We will contact you seperately with instructions and guidelines for how to submit art to the art show.</div>
+                </div>
+                <div class="form-group">
+                    <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
+                    <div class="col-sm-9">
+                        <textarea id="buttonOffer" name="buttonOffer" class="form-control form-control-textarea"> </textarea>
+                    </div>
+            <div class="col-sm-9 col-sm-offset-3 small"><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal" >What's this?</button></div>
+                </div>
                 <div class="form-group">
                     <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity Raffle</label>
                     <div class="col-sm-9">
@@ -199,12 +131,9 @@
         <p>The options below may limit where you can be placed in our Marketplace.</p>
         <hr/>
                 <div class="form-group">
-                    <label for="power" class="col-sm-3 control-label">I require power</label>
+                    <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
                     <div class="col-sm-9">
-                        <input type="checkbox" id="power" name="power" class="form-control form-control-checkbox" />
-                        <p class="help-block">
-                            Note that there will be no available power outlets in the Dealers Den unless you get your hookup from us. $15 fee applies. Sharing your electric hookup with neighboring tables via power strips or extension cords is strictly prohibited.
-                        </p>
+                        <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
                     </div>
                <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. You will receive Wi-Fi access details in your welcome packet at the con.</div>
                 </div>
@@ -218,10 +147,8 @@
                     <label for="switch" class="col-sm-3 control-label">I will consider different table types</label>
                     <div class="col-sm-9">
                         <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
-                        <p class="help-block">
-                            If the length of table you request in this application is no longer available by the time you are accepted, we may have to shrink you to a smaller table size. By checking this box you are requesting that we contact you with alternative options for table sizing in the event this is the case. You will only be responsible for paying for the length of table that you actually receive.
-                        </p>
                     </div>
+            <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I am willing to be assigned a different spot type (Table to booth or booth to table). You can decide to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept, you will be responsible for any difference in price.</div>
                 </div>
                 <div class="form-group">
                     <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
@@ -243,57 +170,35 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="tables" class="col-sm-3 control-label">Assistant Information</label>
+                    <label for="tables" class="col-sm-3 control-label">Partner Information</label>
                     <div class="col-sm-9" id="partnerList">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="near" class="col-sm-3 control-label">Preferred Neighbors</label>
+                    <label for="asstbreakfast" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
+                    <div class="col-sm-9">
+                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" class="form-control form-control-checkbox" />
+                    </div>
+                <div class="col-sm-9 col-sm-offset-3 small">You will be charged an additional $60 per partner for this option.</div>
+                </div>
+                <div class="form-group">
+                    <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
                     <div class="col-sm-9">
                         <input type="text" id="near" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
-                        <p class="help-block">
-                            If there is anyone who you would like your table placed next to or close to, please list them here. If they list you on their application form as well, we will do our best to put you together. We cannot guarantee these preferences will be met, but we will certainly try! Make sure anyone that you list in your application, lists you on their application as well!
-                        </p>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="far" class="col-sm-3 control-label">Bad Neighbors</label>
+                    <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
                     <div class="col-sm-9">
                         <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text" />
-                        <p class="help-block">
-                            If there is anyone you are feuding with who you would like your table placed far away from, please list them here. You don't have to tell us why, just list their names. We cannot guarantee these preferences will be met, but we will certainly try!
-                        </p>
                     </div>
                 </div>
         <hr/>
              <div>
                  <div>
-                     <p>
-                        <h2>Terms and Conditions</h2>
-                        <ol id="terms">
-                            <li>
-                                Anyone approved to be a dealer at {{ event }} MUST register for the convention and pay for their approved table within three weeks (21 days) of their acceptance. After three weeks (21 days), your spot will be offered to the next person on the wait list, and at that point the table will go to whichever of you pays for the spot first. Register and pay immediately upon approval in order to best secure your spot!
-                            </li>
-                            <li>
-                                If you do not have a valid tax license at the time of your application, you must obtain one in advance of the convention and provide us with a photocopy of your valid tax license when you check into the Dealer's Den. Dealers <b>MUST</b> have a valid Pennsylvania sales tax license in order to sell items at their own tables. It is illegal to sell anything that is subject to Pennsylvania sales tax without one. It is also illegal for multiple dealerships to share a single tax license. As an event promoter under the Commonwealth of Pennsylvania, we are obligated to strictly enforce these laws, and to that end anyone found attempting to purposefully circumvent tax law will be ejected from the Dealer's Den without refund.
-                            </li>
-                            <li>
-                                {{ event }}, like most conventions of its sort, only allows ONE vendor to operate per table registration. You may have others behind your table, but they must be helping you to sell your things, and not selling things of their own. Individuals found to be sharing a single table registration between two or more dealers (for example, trying to save money by splitting one table registration between two dealers) will be ejected from the Dealer's Den without refund. 
-                            </li>
-                            <li>
-                                Anyone found selling products that are illegal by Pennsylvania or federal law will be ejected from the Dealer's Den without refund and may, depending on the nature of what they are selling, be reported to local, state, or federal authorities. Such items include controlled substances like recreational drugs, controlled weapons and other illegal deadly objects, illegal pornographic content, the sale of alcohol without a liquor license, etc.
-                            </li>
-                            <li>
-                                If you are showing adult content at your table, it must be kept concealed, separated from all-ages content, and clearly labeled as adult-only. You must not allow any underage persons to view adult content. If you encounter an underage person attempting to view adult content, please report them to convention staff. Knowingly allowing a minor to view adult content is grounds for ejection from the Dealer's Den without refund.
-                            </li>
-                            <li>
-                                Any damages to the Dealer's Den ballroom as a result of your vending at {{ event }} will be your responsibility to pay for. Should the hotel impose any fees upon {{ event }}. for damages that are known and proven to be caused by you or your assistants, you agree to pay those damages on behalf of the convention. Such fees may be imposed as a result of damages to the floors, walls, tables, etc.
-                            </li>
-                        </ol>
-                     </p>
                       <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-                            I have read and understand the rules pertaining to both {{ event }} and the Markeplace. I agree to abide by these rules and by {{ event }}'s <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>.
+            I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
                       </label>
                  </div>
                  <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -319,7 +224,6 @@
     $( "body" ).ready(function() {
         if (!Modernizr.inputtypes.date) {
             $("#birthDate").datepicker({
-                format: 'yyyy-mm-dd',
                 changeMonth: true,
                 changeYear: true
             });
@@ -327,12 +231,7 @@
                 $.getJSON("{% url 'tablesizes' %}", function(data) {
                         tableSizes = data;
             $.each(tableSizes, function (key, item) {
-                if (item.basePrice > 0) {
-                    var price = "$" + item.basePrice;
-                } else {
-                    var price = "varies";
-                }
-                $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " (" + price + ")</option>");
+                $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
                 if (key == 0) { 
                     $("#tableSizeDescription").text(item.description); 
                     setTableInfo(item.id);
@@ -382,6 +281,8 @@
                         $("#partnerList").append(partner);
                         if (i != item.partnerMax){$("#partnerList").append("<br/>");}
                     }
+                    $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
+                    $(".partnerLicense").click(partnerLicense);
                 }
             }
         });     
@@ -389,7 +290,7 @@
 
     $("#country").on("change", function() {
         if ($(this).val() == "US"){
-            $("#state").val("PA").removeAttr("disabled").attr("required", "required");
+            $("#state").val("VA").removeAttr("disabled").attr("required", "required");
             $("#zip").val("").removeAttr("disabled").attr("required", "required");
         } else {
             $("#state").val("").attr("disabled", "disabled").removeAttr("required");
@@ -399,7 +300,7 @@
 
     $("#tempLicense").on("click", function () {
         if ($(this).is(":checked")) {
-            $("#license").val("I don't have one yet").attr("disabled", "disabled");
+            $("#license").val("temporary").attr("disabled", "disabled");
         } else {
             $("#license").val("").removeAttr("disabled");
         }
@@ -442,17 +343,6 @@
         return partners;
     }
 
-    function getDescriptionText() {
-        var description = "";
-        $(".description-checkbox").each(function () {
-            if ($(this).is(':checked')) {
-                description += $(this).data("description") + "\n";
-            }
-        });
-        description += $("#description-other").val();
-        return description;
-    }
-
     function doRegister() {
         $("form").validator('validate');
         var errorCount = $(".has-error").length;
@@ -470,7 +360,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18){
-            alert("You must be 18 by the first day of {{ event }} to be a dealer.");
+            alert("You must be 18 by the first day of Furthemore to be a dealer.");
             return;
         }
 
@@ -484,15 +374,15 @@
                 'badgeName': $("#badgename").val()
             }, 
             'dealer': {
-                'businessName':$("#businessName").val(), 'website':$("#website").val(),
-                'license':$("#license").val(), 'power': $("#power").is(':checked'), 'wifi': false,
+                'businessName':$("#businessName").val(), 'website':$("#website").val(), 'logo':$("#logo").val(),
+                'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
-                'description': getDescriptionText(), 'tableSize': $("#tableSize").val(),  
+                'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
                 'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
-                'reception': false, 'artShow': false, 
+                'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
                 'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
-                'breakfast': false, 'switch': $('#switch').is(':checked'),
-                'buttonOffer': false, 'asstbreakfast': false
+                'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
+                'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked')
             },
             'event': '{{event}}'
         };
@@ -506,7 +396,7 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. Please contact {{ event.dealerEmail }} and we will correct the problem.")
+                        alert("An error has occurred. Please contact marketplacehead@furthemore.org and we will correct the problem.")
             },
                     "success": function () {
                         window.location = "{% url 'thanksDealer' %}";
