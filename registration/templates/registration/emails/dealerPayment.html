@@ -23,6 +23,14 @@
 {% endif %}
 <tr><td>Attendee Level - {{orderItem.priceLevel}}</td><td>${{orderItem.priceLevel.basePrice}}</td></tr>
 
+{% for ao in options %}
+    {% if ao.option.optionExtraType == 'int' %}
+    <tr><td>Option: {{ao.option.optionName}} x{{ao.optionValue}}</td><td>${{ao.getTotal}}</td></tr>
+    {% else %}
+    <tr><td>Option: {{ao.option.optionName}}</td><td>${{ao.option.optionPrice}}</td></tr>
+    {% endif %}
+{% endfor %}
+
 {% if dealer.discount > 0 %}
 <tr><td>Other Discount {{dealer.discountReason}}</td><td>-${{dealer.discount}}</td></tr>
 {% endif %}

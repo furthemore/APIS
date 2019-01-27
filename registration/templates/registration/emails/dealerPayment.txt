@@ -1,37 +1,49 @@
 {% load mathfilters %}
-Salutations Sakura Festival Vendors,
+Salutations Vendor,
 
-Thank you for participating for {{event}}'s Dealers Den!
-If you have any questions or 
-concerns, please email {{ event.dealerEmail }}.
+Thank you for participating in {{event}}'s Dealers Den!
+If you have any questions or concerns, please email {{ event.dealerEmail }}.
 
 Your confirmation number is: {{order.reference}}
+
 Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}
--------------------------------------------
-Table Type - {{dealer.tableSize}}: ${{dealer.tableSize.basePrice}}
-{% if dealer.needWifi%}
-Wi-Fi Access: $50.00
+------------------------------------------------------------------
+Table Type - {{dealer.tableSize}}:  ${{dealer.tableSize.basePrice}}
+{% if dealer.needWifi %}
+Wi-Fi Access:  $50.00
 {% endif %}
-Continental Breakfast: {{dealer.breakfast|yesno:"Yes,No"}}
-Friday Reception: {{dealer.reception|yesno:"Yes,No"}}
+Continental Breakfast:  {{dealer.breakfast|yesno:"Yes,No"}}
+Friday Reception:  {{dealer.reception|yesno:"Yes,No"}}
 {% if dealer.getPartnerCount > 0%}
-Partners x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:45}}.00
+
+Partners x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:45}}.00
 {% endif %}
 {% if dealer.asstBreakfast%}
-Partner Breakfast x{{dealer.getPartnerCount}}: ${{dealer.getPartnerCount|mul:60}}.00
+Partner Breakfast x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:60}}.00
 {% endif %}
-Attendee Level - {{orderItem.priceLevel}}: ${{orderItem.priceLevel.basePrice}}
+
+Attendee Level - {{orderItem.priceLevel}}:  ${{orderItem.priceLevel.basePrice}}
+
+{% for ao in options %}
+    {% if ao.option.optionExtraType == 'int' %}
+    Option: {{ao.option.optionName}} x{{ao.optionValue}}:  ${{ao.getTotal}}
+    {% else %}
+    Option: {{ao.option.optionName}}:  ${{ao.option.optionPrice}}
+    {% endif %}
+{% endfor %}
+
 {% if dealer.discount > 0 %}
-Other Discount - {{dealer.discountReason}}: -${{dealer.discount}}
+Other Discount {{dealer.discountReason}}:  -${{dealer.discount}}
 {% endif %}
+
 {% if order.charityDonation > 0 %}
 Charity Donation: ${{order.charityDonation}}
 {% endif %}
 {% if order.orgDonation > 0 %}
-{{ event }} Donation: ${{order.orgDonation}}
+{{event}} Donation: ${{order.orgDonation}}
 {% endif %}
 
-Total: ${{order.total}}
--------------------------------------------
+Total:  ${{order.total}}
+------------------------------------------------------------------
 
 If you have listed any partners, they will receive an email with instructions about how to register.

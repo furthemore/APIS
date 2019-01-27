@@ -2,8 +2,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 import logging
 from .models import *
-#from . import views
-import views
+from . import views
 
 logger = logging.getLogger('registration.emails')
 
@@ -136,10 +135,6 @@ def sendDealerAsstEmail(dealerId):
               "{0} Dealer Assistant Addition".format(dealer.event.name),
               msgTxt, msgHtml)
 
-    sendEmail(dealerEmail, [settings.APIS_DEALER_HEAD], 
-              "{0} Dealer Application".format(dealer.event.name),
-              "Dealer assistant addition received.",
-              "Dealer asistant addition received.")
 
 def sendDealerPaymentEmail(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
