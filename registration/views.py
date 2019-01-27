@@ -230,7 +230,7 @@ def getTotal(cartItems, orderItems, disc = ""):
 
     return total, total_discount
 
-def getDealerTotal(orderItems, dealer):
+def getDealerTotal(orderItems, discount, dealer):
     itemSubTotal = 0
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
@@ -240,7 +240,6 @@ def getDealerTotal(orderItems, dealer):
                     itemSubTotal += (option.option.optionPrice*Decimal(option.optionValue))
             else:
                 itemSubTotal += option.option.optionPrice
-
     partnerCount = dealer.getPartnerCount()
     partnerBreakfast = 0
     if partnerCount > 0 and dealer.asstBreakfast:
@@ -252,7 +251,9 @@ def getDealerTotal(orderItems, dealer):
     if dealer.needPower:
         power = 15
     paidTotal = dealer.paidTotal()
-    total = subTotal + 35*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi + power - dealer.discount - paidTotal
+    if discount:
+        itemSubTotal = getDiscountTotal(discount, itemSubTotal)
+    total = itemSubTotal + 45*partnerCount + partnerBreakfast + dealer.tableSize.basePrice + wifi + power - dealer.discount - paidTotal
     if total < 0:
       return 0
     return total
@@ -570,7 +571,7 @@ def checkoutStaff(request):
 
       request.session.flush()
       try:
-          sendStaffRegistrationEmail(order.id)
+          emails.sendStaffRegistrationEmail(order.id)
       except Exception as e:
           logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
           staffEmail = getStaffEmail()
@@ -595,7 +596,7 @@ def checkoutStaff(request):
     if status:
         clear_session(request)
         try:
-            sendStaffRegistrationEmail(order.id)
+            emails.sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
             staffEmail = getStaffEmail()
@@ -727,7 +728,7 @@ def invoiceDealer(request):
             context = {'orderItems': orderItems, 'total': total, 'discount': discount, 'dealer': dealer}
     event = Event.objects.get(default=True)
     context['event'] = event
-    return render(request, 'registration/dealer-checkout.html', context)
+    return render(request, 'registration/dealer/dealer-checkout.html', context)
 
 
 def addAsstDealer(request):
@@ -741,9 +742,9 @@ def addAsstDealer(request):
     if dealer.attendee:
         assts = list(DealerAsst.objects.filter(dealer=dealer))
         assistants = []
-        if assts:
-            assistants = model_to_dict(assts)
-        context = {'attendee': dealer.attendee, 'dealer': dealer, 'assistants': assistants}
+        for dasst in assts:
+            assistants.append(model_to_dict(dasst))
+        context = {'attendee': dealer.attendee, 'dealer': dealer, 'asstCount': len(assts), 'jsonAssts': json.dumps(assistants, default=handler)}
     event = Event.objects.get(default=True)
     context['event'] = event
     return render(request, 'registration/dealer/dealerasst-add.html', context)
@@ -789,7 +790,7 @@ def checkoutAsstDealer(request):
     if status:
         request.session.flush()
         try:
-            sendDealerAsstEmail(dealer.id)
+            emails.sendDealerAsstEmail(dealer.id)
         except Exception as e:
             logger.exception("Error emailing DealerAsstEmail.")
             dealerEmail = getDealerEmail()
@@ -797,6 +798,8 @@ def checkoutAsstDealer(request):
         return JsonResponse({'success': True})
     else:
         orderItem.delete()
+        for assistant in assts:
+            assistant.delete()
         return JsonResponse({'success': False, 'message': message})
 
 
@@ -895,23 +898,6 @@ def addDealer(request):
 
     return JsonResponse({'success': True})
 
-def invoiceDealer(request):
-    sessionItems = request.session.get('order_items', [])
-    if not sessionItems:
-        context = {'orderItems': [], 'total': 0}
-        request.session.flush()
-    else:
-        dealerId = request.session.get('dealer_id', -1)
-        if dealerId == -1:
-            context = {'orderItems': [], 'total': 0}
-            request.session.flush()
-        else:
-            dealer = Dealer.objects.get(id=dealerId)
-            orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-            total = getDealerTotal(orderItems, dealer)
-            context = {'orderItems': orderItems, 'total': total, 'dealer': dealer}
-    return render(request, 'registration/dealer/dealer-checkout.html', context)
-
 def checkoutDealer(request):
     try:
         sessionItems = request.session.get('order_items', [])
@@ -940,7 +926,7 @@ def checkoutDealer(request):
             request.session.flush()
 
             try:
-                sendDealerPaymentEmail(dealer, order)
+                emails.sendDealerPaymentEmail(dealer, order)
             except Exception as e:
                 logger.exception("Error sending DealerPaymentEmail - zero sum.")
                 dealerEmail = getDealerEmail()
@@ -958,13 +944,13 @@ def checkoutDealer(request):
 
         pbill = postData['billingData']
         ip = get_client_ip(request)
-        status, message, order = doCheckout(pbill, total, discount, orderItems, porg, pcharity, ip)
+        status, message, order = doCheckout(pbill, total, discount, None, orderItems, porg, pcharity, ip)
 
         if status:
             request.session.flush()
             try:
                 dealer.resetToken()
-                sendDealerPaymentEmail(dealer, order)
+                emails.sendDealerPaymentEmail(dealer, order)
             except Exception as e:
                 logger.exception("Error sending DealerPaymentEmail. " + request.body)
                 dealerEmail = getDealerEmail()
@@ -1021,7 +1007,7 @@ def addNewDealer(request):
             dealerPartner.save()
 
         try:
-            sendDealerApplicationEmail(dealer.id)
+            emails.sendDealerApplicationEmail(dealer.id)
         except Exception as e:
             logger.exception("Error sending DealerApplicationEmail.")
             dealerEmail = getDealerEmail()
@@ -1640,7 +1626,7 @@ def checkoutUpgrade(request):
 
         request.session.flush()
         try:
-            sendUpgradePaymentEmail(attendee, order)
+            emails.sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
             logger.exception("Error sending UpgradePaymentEmail - zero sum.")
             registrationEmail = getRegistrationEmail(event)
@@ -1663,7 +1649,7 @@ def checkoutUpgrade(request):
     if status:
         request.session.flush()
         try:
-            sendUpgradePaymentEmail(attendee, order)
+            emails.sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
             logger.exception("Error sending UpgradePaymentEmail.")
             registrationEmail = getRegistrationEmail(event)

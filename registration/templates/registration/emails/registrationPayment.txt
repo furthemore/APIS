@@ -21,6 +21,13 @@ Thank you for your payment.
 
 {% endfor %}
 
+{% if order.orgDonation %}
+  Donation to {{event}}:  {{order.orgDonation}}
+{% endif %}
+{% if order.charityDonation %}
+  Donation to {{event.charity}}:  {{order.charityDonation}}
+{% endif %}
+
 {% if order.discount %}
   Discount:
       {% if order.discount.percentOff %}

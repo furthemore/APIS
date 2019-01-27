@@ -48,7 +48,7 @@ var paymentForm = new SqPaymentForm({
         return;
       }
       document.getElementById('card-nonce').value = nonce;
-      doCheckout();
+      doCheckout(cardData);
     },
     /*
      * callback function: unsupportedBrowserDetected
@@ -107,14 +107,23 @@ var paymentForm = new SqPaymentForm({
 				</div>
 			</div>
 
-        {% if dealer.needPower %}
+			{% if dealer.getPartnerCount > 0 %}
 			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Power</div>
-				<div class="col-sm-2">$15.00</div>   
+				<div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getPartnerCount }}</div>
+				<div class="col-sm-2">${{dealer.getPartnerCount|mul:35}}.00</div>   
 				<div class="col-sm-2">
 				</div>
 			</div>
-        {% endif %}
+			{% endif %}
+
+            {% if dealer.needPower %}
+	            <div class="row">
+				    <div class="col-sm-6 col-sm-offset-1">Power</div>
+				    <div class="col-sm-2">$15.00</div>   
+				    <div class="col-sm-2"></div>
+			    </div>
+            {% endif %}
+
 
 
 		{% for item in orderItems %}
@@ -154,38 +163,6 @@ var paymentForm = new SqPaymentForm({
             </div>
             {% endfor %}
 			
-			{% if dealer.getPartnerCount > 0 %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getPartnerCount }}</div>
-				<div class="col-sm-2">${{dealer.getPartnerCount|mul:35}}.00</div>   
-				<div class="col-sm-2">
-				</div>
-			</div>
-			{% endif %}
-			{% for option in item.getOptions %}
-			<div class="row">
-				{% if option.option.optionExtraType == "int" %}
-
-				  <div class="col-sm-6 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
-				  {% if option.option.optionPrice == 0 %}
-				    <div class="col-sm-2">Free</div>
-				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-				  {% endif %}
-
-				{% else %}
-
-				  <div class="col-sm-6 col-sm-offset-1">{{option.option}}</div>
-				  {% if option.option.optionPrice == 0 %}
-				    <div class="col-sm-2">Free</div>
-				  {% else %}
-				    <div class="col-sm-2">${{option.option.optionPrice}}</div>
-				  {% endif %}
-
-				{% endif %}
-
-			</div>
-			{% endfor %}
 			{% if dealer.attendee.effectiveLevel %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{item.priceLevel}}</div>
@@ -252,9 +229,12 @@ var paymentForm = new SqPaymentForm({
         {% endif %}
 
 		<div class="form-group">
-                    <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
+            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
 		    <div class="col-sm-4">
-            <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate" data-error="Please use only numbers and a decimal." />
+                <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate" data-error="Please use only numbers and a decimal." />
+                </div>
 		    </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 		</div>
@@ -446,7 +426,7 @@ var paymentForm = new SqPaymentForm({
 	});
 
 
-function doCheckout() {
+function doCheckout(card_data) {
 	{% if total > 0 %}
 		var data = {
 		    'billingData': {
@@ -455,7 +435,7 @@ function doCheckout() {
 			        'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                     'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                     'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                    'nonce': $("#card-nonce").val()
+                    'nonce': $("#card-nonce").val(), card_data: card_data,
 		    },
 		    'charityDonation': $("#donateCharity").val(),
 		    'orgDonation': $("#donateOrg").val()
@@ -482,7 +462,7 @@ function doCheckout() {
                     if (result.success) {
 				        window.location = "{% url 'doneDealer' %}";
                     } else {
-                        if (result.mesage.indexOf("email") > -1) {
+                        if (result.message.indexOf("email") > -1) {
                             alert(result.message);
                             window.location = "{% url 'doneDealer' %}";
                         } else {

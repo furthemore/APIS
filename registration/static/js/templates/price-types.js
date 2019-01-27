@@ -4,9 +4,9 @@ var shirtSizes = [];
 
 
 $( "body" ).ready(function() {
-        var url = urls.pricelevels;
+        var url = "/apis/registration/pricelevels";
         if(adult){
-            url = urls.adultpricelevels;
+            url = "/apis/registration/adultpricelevels";
         }
 
         $.getJSON(url, function(data) {
@@ -26,7 +26,7 @@ $( "body" ).ready(function() {
             
         });
 
-        $.getJSON(urls.shirtsizes, function(data) {
+        $.getJSON("/apis/registration/shirts", function(data) {
             shirtSizes = data;
         });
 
