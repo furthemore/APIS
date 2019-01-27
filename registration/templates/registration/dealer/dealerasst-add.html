@@ -92,11 +92,13 @@ var paymentForm = new SqPaymentForm({
 		<h1>Add A Partner</h1>
 		<hr>
 
-        {% if dealer.tableSize.partnerMax == assistants.count %}
+        {% if dealer.tableSize.partnerMax == asstCount %}
 
-            <div>You already have the maximum partners for this table type. If you feel this is in error, please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a><./div>
+            <div>You already have the maximum partners for this table type. If you feel this is in error, please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a></div>
 
         {% else %}
+
+        <div class="form-group">Please enter only the name(s) and email(s) for dealer partners that you need to pay for. You do not need to enter your own information or re-enter partners you have already paid for.</div>
 
 
 		<form class="form-horizontal" role="form" data-toggle="validator">
@@ -119,14 +121,10 @@ var paymentForm = new SqPaymentForm({
 		<div class='form-group' style='margin-left:30px;'>You will be charged $45 for each new partner added via this form.</div>
 		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a> instead.</div>
 
-        <div class="form-group">
-                    <label for="asstbreakfst" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" />
-                        <label>You will be charged an additional $60 per partner for this option.</label>
-                    </div>
+		<div class='form-group'>
+            <label class="col-sm-3 control-label">Total: </label>
+            <div class="col-sm-9" id="total" style="padding-top:5px;">$0.00</div>
         </div>
-		
 		<hr/>
 		<h3>Billing Information</h3>
 
@@ -238,7 +236,7 @@ var paymentForm = new SqPaymentForm({
 <script type="text/javascript">
 
     var maxPartners = {{dealer.tableSize.partnerMax}}
-    var dealerPartners = {{assistants}};
+    var dealerPartners = {{jsonAssts|safe}}
 	$( "body" ).ready(function() {
 		$("#state").val("{{attendee.state}}");
 		$("#country").val("{{attendee.country}}");
@@ -270,6 +268,11 @@ var paymentForm = new SqPaymentForm({
         });
         return partners;
     }
+
+    $(".partnerGroup input").keyup(function (e) {
+        var partners = getAssistants();
+        $("#total").text("$" + 45*partners.length + ".00");
+    });
 
 	$("#checkout").click(function (e) {
 		e.preventDefault();

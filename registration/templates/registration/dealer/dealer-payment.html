@@ -47,7 +47,7 @@
 
 		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
-        {% show_attendee_form badge.attendee emailOptions=True %}
+        {% show_attendee_form attendee=badge.attendee emailOptions=True event=event %}
 
                 <div class="form-group">
                     <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>

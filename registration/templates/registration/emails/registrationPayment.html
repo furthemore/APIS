@@ -28,10 +28,17 @@
       {% else %}
           ${{order.discount.amountOff}} off
       {% endif %}
-   <br>
   
 {% endif %}
-  Total: {{order.total}}
+
+{% if order.orgDonation %}
+  <br>Donation to {{event}}: {{order.orgDonation}}
+{% endif %}
+{% if order.charityDonation %}
+  <br>Donation to {{event.charity}}: {{order.charityDonation}}
+{% endif %}
+
+  <br>Total: {{order.total}}
   <br>Paid On: {{order.settledDate}}</p>
 <hr/>
 
