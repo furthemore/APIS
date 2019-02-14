@@ -1,2 +1,3 @@
+{% load site %}
 <h3>Welcome to {{event}} staff!</h3>
-<p>Use this link to register as staff: <a href='{% url 'staff' guid=registrationToken %}'>{% url 'staff' guid=registrationToken %}</a></p>
+<p>Use this link to register as staff: <a href='https://{% current_domain %}{% url 'staff' guid=registrationToken %}'>https://{% current_domain %}{% url 'staff' guid=registrationToken %}</a></p>

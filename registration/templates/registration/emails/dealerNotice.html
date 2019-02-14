@@ -1,3 +1,4 @@
+{% load site %}
 <h3>A dealer has registered:</h3>
 
 <p>
@@ -14,5 +15,5 @@ Description of Wares: {{dealer.description}}
 Requested Table Size: {{dealer.tableSize}}
 </p>
 <p>
-<a href="{% url 'admin:registration_dealer_change' dealer.id %}">View the full dealer record</a>
+<a href="https://{% current_domain %}{% url 'admin:registration_dealer_change' dealer.id %}">View the full dealer record</a>
 </p>

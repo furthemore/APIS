@@ -1,2 +1,3 @@
+{% load site %}
 Welcome to {{event}} Staff! 
-Use this link to register as staff: {% url 'staff' guid=registrationToken %}
+Use this link to register as staff: https://{% current_domain %}{% url 'staff' guid=registrationToken %}

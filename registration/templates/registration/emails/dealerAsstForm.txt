@@ -1,4 +1,5 @@
+{% load site %}
 
 Please use the link below to add additional assistants to your paid dealer registration. 
 
-{% url 'dealers' guid=dealer.registrationToken %}
+https://{% current_domain %}{% url 'dealers' guid=dealer.registrationToken %}

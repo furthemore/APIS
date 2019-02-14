@@ -1,3 +1,4 @@
+{% load site %}
 A dealer has registered:
 
 Name: {{dealer.attendee.firstName}} {{dealer.attendee.lastName}}
@@ -9,4 +10,4 @@ Description of Wares: {{dealer.description}}
 
 Requested Table Size: {{dealer.tableSize}}
 
-View the full dealer record: {% url 'admin:registration_dealer_change' dealer.id %}
+View the full dealer record: https://{% current_domain %}{% url 'admin:registration_dealer_change' dealer.id %}
