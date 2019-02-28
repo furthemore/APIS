@@ -112,11 +112,26 @@ class DealerAsstInline(NestedTabularInline):
     model=DealerAsst
     extra=0
 
-class DealerAsstAdmin(admin.ModelAdmin):
+class DealerAsstResource(resources.ModelResource):
+    class Meta:
+        model = DealerAsst
+        fields = ('id', 'name', 'email', 'license', 'event__name',
+                  'dealer__businessName', 'dealer__attendee__email',
+                  'dealer__approved', 'dealer__tableNumber')
+
+class DealerAsstAdmin(ImportExportModelAdmin):
     save_on_top = True
-    list_display = ('name', 'email', 'license', 'event' )
-    list_filter = ('event',)
+    list_display = ('name', 'email', 'license', 'event', 'dealer_businessname', 'dealer_approved' )
+    list_filter = ('event', 'dealer__approved')
     search_fields = ['name', 'email']
+    readonly_fields = ['dealer_businessname', 'dealer_approved']
+    resource_class = DealerAsstResource
+
+    def dealer_businessname(self, obj):
+        return obj.dealer.businessName
+
+    def dealer_approved(self, obj):
+        return obj.dealer.approved
 
 admin.site.register(DealerAsst, DealerAsstAdmin)
 
