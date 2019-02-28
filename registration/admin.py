@@ -156,7 +156,7 @@ class DealerResource(resources.ModelResource):
 
 class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_display = ('attendee', 'businessName', 'tableSize', 'chairs', 'tables', 'needWifi', 'approved', 'tableNumber', 'emailed', 'paidTotal', 'event')
-    list_filter = ('event',)
+    list_filter = ('event', 'approved', 'emailed')
     save_on_top = True
     inlines = [DealerAsstInline]
     resource_class = DealerResource
