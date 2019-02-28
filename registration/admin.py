@@ -636,11 +636,13 @@ class BadgeResource(resources.ModelResource):
 
     class Meta:
         model = Badge
-        fields = ('id', 'event__name', 'printed', 'badge_level', 'attendee__firstName', 'attendee__lastName', 'attendee__address1',
+        fields = ('id', 'event__name', 'printed', 'badge_level', 'registeredDate',
+                  'attendee__firstName', 'attendee__lastName', 'attendee__address1',
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest'
                   )
-        export_order = ('id', 'printed', 'event__name', 'badge_level', 'attendee__firstName', 'attendee__lastName', 'attendee__address1',
+        export_order = ('id', 'printed', 'event__name', 'badge_level', 'registeredDate', 
+                  'attendee__firstName', 'attendee__lastName', 'attendee__address1',
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest'
                   )
