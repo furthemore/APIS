@@ -126,16 +126,16 @@ class DealerResource(resources.ModelResource):
         fields = ('id', 'event__name', 'attendee__firstName', 'attendee__lastName', 'attendee__address1',
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email',
-                  'businessName', 'approved', 'website', 'description', 'license', 'needPower', 'needWifi',
+                  'businessName', 'approved', 'website', 'description', 'license', 'needPower', 'needWifi', 'chairs', 'tables',
                   'wallSpace', 'nearTo', 'farFrom', 'tableSize__name', 'reception', 'artShow',
-                  'charityRaffle', 'breakfast', 'asstBreakfast', 'willSwitch', 'partners', 'buttonOffer', 'discount',
+                  'charityRaffle', 'breakfast', 'asstBreakfast', 'willSwitch', 'buttonOffer', 'discount',
                   'discountReason', 'emailed')
         export_order = ('id', 'event__name', 'attendee__firstName', 'attendee__lastName', 'attendee__address1',
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
                   'attendee__postalCode', 'attendee__phone', 'attendee__email',
-                  'businessName', 'approved', 'website', 'description', 'license', 'needPower', 'needWifi',
+                  'businessName', 'approved', 'website', 'description', 'license', 'needPower', 'needWifi', 'chairs', 'tables',
                   'wallSpace', 'nearTo', 'farFrom', 'tableSize__name', 'reception', 'artShow',
-                  'charityRaffle', 'breakfast', 'asstBreakfast', 'willSwitch', 'partners', 'buttonOffer', 'discount',
+                  'charityRaffle', 'breakfast', 'asstBreakfast', 'willSwitch', 'buttonOffer', 'discount',
                   'discountReason', 'emailed')
 
 
