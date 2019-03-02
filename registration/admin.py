@@ -647,16 +647,29 @@ class BadgeResource(resources.ModelResource):
                   'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest'
                   )
 
+class PriceLevelFilter(admin.SimpleListFilter):
+    title = 'badge level'
+    parameter_name = 'badgelevel'
+
+    def lookups(self, request, model_admin):
+        priceLevels = PriceLevel.objects.all()
+        return tuple((lvl.name, lvl.name) for lvl in priceLevels)
+
+    def queryset(self, request, queryset):
+        priceLevel = self.value()
+        if priceLevel:
+            return queryset.filter(orderitem__priceLevel__name=priceLevel)
+
 class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_per_page = 30
     inlines = [OrderItemInline]
     resource_class = BadgeResource
     save_on_top = True
-    list_filter = ('event', 'printed')
+    list_filter = ('event', 'printed', PriceLevelFilter)
     list_display = ('attendee', 'badgeName', 'badgeNumber', 'printed', 'paidTotal', 'effectiveLevel', 'abandoned',
                     'get_age_range', 'registeredDate')
     search_fields = ['attendee__email', 'attendee__lastName', 'attendee__firstName', 'badgeName', 'badgeNumber']
-    readonly_fields = ['get_age_range', ]
+    readonly_fields = ['get_age_range' ]
     actions = [assign_badge_numbers, print_badges, print_label_badges, print_dealerasst_badges, assign_numbers_and_print,
                print_dealer_badges, assign_staff_badge_numbers, print_staff_badges, send_upgrade_form_email,
                'cull_abandoned_carts']
