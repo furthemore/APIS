@@ -104,9 +104,9 @@ class Charity(LookupTable):
         blank=True)
 
 class Event(LookupTable):
-    dealerRegStart = models.DateTimeField(verbose_name="Dealer Registration Start",
-        help_text="Start date and time for dealer applications")
-    dealerRegEnd = models.DateTimeField(verbose_name="Dealer Registration End")
+    #dealerRegStart = models.DateTimeField(verbose_name="Dealer Registration Start",
+        #help_text="Start date and time for dealer applications")
+    #dealerRegEnd = models.DateTimeField(verbose_name="Dealer Registration End")
     staffRegStart = models.DateTimeField(verbose_name="Staff Registration Start",
         help_text="(Not currently enforced)")
     staffRegEnd = models.DateTimeField(verbose_name="Staff Registration End")
@@ -119,18 +119,22 @@ class Event(LookupTable):
     eventEnd = models.DateField(verbose_name="Event End Date")
     default = models.BooleanField(default=False, verbose_name="Default",
         help_text="The first default event will be used as the basis for all current event configuration")
-    newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True,
-        on_delete=models.SET_NULL, related_name='newStaffEvent',
-        verbose_name="New Staff Discount",
-        help_text="Apply a discount for new staff registrations")
-    staffDiscount = models.ForeignKey(Discount, null=True, blank=True,
-        on_delete=models.SET_NULL, related_name="staffEvent",
-        verbose_name="Staff Discount",
-        help_text="Apply a discount for any staff registrations")
-    dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, 
-        on_delete=models.SET_NULL, related_name="dealerEvent",
-        verbose_name="Dealer Discount",
-        help_text="Apply a discount for any dealer registrations")
+    useAuthToken = models.BooleanField(default=True, verbose_name="Auth Tokens for Staff Registration ",
+        help_text="Staff cannot register for the event (or take advantage of staff discounts) when auth tokens are not in use. ")
+    staffEventRegistration = models.BooleanField(default=False, verbose_name="Allow event registration during staff signup.",
+        help_text="If on, staff will be allowed to register for the event when they fill out the staff form.")
+    #newStaffDiscount = models.ForeignKey(Discount, null=True, blank=True,
+        #on_delete=models.SET_NULL, related_name='newStaffEvent',
+        #verbose_name="New Staff Discount",
+        #help_text="Apply a discount for new staff registrations")
+    #staffDiscount = models.ForeignKey(Discount, null=True, blank=True,
+        #on_delete=models.SET_NULL, related_name="staffEvent",
+        #verbose_name="Staff Discount",
+        #help_text="Apply a discount for any staff registrations")
+    #dealerDiscount = models.ForeignKey(Discount, null=True, blank=True, 
+        #on_delete=models.SET_NULL, related_name="dealerEvent",
+        #verbose_name="Dealer Discount",
+        #help_text="Apply a discount for any dealer registrations")
     allowOnlineMinorReg = models.BooleanField(default=False,
         verbose_name="Allow online minor registration",
         help_text="Allow registration for anyone age 13 and older online. "
@@ -154,11 +158,11 @@ class Event(LookupTable):
         help_text="Email to display on error messages for staff registration",
         blank=True,
         default=settings.APIS_DEFAULT_EMAIL)
-    dealerEmail = models.CharField(max_length=200,
-        verbose_name="Dealer Email",
-        help_text="Email to display on error messages for dealer registration",
-        blank=True,
-        default=settings.APIS_DEFAULT_EMAIL)
+    #dealerEmail = models.CharField(max_length=200,
+        #verbose_name="Dealer Email",
+        #help_text="Email to display on error messages for dealer registration",
+        #blank=True,
+        #default=settings.APIS_DEFAULT_EMAIL)
     badgeTheme = models.CharField(max_length=200,
         verbose_name="Badge Theme",
         help_text="Name of badge theme to use for printing",
@@ -169,8 +173,7 @@ class Event(LookupTable):
         help_text="Link to code of conduct agreement",
         blank=True,
         default='/code-of-conduct')
-    charity = models.ForeignKey(Charity, null=True, blank=True, on_delete=models.SET_NULL)
-
+    #charity = models.ForeignKey(Charity, null=True, blank=True, on_delete=models.SET_NULL)
 class TableSize(LookupTable):
     description = models.TextField()
     chairMin = models.IntegerField(default=1)

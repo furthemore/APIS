@@ -1,0 +1,82 @@
+## Make a new user, add it to sudoers.  
+adduser <username>
+usermod -aG sudo <username>
+
+## (As root) Add the source info for postgres 9.4; add the signing key. 
+lsb_release -a ## Get the codename; insert it before main.  
+echo "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+apt-get update
+apt-get install apache2 postgresql-9.4 postgresql-server-dev-9.4 build-essential libxml2 libxml2-dev libxslt1-dev python python-dev python-virtualenv python-pip libapache2-mod-wsgi
+
+## (As local user)
+## clone the repo, setup venv. 
+## Allow the www-data user to run pull.sh (last line)
+sudo visudo
+www-data ALL = NOPASSWD:/home/dhickman/pull.sh
+  
+sudo git clone https://github.com/S3kwel/APIS/
+sudo git clone --mirror https://github.com/S3kwel/APIS/
+cd APIS
+sudo git checkout development
+
+sudo chmod +x /home/dhickman/APIS/pull.sh
+sudo chown :www-data /home/dhickman/APIS/pull.sh
+
+sudo virtualenv -p python2 venv
+source venv/bin/activate
+
+## Install requirements.
+## Make sure you're using the version of pip inside the venv folder! Otherwise you will install system-wide! 
+sudo venv/bin/pip install -r requirements.txt
+sudo pip install requests
+
+## Check configuration -- settings.py from the setup folder can be moved into  /var/www/html/APIS/APIS/fm_eventmanager/
+## Replace wsgi.py with the one from the setup folder AFTER changing the paths to be consistent with your setup.  
+## Make sure that all paths point to your installation of APIS and read through the file!   
+
+## Collect static files.  
+## default is [base dir for files]/APIS/static
+sudo python manage.py collectstatic
+
+## DB prep, credential creation.
+sudo ./manage.py makemigrations
+sudo ./manage.py migrate
+sudo ./manage.py createsuperuser
+
+## Test the server to make sure it works. 
+## This also creates the db file used later.  
+sudo python manage.py runserver 0.0.0.0:8000
+
+
+## exit the venv
+deactivate
+
+## Copy the apache conf file from the stup folder to /etc/apache2/sites-available/
+## Alter the permissions for the sqlite db, give the www-data group ownership.    
+sudo chmod 664 ~/APIS/db.sqlite3
+sudo chown www-data::www-data /home/APIS/db.sqlite3
+sudo chown www-data:www-data /home/dhickman/APIS
+
+## add Apache Full
+sudo ufw allow 'Apache Full'
+sudo systemctl restart apache2
+
+## The instance is now properly deployed.  The next steps work towards setting up a GIT push to the environment.  
+
+## GIT WEBHOOK SETUP
+## ADD events/migrations/ to gitignore (not there by default -- be sure to pull after)
+## Add urls.py and views.py to fm_eventmanager.
+## Add pull.sh to the User's root.  Including it in the repo makes changes hard.  
+## Make pull.sh executable, change its owner to the Apache user.  
+sudo chmod +x /home/dhickman/pull.sh
+sudo chown :www-data /home/dhickman/pull.sh
+
+## Prep a Github web hook in the settings tab for the repo you are cloning.
+## Point a web hook to http://[HOST ADDRESS]/api/pull/ and http://[HOST ADDRESS]:8000/api/pull/, using the key defined in settings.py on PUSH ONLY.
+
+
+
+
+ 
+

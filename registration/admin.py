@@ -24,16 +24,26 @@ import printing
 import cgi
 
 admin.site.site_url = None
-admin.site.site_header = 'APIS Backoffice'
+admin.site.site_header = 'Admin Panel [DEV]'
 
 # Register your models here.
 admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
-admin.site.register(Event)
 admin.site.register(Charity)
 admin.site.register(TableSize)
 admin.site.register(Cart)
 
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        exclude = []
+
+class EventAdmin(NestedModelAdmin):
+    list_display = ('name','useAuthToken','staffEventRegistration')   
+    form = EventForm
+    class Media:
+        js = ("js/templates/eventadmin.js","js/jquery.js")
+admin.site.register(Event,EventAdmin)
 def disable_two_factor(modeladmin, request, queryset):
     for user in queryset:
         obj = user.totp_devices.filter(user=user)
