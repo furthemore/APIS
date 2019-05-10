@@ -19,7 +19,7 @@
   </div>
 </div>
 
-    {% if not token %}
+    {% if not token and auth == True%}
 		<h1>New Staff Registration <br/>{{event}}</h1>
         <p>Your session has expired. Please use the link in your registration email again to start over.</p>
     {% else %}

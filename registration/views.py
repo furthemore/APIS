@@ -284,9 +284,14 @@ def applyDiscount(request):
 ###################################
 # New Staff
 
-def newStaff(request, guid):
+def newStaff(request, guid=False):
     event = Event.objects.get(default=True)
     context = {'token': guid, 'event': event}
+    if not guid:
+        if event.useAuthToken == True:
+            return render(request,'registration/staff/error.html',context)
+        else:
+            return render(request,'registration/staff/staff-new-payment.html',context)
     return render(request, 'registration/staff/staff-new.html', context)
 
 def findNewStaff(request):
@@ -313,12 +318,16 @@ def findNewStaff(request):
 
 def infoNewStaff(request):
     event = Event.objects.get(default=True)
-    try:
-      tokenValue = request.session["newStaff"]
-      token = TempToken.objects.get(token=tokenValue)
-    except Exception as e:
-      token = None
-    context = {'staff': None, 'event': event, 'token': token}
+    if event.useAuthToken == True:
+        try:
+          tokenValue = request.session["newStaff"]
+          token = TempToken.objects.get(token=tokenValue)
+        except Exception as e:
+          token = None
+          context = {'staff': None, 'event': event, 'token': token, 'auth':True}
+    else:
+        token = "DEFAULT"
+        context = {'staff': None, 'event': event, 'token': token, 'auth': False}
     return render(request, 'registration/staff/staff-new-payment.html', context)
 
 def addNewStaff(request):
