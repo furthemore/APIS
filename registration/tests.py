@@ -7,6 +7,7 @@ from django.test import TestCase, Client
 from django.conf import settings
 from unittest import skip
 import logging
+import json
 
 from .models import *
 
@@ -221,7 +222,7 @@ class OrdersTestCases(TestCase):
         message = result.json()
         error_codes = [ err['code'] for err in message['reason']['errors'] ]
         logger.error(error_codes)
-        self.assertTrue(error in error_codes)
+        self.assertIn(error, error_codes)
 
         # Ensure a badge wasn't created
         self.assertEqual(Attendee.objects.filter(firstName='Bea').count(), 0) 
@@ -363,12 +364,12 @@ class OrdersTestCases(TestCase):
         postData = {'discount': 'OneTime'}
         response = self.client.post(reverse('discount'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{"message": "That discount is not valid.", "success": false}')
+        self.assertEqual(json.loads(response.content), {"message": "That discount is not valid.", "success": False})
 
         postData = {'discount': 'Bogus'}
         response = self.client.post(reverse('discount'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{"message": "That discount is not valid.", "success": false}')
+        self.assertEqual(json.loads(response.content), {"message": "That discount is not valid.", "success": False})
 
 
     def test_discount_zero_sum(self):
@@ -435,7 +436,7 @@ class OrdersTestCases(TestCase):
         postData = {'email':attendee.email, 'token':staff.registrationToken}
         response = self.client.post(reverse('findStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
+        self.assertEqual(json.loads(response.content), {"message": "STAFF", "success": True})
 
         postData = {'attendee': {'id': attendee.id,'firstName': "Staffer", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "US",'postal': "12345",
@@ -484,7 +485,7 @@ class OrdersTestCases(TestCase):
         postData = {'email':attendee2.email, 'token':staff2.registrationToken}
         response = self.client.post(reverse('findStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
+        self.assertEqual(json.loads(response.content), {"message": "STAFF", "success": True})
 
         postData = {'attendee': {'id': attendee2.id,'firstName': "Staffer", 'lastName': "Testerson",
                                  'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "US",'postal': "12345",
@@ -884,7 +885,7 @@ class Onsite(TestCase):
         self.assertEqual(response.status_code, 200)
         errors = [ e['code'] for e in response.context['errors'] ]
         #import pdb; pdb.set_trace()
-        self.assertTrue('ERROR_NO_TERMINAL' in errors)
+        self.assertIn('ERROR_NO_TERMINAL', errors)
 
         self.terminal = Firebase(token="test", name="Terminal 1")
         self.terminal.save()
@@ -893,7 +894,7 @@ class Onsite(TestCase):
             { 'search' : 'doesntexist' }
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('results' in response.context.keys())
+        self.assertIn('results', response.context.keys())
         self.assertEqual(len(response.context['results']), 0)
 
         self.client.logout()
