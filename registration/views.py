@@ -23,13 +23,18 @@ import os
 import json
 import random
 import string
+import sys
 import logging
 
 from .models import *
 from .payments import chargePayment
 from .pushy import PushyAPI
-import emails
-import printing
+if sys.version_info[0] == 2:
+    import emails
+    import printing
+else:
+    from . import emails
+    from . import printing
 
 # Create your views here.
 logger = logging.getLogger("django.request")
@@ -415,7 +420,7 @@ def findStaff(request):
         request.session['staff_id'] = staff.id
         return JsonResponse({'success': True, 'message':'STAFF'})
     except Exception as e:
-        logger.warning("Unable to find staff. " + request.body)
+        logger.warning("Unable to find staff. " + request.body.decode('utf-8'))
         return HttpResponseServerError(str(e))
 
 
@@ -1700,7 +1705,7 @@ def getCart(request):
         cartItems = list(Cart.objects.filter(id__in=sessionItems))
         orderItems = []
         if discount:
-	    discount = Discount.objects.filter(codeName=discount)
+            discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0: discount = discount.first()
         total, total_discount = getTotal(cartItems, [], discount)
 
@@ -1890,7 +1895,7 @@ def clear_session(request):
     Soft-clears session by removing any non-protected session values.
     (anything prefixed with '_'; keeps Django user logged-in)
     """
-    for key in request.session.keys():
+    for key in list(request.session.keys()):
         if key[0] != '_':
             del request.session[key]
 

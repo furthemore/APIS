@@ -430,7 +430,7 @@ class OrdersTestCases(TestCase):
         postData = {'email': 'nottherightemail@somewhere.com', 'token':staff.registrationToken}
         response = self.client.post(reverse('findStaff'), json.dumps(postData), content_type="application/json")
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.content, 'Staff matching query does not exist.')
+        self.assertEqual(response.content.decode('utf-8'), 'Staff matching query does not exist.')
 
         # Regular staff reg
         postData = {'email':attendee.email, 'token':staff.registrationToken}

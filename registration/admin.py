@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from __future__ import absolute_import
 
 from datetime import date
 import copy
@@ -21,8 +22,8 @@ from django.utils.html import escape
 
 from .models import *
 from .emails import *
-import views
-import printing
+from . import views
+from . import printing
 import cgi
 
 admin.site.site_url = None

@@ -1,4 +1,4 @@
-django>=1.11.17
+django>=1.11.17,<1.12
 django-mathfilters==0.4.0
 django-nested-inline==0.3.7
 django-import-export>=1.1.0

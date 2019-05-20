@@ -1,8 +1,15 @@
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+
 import logging
+import sys
+
 from .models import *
-from . import views
+
+if sys.version_info[0] == 2:
+    import views
+else:
+    from . import views
 
 logger = logging.getLogger('registration.emails')
 
