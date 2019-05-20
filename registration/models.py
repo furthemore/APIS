@@ -554,7 +554,7 @@ class Cashdrawer(models.Model):
     CLOSE = 'Close'
     TRANSACTION = 'Transaction'
     DEPOSIT = 'Deposit'
-    ACTION_CHOICES = ((OPEN, u'Open'), (CLOSE, u'Close'), (TRANSACTION, u'Transaction'), (DEPOSIT, u'Deposit'))
+    ACTION_CHOICES = ((OPEN, 'Open'), (CLOSE, 'Close'), (TRANSACTION, 'Transaction'), (DEPOSIT, 'Deposit'))
     timestamp = models.DateTimeField(auto_now_add=True)
     # Action: one of - ['OPEN', 'CLOSE', 'TXN', 'DEPOSIT']
     action = models.CharField(max_length=20, choices=ACTION_CHOICES, default=OPEN)

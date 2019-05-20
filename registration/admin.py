@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from datetime import date
 import copy
 
@@ -423,7 +425,7 @@ def print_badges(modeladmin, request, queryset):
         # Exclude staff badges
         try:
             staff = Staff.objects.get(attendee=badge.attendee,event=badge.event)
-            messages.warning(request, u"{0} is on staff, so we skipped printing an attendee badge".format(badge.badgeName))
+            messages.warning(request, "{0} is on staff, so we skipped printing an attendee badge".format(badge.badgeName))
         except Staff.DoesNotExist:
             tags.append({
                 'name'   : cgi.escape(badge.badgeName),
@@ -459,7 +461,7 @@ def print_label_badges(modeladmin, request, queryset):
         # Exclude staff badges
         try:
             staff = Staff.objects.get(attendee=badge.attendee,event=badge.event)
-            messages.warning(request, u"{0} is on staff, so we skipped printing an attendee badge".format(badge.badgeName))
+            messages.warning(request, "{0} is on staff, so we skipped printing an attendee badge".format(badge.badgeName))
         except Staff.DoesNotExist:
             tags.append({
                 'name'   : cgi.escape(badge.badgeName),
@@ -525,7 +527,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         try:
             dealers = Dealer.objects.get(attendee=badge.attendee,event=badge.event)
         except Dealer.DoesNotExist:
-            messages.warning(request, u"{0} is not a dealer, so we skipped printing a dealer badge for them".format(badge.badgeName))
+            messages.warning(request, "{0} is not a dealer, so we skipped printing a dealer badge for them".format(badge.badgeName))
             continue
 
         tags.append({
@@ -576,10 +578,10 @@ def print_staff_badges(modeladmin, request, queryset):
         try:
             staff = Staff.objects.get(attendee=badge.attendee,event=badge.event)
         except Staff.DoesNotExist:
-            messages.warning(request, u"{0} is not on staff, so we skipped printing a staff badge for them".format(badge.badgeName))
+            messages.warning(request, "{0} is not on staff, so we skipped printing a staff badge for them".format(badge.badgeName))
             continue
         except Staff.MultipleObjectsReturned:
-            messages.error(request, u"{0} was added to staff multiple times! - dedupe and try again.".format(badge.attendee))
+            messages.error(request, "{0} was added to staff multiple times! - dedupe and try again.".format(badge.attendee))
             continue
 
         tags.append({

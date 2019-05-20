@@ -621,8 +621,6 @@ class OrdersTestCases(TestCase):
         dealer_pay['dealer']['id'] = dealer.id
         dealer_pay['priceLevel'] = {'id': self.price_45.id, 'options': []}
 
-        print self.event.dealerDiscount
-
         response = self.client.post(reverse('addDealer'), json.dumps(dealer_pay), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse('invoiceDealer'))

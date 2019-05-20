@@ -17,6 +17,9 @@
 
 """Handles generation of HTML for nametags, saving/reading printer config, etc"""
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 import re
@@ -343,10 +346,10 @@ class Nametag:
                         'default-secure.png'), secure)
             except NotImplementedError as e:
                 self.log.error('Unable to generate barcode: {0}'.format(e))
-                html = html.replace(u'default-secure.png', u'white.gif')
+                html = html.replace('default-secure.png', 'white.gif')
         else:
             #replace barcode image with white.gif
-            html = html.decode('utf-8').replace(u'default-secure.png', u'white.gif')
+            html = html.decode('utf-8').replace('default-secure.png', 'white.gif')
             self.log.debug("Disabled barcode.")
 
         #get the current date/time
@@ -390,7 +393,7 @@ class _CUPS:
         """
         Returns a list of the names of available system printers.
         """
-        return self.con.getPrinters().keys()
+        return list(self.con.getPrinters().keys())
 
     def getPrinters(self):
         """
@@ -531,5 +534,8 @@ if __name__ == '__main__':
     con.preview()
     #con.printout(printer="LabelWriter-450-Turbo")
 
-    raw_input(">")
+    if sys.version_info[0] == 2:
+        raw_input(">")
+    else:
+        input(">")
     con.cleanup()

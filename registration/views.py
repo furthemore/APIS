@@ -2455,7 +2455,7 @@ def handler(obj):
     elif isinstance(obj, Decimal):
         return str(obj)
     else:
-        raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
+        raise TypeError('Object of type {!s} with value of {!r} is not JSON serializable'.format(type(obj), obj))
 
 def getRegistrationEmail(event=None):
     """
