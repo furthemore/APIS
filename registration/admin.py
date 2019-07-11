@@ -7,7 +7,7 @@ from django.db.models import Max
 from django.utils.html import format_html, urlencode
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
@@ -19,8 +19,8 @@ from django.utils.html import escape
 
 from .models import *
 from .emails import *
-import views
-import printing
+from registration import views
+from registration import printing
 import cgi
 
 admin.site.site_url = None

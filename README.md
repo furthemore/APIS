@@ -8,8 +8,8 @@ Registrtion Workflows: http://www.gliffy.com/go/publish/10892367
 Proposed Stack:
   + Ubuntu 18.04 (LTS)
   + Apache2
-  + Postgres 9
-  + Python 2.7.6
+  + Postgres 9.3
+  + Python 3.6.7
   + Django 1.11.16
   + Bootstrap 3.3.7
   + JQuery 1.9.1
@@ -37,7 +37,8 @@ To see a demo, or set up the project for development locally:
     cd APIS
     virtualenv -p python2 venv
     source venv/bin/activate
-    pip install -r requirements.txt
+    pip3 install wheel
+    pip3 install -r requirements.txt
 
     # Review your settings
     cp fm_eventmanager/settings.py.dev fm_eventmanager/settings.py

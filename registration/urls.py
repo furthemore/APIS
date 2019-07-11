@@ -7,7 +7,7 @@ from . import views
 urlpatterns = [
     url(r'^$', views.index, name='index'),
 
-    url(r'^logout/$', auth_views.logout, name='logout'),
+    url(r'^logout/$', auth_views.LogoutView, name='logout'),
 
     url(r'^upgrade/lookup/?$', views.findUpgrade, name='findUpgrade'),
     url(r'^upgrade/info/?$', views.infoUpgrade, name='infoUpgrade'),
@@ -27,7 +27,7 @@ urlpatterns = [
     url(r'^newstaff/lookup/?$', views.findNewStaff, name='findNewStaff'),
     url(r'^newstaff/info/?$', views.infoNewStaff, name='infoNewStaff'),
     url(r'^newstaff/add/?$', views.addNewStaff, name='addNewStaff'),
-    url(r'^newstaff/(?P<guid>\w+)/?$', views.newStaff, name='newstaff'),    
+    url(r'^newstaff/(?P<guid>\w+)/?$', views.newStaff, name='newstaff'),
 
     url(r'^dealer/?$', views.newDealer, name='newDealer'),
     url(r'^dealer/addNew/?$', views.addNewDealer, name='addNewDealer'),
@@ -74,7 +74,6 @@ urlpatterns = [
     url(r'^cart/checkout/?$', views.checkout, name='checkout'),
     url(r'^cart/done/?$', views.cartDone, name='done'),
 
-    url(r'^events/?$', views.getEvents, name='events'),
     url(r'^departments/?$', views.getDepartments, name='departments'),
     url(r'^alldepartments/?$', views.getAllDepartments, name='alldepartments'),
     url(r'^pricelevels/?$', views.getPriceLevels, name='pricelevels'),

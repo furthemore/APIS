@@ -4,32 +4,33 @@
 
 The following Apt Packages need to be installed in order to run this application.
 
-* python (2.7)
-* python-dev
-* python-virtualenv
-* python-pip
+* python3 (at least 3.6)
+* python3-dev
+* python3-virtualenv
+* python3-pip
 * postgresql-9.3
-* postgresql-server-dev-9.3
+* postgresql-server-dev-all
 * build-essential
 * libxml2
 * libxml2-dev
 * libxlst1-dev
 
-`python python-dev python-virtualenv python-pip postgresql-9.3 postgresql-server-dev-9.3 build-essential libxml2 libxml2-dev libxlst1-dev`
+`python3 python3-dev python3-virtualenv python3-pip postgresql-9.3 postgresql-server-dev-all build-essential libxml2 libxml2-dev libxlst1-dev`
 
 ## Setup Test Environment
 
-`virtualenv project`
+`venv project`
 
 `cd project; source bin/activate`
 
-`git clone <repo_url>`
+`git clone <repo_url> APIS`
 
 `cd APIS`
 
-`pip install -r requirements.txt`
+`pip3 install wheel`
 
-NOTE: The version of payeezy in pip must be replaced with https://github.com/alsaihn/payeezy_direct_API to allow for passing addresses with payment information
+`pip3 install -r requirements.txt`
+
 
 ### POSTGRES Setup
 

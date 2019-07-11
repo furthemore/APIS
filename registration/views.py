@@ -28,8 +28,8 @@ import logging
 from .models import *
 from .payments import chargePayment
 from .pushy import PushyAPI
-import emails
-import printing
+from .emails import *
+from .printing import Main as printing_main
 
 # Create your views here.
 logger = logging.getLogger("django.request")
@@ -39,8 +39,8 @@ def index(request):
         event = Event.objects.get(default=True)
     except Event.DoesNotExist:
         return render(request, 'registration/docs/no-event.html')
-        
-        
+
+
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = { 'event' : event }
@@ -571,7 +571,7 @@ def checkoutStaff(request):
 
       request.session.flush()
       try:
-          emails.sendStaffRegistrationEmail(order.id)
+          sendStaffRegistrationEmail(order.id)
       except Exception as e:
           logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
           staffEmail = getStaffEmail()
@@ -596,7 +596,7 @@ def checkoutStaff(request):
     if status:
         clear_session(request)
         try:
-            emails.sendStaffRegistrationEmail(order.id)
+            sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
             staffEmail = getStaffEmail()
@@ -790,7 +790,7 @@ def checkoutAsstDealer(request):
     if status:
         request.session.flush()
         try:
-            emails.sendDealerAsstEmail(dealer.id)
+            sendDealerAsstEmail(dealer.id)
         except Exception as e:
             logger.exception("Error emailing DealerAsstEmail.")
             dealerEmail = getDealerEmail()
@@ -926,7 +926,7 @@ def checkoutDealer(request):
             request.session.flush()
 
             try:
-                emails.sendDealerPaymentEmail(dealer, order)
+                sendDealerPaymentEmail(dealer, order)
             except Exception as e:
                 logger.exception("Error sending DealerPaymentEmail - zero sum.")
                 dealerEmail = getDealerEmail()
@@ -950,7 +950,7 @@ def checkoutDealer(request):
             request.session.flush()
             try:
                 dealer.resetToken()
-                emails.sendDealerPaymentEmail(dealer, order)
+                sendDealerPaymentEmail(dealer, order)
             except Exception as e:
                 logger.exception("Error sending DealerPaymentEmail. " + request.body)
                 dealerEmail = getDealerEmail()
@@ -1007,7 +1007,7 @@ def addNewDealer(request):
             dealerPartner.save()
 
         try:
-            emails.sendDealerApplicationEmail(dealer.id)
+            sendDealerApplicationEmail(dealer.id)
         except Exception as e:
             logger.exception("Error sending DealerApplicationEmail.")
             dealerEmail = getDealerEmail()
@@ -1408,7 +1408,7 @@ def get_attendee_age(attendee):
 @staff_member_required
 def onsitePrintBadges(request):
     badge_list = request.GET.getlist('id')
-    con = printing.Main(local=True)
+    con = printing_main(local=True)
     tags = []
     theme = ""
 
@@ -1626,7 +1626,7 @@ def checkoutUpgrade(request):
 
         request.session.flush()
         try:
-            emails.sendUpgradePaymentEmail(attendee, order)
+            sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
             logger.exception("Error sending UpgradePaymentEmail - zero sum.")
             registrationEmail = getRegistrationEmail(event)
@@ -1649,7 +1649,7 @@ def checkoutUpgrade(request):
     if status:
         request.session.flush()
         try:
-            emails.sendUpgradePaymentEmail(attendee, order)
+            sendUpgradePaymentEmail(attendee, order)
         except Exception as e:
             logger.exception("Error sending UpgradePaymentEmail.")
             registrationEmail = getRegistrationEmail(event)
@@ -1700,7 +1700,7 @@ def getCart(request):
         cartItems = list(Cart.objects.filter(id__in=sessionItems))
         orderItems = []
         if discount:
-	    discount = Discount.objects.filter(codeName=discount)
+            discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0: discount = discount.first()
         total, total_discount = getTotal(cartItems, [], discount)
 
@@ -1929,7 +1929,7 @@ def checkout(request):
 
         request.session.flush()
         try:
-            emails.sendRegistrationEmail(order, order.billingEmail)
+            sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             logger.error("Error sending RegistrationEmail - zero sum.")
             logger.exception(e)
@@ -1994,11 +1994,11 @@ def checkout(request):
         cartItems.delete()
         clear_session(request)
         try:
-            emails.sendRegistrationEmail(order, order.billingEmail)
+            sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             event = Event.objects.get(default=True)
             registrationEmail = getRegistrationEmail(event)
-            
+
             logger.error("Error sending RegistrationEmail.")
             logger.exception(e)
             return abort(500, "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(registrationEmail))
@@ -2455,7 +2455,7 @@ def handler(obj):
     elif isinstance(obj, Decimal):
         return str(obj)
     else:
-        raise TypeError, 'Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj))
+        raise TypeError('Object of type %s with value of %s is not JSON serializable' % (type(obj), repr(obj)))
 
 def getRegistrationEmail(event=None):
     """
