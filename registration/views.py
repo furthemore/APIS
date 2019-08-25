@@ -192,7 +192,7 @@ def getTotal(cartItems, orderItems, disc = ""):
     if not cartItems and not orderItems:
         return 0, 0
     for item in cartItems:
-        postData = json.loads(item.formData)
+        postData = json.loads(str(item.formData))
         pdp = postData['priceLevel']
         priceLevel = PriceLevel.objects.get(id=pdp['id'])
         itemTotal = priceLevel.basePrice
@@ -1830,7 +1830,7 @@ def addToCart(request):
         registrationEmail = getRegistrationEmail()
         return abort(403, "We are sorry, but you are unable to register for {0}. If you have any questions, or would like further information or assistance, please contact Registration at {1}".format(event, registrationEmail))
 
-    cart = Cart(form=Cart.ATTENDEE, formData=json.dumps(postData), formHeaders=getRequestMeta(request))
+    cart = Cart(form=Cart.ATTENDEE, formData=request.body, formHeaders=getRequestMeta(request))
     cart.save()
 
     #add attendee to session order
@@ -1890,13 +1890,8 @@ def clear_session(request):
     Soft-clears session by removing any non-protected session values.
     (anything prefixed with '_'; keeps Django user logged-in)
     """
-    del_list = []
     for key in request.session.keys():
         if key[0] != '_':
-            del_list.append(key)
-
-    if del_list:
-        for key in del_list:
             del request.session[key]
 
 def checkout(request):
