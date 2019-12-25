@@ -36,7 +36,7 @@
 			</div>
 			{% for option in item.options %}
 			<div class="row">
-                  {% if option.number %}
+                  {% if "number" in option and option.number %}
     				  <div class="col-sm-5 col-sm-offset-1">{{option.name}} x{{option.number}}</div>
                   {% else %}
     				  <div class="col-sm-5 col-sm-offset-1">{{option.name}}</div>

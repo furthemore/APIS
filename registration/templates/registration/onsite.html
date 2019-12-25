@@ -99,7 +99,7 @@
             <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
             </div>
                     <div class="col-sm-2">
-            <select class="form-control bfh-states" id="state" data-country="US" data-state="PA" name="state"></select>
+            <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
                     </div>
             <div class="col-sm-3">
             <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
@@ -149,7 +149,7 @@
                     <div>
                         <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I agree to abide by {{ event }}'s <a href="{{ event.codeOfConduct }}">Code of Conduct</a>.
+			I agree to abide by {{ event }}'s <a href="{{ event.codeOfConduct }}">Code of Conduct</a>. By registering for Mid-Atlantic Anthropomorphic Association’s {{event}} you attest that you are not listed on any sexual offender registry.
                         </label>
                     </div>
 		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -396,7 +396,7 @@
         }
         var age = getAge(birthdate);
 
-        if (age < 0) {
+        if (age < 7) {
             $("#levelContainer").loadTemplate($("#levelTemplate"), freeLevelTemplateData);
             $(".changeLevel").hide();
 
@@ -522,7 +522,8 @@
         $("form").validator('validate');
         var errorCount = $(".has-error").length;
         if (errorCount > 0) {return;}
-        if ($("#birthDate").val() == "") {
+	//var date_regex = /\d\d\d\d-\d\d-\d\d/;
+        if (($("#birthDate").val() == "")) {
             alert("You must enter your birthdate to submit your registration.");
             return;
         }
