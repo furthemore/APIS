@@ -639,12 +639,14 @@ class BadgeResource(resources.ModelResource):
         fields = ('id', 'event__name', 'printed', 'badge_level', 'registeredDate',
                   'attendee__firstName', 'attendee__lastName', 'attendee__address1',
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
-                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest'
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest',
+                  'attendee__emailsOk', 'attendee__surveyOk'
                   )
         export_order = ('id', 'printed', 'event__name', 'badge_level', 'registeredDate', 
                   'attendee__firstName', 'attendee__lastName', 'attendee__address1',
                   'attendee__address2', 'attendee__city', 'attendee__state', 'attendee__country',
-                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest'
+                  'attendee__postalCode', 'attendee__phone', 'attendee__email', 'badgeName', 'badgeNumber', 'attendee__aslRequest',
+                  'attendee__emailsOk', 'attendee__surveyOk'
                   )
 
 class PriceLevelFilter(admin.SimpleListFilter):
@@ -757,7 +759,7 @@ def send_registration_email(modeladmin, request, queryset):
         sendRegistrationEmail(order, order.billingEmail)
 send_registration_email.short_description = "Send registration email"
 
-class OrderAdmin(NestedModelAdmin):
+class OrderAdmin(ImportExportModelAdmin):
     list_display = ('reference', 'createdDate', 'total', 'orgDonation', 'charityDonation', 'discount', 'status')
     save_on_top = True
     inlines = [OrderItemInline]
@@ -811,7 +813,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 admin.site.register(Department, DepartmentAdmin)
 
-class CashdrawerAdmin(admin.ModelAdmin):
+class CashdrawerAdmin(ImportExportModelAdmin):
     list_display = ('timestamp', 'action', 'total', 'tendered', 'user')
 
     def save_model(self, request, obj, form, change):

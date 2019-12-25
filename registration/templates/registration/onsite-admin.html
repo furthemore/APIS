@@ -96,11 +96,7 @@
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
                     <a target="_blank" href="{% url 'admin:registration_badge_change' badge.id %}" class="btn btn-info" title="Edit attendee"><i class="fas fa-edit"></i></a>
-                    {% if badge.abandoned == "Paid" or badge.abandoned == "Comp" %}
-                      <a href="#" disabled="disabled" class="btn btn-success" title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
-                    {% else %}
                       <a href="#" class="btn btn-success add-badge" data-id="{{ badge.id }}" title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
-                    {% endif %}
                   </td>
                 </tr>
               {% endfor %}
@@ -323,16 +319,14 @@ var print_badges = function(e) {
     var badge_preview = "";
     var stop = false;
     $.each(printQueue, function(idx, badge) {
-        /*
         badge_number = prompt("Scan or key in badge stock number for " + badge.badgeName);
         if (badge_number == null) {
             stop = true;
             return false;
         }
-        */
-        badge_number = -1; //  auto-assign
+        // badge_number = -1; //  auto-assign
         badge.badgeNumber = badge_number;
-        badge.badgeNumber = -1;
+        //badge.badgeNumber = -1;
         badge_preview += badge_number  + ' - ' + badge.badgeName + "\n";
     });
 
@@ -340,8 +334,8 @@ var print_badges = function(e) {
         return;
     }
 
-    //conf = confirm("Assign badge numbers?\n\n" + badge_preview);
-    conf = true;
+    conf = confirm("Assign badge numbers?\n\n" + badge_preview);
+    //conf = true;
     if (conf) {
         // assign badge number
 

@@ -11,8 +11,7 @@ import os, sys
 
 from django.core.wsgi import get_wsgi_application
 
-#sys.path.append('/home/rechner/workspace')
-sys.path.append('/home/rechner/workspace/APIS/')
+sys.path.append('/home/apis/APIS/')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fm_eventmanager.settings")
 
 application = get_wsgi_application()

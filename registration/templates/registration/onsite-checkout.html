@@ -17,61 +17,42 @@
                 <div class="col-sm-2"><h4>Price</h4></div>   
             </div>
 
-        {% for item in orderItems %}
-            <div class="row">
-                <div class="col-sm-5 col-sm-offset-1">{{item.badge.badgeName}} - {{item.priceLevel}}</div>
-                <div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
-                <div class="col-sm-2">
-                    <a class="deleteAttendee" id="delete_{{item.id}}" href="#">Remove</a>
-                </div>
-            </div>
-            {% if 'Minor' in item.priceLevel.name%}
-            <div class="row">
-                <div class="col-sm-9 col-sm-offset-1" style="color:red;">A parent or guardian must sign a waiver when paying for this attendee.</div>
-            </div>
-            {% endif %}
-            {% if 'Accompanied' in item.priceLevel.name%}
-            <div class="row">
-                <div class="col-sm-9 col-sm-offset-1" style="color:red;">A parent or guardian must register and accompany this attendee.</div>
-            </div>
-            {% endif %}
-            {% if 'Free' in item.priceLevel.name%}
-            <div class="row">
-                <div class="col-sm-9 col-sm-offset-1" style="color:red;">A parent or guardian must register and accompany this attendee.</div>
-            </div>
-            {% endif %}
-            {% for option in item.getOptions %}
-            <div class="row">
-                {% if option.option.optionExtraType == "int" %}
 
-                  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x {{option.optionValue}}</div>
-                  {% if option.option.optionPrice == 0 %}
-                    <div class="col-sm-2">Free</div>
-                  {% else %}
-                    <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-                  {% endif %}
 
+		{% for item in orderItems %}
+			<div class="row">
+                {% if item.attendee %}
+				  <div class="col-sm-5 col-sm-offset-1">{{item.attendee.firstName}} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
                 {% else %}
-
-                  <div class="col-sm-5 col-sm-offset-1">{{option.option}}</div>
-                  {% if option.option.optionPrice == 0 %}
-                    <div class="col-sm-2">Free</div>
-                  {% else %}
-                    <div class="col-sm-2">${{option.option.optionPrice}}</div>
-                  {% endif %}
-
+				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
                 {% endif %}
+				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
+				<div class="col-sm-2">
+					<a class="deleteAttendee" id="delete_{{item.id}}">&times; Remove</a>
+				</div>
+			</div>
+			{% if discount %}
+				<div class="row">
+					<div class="col-sm-5 col-sm-offset-1">Discount - {{discount.codeName}}</div>
+                    {% if discount.amountOff == 0 %}
+                    <div class="col-sm-2">- ${{total_discount|floatformat:2}}</div>
+                    {% else %}
+					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>   
+                    {% endif %}
+					<div class="col-sm-2">
+					</div>
+				</div>
+			{% endif%}
+			<div class="row" style="height:10px;">&nbsp;</div>
 
-            </div>
-            {% endfor %}
-            <div class="row" style="height:10px;">&nbsp;</div>
+		{% endfor %}
+			<div class="row">
+				<div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
+				<div class="col-sm-2"><h4>${{total|floatformat:2}}</h4></div>
+			</div>
 
-        {% endfor %}
-            <div class="row">
-                <div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
-                <div class="col-sm-2"><h4>${{total}}</h4></div>   
-            </div>
-
+	
+		<br/>
     
         <br/>
         <a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registration</a>
@@ -85,7 +66,7 @@
         <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
         {% if event.charity %}
             If you would like to make an extra gift to our annual charity, 
-            {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
+            {{ event.charity }}, or to the convention, please enter it below.
         {% else %}
             If you would like to make an extra gift to the convention, please enter it below.
         {% endif %}

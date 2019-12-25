@@ -6,7 +6,7 @@
 		<h1>Dealer Registration - {{event}}</h1>
 		<h3>Thank you for your Marketplace Application!</h3>
 		<hr>
-		<p>The cut off date for primary applicants will be {{ event.dealerRegEnd|date:'I, F jS, Y H:i' }}, and selections will be made/notifications sent shortly after. </p>
+		<p>The cut off date for primary applicants will be {{ event.dealerRegEnd|date:'F jS, Y' }}, and selections will be made/notifications sent shortly after. </p>
 		<p>If you have not received an acceptance notification by that date, you will be placed on the waitlist for the next available spot. If you have any questions, please feel free to contact us: <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a></p>
 		<p>If you have listed any partners, they will receive an email with instructions about how to register after your payment has been received.</p>
 		<p>Thank you!</p>
