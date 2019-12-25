@@ -249,7 +249,7 @@ def getDealerTotal(orderItems, discount, dealer):
     if dealer.needWifi:
         wifi = 50
     if dealer.needPower:
-        power = 15
+        power = 0
     paidTotal = dealer.paidTotal()
     if discount:
         itemSubTotal = getDiscountTotal(discount, itemSubTotal)
@@ -1025,20 +1025,82 @@ def onsite(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {}
+    context = {
+        'event' : event
+    }
     if event.onlineRegStart <= today <= event.onlineRegEnd:
         return render(request, 'registration/onsite.html', context)
     return render(request, 'registration/closed.html', context)
 
 def onsiteCart(request):
-    sessionItems = request.session.get('order_items', [])
-    if not sessionItems:
+    sessionItems = request.session.get('cart_items', [])
+    cartItems = list(Cart.objects.filter(id__in=sessionItems))
+    orderItems = request.session.get('order_items', [])
+    discount = request.session.get('discount', "")
+
+    if not cartItems:
         context = {'orderItems': [], 'total': 0}
         request.session.flush()
     else:
-        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        total = getTotal([], orderItems)
-        context = {'orderItems': orderItems, 'total': total}
+        cartItems = list(Cart.objects.filter(id__in=sessionItems))
+        orderItems = []
+        if discount:
+	    discount = Discount.objects.filter(codeName=discount)
+            if discount.count() > 0: discount = discount.first()
+        total, total_discount = getTotal(cartItems, [], discount)
+
+        hasMinors = False
+        for cart in cartItems:
+            cartJson = json.loads(cart.formData)
+            pda = cartJson['attendee']
+            try:
+                event = Event.objects.get(name=cartJson['event'])
+            except Event.DoesNotExist:
+                event = Event.objects.get(default=True)
+            evt = event.eventStart
+            tz = timezone.get_current_timezone()
+            try:
+                birthdate = tz.localize(datetime.strptime(pda['birthdate'], '%Y-%m-%d' ))
+            except ValueError:
+                birthdate = tz.localize(datetime.strptime('2000-01-01', '%Y-%m-%d' ))
+
+            age_at_event = evt.year - birthdate.year - ((evt.month, evt.day) < (birthdate.month, birthdate.day))
+            if age_at_event < 18:
+              hasMinors = True
+
+            pdp = cartJson['priceLevel']
+            priceLevel = PriceLevel.objects.get(id=pdp['id'])
+            pdo = pdp['options']
+            options = []
+            for option in pdo:
+                dataOption = {}
+                optionData = PriceLevelOption.objects.get(id=option['id'])
+                if optionData.optionExtraType == 'int':
+                    if option['value']:
+                        itemTotal = (optionData.optionPrice*Decimal(option['value']))
+                        dataOption = {'name': optionData.optionName, 'number': option['value'], 'total': itemTotal}
+                else:
+                    itemTotal = optionData.optionPrice
+                    dataOption = {'name': optionData.optionName, 'total': itemTotal}
+                options.append(dataOption)
+            orderItem = {
+                'id' : cart.id,
+                'attendee': pda,
+                'priceLevel': priceLevel,
+                'options': options
+            }
+            orderItems.append(orderItem)
+
+        if event is None:
+            event = Event.objects.get(default=True)
+        context = {
+            'event' : event,
+            'orderItems': orderItems,
+            'total': total,
+            'total_discount' : total_discount,
+            'discount': discount,
+            'hasMinors': hasMinors
+        }
     return render(request, 'registration/onsite-checkout.html', context)
 
 def onsiteDone(request):
@@ -1359,6 +1421,7 @@ def assignBadgeNumber(request):
     badge_name = request.GET.get('badge', None)
     badge = None
     event = Event.objects.get(default=True)
+    logger.info("assignBadgeNumber: id='{0}' badge_nembr='{1}' badge_name='{2}'".format(badge_id, badge_number, badge_name))
 
     if badge_name is not None:
         try:
@@ -1373,6 +1436,7 @@ def assignBadgeNumber(request):
         badge_number = int(badge_number)
     except ValueError:
         return JsonResponse({'success': False, 'message': 'Badge number must be an integer'}, status=400)
+    logger.info("assignBadgeNumber: int(badge_number) = {0}".format(badge_number))
 
 
     if badge is None:
@@ -1392,7 +1456,8 @@ def assignBadgeNumber(request):
             badge.badgeNumber = highest
         else:
             badge.badgeNumber = badge_number
-        badge.save()
+        badge.save(update_fields=['badgeNumber'])
+        logger.info("assignBadgeNumber: Badge number saved - {0}".format(badge.badgeNumber))
     except Exception as e:
         return JsonResponse({'success' : False, 'message' : 'Error while saving badge number', 'error' : str(e)}, status=500)
 
@@ -1585,10 +1650,12 @@ def invoiceUpgrade(request):
             lvl = badge.effectiveLevel()
             lvl_dict = {'basePrice': lvl.basePrice}
             orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-            total = getTotal([], orderItems)
+            total, total_discount = getTotal([], orderItems)
             context = {
                 'orderItems': orderItems, 
                 'total': total,
+                'total_discount' : total_discount,
+                'grand_total' : total - lvl_dict['basePrice'],
                 'attendee': attendee,
                 'prevLevel': lvl_dict,
                 'event': badge.event,
@@ -1616,7 +1683,7 @@ def checkoutUpgrade(request):
 
     event = Event.objects.get(default=True)
 
-    subtotal = getTotal([], orderItems)
+    subtotal, total_discount = getTotal([], orderItems)
 
     if subtotal == 0:
         status, message, order = doZeroCheckout(None, None, orderItems)
@@ -1951,34 +2018,21 @@ def checkout(request):
 
     onsite = postData["onsite"]
     if onsite:
-        att = orderItems[0].badge.attendee
-        billingData = {
-            'cc_firstname' : att.firstName,
-            'cc_lastname' : att.lastName,
-            'email' : att.email,
-            'address1' : att.address1,
-            'address2' : att.address2,
-            'city' : att.city,
-            'state' : att.state,
-            'country' : att.country,
-            'postal' : att.postalCode
-        }
         reference = getConfirmationToken()
-        while Order.objects.filter(reference=reference).count() > 0:
-            reference = getConfirmationToken()
-
         order = Order(total=Decimal(total), reference=reference, discount=discount,
-                      orgDonation=porg, charityDonation=pcharity, billingType=Order.UNPAID,
-                      billingName=billingData['cc_firstname'] + " " + billingData['cc_lastname'],
-                      billingAddress1=billingData['address1'], billingAddress2=billingData['address2'],
-                      billingCity=billingData['city'], billingState=billingData['state'], billingCountry=billingData['country'],
-                      billingPostal=billingData['postal'], billingEmail=billingData['email'])
+                      orgDonation=porg, charityDonation=pcharity, billingType=Order.UNPAID)
         order.status = "Onsite Pending"
         order.save()
 
-        for oitem in orderItems:
-            oitem.order = order
-            oitem.save()
+        if cartItems:
+            for item in cartItems:
+                orderItem = saveCart(item)
+                orderItem.order = order
+                orderItem.save()
+        while Order.objects.filter(reference=reference).count() > 0:
+            reference = getConfirmationToken()
+
+
         if discount:
             discount.used = discount.used + 1
             discount.save()

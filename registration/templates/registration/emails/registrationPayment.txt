@@ -1,7 +1,7 @@
 Thank you for your payment.
 
 ---------------------------------
-{% for oi, options in orderItemsitems %}
+{% for oi, options in orderItems.items %}
   Badge Name - {{oi.badge.badgeName}} 
   Level      - {{oi.priceLevel.name}} 
   Price      - ${{oi.priceLevel.subtotal}}

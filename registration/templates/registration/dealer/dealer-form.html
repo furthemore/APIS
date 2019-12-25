@@ -39,7 +39,7 @@
         <h1>Dealer Registration - {{event}}</h1>
         <p>Welcome to the registration system. To continue, enter your information below.</p>
 
-             {% show_attendee_form emailOptions=True %}
+             {% show_attendee_form event=event emailOptions=True %}
 
             <div class="form-group">
                     <label for="far" class="col-sm-3 control-label">Badge Name</label>
@@ -93,16 +93,11 @@
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
                 <div class="form-group">
-                    <label for="breakfast" class="col-sm-3 control-label">I would like the daily complimentary continental breakfast</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="breakfast" name="breakfast" class="form-control form-control-checkbox" />
-                    </div>
-                </div>
-                <div class="form-group">
                     <label for="reception" class="col-sm-3 control-label">I will attend the Dealer's Reception</label>
                     <div class="col-sm-9">
                         <input type="checkbox" id="reception" name="reception" class="form-control form-control-checkbox" />
-                    </div>
+			<div class="col-sm-9 col-sm-offset-3 small">Dealer's Reception not available for Half Tables.</div>
+	            </div>
                 </div>
                 <div class="form-group">
                     <label for="artShow" class="col-sm-3 control-label">I have items to place in the Art Show</label>
@@ -123,7 +118,7 @@
                     <div class="col-sm-9">
                         <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea"> </textarea>
                     </div>
-            <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity onsite for additional information and receipts.</div>
+            <div class="col-sm-9 col-sm-offset-3 small">Any donation provided may be tax deductible. Please see the charity onsite for additional information and receipts.  Consult your tax professional for guidance.</div>
                 </div>
 
         <p>&nbsp;</p>
@@ -158,13 +153,13 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="chairs" class="col-sm-3 control-label">Chair Count</label>
+                    <label for="chairs" class="col-sm-3 control-label">Additional Chairs</label>
                     <div class="col-sm-9">
                         <input type="number" id="chairs" name="chairs" class="form-control form-control-text" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="tables" class="col-sm-3 control-label">Table Count</label>
+                    <label for="tables" class="col-sm-3 control-label">Additional Tables</label>
                     <div class="col-sm-9">
                         <input type="number" id="tables" name="tables" class="form-control form-control-text" />
                     </div>
@@ -173,13 +168,6 @@
                     <label for="tables" class="col-sm-3 control-label">Partner Information</label>
                     <div class="col-sm-9" id="partnerList">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="asstbreakfast" class="col-sm-3 control-label">I want to pay for breakfast for my partners</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="asstbreakfast" name="asstbreakfast" class="form-control form-control-checkbox" />
-                    </div>
-                <div class="col-sm-9 col-sm-offset-3 small">You will be charged an additional $60 per partner for this option.</div>
                 </div>
                 <div class="form-group">
                     <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
@@ -198,7 +186,7 @@
                  <div>
                       <label>
                             <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-            I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct.
+            I have read and understand the rules pertaining to both Furthemore and the Markeplace. I agree to abide by these rules and by Furthemore's Code of Conduct. By registering for Mid-Atlantic Anthropomorphic Association’s {{event}} you attest that you are not listed on any sexual offender registry.
                       </label>
                  </div>
                  <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
@@ -379,10 +367,10 @@
                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
                 'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
                 'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
-                'reception': $("#reception").is(':checked'), 'artShow': $("#artShow").is(':checked'), 
+                'reception': false, 'artShow': $("#artShow").is(':checked'), 
                 'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
-                'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': $('#asstbreakfast').is(':checked')
+                'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': false
             },
             'event': '{{event}}'
         };

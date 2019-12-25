@@ -35,21 +35,24 @@ var paymentForm = new SqPaymentForm({
      * callback function: cardNonceResponseReceived
      * Triggered when: SqPaymentForm completes a card nonce request
      */
-    cardNonceResponseReceived: function(errors, nonce, cardData) {
-      if (errors) {
-        var errorList = "";
-        console.log("Encountered errors:");
-        errors.forEach(function(error) {
-          console.log('  ' + error.message);
-          errorList += error.message + "; ";
-        });
-        alert("One or more Square payment errors have occurred: " + errorList);
-        $("#checkout").removeAttr("disabled");
-        return;
-      }
-      document.getElementById('card-nonce').value = nonce;
-      doCheckout();
-    },
+        cardNonceResponseReceived: function(errors, nonce, cardData) {
+          if (errors) {
+            var errorList = "";
+
+            console.log("Encountered errors:");
+            errors.forEach(function(error) {
+              console.log('  ' + error.message);
+              errorList += error.message + "; ";
+            });
+            alert("One or more Square payment errors have occurred: " + errorList);
+            $("#checkout").removeAttr("disabled");
+            return;
+          }
+
+          document.getElementById('card-nonce').value = nonce;
+          doCheckout(cardData);
+
+        },
     /*
      * callback function: unsupportedBrowserDetected
      * Triggered when: the page loads and an unsupported browser is detected
@@ -146,7 +149,7 @@ var paymentForm = new SqPaymentForm({
 		{% endfor %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
-				<div class="col-sm-2"><h4>${{total}}</h4></div>   
+				<div class="col-sm-2"><h4>${{grand_total}}</h4></div>   
 			</div>
 
 	
@@ -372,18 +375,20 @@ var paymentForm = new SqPaymentForm({
         {% endif %}
 	});
 
-    function doCheckout() {
+    function doCheckout(card_data) {
 		{% if total > 0 %}
 		var data = {
+            'onsite': false,
 		    'billingData': {
-                'nonce': $("#card-nonce").val(),
-			    'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+       			'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                'nonce': $("#card-nonce").val(), 'card_data': card_data,
 		    },
 		    'charityDonation': $("#donateCharity").val(),
 		    'orgDonation': $("#donateOrg").val()
 		};
+
 		{% else %}
 		var data = {};
 
