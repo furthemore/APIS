@@ -3,19 +3,22 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+
 import registration.models
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0059_attendee_aslrequest'),
+        ("registration", "0059_attendee_aslrequest"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='priceleveloption',
-            name='optionImage',
-            field=models.ImageField(blank=True, null=True, upload_to=registration.models.content_file_name),
+            model_name="priceleveloption",
+            name="optionImage",
+            field=models.ImageField(
+                blank=True, null=True, upload_to=registration.models.content_file_name
+            ),
         ),
     ]

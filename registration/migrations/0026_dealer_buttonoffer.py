@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0025_tablesize_baseprice'),
+        ("registration", "0025_tablesize_baseprice"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dealer',
-            name='buttonOffer',
+            model_name="dealer",
+            name="buttonOffer",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0078_priceleveloption_description'),
+        ("registration", "0078_priceleveloption_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pricelevel',
-            name='isMinor',
+            model_name="pricelevel",
+            name="isMinor",
             field=models.BooleanField(default=False),
         ),
     ]

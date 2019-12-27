@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0027_auto_20161104_2004'),
+        ("registration", "0027_auto_20161104_2004"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='status',
-            field=models.CharField(default='Pending', max_length=50),
+            model_name="order",
+            name="status",
+            field=models.CharField(default="Pending", max_length=50),
         ),
     ]

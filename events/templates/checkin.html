@@ -29,7 +29,7 @@
 					<td>
 						<small>{% if z.time_start|timeuntil == "0 minutes" %}{{ z.time_start|timesince }} ago{% else %}Starts in {{z.time_start|timeuntil}}{% endif %}</small>
 					</td>
-					<td class='text-right'> 	
+					<td class='text-right'>
 								<small>{{z.room}}</small>
 								{% if z.time_start|date:"D" == "Thu" %}<span class="badge badge-light">Thurs.</span>{% endif %}
 								{% if z.time_start|date:"D" == "Fri" %}<span class="badge badge-info">Fri.</span>{% endif %}
@@ -46,10 +46,10 @@
 					</tr>
 				{% endfor %}
 					</table>
-							
+
 				</td>
 			</tr>
-			{% endfor %}	
+			{% endfor %}
 		</tbody>
 	</table>
 {% endblock %}

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0076_event_allowonlineminorreg'),
+        ("registration", "0076_event_allowonlineminorreg"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='priceleveloption',
-            name='rank',
+            model_name="priceleveloption",
+            name="rank",
             field=models.IntegerField(default=0),
         ),
     ]

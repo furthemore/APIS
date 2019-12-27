@@ -35,7 +35,7 @@
 	border-left: 1px solid #000 !important;
 	border-right: 1px solid #000 !important;
 	border-bottom: 0px solid #000 !important;
-	
+
 }
 .event-bottom {
 	border-bottom: 1px solid #000 !important;
@@ -85,7 +85,7 @@
 					try{
 						$("#row-"+event[{{event.pk}}].names[day][1]+" tbody").append("<tr id='tablerow-"+cxi+"-"+event[{{event.pk}}].names[dnv][1]+"'><td>"+cxi+"</td></tr>");
 					}catch(err){
-						$("#row-"+event[{{event.pk}}].names[day][1]+" tbody").append("<tr id='tablerow-"+cxi+"-"+event[{{event.pk}}].reverse_day_blocks[dnv+1]+"'><td>"+cxi+"</td></tr>");						
+						$("#row-"+event[{{event.pk}}].names[day][1]+" tbody").append("<tr id='tablerow-"+cxi+"-"+event[{{event.pk}}].reverse_day_blocks[dnv+1]+"'><td>"+cxi+"</td></tr>");
 					}
 						$.each(rooms, function(dm,ix){
 							var evi = event[{{event.pk}}].names[day][1];
@@ -194,7 +194,7 @@
 			$('table').stickyTableHeaders();
 			$("#loading_status").text("Let's disco.");
 			$("#loading").fadeOut();
-			
+
 		}
 
 		function getAPI(){

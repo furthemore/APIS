@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0022_auto_20161020_1832'),
+        ("registration", "0022_auto_20161020_1832"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tablesize',
-            name='partnerMax',
+            model_name="tablesize",
+            name="partnerMax",
             field=models.IntegerField(default=1),
         ),
         migrations.AddField(
-            model_name='tablesize',
-            name='partnerMin',
+            model_name="tablesize",
+            name="partnerMin",
             field=models.IntegerField(default=1),
         ),
     ]

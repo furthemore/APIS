@@ -8,13 +8,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0079_pricelevel_isminor'),
+        ("registration", "0079_pricelevel_isminor"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='banlist',
-            name='reason',
-            field=models.TextField(blank=True),
+            model_name="banlist", name="reason", field=models.TextField(blank=True),
         ),
     ]

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0058_banlist'),
+        ("registration", "0058_banlist"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='attendee',
-            name='aslRequest',
+            model_name="attendee",
+            name="aslRequest",
             field=models.BooleanField(default=False),
         ),
     ]

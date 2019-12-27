@@ -8,55 +8,55 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0011_auto_20160830_2149'),
+        ("registration", "0011_auto_20160830_2149"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='billingAddress1',
-            field=models.CharField(default='', max_length=200),
+            model_name="order",
+            name="billingAddress1",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingAddress2',
+            model_name="order",
+            name="billingAddress2",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingCity',
-            field=models.CharField(default='', max_length=200),
+            model_name="order",
+            name="billingCity",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingCountry',
-            field=models.CharField(default='', max_length=200),
+            model_name="order",
+            name="billingCountry",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingEmail',
-            field=models.CharField(default='', max_length=200),
+            model_name="order",
+            name="billingEmail",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingName',
-            field=models.CharField(default='', max_length=200),
+            model_name="order",
+            name="billingName",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingPostal',
-            field=models.CharField(default='', max_length=20),
+            model_name="order",
+            name="billingPostal",
+            field=models.CharField(default="", max_length=20),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='billingState',
-            field=models.CharField(default='', max_length=200),
+            model_name="order",
+            name="billingState",
+            field=models.CharField(default="", max_length=200),
             preserve_default=False,
         ),
     ]

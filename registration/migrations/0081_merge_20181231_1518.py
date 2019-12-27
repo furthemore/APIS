@@ -8,10 +8,9 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0080_banlist_reason'),
-        ('registration', '0069_auto_20180802_2118'),
-        ('registration', '0080_cart'),
+        ("registration", "0080_banlist_reason"),
+        ("registration", "0069_auto_20180802_2118"),
+        ("registration", "0080_cart"),
     ]
 
-    operations = [
-    ]
+    operations = []
