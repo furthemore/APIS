@@ -32,7 +32,7 @@
 		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:{{event.registrationEmail}}'>{{event.registrationEmail}}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
 
 		<hr>
-			
+
         {% show_attendee_form staff.attendee event=event %}
 
         {% show_staff_form staff %}
@@ -76,19 +76,19 @@
 <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
 <script type="text/javascript" src="/static/js/templates/staff.js"></script>
  <script type="text/javascript">
-	var staff = {{ jsonStaff|safe }} 
-	var attendee = {{ jsonAttendee|safe }} 
+	var staff = {{ jsonStaff|safe }}
+	var attendee = {{ jsonAttendee|safe }}
 
 
 	$("#register").click(doRegister);
-	
+
 
 	function doRegister(e) {
 		e.preventDefault();
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
-        
+
         // Validate birthdate input
         if ($("#birthDate").val() == "") {
             alert("You must enter your birthdate to submit your registration.");
@@ -112,14 +112,14 @@
 		var data = {
 			'attendee': {
 				'id': attendee.id,
-				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
-				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
+				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(),
+				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(), 
+				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(),
                 'badgeName': $("#badgeName").val()
-			}, 
+			},
 			'staff': {
-				'id': staff.id, 
+				'id': staff.id,
 				'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
 				'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
 				'specialFood': $("#food").val(), 'specialMedical': $("#medical").val(),
@@ -129,7 +129,7 @@
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
             'event': '{{event}}'
 		};
-		
+
 
 		$.ajax({
 		    "type": "POST",

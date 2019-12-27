@@ -8,28 +8,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0021_auto_20161013_1941'),
+        ("registration", "0021_auto_20161013_1941"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dealer',
-            name='breakfast',
+            model_name="dealer",
+            name="breakfast",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='dealer',
-            name='willSwitch',
+            model_name="dealer",
+            name="willSwitch",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='tablesize',
-            name='tableMax',
+            model_name="tablesize",
+            name="tableMax",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='tablesize',
-            name='tableMin',
+            model_name="tablesize",
+            name="tableMin",
             field=models.IntegerField(default=0),
         ),
     ]

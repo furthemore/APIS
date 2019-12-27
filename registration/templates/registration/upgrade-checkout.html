@@ -98,20 +98,20 @@ var paymentForm = new SqPaymentForm({
 		<hr>
 
 		<h3>Your Order</h3>
-			
+
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1"><h4>Attendee</h4></div>
-				<div class="col-sm-2"><h4>Price</h4></div>   
+				<div class="col-sm-2"><h4>Price</h4></div>
 			</div>
 
 		{% for item in orderItems %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">{{attendee}} - {{item.priceLevel}}</div>
-				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
+				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>
 				<div class="col-sm-2">
 				</div>
 			</div>
-			
+
 			{% for option in item.getOptions %}
 			<div class="row">
 				{% if option.option.optionExtraType == "int" %}
@@ -139,7 +139,7 @@ var paymentForm = new SqPaymentForm({
 			{% if prevLevel %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Previously Paid</div>
-				<div class="col-sm-2">-${{prevLevel.basePrice}}</div>   
+				<div class="col-sm-2">-${{prevLevel.basePrice}}</div>
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -149,21 +149,21 @@ var paymentForm = new SqPaymentForm({
 		{% endfor %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
-				<div class="col-sm-2"><h4>${{grand_total}}</h4></div>   
+				<div class="col-sm-2"><h4>${{grand_total}}</h4></div>
 			</div>
 
-	
+
 		<br/>
 		<a id="cancel" href="#">Cancel</a>
 		<hr/>
 		{% if total > 0%}
 
 		<form class="form-horizontal" role="form" data-toggle="validator">
-		
+
 		<h3>Extra Donations</h3>
         <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
         {% if event.charity %}
-            If you would like to make an extra gift to our annual charity, 
+            If you would like to make an extra gift to our annual charity,
             {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
         {% else %}
             If you would like to make an extra gift to the convention, please enter it below.
@@ -286,7 +286,7 @@ var paymentForm = new SqPaymentForm({
 			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
 		</div>
  		</form>
-		
+
 
 		{% else %}
 
@@ -322,7 +322,7 @@ var paymentForm = new SqPaymentForm({
 	$( "body" ).ready(function() {
         $.getJSON("{% url 'addresses' %}", function(data) {
 		    addresses = data;
-        });		
+        });
 	});
 
 	$("#useFrom").on("change", function(e) {
@@ -357,7 +357,7 @@ var paymentForm = new SqPaymentForm({
 	$("#cancel").click(function(e){
         $.getJSON("{% url 'flush' %}", function(data) {
 			window.location.reload();
-        });		
+        });
 	});
 
 	$("#checkout").click(function (e) {

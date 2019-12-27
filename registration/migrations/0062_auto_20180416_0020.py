@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0061_cashdrawer_firebase'),
+        ("registration", "0061_cashdrawer_firebase"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='firebase',
-            name='token',
+            model_name="firebase",
+            name="token",
             field=models.CharField(max_length=500, unique=True),
         ),
     ]

@@ -48,7 +48,7 @@
                     </div>
             </div>
 
-        <p>&nbsp;</p>            
+        <p>&nbsp;</p>
         <h2>Business Information</h2>
         <p>Fill out the information related to your business below.</p>
         <hr>
@@ -63,7 +63,7 @@
                     <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
                     <div class="col-sm-9">
                         <input type="text" id="license" name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
-            
+
                         <label>
                             <input type="checkbox" id="tempLicense" /> I need a temporary tax license for VA.
                         </label>
@@ -220,8 +220,8 @@
                         tableSizes = data;
             $.each(tableSizes, function (key, item) {
                 $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
-                if (key == 0) { 
-                    $("#tableSizeDescription").text(item.description); 
+                if (key == 0) {
+                    $("#tableSizeDescription").text(item.description);
                     setTableInfo(item.id);
                 }
             });
@@ -230,17 +230,17 @@
     $("#tableSize").on("change", function() {
         var id = $(this).val();
         $.each(tableSizes, function (key, item) {
-            if (item.id == id){ 
+            if (item.id == id){
                 $("#tableSizeDescription").text(item.description);
                 setTableInfo(id);
             }
-        });     
+        });
     });
 
     $("#next-personal").click(function() {
         window.scrollTo(0, 0);
     });
-    
+
     $("#next-optional").click(function() {
         window.scrollTo(0, 0);
     });
@@ -263,8 +263,8 @@
                 if (item.partnerMax > 0){
                     for (var i=item.partnerMin; i <= item.partnerMax; i++) {
                         var partner = '<div class="partnerGroup"><input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
-                                  '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' + 
-                                  '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' + 
+                                  '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' +
+                                  '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' +
                                   '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label></div>'
                         $("#partnerList").append(partner);
                         if (i != item.partnerMax){$("#partnerList").append("<br/>");}
@@ -273,7 +273,7 @@
                     $(".partnerLicense").click(partnerLicense);
                 }
             }
-        });     
+        });
     };
 
     $("#country").on("change", function() {
@@ -305,7 +305,7 @@
     $("#register1").click(doRegister);
 
     $("#register").click(doRegister);
-    
+
     function getPartners(){
         var partners = [];
         var partnerList = $(".partnerGroup");
@@ -316,13 +316,13 @@
             $.each(itemList, function(key2, item2){
                 var id = item2.id.split('_')[0];
                 if ($(item2).is(':checkbox')) {
-                    partner[id] = $(item2).is(':checked');                 
+                    partner[id] = $(item2).is(':checked');
                     if (partner[id]){ hasValues = true; }
                 } else {
-                    partner[id] = $(item2).val(); 
+                    partner[id] = $(item2).val();
                     if ($(item2).val() != ""){ hasValues = true; }
                 }
-                
+
             });
             if (hasValues) {
                 partners.push(partner)
@@ -338,7 +338,7 @@
         if ($("#birthDate").val() == "") {
             alert("You must enter your birthdate to submit your application.");
             return;
-        } 
+        }
         if (Modernizr.inputtypes.date) {
             // native datepicker - expect ISO date
             var birthdate = parseDate($("#birthDate").val());
@@ -354,20 +354,20 @@
 
         var data = {
             'attendee': {
-                'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
-                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
+                'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(),
+                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': $("#birthDate").val(),
-                'emailsOk': $("#contact").is(':checked'), 'surveyOk': $("#survey").is(':checked'), 
+                'emailsOk': $("#contact").is(':checked'), 'surveyOk': $("#survey").is(':checked'),
                 'badgeName': $("#badgename").val()
-            }, 
+            },
             'dealer': {
                 'businessName':$("#businessName").val(), 'website':$("#website").val(), 'logo':$("#logo").val(),
                 'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
                 'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
-                'description': $("#description").val(), 'tableSize': $("#tableSize").val(),  
+                'description': $("#description").val(), 'tableSize': $("#tableSize").val(),
                 'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
-                'reception': false, 'artShow': $("#artShow").is(':checked'), 
+                'reception': false, 'artShow': $("#artShow").is(':checked'),
                 'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
                 'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': false

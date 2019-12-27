@@ -8,13 +8,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('events', '0002_auto_20171009_1224'),
+        ("events", "0002_auto_20171009_1224"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='panelrequesttype',
-            name='panel_type',
-            field=models.IntegerField(choices=[(0, 'Panel'), (1, 'Blackout'), (2, 'Convention Event'), (3, 'Convention Ops')], default=0),
+            model_name="panelrequesttype",
+            name="panel_type",
+            field=models.IntegerField(
+                choices=[
+                    (0, "Panel"),
+                    (1, "Blackout"),
+                    (2, "Convention Event"),
+                    (3, "Convention Ops"),
+                ],
+                default=0,
+            ),
         ),
     ]

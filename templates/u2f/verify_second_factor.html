@@ -32,7 +32,7 @@
       <div class="alert alert-danger" id="u2f-status" style="font-weight: bold"></div>
       <form method="post" id="u2f-form" class="form">
           {% csrf_token %}
-          
+
           {% for hidden_field in forms.backup.hidden_fields %}
             {{ hidden_field }}
           {% endfor %}
@@ -70,7 +70,7 @@
 
       <form method="post" class="form-inline">
         {% csrf_token %}
-        
+
         {% for hidden_field in forms.totp.hidden_fields %}
           {{ hidden_field }}
         {% endfor %}
@@ -95,7 +95,7 @@
 
       <form method="POST" class="form-inline">
         {% csrf_token %}
-        
+
         {% for hidden_field in forms.backup.hidden_fields %}
           {{ hidden_field }}
         {% endfor %}

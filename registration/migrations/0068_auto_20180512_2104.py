@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0067_auto_20180512_2055'),
+        ("registration", "0067_auto_20180512_2055"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='temptoken',
-            name='usedDate',
+            model_name="temptoken",
+            name="usedDate",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

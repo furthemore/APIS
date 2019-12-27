@@ -117,7 +117,7 @@ var paymentForm = new SqPaymentForm({
 
 		<div id="billingInfo">
 		<h3>Charges</h3>
-		
+
 		<div class='form-group' style='margin-left:30px;'>You will be charged $45 for each new partner added via this form.</div>
 		<div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do not use this form if you <u>only</u> wish to change existing partner information. Contact <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a> instead.</div>
 
@@ -211,7 +211,7 @@ var paymentForm = new SqPaymentForm({
 
 		</div>
  		</form>
-		
+
         {% endif %}
 
 	</div>
@@ -240,8 +240,8 @@ var paymentForm = new SqPaymentForm({
 	$( "body" ).ready(function() {
 		$("#state").val("{{attendee.state}}");
 		$("#country").val("{{attendee.country}}");
-	}); 
-    
+	});
+
     for (var i=dealerPartners.length; i <= maxPartners; i++) {
         var partner = '<div class="partnerGroup"><input type="text" id="name_" + i + " class="form-control form-control-text" placeholder="Partner Name" />' +
                       '<input type="email" id="email_" + i  class="form-control form-control-text" placeholder="Partner Email" /></div>'
@@ -259,9 +259,9 @@ var paymentForm = new SqPaymentForm({
             $.each(itemList, function(key2, item2){
                 var id = item2.id.split('_')[0];
                 if ($(item2).val() != ""){ hasValues = true; }
-                partner[id] = $(item2).val(); 
+                partner[id] = $(item2).val();
             });
-            if (hasValues){ 
+            if (hasValues){
                 partner['license'] = 'NA';
                 partners.push(partner);
             }

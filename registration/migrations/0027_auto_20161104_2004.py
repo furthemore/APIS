@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0026_dealer_buttonoffer'),
+        ("registration", "0026_dealer_buttonoffer"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dealer',
-            name='discount',
+            model_name="dealer",
+            name="discount",
             field=models.DecimalField(decimal_places=2, default=0.0, max_digits=6),
         ),
         migrations.AddField(
-            model_name='dealer',
-            name='discountReason',
+            model_name="dealer",
+            name="discountReason",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

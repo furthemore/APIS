@@ -8,22 +8,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0023_auto_20161020_1843'),
+        ("registration", "0023_auto_20161020_1843"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='dealer',
-            name='shareWith',
+        migrations.RemoveField(model_name="dealer", name="shareWith",),
+        migrations.AddField(
+            model_name="dealer", name="partners", field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='dealer',
-            name='partners',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AddField(
-            model_name='dealer',
-            name='tables',
-            field=models.IntegerField(default=0),
+            model_name="dealer", name="tables", field=models.IntegerField(default=0),
         ),
     ]

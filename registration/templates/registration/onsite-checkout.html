@@ -11,10 +11,10 @@
         <hr>
 
         <h3>Your Order</h3>
-            
+
             <div class="row">
                 <div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
-                <div class="col-sm-2"><h4>Price</h4></div>   
+                <div class="col-sm-2"><h4>Price</h4></div>
             </div>
 
 
@@ -26,7 +26,7 @@
                 {% else %}
 				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
                 {% endif %}
-				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
+				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>
 				<div class="col-sm-2">
 					<a class="deleteAttendee" id="delete_{{item.id}}">&times; Remove</a>
 				</div>
@@ -37,7 +37,7 @@
                     {% if discount.amountOff == 0 %}
                     <div class="col-sm-2">- ${{total_discount|floatformat:2}}</div>
                     {% else %}
-					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>   
+					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>
                     {% endif %}
 					<div class="col-sm-2">
 					</div>
@@ -51,9 +51,9 @@
 				<div class="col-sm-2"><h4>${{total|floatformat:2}}</h4></div>
 			</div>
 
-	
+
 		<br/>
-    
+
         <br/>
         <a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registration</a>
 
@@ -61,11 +61,11 @@
 
         <div class="container" style="width: inherit">
         <form class="form-horizontal" role="form" data-toggle="validator">
-        
+
         <h3>Extra Donations</h3>
         <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
         {% if event.charity %}
-            If you would like to make an extra gift to our annual charity, 
+            If you would like to make an extra gift to our annual charity,
             {{ event.charity }}, or to the convention, please enter it below.
         {% else %}
             If you would like to make an extra gift to the convention, please enter it below.
@@ -165,7 +165,7 @@
     $("#cancel").click(function() {
         var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
         if (cancel == false) { return;}
-        
+
                 $.getJSON("{% url 'cancelOrder' %}", function(data) {
             window.location = "{% url 'onsite' %}";
                 });

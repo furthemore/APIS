@@ -1,11 +1,11 @@
 This directory contains nametag templates for Taxidi to use.
 Templates are rendered using the QT implementation of webkit,
 and should be tested in a modern webkit browser such as
-Chromium, Konquerer, (or Firefox in most cases).  
+Chromium, Konquerer, (or Firefox in most cases).
 
 Each template should be in its own directory with an unique
 name, along with an accompanying .conf file bearing the same
-name as the folder.  This defines default zoom, page size, 
+name as the folder.  This defines default zoom, page size,
 margins, etc. and are specific to printer and label types.
 The included configurations are specific to the 100x62mm
 labels and the default settings for the Brother QL-570.  If
@@ -27,7 +27,7 @@ following:
     %first%, %last%     Names
     %medical%           Allergies, etc. or volunteer position.
     %code%, %s%         Paging number and security code (%s%)
-    
+
 secure.png, parent-link.png, and parent-secure.png will be
 replaced by their respective 1D and/or QR codes - any encoding
 can be used and is defined by the client configuration.  The
@@ -54,4 +54,4 @@ If zoom is undefined, it defaults to 1.  When height and width
 are undefined, the default output size is A4.  The margins all
 default to 10mm.  Additional options may be passed with the
 options = parameter.  For more info about these read the
-wkhtmltopdf documentation here: http://code.google.com/p/wkhtmltopdf/    
+wkhtmltopdf documentation here: http://code.google.com/p/wkhtmltopdf/

@@ -8,18 +8,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0008_auto_20160821_1600'),
+        ("registration", "0008_auto_20160821_1600"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='attendeeoptions',
-            old_name='optionExtraValue',
-            new_name='optionValue',
+            model_name="attendeeoptions",
+            old_name="optionExtraValue",
+            new_name="optionValue",
         ),
         migrations.RenameField(
-            model_name='priceleveloption',
-            old_name='OptionExtraType',
-            new_name='optionExtraType',
+            model_name="priceleveloption",
+            old_name="OptionExtraType",
+            new_name="optionExtraType",
         ),
     ]

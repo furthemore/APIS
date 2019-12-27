@@ -17,7 +17,7 @@
     <p id="u2f-status"></p>
     <form method="post" id="u2f-form" class="form">
         {% csrf_token %}
-        {% for field in form.visible_fields %} 
+        {% for field in form.visible_fields %}
             {% render_field field readonly="readonly" class="form-control" placeholder="Waiting for token..." %}
         {% endfor %}
     </form>

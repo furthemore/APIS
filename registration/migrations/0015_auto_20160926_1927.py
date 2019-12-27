@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0014_auto_20160926_1925'),
+        ("registration", "0014_auto_20160926_1925"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dealer',
-            name='farFrom',
+            model_name="dealer",
+            name="farFrom",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='dealer',
-            name='nearTo',
+            model_name="dealer",
+            name="nearTo",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

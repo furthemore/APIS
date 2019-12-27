@@ -152,7 +152,7 @@ STATIC_ROOT = '/var/www/APIS/static/'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60*60  # 1hr
 
-# Authorize.net (deprecated) 
+# Authorize.net (deprecated)
 AUTHNET_NAME = '426rwVfr3G47'
 AUTHNET_TRANSACTIONKEY = '399UTfznCVrsa224'
 
