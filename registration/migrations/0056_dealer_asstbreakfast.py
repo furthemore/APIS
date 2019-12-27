@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0055_auto_20171009_1134'),
+        ("registration", "0055_auto_20171009_1134"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dealer',
-            name='asstBreakfast',
+            model_name="dealer",
+            name="asstBreakfast",
             field=models.BooleanField(default=False),
         ),
     ]

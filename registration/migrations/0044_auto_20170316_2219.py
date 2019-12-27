@@ -8,27 +8,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0043_auto_20170310_2243'),
+        ("registration", "0043_auto_20170310_2243"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AttendeeOnsite',
-            fields=[
-            ],
-            options={
-                'proxy': True,
-            },
-            bases=('registration.attendee',),
+            name="AttendeeOnsite",
+            fields=[],
+            options={"proxy": True,},
+            bases=("registration.attendee",),
         ),
         migrations.AddField(
-            model_name='attendeeoptions',
-            name='optionValue2',
+            model_name="attendeeoptions",
+            name="optionValue2",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AddField(
-            model_name='attendeeoptions',
-            name='optionValue3',
+            model_name="attendeeoptions",
+            name="optionValue3",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

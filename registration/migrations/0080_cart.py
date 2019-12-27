@@ -8,21 +8,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0079_pricelevel_isminor'),
+        ("registration", "0079_pricelevel_isminor"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Cart',
+            name="Cart",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('token', models.CharField(blank=True, max_length=200, null=True)),
-                ('form', models.CharField(max_length=50)),
-                ('formData', models.TextField()),
-                ('formHeaders', models.TextField()),
-                ('enteredDate', models.DateTimeField(auto_now_add=True, null=True)),
-                ('transferedDate', models.DateTimeField(auto_now_add=True, null=True)),
-                ('ipAddress', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("token", models.CharField(blank=True, max_length=200, null=True)),
+                ("form", models.CharField(max_length=50)),
+                ("formData", models.TextField()),
+                ("formHeaders", models.TextField()),
+                ("enteredDate", models.DateTimeField(auto_now_add=True, null=True)),
+                ("transferedDate", models.DateTimeField(auto_now_add=True, null=True)),
+                ("ipAddress", models.CharField(max_length=50)),
             ],
         ),
     ]

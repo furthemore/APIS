@@ -95,14 +95,14 @@ var paymentForm = new SqPaymentForm({
 		<hr>
 
 		<h3>Your Order</h3>
-			
+
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1"><h4>Dealer</h4></div>
-				<div class="col-sm-2"><h4>Price</h4></div>   
+				<div class="col-sm-2"><h4>Price</h4></div>
 			</div>
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Table Type - {{dealer.tableSize}}</div>
-				<div class="col-sm-2">${{dealer.tableSize.basePrice}}</div>   
+				<div class="col-sm-2">${{dealer.tableSize.basePrice}}</div>
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -110,7 +110,7 @@ var paymentForm = new SqPaymentForm({
 			{% if dealer.getPartnerCount > 0 %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getPartnerCount }}</div>
-				<div class="col-sm-2">${{dealer.getPartnerCount|mul:35}}.00</div>   
+				<div class="col-sm-2">${{dealer.getPartnerCount|mul:35}}.00</div>
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -119,7 +119,7 @@ var paymentForm = new SqPaymentForm({
             {% if dealer.needWifi %}
 	            <div class="row">
 				    <div class="col-sm-6 col-sm-offset-1">Wifi</div>
-				    <div class="col-sm-2">$50.00</div>   
+				    <div class="col-sm-2">$50.00</div>
 				    <div class="col-sm-2"></div>
 			    </div>
             {% endif %}
@@ -129,7 +129,7 @@ var paymentForm = new SqPaymentForm({
 		{% for item in orderItems %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
-				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
+				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -162,11 +162,11 @@ var paymentForm = new SqPaymentForm({
 
             </div>
             {% endfor %}
-			
+
 			{% if dealer.attendee.effectiveLevel %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{item.priceLevel}}</div>
-				<div class="col-sm-2">- $50.00</div>   
+				<div class="col-sm-2">- $50.00</div>
 				<div class="col-sm-2">
 				</div>
 			</div>
@@ -174,7 +174,7 @@ var paymentForm = new SqPaymentForm({
 			{% if discount and not dealer.paidTotal %}
 				<div class="row">
 					<div class="col-sm-6 col-sm-offset-1">Discount - {{discount.codeName}}</div>
-					<div class="col-sm-2">- ${{discount.amountOff}}</div>   
+					<div class="col-sm-2">- ${{discount.amountOff}}</div>
 					<div class="col-sm-2">
 					</div>
 				</div>
@@ -182,7 +182,7 @@ var paymentForm = new SqPaymentForm({
 			{% if dealer.discount %}
 				<div class="row">
 					<div class="col-sm-6 col-sm-offset-1">Discount - {{dealer.discountReason}}</div>
-					<div class="col-sm-2">- ${{dealer.discount}}</div>   
+					<div class="col-sm-2">- ${{dealer.discount}}</div>
 					<div class="col-sm-2">
 					</div>
 				</div>
@@ -192,24 +192,24 @@ var paymentForm = new SqPaymentForm({
 		{% endfor %}
 			<div class="row">
 				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
-				<div class="col-sm-2"><h4>${{total}}</h4></div>   
+				<div class="col-sm-2"><h4>${{total}}</h4></div>
 			</div>
 			<div class="row">
 				<div class="col-sm-12"><h3 style="color: red; text-align: center">Please review the total and invoice items above carefully!</h3></div>
 			</div>
 
-	
+
 		<br/>
 		<a id="cancel" href="#">Cancel and Restart</a>
 		<hr/>
 		{% if total > 0%}
 
 		<form class="form-horizontal" role="form" data-toggle="validator">
-		
+
 		<h3>Extra Donations</h3>
         <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
         {% if event.charity %}
-            If you would like to make an extra gift to our annual charity, 
+            If you would like to make an extra gift to our annual charity,
             {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
         {% else %}
             If you would like to make an extra gift to the convention, please enter it below.
@@ -329,12 +329,12 @@ var paymentForm = new SqPaymentForm({
         <br/>
         <input type="hidden" id="card-nonce" name="nonce">
         {% csrf_token %}
-		
+
         <div class="form-group" style="margin-right:0px;">
 			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
 		</div>
  		</form>
-		
+
 
 		{% else %}
 
@@ -370,7 +370,7 @@ var paymentForm = new SqPaymentForm({
 	$( "body" ).ready(function() {
                 $.getJSON("{% url 'addresses' %}", function(data) {
 		addresses = data;
-                });		
+                });
 	});
 
 	$("#useFrom").on("change", function(e) {
@@ -405,7 +405,7 @@ var paymentForm = new SqPaymentForm({
 	$("#cancel").click(function(e){
                 $.getJSON("{% url 'flush' %}", function(data) {
 			window.location.reload();
-                });		
+                });
 	});
 
 	$("#checkout").click(function (e) {
@@ -430,7 +430,7 @@ function doCheckout(card_data) {
 	{% if total > 0 %}
 		var data = {
 		    'billingData': {
-			        'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(), 
+			        'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(),
 			        'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
 			        'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                     'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),

@@ -20,8 +20,8 @@
             <div class="col-sm-3">Phone Number</div><div class="col-sm-9">{{attendee.phone}}</div>
             <div class="col-sm-3">Birthdate</div><div class="col-sm-9">{{attendee.birthdate}}</div>
             <div class="col-sm-3">Badge Name</div><div class="col-sm-9">{{badge.badgeName}}</div>
-        </div>	
-				
+        </div>
+
 		<hr/>
 
 		<h3>Choose a different attendee level</h3>
@@ -134,14 +134,14 @@
     <div class="form-group">
         <label class="col-sm-3 control-label" data-content="name"></label>
         <div class="col-sm-9">
-            <select data-id="id" class="form-control form-control-select levelOptions" 
+            <select data-id="id" class="form-control form-control-select levelOptions"
               data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
         </div>
     </div>
 </script>
  <script type="text/javascript">
-	var attendee = {{ jsonAttendee|safe }} 
-	var badge = {{ jsonBadge|safe }} 
+	var attendee = {{ jsonAttendee|safe }}
+	var badge = {{ jsonBadge|safe }}
 	var currentLevel = {{ jsonLevel|safe }}
 	var levelTemplateData = [];
     var shirtSizes = [];
@@ -191,7 +191,7 @@
 		});
 	});
 	$("#levelContainer").on('click', 'a.changeLevel', function() {
-		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);		
+		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
 		$("#regLevel").val("");
 		$(".changeLevel").hide();
 	});
@@ -294,7 +294,7 @@
 					break;
 			}
 		});
-		
+
 		$("form").validator('update');
 	};
 
@@ -317,23 +317,23 @@
     };
 
 	$("#checkout").click(doRegister);
-	
+
 
 	function doRegister(e) {
 		e.preventDefault();
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
-		
+
 		$("#checkout").attr("disabled", "disabled");
 
 		var data = {
-			'attendee': {'id': attendee.id,}, 
+			'attendee': {'id': attendee.id,},
             'badge': {'id': badge.id,},
             'event': '{{ event }}',
 			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
 		};
-		
+
 
 		$.ajax({
 		    "type": "POST",

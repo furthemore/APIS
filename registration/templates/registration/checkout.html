@@ -16,10 +16,10 @@
 		<hr>
 
 		<h3>Your Order</h3>
-			
+
 			<div class="row">
 				<div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
-				<div class="col-sm-2"><h4>Price</h4></div>   
+				<div class="col-sm-2"><h4>Price</h4></div>
 			</div>
 
 		{% for item in orderItems %}
@@ -29,7 +29,7 @@
                 {% else %}
 				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
                 {% endif %}
-				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>   
+				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>
 				<div class="col-sm-2">
 					<a class="deleteAttendee" id="delete_{{item.id}}">&times; Remove</a>
 				</div>
@@ -55,7 +55,7 @@
                     {% if discount.amountOff == 0 %}
                     <div class="col-sm-2">- ${{total_discount|floatformat:2}}</div>
                     {% else %}
-					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>   
+					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>
                     {% endif %}
 					<div class="col-sm-2">
 					</div>
@@ -69,7 +69,7 @@
 				<div class="col-sm-2"><h4>${{total|floatformat:2}}</h4></div>
 			</div>
 
-	
+
 		<br/>
         {% if not discount.newStaffEvent and not discount.staffEvent  %}
 		<a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn btn-danger" id="cancel">Cancel Registration</a>
@@ -80,11 +80,11 @@
         <h3>Important Information About Minor Registration</h3>
         <div class="row">
           <div class="col-sm-11 col-sm-offset-1">
-           One or more of the attendees in this order will still be minors at the start of the convention. 
+           One or more of the attendees in this order will still be minors at the start of the convention.
            Please note that we require a parent or guardian to be present at registration to sign our
-           consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention) 
+           consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention)
            must have a parent or guardian also register and accompany them during the event. If you have
-           any questions about our policies, please contact 
+           any questions about our policies, please contact
            <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>.
           </div>
         </div>
@@ -108,15 +108,15 @@
                 <p>&nbsp;</p>
 			</div>
 		</div>
-		
+
 		{% endif %}
 		<div class="container" style="width: inherit">
 		<form class="form-horizontal" role="form" data-toggle="validator">
-		
+
         <h3>Extra Donations</h3>
         <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
         {% if event.charity %}
-            If you would like to make an extra gift to our annual charity, 
+            If you would like to make an extra gift to our annual charity,
             {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
         {% else %}
             If you would like to make an extra gift to the convention, please enter it below.
@@ -134,7 +134,7 @@
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
         </div>
         {% endif %}
-        
+
         <div class="form-group">
             <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
             <div class="col-sm-4">
@@ -249,7 +249,7 @@
 		<!-- </div> -->
  		</form>
 		</div>
-    
+
         <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
         <script type="text/javascript">
     var paymentForm = new SqPaymentForm({
@@ -382,7 +382,7 @@
         });
         {% endif %}
 	});
-    
+
     //$("#donateCharity").change(setTwoNumberDecimal);
     //$("#donateOrg").change(setTwoNumberDecimal);
 
@@ -420,7 +420,7 @@
 		if (cancel == false) {
             return;
         }
-		
+
         $.getJSON("{% url 'cancelOrder' %}", function(data) {
             window.location = "{% url 'index' %}";
         });
@@ -454,7 +454,7 @@
                     }
 		});
 
-		
+
 	});
 
 	$("#useFrom").on("change", function(e) {
@@ -535,7 +535,7 @@ function doCheckout(card_data) {
                     var message = JSON.parse(result.responseText);
                     if (('reason' in message) && ('errors' in message.reason)) {
                         message.reason.errors.forEach(function (element) {
-                            error_message += element.detail + " (" + element.code + ")\n";  
+                            error_message += element.detail + " (" + element.code + ")\n";
                         });
                     }
                 } catch (e) {

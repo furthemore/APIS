@@ -8,17 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0048_auto_20170511_2022'),
+        ("registration", "0048_auto_20170511_2022"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='pricelevel',
-            name='priceLevelOptions',
-        ),
+        migrations.RemoveField(model_name="pricelevel", name="priceLevelOptions",),
         migrations.AddField(
-            model_name='pricelevel',
-            name='priceLevelOptions',
-            field=models.ManyToManyField(to='registration.PriceLevelOption'),
+            model_name="pricelevel",
+            name="priceLevelOptions",
+            field=models.ManyToManyField(to="registration.PriceLevelOption"),
         ),
     ]

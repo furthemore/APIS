@@ -16,7 +16,7 @@ Proposed Stack:
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
-    and in-person with an [Android app][android] as a customer-facing 
+    and in-person with an [Android app][android] as a customer-facing
     display, with cash drawer and receipt printer integration.
   + Manage staff registration and department heirarchies.
   + Handle dealer applications, registration, and payments.
@@ -41,7 +41,7 @@ To see a demo, or set up the project for development locally:
 
     # Review your settings
     cp fm_eventmanager/settings.py.dev fm_eventmanager/settings.py
-    
+
     python manage.py migrate
     python manage.py createsuperuser
 
@@ -54,3 +54,16 @@ To see a demo, or set up the project for development locally:
 
 [square]: https://square.com/
 [android]: https://github.com/furthemore/APIS-register
+
+## Development
+Note: Commit hook utilities require Python 3 to run.
+
+### Using [pre-commit](https://pre-commit.com/)
+1. Install: `pip install pre-commit` or `brew install pre-commit`.
+2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to evey commit
+
+If you get errors about Python 2.7 when running pre-commit command, try deleting your pre-commit cache:
+
+```sh
+rm -rf ~/.cache/pre-commit
+```

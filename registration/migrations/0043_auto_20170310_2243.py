@@ -8,48 +8,52 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0042_attendee_printed'),
+        ("registration", "0042_attendee_printed"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='billingType',
-            field=models.CharField(choices=[('Credit', 'Credit'), ('Cash', 'Cash'), ('Comp', 'Comp')], default='Credit', max_length=20),
+            model_name="order",
+            name="billingType",
+            field=models.CharField(
+                choices=[("Credit", "Credit"), ("Cash", "Cash"), ("Comp", "Comp")],
+                default="Credit",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingAddress1',
+            model_name="order",
+            name="billingAddress1",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingCity',
+            model_name="order",
+            name="billingCity",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingCountry',
+            model_name="order",
+            name="billingCountry",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingEmail',
+            model_name="order",
+            name="billingEmail",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingName',
+            model_name="order",
+            name="billingName",
             field=models.CharField(blank=True, max_length=200),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingPostal',
+            model_name="order",
+            name="billingPostal",
             field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='billingState',
+            model_name="order",
+            name="billingState",
             field=models.CharField(blank=True, max_length=200),
         ),
     ]

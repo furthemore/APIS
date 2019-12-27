@@ -8,17 +8,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0045_order_lastfour'),
+        ("registration", "0045_order_lastfour"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='attendeeonsite',
-            options={'verbose_name': 'Attendee Onsite 2017', 'verbose_name_plural': 'Attendee Onsite 2017'},
+            name="attendeeonsite",
+            options={
+                "verbose_name": "Attendee Onsite 2017",
+                "verbose_name_plural": "Attendee Onsite 2017",
+            },
         ),
         migrations.AddField(
-            model_name='priceleveloption',
-            name='active',
+            model_name="priceleveloption",
+            name="active",
             field=models.BooleanField(default=False),
         ),
     ]

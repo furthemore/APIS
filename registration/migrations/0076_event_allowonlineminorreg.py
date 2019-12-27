@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0075_dealer_logo'),
+        ("registration", "0075_dealer_logo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='event',
-            name='allowOnlineMinorReg',
+            model_name="event",
+            name="allowOnlineMinorReg",
             field=models.BooleanField(default=False),
         ),
     ]

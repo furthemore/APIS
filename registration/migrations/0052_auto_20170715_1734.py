@@ -8,21 +8,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0051_orderitem_badge'),
+        ("registration", "0051_orderitem_badge"),
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='AttendeeOnsite',
-        ),
+        migrations.DeleteModel(name="AttendeeOnsite",),
         migrations.AddField(
-            model_name='pricelevel',
-            name='emailVIP',
+            model_name="pricelevel",
+            name="emailVIP",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='pricelevel',
-            name='emailVIPEmails',
-            field=models.CharField(blank=True, default='', max_length=400),
+            model_name="pricelevel",
+            name="emailVIPEmails",
+            field=models.CharField(blank=True, default="", max_length=400),
         ),
     ]

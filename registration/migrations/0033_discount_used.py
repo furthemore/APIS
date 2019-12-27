@@ -8,13 +8,11 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0032_auto_20161223_1732'),
+        ("registration", "0032_auto_20161223_1732"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='discount',
-            name='used',
-            field=models.IntegerField(default=0),
+            model_name="discount", name="used", field=models.IntegerField(default=0),
         ),
     ]

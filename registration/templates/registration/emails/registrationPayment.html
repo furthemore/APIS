@@ -1,4 +1,4 @@
-<h3>Thank you for your payment.</h3> 
+<h3>Thank you for your payment.</h3>
 
 <hr/>
 {% for oi, options in orderItems.items %}
@@ -22,13 +22,13 @@
 {% endfor %}
 <p>
 {% if order.discount %}
-  Discount: 
+  Discount:
       {% if order.discount.percentOff %}
           {{order.discount.percentOff}}% off
       {% else %}
           ${{order.discount.amountOff}} off
       {% endif %}
-  
+
 {% endif %}
 
 {% if order.orgDonation %}
@@ -49,11 +49,10 @@
 One or more of the attendees in this order will still be minors at the start of {{event}}.
 Please note that we require a parent or guardian to be present at registration to sign our
 consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention)
-must have a parent or guardian also register and accompany them during the event. 
+must have a parent or guardian also register and accompany them during the event.
 </p>
 {% endif %}
 
 <p>If you have any questions about your order, please contact us at {{ event.registrationEmail }}.</p>
 
 <p>Thank you!</p>
-

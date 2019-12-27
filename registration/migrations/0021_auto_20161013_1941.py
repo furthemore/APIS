@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0020_remove_dealer_extratable'),
+        ("registration", "0020_remove_dealer_extratable"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tablesize',
-            name='chairMax',
+            model_name="tablesize",
+            name="chairMax",
             field=models.IntegerField(default=1),
         ),
         migrations.AddField(
-            model_name='tablesize',
-            name='chairMin',
+            model_name="tablesize",
+            name="chairMin",
             field=models.IntegerField(default=1),
         ),
     ]

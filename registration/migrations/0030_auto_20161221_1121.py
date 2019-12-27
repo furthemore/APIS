@@ -8,17 +8,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0029_dealer_emailed'),
+        ("registration", "0029_dealer_emailed"),
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='orderitem',
-            name='confirmationCode',
-        ),
+        migrations.RemoveField(model_name="orderitem", name="confirmationCode",),
         migrations.AddField(
-            model_name='pricelevel',
-            name='group',
-            field=models.TextField(blank=True),
+            model_name="pricelevel", name="group", field=models.TextField(blank=True),
         ),
     ]

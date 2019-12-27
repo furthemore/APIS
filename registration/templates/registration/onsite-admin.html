@@ -31,7 +31,7 @@
                     <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
                     <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
                 </ul>
-            </div>        
+            </div>
         </div>
         <div class="col-md-1 col-top">
             <div class="dropdown">
@@ -41,7 +41,7 @@
                 <ul class="dropdown-menu" aria-labelledby="user">
                     <li><a href="{% url 'logout' %}?next={% url 'onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
                 </ul>
-            </div>        
+            </div>
         </div>
     </div>
 
@@ -78,7 +78,7 @@
         <div class="row">
           <div class="panel panel-default">
             <div class="panel-heading">Search results</div>
-            
+
             <table class="table table-striped">
               <thead>
                 <tr>
@@ -125,12 +125,12 @@
             <div class="row button-group">
                 <div class="col-md-6">
                     <button class="btn btn-block btn-primary" id="cash_button" disabled>
-                        <i class="fas fa-money-bill-alt"></i> Tender Cash 
+                        <i class="fas fa-money-bill-alt"></i> Tender Cash
                     </button>
                 </div>
                 <div class="col-md-6">
                     <button class="btn btn-block btn-warning" id="credit_button" disabled>
-                        <i class="fas fa-credit-card"></i> Credit/Debit 
+                        <i class="fas fa-credit-card"></i> Credit/Debit
                     </button>
                 </div>
             </div>
@@ -177,13 +177,13 @@
 
         .cart-table td {
             font-size: 1.6em;
-            white-space: nowrap; 
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .results {
-            white-space: nowrap; 
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 100px;
@@ -348,7 +348,7 @@ var print_badges = function(e) {
                 }
             });
         });
-        
+
         // print badges
         $.getJSON("{% url 'onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
             if (!data.success) {
@@ -380,8 +380,8 @@ $(document).ready(function () {
                 return '<span class="label label-warning">' + value + '</span>';
             }
     });
-    
-    
+
+
 
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
@@ -408,7 +408,7 @@ $(document).ready(function () {
                     price = val.effectiveLevel.price;
                     state = "";
             }
-                
+
             cartTemplateData.push({
                   name : val.firstName + ' ' + val.lastName,
                   badgeName : val.badgeName,
@@ -419,9 +419,9 @@ $(document).ready(function () {
                   delete_id : "delete-" + val.id,
                   state : state
             });
-            
+
           });
-          $("#total").html(""); 
+          $("#total").html("");
           $("#cart").html("");
           $("#cart").loadTemplate($("#cartTemplate"), cartTemplateData);
           $(".remove-badge").click(remove_badge);
@@ -435,7 +435,7 @@ $(document).ready(function () {
               $("#cash_button").attr("disabled", "disabled");
               $("#credit_button").attr("disabled", "disabled");
           }
-        
+
           get_printable();
         }
 
@@ -466,7 +466,7 @@ $(document).ready(function () {
             }
         });
     });
-    
+
     $("#open-terminal").click(function (e) {
         e.preventDefault();
         $.getJSON("{% url 'openTerminal' %}", {}, function (data) {
@@ -475,7 +475,7 @@ $(document).ready(function () {
             }
         });
     });
-    
+
     $("#close-terminal").click(function (e) {
         e.preventDefault();
         $.getJSON("{% url 'closeTerminal' %}", {}, function (data) {
@@ -506,7 +506,7 @@ $(document).ready(function () {
         }
 
         change = parsed - total;
-        
+
         data = {
             'reference' : cartData.reference,
             'total' : total,
@@ -535,7 +535,7 @@ $(document).ready(function () {
 
     });
 
-    
+
     var remove_badge = function (e) {
         e.preventDefault();
         var id = $(this).attr("id").split("-")[1];
@@ -555,9 +555,8 @@ $(document).ready(function () {
     });
 
     $("#print_button").click(print_badges);
-    
+
 });
 
 </script>
 {% endblock %}
-

@@ -74,14 +74,14 @@
  <script type="text/javascript">
 
 	$("#register").click(doRegister);
-	
+
 
 	function doRegister(e) {
 		e.preventDefault();
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {return;}
-        
+
         // Validate birthdate input
         if ($("#birthDate").val() == "") {
             alert("You must enter your birthdate to submit your registration.");
@@ -104,12 +104,12 @@
 
 		var data = {
 			'attendee': {
-				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 
-				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(), 
+				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(),
+				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
 				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(), 
+				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(),
                 'email':$("#email").val(), 'badgeName': $("#badgeName").val()
-			}, 
+			},
 			'staff': {
 				'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
 				'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
@@ -120,7 +120,7 @@
             'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
             'event': '{{event}}'
 		};
-		
+
 
 		$.ajax({
 		    "type": "POST",
