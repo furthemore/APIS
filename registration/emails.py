@@ -1,9 +1,9 @@
 import logging
 
+import views
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
-from . import views
 from .models import *
 
 logger = logging.getLogger("registration.emails")
