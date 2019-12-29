@@ -301,10 +301,10 @@ class OrdersTestCases(TestCase):
         total = response.context["total"]
         self.assertEqual(total, 45)
 
-        response = self.checkout("fake-card-nonce-ok", "20", "10")
+        response = self.checkout("cnon:card-nonce-ok", "20", "10")
         self.assertEqual(response.status_code, 200)
 
-        # Check that user was succesfully saved
+        # Check that user was successfully saved
         attendee = Attendee.objects.get(firstName="Bea")
         badge = Badge.objects.get(attendee=attendee, event=self.event)
         self.assertNotEqual(badge.registeredDate, None)
@@ -332,7 +332,7 @@ class OrdersTestCases(TestCase):
         # TODO
         pass
 
-    def assertSquareError(self, nonce, error):
+    def assert_square_error(self, nonce, error):
         self.add_to_cart(self.attendee_regular_2, self.price_45, [])
         result = self.checkout(nonce)
         self.assertEqual(result.status_code, 400)
@@ -346,23 +346,20 @@ class OrdersTestCases(TestCase):
         self.assertEqual(Attendee.objects.filter(firstName="Bea").count(), 0)
 
     def test_bad_cvv(self):
-        self.assertSquareError("fake-card-nonce-rejected-cvv", "VERIFY_CVV_FAILURE")
+        self.assert_square_error("cnon:card-nonce-rejected-cvv", "CVV_FAILURE")
 
     def test_bad_postalcode(self):
-        self.assertSquareError(
-            "fake-card-nonce-rejected-postalcode", "VERIFY_AVS_FAILURE"
+        self.assert_square_error(
+            "cnon:card-nonce-rejected-postalcode", "ADDRESS_VERIFICATION_FAILURE"
         )
 
     def test_bad_expiration(self):
-        self.assertSquareError(
-            "fake-card-nonce-rejected-expiration", "INVALID_EXPIRATION"
+        self.assert_square_error(
+            "cnon:card-nonce-rejected-expiration", "INVALID_EXPIRATION"
         )
 
     def test_card_declined(self):
-        self.assertSquareError("fake-card-nonce-declined", "CARD_DECLINED")
-
-    def test_nonce_already_used(self):
-        self.assertSquareError("fake-card-nonce-already-used", "CARD_TOKEN_USED")
+        self.assert_square_error("cnon:card-nonce-declined", "GENERIC_DECLINE")
 
     def add_to_cart(self, attendee, priceLevel, options):
         postData = {
@@ -452,7 +449,7 @@ class OrdersTestCases(TestCase):
         total = response.context["total"]
         self.assertEqual(total, 675)
 
-        response = self.checkout("fake-card-nonce-ok", "1", "10")
+        response = self.checkout("cnon:card-nonce-ok", "1", "10")
         self.assertEqual(response.status_code, 200)
 
         attendee = Attendee.objects.get(firstName="Bea")
@@ -494,7 +491,7 @@ class OrdersTestCases(TestCase):
         total = response.context["total"]
         self.assertEqual(total, 40.50)
 
-        response = self.checkout("fake-card-nonce-ok", "1", "10")
+        response = self.checkout("cnon:card-nonce-ok", "1", "10")
         self.assertEqual(response.status_code, 200)
 
         discount = Discount.objects.get(codeName="OneTime")
@@ -667,7 +664,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(discount.codeName, "StaffDiscount")
         discountUsed = discount.used
 
-        response = self.checkout("fake-card-nonce-ok")
+        response = self.checkout("cnon:card-nonce-ok")
         self.assertEqual(response.status_code, 200)
 
         badge = Badge.objects.get(attendee=attendee, event=self.event)
@@ -973,183 +970,6 @@ class OrdersTestCases(TestCase):
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
-
-
-#     self.assertEqual(total, 45+130-45)
-#     orderItem = OrderItem.objects.get(badge=badge)
-#     orderItem.delete()
-
-#     response = self.client.get(reverse('flush'))
-#     self.assertEqual(response.status_code, 200)
-
-#    #Dealer, zero-sum
-#    attendee = Attendee.objects.get(firstName='Free')
-#    badge = Badge.objects.get(attendee=attendee, event=self.event)
-#    dealer = Dealer.objects.get(attendee=attendee)
-#    dealer.discount = 130
-#    dealer.save()
-#    postData = {'token': dealer.registrationToken, 'email': attendee.email}
-#    response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    postData = {'attendee': {'id': attendee.id,'firstName': "Free", 'lastName': "Testerson",
-#                             'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "US",'postal': "12345",
-#                             'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "1990-01-01",
-#                             'badgeName': "FluffyNutz",'emailsOk': "true"},
-#            'dealer': {'id': dealer.id,'businessName':"Something Creative", 'website':"http://www.something.com",
-#            'license':"jkah9435kd", 'power': True, 'wifi': False,
-#            'wall': True, 'near': "Someone", 'far': "Someone Else",
-#            'description': "Stuff for sale", 'tableSize': self.table_130.id,
-#            'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
-#            'reception': True, 'artShow': False,
-#            'charityRaffle': "Some stuff", 'agreeToRules': True,
-#            'breakfast': True, 'switch': False,
-#            'buttonOffer': "Buttons", 'asstbreakfast': False},
-#            'priceLevel': {'id': self.price_45.id, 'options': [{'id': self.option_conbook.id, 'value': "true"}]},
-#            'event': 'Test Event 2050!'}
-#
-#    response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    response = self.client.get(reverse('invoiceDealer'))
-#    self.assertEqual(response.status_code, 200)
-#    cart = response.context["orderItems"]
-#    self.assertEqual(len(cart), 1)
-#    total = response.context["total"]
-#    self.assertEqual(total, 0)
-#    orderItem = OrderItem.objects.get(badge=badge)
-#    orderItem.delete()
-
-#    response = self.client.get(reverse('flush'))
-#    self.assertEqual(response.status_code, 200)
-
-#    #Dealer, upgrade, Wifi
-#    attendee = Attendee.objects.get(firstName='Dealer')
-#    badge = Badge.objects.get(attendee=attendee, event=self.event)
-#    dealer = Dealer.objects.get(attendee=attendee)
-#    postData = {'token': dealer.registrationToken, 'email': attendee.email}
-#    response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    postData = {'attendee': {'id': attendee.id,'firstName': "Dealer", 'lastName': "Testerson",
-#                             'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "US",'postal': "12345",
-#                             'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "1990-01-01",
-#                             'badgeName': "FluffyButz",'emailsOk': "true"},
-#            'dealer': {'id': dealer.id,'businessName':"Something Creative", 'website':"http://www.something.com",
-#            'license':"jkah9435kd", 'power': True, 'wifi': True,
-#            'wall': True, 'near': "Someone", 'far': "Someone Else",
-#            'description': "Stuff for sale", 'tableSize': self.table_130.id,
-#            'chairs': 1, 'partners': "name_1: , email_1: , license_1: , tempLicense_1: false,", 'tables': 0,
-#            'reception': True, 'artShow': False,
-#            'charityRaffle': "Some stuff", 'agreeToRules': True,
-#            'breakfast': True, 'switch': False,
-#            'buttonOffer': "Buttons", 'asstbreakfast': False},
-#            'priceLevel': {'id': self.price_90.id, 'options': [{'id': self.option_conbook.id, 'value': "true"}]},
-#            'event': 'Test Event 2050!'}
-#
-#    response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    response = self.client.get(reverse('invoiceDealer'))
-#    self.assertEqual(response.status_code, 200)
-#    cart = response.context["orderItems"]
-#    self.assertEqual(len(cart), 1)
-#    total = response.context["total"]
-#    self.assertEqual(total, 90+130+50-45)
-#    orderItem = OrderItem.objects.get(badge=badge)
-#    orderItem.delete()
-
-#    response = self.client.get(reverse('flush'))
-#    self.assertEqual(response.status_code, 200)
-
-#    #Dealer, partners, upgrade, wifi
-#    attendee = Attendee.objects.get(firstName='Dealz')
-#    badge = Badge.objects.get(attendee=attendee, event=self.event)
-#    dealer = Dealer.objects.get(attendee=attendee)
-#    postData = {'token': dealer.registrationToken, 'email': attendee.email}
-#    response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    postData = {'attendee': {'id': attendee.id, 'firstName': "Dealz", 'lastName': "Testerson",
-#                             'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "US",'postal': "12345",
-#                             'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "1990-01-01",
-#                             'badgeName': "FluffyButz",'emailsOk': "true"},
-#            'dealer': {'id': dealer.id, 'businessName':"Something Creative", 'website':"http://www.something.com",
-#            'license':"jkah9435kd", 'power': True, 'wifi': True,
-#            'wall': True, 'near': "Someone", 'far': "Someone Else",
-#            'description': "Stuff for sale", 'tableSize': self.table_160.id,
-#            'chairs': 1, 'partners': "name_1: Someone, email_1: someone@here.com, license_1: temporary, tempLicense_1: true, name_2: , email_2: , license_2: , tempLicense_2: false", 'tables': 0,
-#            'reception': False, 'artShow': False,
-#            'charityRaffle': "Some stuff", 'agreeToRules': True,
-#            'breakfast': False, 'switch': False,
-#            'buttonOffer': "Buttons", 'asstbreakfast': False},
-#            'priceLevel': {'id': self.price_90.id, 'options': [{'id': self.option_conbook.id, 'value': "true"}]},
-#            'event': 'Test Event 2050!'}
-
-#    response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    response = self.client.get(reverse('invoiceDealer'))
-#    self.assertEqual(response.status_code, 200)
-#    cart = response.context["orderItems"]
-#    self.assertEqual(len(cart), 1)
-#    total = response.context["total"]
-#    self.assertEqual(total, 90+45+50+160-45)
-#    orderItem = OrderItem.objects.get(badge=badge)
-#    orderItem.delete()
-
-#    response = self.client.get(reverse('flush'))
-#    self.assertEqual(response.status_code, 200)
-
-#    #Dealer, partners+breakfast, upgrade, discount, wifi
-#    attendee = Attendee.objects.get(firstName='Dealz')
-#    badge = Badge.objects.get(attendee=attendee, event=self.event)
-#    dealer = Dealer.objects.get(attendee=attendee)
-#    dealer.discount = 5
-#    dealer.save()
-#    postData = {'token': dealer.registrationToken, 'email': attendee.email}
-#    response = self.client.post(reverse('findDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    postData = {'attendee': {'id': attendee.id, 'firstName': "Dealz", 'lastName': "Testerson",
-#                             'address1': "123 Somewhere St",'address2': "",'city': "Place",'state': "PA",'country': "US",'postal': "12345",
-#                             'phone': "1112223333",'email': "testerson@mailinator.org",'birthdate': "1990-01-01",
-#                             'badgeName': "FluffyButz",'emailsOk': "true"},
-#            'dealer': {'id': dealer.id, 'businessName':"Something Creative", 'website':"http://www.something.com",
-#            'license':"jkah9435kd", 'power': True, 'wifi': True,
-#            'wall': True, 'near': "Someone", 'far': "Someone Else",
-#            'description': "Stuff for sale", 'tableSize': self.table_160.id,
-#            'chairs': 1, 'partners': "name_1: Someone, email_1: someone@here.com, license_1: temporary, tempLicense_1: true, name_2: , email_2: , license_2: , tempLicense_2: false", 'tables': 0,
-#            'reception': False, 'artShow': False,
-#            'charityRaffle': "Some stuff", 'agreeToRules': True,
-#            'breakfast': True, 'switch': False,
-#            'buttonOffer': "Buttons", 'asstbreakfast': True},
-#            'priceLevel': {'id': self.price_90.id, 'options': [{'id': self.option_conbook.id, 'value': "true"}]},
-#            'event': 'Test Event 2050!'}
-
-#    response = self.client.post(reverse('addDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    response = self.client.get(reverse('invoiceDealer'))
-#    self.assertEqual(response.status_code, 200)
-#    cart = response.context["orderItems"]
-#    self.assertEqual(len(cart), 1)
-#    total = response.context["total"]
-#    self.assertEqual(total, 90+45+60+50+160-45-5)
-
-#    #Dealer, partners+breakfast, upgrade, wifi, discount, donations
-#    postData = {'billingData': {
-#            'nonce': 'fake-card-nonce-ok',
-#            'cc_firstname': "Test", 'cc_lastname': "Credit", 'email': "thing@some.com",
-#            'address1': "123 Somewhere", 'address2': "", 'city': "There",
-#            'state': "PA", 'country': "US", 'postal': "12345",
-#        },
-#        'charityDonation': "10",
-#        'orgDonation': "5"}
-#    response = self.client.post(reverse('checkoutDealer'), json.dumps(postData), content_type="application/json")
-#    self.assertEqual(response.status_code, 200)
-#    orderItem = badge.orderitem_set.first()
-#    self.assertNotEqual(orderItem.order, None)
-#    order = orderItem.order
-#    self.assertNotEqual(order.discount, None)
-#    self.assertEqual(order.total, 90+45+60+50+160-45-5+15)
-#    self.assertEqual(order.orgDonation, 5.00)
-#    self.assertEqual(order.charityDonation, 10.00)
-
-#    response = self.client.get(reverse('flush'))
-#    self.assertEqual(response.status_code, 200)
 
 
 class LookupTestCases(TestCase):
