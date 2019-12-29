@@ -8,7 +8,7 @@ django-extensions==2.1.4
 django-guardian==1.4.9
 django-flat-responsive==2.0
 django-widget-tweaks==1.4.3
-squareconnect==2.20181212.0
+squareup==4.0.0.20191217
 pyOpenSSL==18.0.0
 django-u2f==0.3.0
 Pillow>=5.3

@@ -161,6 +161,7 @@ SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_xxxxxxxxxxxxxxxxxxx'
 SQUARE_ACCESS_TOKEN = 'sandbox-sq0atb-xxxxxxxxxxxxxxxxxxxxxx'
 SQUARE_LOCATION_ID = 'xxxxxxxxx...'
 SQUARE_CURRENCY = 'USD'
+SQUARE_ENVIRONMENT = 'production'  # Or "sandbox"
 
 # Default email to display as part of error messages
 APIS_DEFAULT_EMAIL = "registration@example.com"

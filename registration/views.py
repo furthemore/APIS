@@ -23,7 +23,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
-from .payments import chargePayment
+from .payments import charge_payment
 from .pushy import PushyAPI
 
 from django.contrib.admin.views.decorators import (  # isort:skip
@@ -77,14 +77,7 @@ def in_group(groupname):
 
 
 def doCheckout(
-    billingData,
-    total,
-    discount,
-    cartItems,
-    orderItems,
-    donationOrg,
-    donationCharity,
-    ip,
+    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
 ):
     event = Event.objects.get(default=True)
     reference = getConfirmationToken()
@@ -127,7 +120,7 @@ def doCheckout(
     except KeyError as e:
         abort(400, "A required field was missing from billingData: {0}".format(e))
 
-    status, response = chargePayment(order, billingData, ip)
+    status, response = charge_payment(order, billingData)
 
     if status:
         if cartItems:
@@ -922,7 +915,7 @@ def checkoutAsstDealer(request):
         total = total + Decimal(60 * partners)
     ip = get_client_ip(request)
 
-    status, message, order = doCheckout(pbill, total, None, [], [orderItem], 0, 0, ip)
+    status, message, order = doCheckout(pbill, total, None, [], [orderItem], 0, 0)
 
     if status:
         request.session.flush()
@@ -1097,7 +1090,7 @@ def checkoutDealer(request):
         pbill = postData["billingData"]
         ip = get_client_ip(request)
         status, message, order = doCheckout(
-            pbill, total, discount, None, orderItems, porg, pcharity, ip
+            pbill, total, discount, None, orderItems, porg, pcharity
         )
 
         if status:
@@ -2026,7 +2019,7 @@ def checkoutUpgrade(request):
         pbill = postData["billingData"]
         ip = get_client_ip(request)
         status, message, order = doCheckout(
-            pbill, total, None, [], orderItems, porg, pcharity, ip
+            pbill, total, None, [], orderItems, porg, pcharity
         )
 
         if status:
@@ -2410,7 +2403,7 @@ def checkout(request):
         message = "Onsite success"
     else:
         status, message, order = doCheckout(
-            pbill, total, discount, cartItems, orderItems, porg, pcharity, ip
+            pbill, total, discount, cartItems, orderItems, porg, pcharity
         )
 
     if status:
