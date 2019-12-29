@@ -340,7 +340,7 @@ class OrdersTestCases(TestCase):
         message = result.json()
         error_codes = [err["code"] for err in message["reason"]["errors"]]
         logger.error(error_codes)
-        self.assertTrue(error in error_codes)
+        self.assertIn(error, error_codes)
 
         # Ensure a badge wasn't created
         self.assertEqual(Attendee.objects.filter(firstName="Bea").count(), 0)
