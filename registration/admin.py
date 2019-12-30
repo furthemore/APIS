@@ -862,6 +862,7 @@ class AttendeeOptionInline(NestedTabularInline):
 
 class OrderItemInline(NestedTabularInline):
     model = OrderItem
+    raw_id_fields = ("badge", "order")
     extra = 0
     inlines = [AttendeeOptionInline]
     list_display = ["priceLevel", "enteredBy"]
@@ -969,6 +970,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
+    raw_id_fields = ("attendee",)
     list_display = (
         "attendee",
         "badgeName",
@@ -1097,7 +1099,12 @@ class AttendeeAdmin(NestedModelAdmin):
 admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
 
-admin.site.register(OrderItem)
+
+class OrderItemAdmin(ImportExportModelAdmin):
+    raw_id_fields = ("order", "badge")
+
+
+admin.site.register(OrderItem, OrderItemAdmin)
 
 
 def send_registration_email(modeladmin, request, queryset):
@@ -1108,7 +1115,7 @@ def send_registration_email(modeladmin, request, queryset):
 send_registration_email.short_description = "Send registration email"
 
 
-class OrderAdmin(ImportExportModelAdmin):
+class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
     list_display = (
         "reference",
         "createdDate",
