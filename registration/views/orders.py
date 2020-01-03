@@ -1,0 +1,358 @@
+from django.http import JsonResponse
+
+import registration.emails
+from registration.models import *
+from registration.payments import charge_payment
+from registration.views.cart import saveCart
+from registration.views.common import (
+    abort,
+    clear_session,
+    get_client_ip,
+    getConfirmationToken,
+    getRegistrationEmail,
+    logger,
+    success,
+)
+
+
+def doCheckout(
+    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
+):
+    event = Event.objects.get(default=True)
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).exists():
+        reference = getConfirmationToken()
+
+    order = Order(
+        total=Decimal(total),
+        reference=reference,
+        discount=discount,
+        orgDonation=donationOrg,
+        charityDonation=donationCharity,
+    )
+
+    # Address collection is marked as required by event
+    if event.collectBillingAddress:
+        try:
+            order.billingName = "{0} {1}".format(
+                billingData["cc_firstname"], billingData["cc_lastname"]
+            )
+            order.billingAddress1 = billingData["address1"]
+            order.billingAddress2 = billingData["address2"]
+            order.billingCity = billingData["city"]
+            order.billingState = billingData["state"]
+            order.billingCountry = billingData["country"]
+            order.billingEmail = billingData["email"]
+        except KeyError as e:
+            abort(
+                400,
+                "Address collection is required, but request is missing required field: {0}".format(
+                    e
+                ),
+            )
+
+    # Otherwise, no need for anything except postal code (Square US/CAN)
+    try:
+        card_data = billingData["card_data"]
+        order.billingPostal = card_data["billing_postal_code"]
+        order.lastFour = card_data["last_4"]
+    except KeyError as e:
+        abort(400, "A required field was missing from billingData: {0}".format(e))
+
+    status, response = charge_payment(order, billingData)
+
+    if status:
+        if cartItems:
+            for item in cartItems:
+                orderItem = saveCart(item)
+                orderItem.order = order
+                orderItem.save()
+        elif orderItems:
+            for oitem in orderItems:
+                oitem.order = order
+                oitem.save()
+        order.status = "Paid"
+        order.save()
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
+        return True, "", order
+
+    return False, response, order
+
+
+def doZeroCheckout(discount, cartItems, orderItems):
+    if cartItems:
+        attendee = json.loads(cartItems[0].formData)["attendee"]
+        billingName = "{firstName} {lastName}".format(**attendee)
+        billingEmail = attendee["email"]
+    elif orderItems:
+        attendee = orderItems[0].badge.attendee
+        billingName = "{0} {1}".format(attendee.firstName, attendee.lastName)
+        billingEmail = attendee.email
+
+    reference = getConfirmationToken()
+    while Order.objects.filter(reference=reference).count() > 0:
+        reference = getConfirmationToken()
+
+    logger.debug(attendee)
+    order = Order(
+        total=0,
+        reference=reference,
+        discount=discount,
+        orgDonation=0,
+        charityDonation=0,
+        status="Complete",
+        billingType=Order.COMP,
+        billingEmail=billingEmail,
+        billingName=billingName,
+    )
+    order.save()
+
+    if cartItems:
+        for item in cartItems:
+            orderItem = saveCart(item)
+            orderItem.order = order
+            orderItem.save()
+    elif orderItems:
+        for oitem in orderItems:
+            oitem.order = order
+            oitem.save()
+
+    if discount:
+        discount.used = discount.used + 1
+        discount.save()
+    return True, "", order
+
+
+def getCartItemOptionTotal(options):
+    optionTotal = 0
+    for option in options:
+        optionData = PriceLevelOption.objects.get(id=option["id"])
+        if optionData.optionExtraType == "int":
+            if option["value"]:
+                optionTotal += optionData.optionPrice * Decimal(option["value"])
+        else:
+            optionTotal += optionData.optionPrice
+    return optionTotal
+
+
+def getOrderItemOptionTotal(options):
+    optionTotal = 0
+    for option in options:
+        if option.option.optionExtraType == "int":
+            if option.optionValue:
+                optionTotal += option.option.optionPrice * Decimal(option.optionValue)
+        else:
+            optionTotal += option.option.optionPrice
+    return optionTotal
+
+
+def getDiscountTotal(disc, subtotal):
+    discount = Discount.objects.get(codeName=disc)
+    if discount.isValid():
+        if discount.amountOff:
+            return discount.amountOff
+        elif discount.percentOff:
+            return Decimal(float(subtotal) * float(discount.percentOff) / 100)
+
+
+def getTotal(cartItems, orderItems, disc=""):
+    total = 0
+    total_discount = 0
+    if not cartItems and not orderItems:
+        return 0, 0
+    for item in cartItems:
+        postData = json.loads(str(item.formData))
+        pdp = postData["priceLevel"]
+        priceLevel = PriceLevel.objects.get(id=pdp["id"])
+        itemTotal = priceLevel.basePrice
+
+        options = pdp["options"]
+        itemTotal += getCartItemOptionTotal(options)
+
+        if disc:
+            discount = getDiscountTotal(disc, itemTotal)
+            total_discount += discount
+            itemTotal -= discount
+
+        if itemTotal > 0:
+            total += itemTotal
+
+    for item in orderItems:
+        itemSubTotal = item.priceLevel.basePrice
+        effLevel = item.badge.effectiveLevel()
+        # FIXME Why was this here?
+        # if effLevel:
+        #    itemTotal = itemSubTotal - effLevel.basePrice
+        # else:
+        itemTotal = itemSubTotal
+
+        itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
+
+        if disc:
+            discount = getDiscountTotal(disc, itemTotal)
+            total_discount += discount
+            itemTotal -= discount
+
+        # FIXME Why?
+        if itemTotal > 0:
+            total += itemTotal
+
+    return total, total_discount
+
+
+def applyDiscount(request):
+    dis = request.session.get("discount", "")
+    if dis:
+        return JsonResponse(
+            {"success": False, "message": "Only one discount is allowed per order."}
+        )
+
+    try:
+        postData = json.loads(request.body)
+    except ValueError as e:
+        logger.error("Unable to decode JSON for applyDiscount()")
+        return JsonResponse({"success": False})
+    dis = postData["discount"]
+
+    discount = Discount.objects.filter(codeName=dis)
+    if discount.count() == 0:
+        return JsonResponse(
+            {"success": False, "message": "That discount is not valid."}
+        )
+    discount = discount.first()
+    if not discount.isValid():
+        return JsonResponse(
+            {"success": False, "message": "That discount is not valid."}
+        )
+
+    request.session["discount"] = discount.codeName
+    return JsonResponse({"success": True})
+
+
+def checkout(request):
+    event = Event.objects.get(default=True)
+    sessionItems = request.session.get("cart_items", [])
+    cartItems = list(Cart.objects.filter(id__in=sessionItems))
+    orderItems = request.session.get("order_items", [])
+    pdisc = request.session.get("discount", "")
+
+    # Safety valve (in case session times out before checkout is complete)
+    if len(sessionItems) == 0 and len(orderItems) == 0:
+        abort(400, "Session expired or no session is stored for this client")
+
+    try:
+        postData = json.loads(request.body)
+    except ValueError as e:
+        logger.error("Unable to decode JSON for checkout()")
+        return abort(400, "Unable to parse input options")
+
+    discount = Discount.objects.filter(codeName=pdisc)
+    if discount.count() > 0 and discount.first().isValid():
+        discount = discount.first()
+    else:
+        discount = None
+
+    if orderItems:
+        orderItems = list(OrderItem.objects.filter(id__in=orderItems))
+
+    subtotal, _ = getTotal(cartItems, orderItems, discount)
+
+    if subtotal == 0:
+        status, message, order = doZeroCheckout(discount, cartItems, orderItems)
+        if not status:
+            return abort(400, message)
+
+        request.session.flush()
+        try:
+            registration.emails.sendRegistrationEmail(order, order.billingEmail)
+        except Exception as e:
+            logger.error("Error sending RegistrationEmail - zero sum.")
+            logger.exception(e)
+            registrationEmail = getRegistrationEmail(event)
+            return abort(
+                400,
+                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
+                    registrationEmail
+                ),
+            )
+        return success()
+
+    porg = Decimal(postData["orgDonation"].strip() or "0.00")
+    pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
+    pbill = postData["billingData"]
+
+    if porg < 0:
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+
+    total = subtotal + porg + pcharity
+    ip = get_client_ip(request)
+
+    onsite = postData["onsite"]
+    if onsite:
+        reference = getConfirmationToken()
+        order = Order(
+            total=Decimal(total),
+            reference=reference,
+            discount=discount,
+            orgDonation=porg,
+            charityDonation=pcharity,
+            billingType=Order.UNPAID,
+        )
+        order.status = "Onsite Pending"
+        order.save()
+
+        if cartItems:
+            for item in cartItems:
+                orderItem = saveCart(item)
+                orderItem.order = order
+                orderItem.save()
+        while Order.objects.filter(reference=reference).count() > 0:
+            reference = getConfirmationToken()
+
+        if discount:
+            discount.used = discount.used + 1
+            discount.save()
+
+        status = True
+        message = "Onsite success"
+    else:
+        status, message, order = doCheckout(
+            pbill, total, discount, cartItems, orderItems, porg, pcharity
+        )
+
+    if status:
+        # Delete cart when done
+        cartItems = Cart.objects.filter(id__in=sessionItems)
+        cartItems.delete()
+        clear_session(request)
+        try:
+            registration.emails.sendRegistrationEmail(order, order.billingEmail)
+        except Exception as e:
+            event = Event.objects.get(default=True)
+            registrationEmail = getRegistrationEmail(event)
+
+            logger.error("Error sending RegistrationEmail.")
+            logger.exception(e)
+            return abort(
+                500,
+                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
+                    registrationEmail
+                ),
+            )
+        return success()
+    else:
+        return abort(400, message)
+
+
+def deleteOrderItem(id):
+    orderItems = OrderItem.objects.filter(id=id)
+    if orderItems.count() == 0:
+        return
+    orderItem = orderItems.first()
+    orderItem.badge.attendee.delete()
+    orderItem.badge.delete()
+    orderItem.delete()
