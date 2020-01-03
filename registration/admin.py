@@ -16,6 +16,8 @@ from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedModelAdmin, NestedTabularInline
 
+import registration.views.printing
+
 from .emails import *
 from .models import *
 
@@ -608,7 +610,7 @@ def assign_numbers_and_print(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(views.printNametag))
+    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -658,7 +660,7 @@ def print_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(views.printNametag))
+    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -701,7 +703,7 @@ def print_label_badges(modeladmin, request, queryset):
     con.nametags(tags, theme="fd_labels")
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(views.printNametag))
+    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -733,7 +735,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(views.printNametag))
+    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -777,7 +779,9 @@ def print_dealer_badges(modeladmin, request, queryset):
         con.nametags(tags, theme=badge.event.badgeTheme)
         # serve up this file
         pdf_path = con.pdf.split("/")[-1]
-        response = HttpResponseRedirect(reverse(views.printNametag))
+        response = HttpResponseRedirect(
+            reverse(registration.views.printing.printNametag)
+        )
         url_params = {"file": pdf_path, "next": request.get_full_path()}
         response["Location"] += "?{}".format(urlencode(url_params))
         return response
@@ -846,7 +850,7 @@ def print_staff_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(views.printNametag))
+    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response

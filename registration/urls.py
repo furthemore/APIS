@@ -2,120 +2,266 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
 
+import registration.views.attendee
+import registration.views.cart
+import registration.views.common
+import registration.views.dealers
+import registration.views.onsite
+import registration.views.onsite_admin
+import registration.views.orders
+import registration.views.printing
+import registration.views.staff
+import registration.views.upgrade
+
 from . import views
 
 urlpatterns = [
-    url(r"^$", views.index, name="index"),
+    url(r"^$", registration.views.common.index, name="index"),
     url(r"^logout/$", auth_views.logout, name="logout"),
-    url(r"^upgrade/lookup/?$", views.findUpgrade, name="findUpgrade"),
-    url(r"^upgrade/info/?$", views.infoUpgrade, name="infoUpgrade"),
-    url(r"^upgrade/add/?$", views.addUpgrade, name="addUpgrade"),
-    url(r"^upgrade/invoice/?$", views.invoiceUpgrade, name="invoiceUpgrade"),
-    url(r"^upgrade/checkout/?$", views.checkoutUpgrade, name="checkoutUpgrade"),
-    url(r"^upgrade/done/?$", views.doneUpgrade, name="doneUpgrade"),
-    url(r"^upgrade/(?P<guid>\w+)/?$", views.upgrade, name="upgrade"),
-    url(r"^staff/done/?$", views.staffDone, name="doneStaff"),
-    url(r"^staff/lookup/?$", views.findStaff, name="findStaff"),
-    url(r"^staff/info/?$", views.infoStaff, name="infoStaff"),
-    url(r"^staff/add/?$", views.addStaff, name="addStaff"),
-    url(r"^staff/(?P<guid>\w+)/?$", views.staff, name="staff"),
-    url(r"^newstaff/done/?$", views.staffDone, name="doneNewStaff"),
-    url(r"^newstaff/lookup/?$", views.findNewStaff, name="findNewStaff"),
-    url(r"^newstaff/info/?$", views.infoNewStaff, name="infoNewStaff"),
-    url(r"^newstaff/add/?$", views.addNewStaff, name="addNewStaff"),
-    url(r"^newstaff/(?P<guid>\w+)/?$", views.newStaff, name="newstaff"),
-    url(r"^dealer/?$", views.newDealer, name="newDealer"),
-    url(r"^dealer/addNew/?$", views.addNewDealer, name="addNewDealer"),
-    url(r"^dealer/done/?$", views.doneDealer, name="doneDealer"),
-    url(r"^dealer/thanks/?$", views.thanksDealer, name="thanksDealer"),
-    url(r"^dealer/update/?$", views.updateDealer, name="updateDealer"),
-    url(r"^dealer/lookup/?$", views.findDealer, name="findDealer"),
-    url(r"^dealer/add/?$", views.addDealer, name="addDealer"),
-    url(r"^dealer/info/?$", views.infoDealer, name="infoDealer"),
-    url(r"^dealer/invoice/?$", views.invoiceDealer, name="invoiceDealer"),
-    url(r"^dealer/checkout/?$", views.checkoutDealer, name="checkoutDealer"),
-    url(r"^dealer/(?P<guid>\w+)/?$", views.dealers, name="dealers"),
-    url(r"^dealerassistant/lookup/?$", views.findAsstDealer, name="findAsstDealer"),
-    url(r"^dealerassistant/add/?$", views.addAsstDealer, name="addAsstDealer"),
+    url(
+        r"^upgrade/lookup/?$",
+        registration.views.upgrade.findUpgrade,
+        name="findUpgrade",
+    ),
+    url(
+        r"^upgrade/info/?$", registration.views.upgrade.infoUpgrade, name="infoUpgrade"
+    ),
+    url(r"^upgrade/add/?$", registration.views.upgrade.addUpgrade, name="addUpgrade"),
+    url(
+        r"^upgrade/invoice/?$",
+        registration.views.upgrade.invoiceUpgrade,
+        name="invoiceUpgrade",
+    ),
+    url(
+        r"^upgrade/checkout/?$",
+        registration.views.upgrade.checkoutUpgrade,
+        name="checkoutUpgrade",
+    ),
+    url(
+        r"^upgrade/done/?$", registration.views.upgrade.doneUpgrade, name="doneUpgrade"
+    ),
+    url(
+        r"^upgrade/(?P<guid>\w+)/?$", registration.views.upgrade.upgrade, name="upgrade"
+    ),
+    url(r"^staff/done/?$", registration.views.staff.staffDone, name="doneStaff"),
+    url(r"^staff/lookup/?$", registration.views.staff.findStaff, name="findStaff"),
+    url(r"^staff/info/?$", registration.views.staff.infoStaff, name="infoStaff"),
+    url(r"^staff/add/?$", registration.views.staff.addStaff, name="addStaff"),
+    url(r"^staff/(?P<guid>\w+)/?$", registration.views.staff.staff, name="staff"),
+    url(r"^newstaff/done/?$", registration.views.staff.staffDone, name="doneNewStaff"),
+    url(
+        r"^newstaff/lookup/?$",
+        registration.views.staff.findNewStaff,
+        name="findNewStaff",
+    ),
+    url(
+        r"^newstaff/info/?$", registration.views.staff.infoNewStaff, name="infoNewStaff"
+    ),
+    url(r"^newstaff/add/?$", registration.views.staff.addNewStaff, name="addNewStaff"),
+    url(
+        r"^newstaff/(?P<guid>\w+)/?$",
+        registration.views.staff.newStaff,
+        name="newstaff",
+    ),
+    url(r"^dealer/?$", registration.views.dealers.newDealer, name="newDealer"),
+    url(
+        r"^dealer/addNew/?$",
+        registration.views.dealers.addNewDealer,
+        name="addNewDealer",
+    ),
+    url(r"^dealer/done/?$", registration.views.dealers.doneDealer, name="doneDealer"),
+    url(
+        r"^dealer/thanks/?$",
+        registration.views.dealers.thanksDealer,
+        name="thanksDealer",
+    ),
+    url(
+        r"^dealer/update/?$",
+        registration.views.dealers.updateDealer,
+        name="updateDealer",
+    ),
+    url(r"^dealer/lookup/?$", registration.views.dealers.findDealer, name="findDealer"),
+    url(r"^dealer/add/?$", registration.views.dealers.addDealer, name="addDealer"),
+    url(r"^dealer/info/?$", registration.views.dealers.infoDealer, name="infoDealer"),
+    url(
+        r"^dealer/invoice/?$",
+        registration.views.dealers.invoiceDealer,
+        name="invoiceDealer",
+    ),
+    url(
+        r"^dealer/checkout/?$",
+        registration.views.dealers.checkoutDealer,
+        name="checkoutDealer",
+    ),
+    url(
+        r"^dealer/(?P<guid>\w+)/?$", registration.views.dealers.dealers, name="dealers"
+    ),
+    url(
+        r"^dealerassistant/lookup/?$",
+        registration.views.dealers.findAsstDealer,
+        name="findAsstDealer",
+    ),
+    url(
+        r"^dealerassistant/add/?$",
+        registration.views.dealers.addAsstDealer,
+        name="addAsstDealer",
+    ),
     url(
         r"^dealerassistant/checkout/?$",
-        views.checkoutAsstDealer,
+        registration.views.dealers.checkoutAsstDealer,
         name="checkoutAsstDealer",
     ),
-    url(r"^dealerassistant/done/?$", views.doneAsstDealer, name="doneAsstDealer"),
-    url(r"^dealerassistant/(?P<guid>\w+)/?$", views.dealerAsst, name="dealerAsst"),
-    url(r"^onsite/?$", views.onsite, name="onsite"),
-    url(r"^onsite/cart/?$", views.onsiteCart, name="onsiteCart"),
-    url(r"^onsite/done/?$", views.onsiteDone, name="onsiteDone"),
-    url(r"^onsite/register/?$", views.onsiteAdmin, name="onsiteAdmin"),
     url(
-        r"^onsite/register/search/?$", views.onsiteAdminSearch, name="onsiteAdminSearch"
+        r"^dealerassistant/done/?$",
+        registration.views.dealers.doneAsstDealer,
+        name="doneAsstDealer",
     ),
-    url(r"^onsite/register/cart/?$", views.onsiteAdminCart, name="onsiteAdminCart"),
-    url(r"^onsite/register/cart/add/?$", views.onsiteAddToCart, name="onsiteAddToCart"),
+    url(
+        r"^dealerassistant/(?P<guid>\w+)/?$",
+        registration.views.dealers.dealerAsst,
+        name="dealerAsst",
+    ),
+    url(r"^onsite/?$", registration.views.onsite.onsite, name="onsite"),
+    url(r"^onsite/cart/?$", registration.views.onsite.onsiteCart, name="onsiteCart"),
+    url(r"^onsite/done/?$", registration.views.onsite.onsiteDone, name="onsiteDone"),
+    url(
+        r"^onsite/register/?$",
+        registration.views.onsite_admin.onsiteAdmin,
+        name="onsiteAdmin",
+    ),
+    url(
+        r"^onsite/register/search/?$",
+        registration.views.onsite_admin.onsiteAdminSearch,
+        name="onsiteAdminSearch",
+    ),
+    url(
+        r"^onsite/register/cart/?$",
+        registration.views.onsite_admin.onsiteAdminCart,
+        name="onsiteAdminCart",
+    ),
+    url(
+        r"^onsite/register/cart/add/?$",
+        registration.views.onsite_admin.onsiteAddToCart,
+        name="onsiteAddToCart",
+    ),
     url(
         r"^onsite/register/cart/remove/?$",
-        views.onsiteRemoveFromCart,
+        registration.views.onsite_admin.onsiteRemoveFromCart,
         name="onsiteRemoveFromCart",
     ),
-    url(r"^onsite/register/open/?$", views.openTerminal, name="openTerminal"),
-    url(r"^onsite/register/close/?$", views.closeTerminal, name="closeTerminal"),
-    url(r"^onsite/register/payment/?$", views.enablePayment, name="enablePayment"),
+    url(
+        r"^onsite/register/open/?$",
+        registration.views.onsite_admin.openTerminal,
+        name="openTerminal",
+    ),
+    url(
+        r"^onsite/register/close/?$",
+        registration.views.onsite_admin.closeTerminal,
+        name="closeTerminal",
+    ),
+    url(
+        r"^onsite/register/payment/?$",
+        registration.views.onsite_admin.enablePayment,
+        name="enablePayment",
+    ),
     url(
         r"^onsite/register/clear/?$",
-        views.onsiteAdminClearCart,
+        registration.views.onsite_admin.onsiteAdminClearCart,
         name="onsiteAdminClearCart",
     ),
     url(
         r"^onsite/register/badge/assign/?$",
-        views.assignBadgeNumber,
+        registration.views.onsite_admin.assignBadgeNumber,
         name="assignBadgeNumber",
     ),
     url(
         r"^onsite/register/badge/print/?$",
-        views.onsitePrintBadges,
+        registration.views.onsite_admin.onsitePrintBadges,
         name="onsitePrintBadges",
     ),
     url(
         r"^onsite/square/complete/?$",
-        views.completeSquareTransaction,
+        registration.views.onsite_admin.completeSquareTransaction,
         name="completeSquareTransaction",
     ),
     url(
         r"^onsite/cash/complete/?$",
-        views.completeCashTransaction,
+        registration.views.onsite_admin.completeCashTransaction,
         name="completeCashTransaction",
     ),
-    url(r"^onsite/signature/?$", views.onsiteSignature, name="onsiteSignature"),
-    url(r"^cart/?$", views.getCart, name="cart"),
-    url(r"^cart/add/?$", views.addToCart, name="addToCart"),
-    url(r"^cart/remove/?$", views.removeFromCart, name="removeFromCart"),
-    url(r"^cart/abandon/?$", views.cancelOrder, name="cancelOrder"),
-    url(r"^cart/discount/?$", views.applyDiscount, name="discount"),
-    url(r"^cart/checkout/?$", views.checkout, name="checkout"),
-    url(r"^cart/done/?$", views.cartDone, name="done"),
-    url(r"^events/?$", views.getEvents, name="events"),
-    url(r"^departments/?$", views.getDepartments, name="departments"),
-    url(r"^alldepartments/?$", views.getAllDepartments, name="alldepartments"),
-    url(r"^pricelevels/?$", views.getPriceLevels, name="pricelevels"),
-    url(r"^adultpricelevels/?$", views.getAdultPriceLevels, name="adultpricelevels"),
-    url(r"^minorpricelevels/?$", views.getMinorPriceLevels, name="minorpricelevels"),
+    url(
+        r"^onsite/signature/?$",
+        registration.views.onsite_admin.onsiteSignature,
+        name="onsiteSignature",
+    ),
+    url(r"^cart/?$", registration.views.cart.getCart, name="cart"),
+    url(r"^cart/add/?$", registration.views.cart.addToCart, name="addToCart"),
+    url(
+        r"^cart/remove/?$",
+        registration.views.cart.removeFromCart,
+        name="removeFromCart",
+    ),
+    url(r"^cart/discount/?$", registration.views.orders.applyDiscount, name="discount"),
+    url(r"^cart/checkout/?$", registration.views.orders.checkout, name="checkout"),
+    url(r"^cart/done/?$", registration.views.cart.cartDone, name="done"),
+    url(r"^events/?$", registration.views.common.getEvents, name="events"),
+    url(
+        r"^departments/?$", registration.views.common.getDepartments, name="departments"
+    ),
+    url(
+        r"^alldepartments/?$",
+        registration.views.common.getAllDepartments,
+        name="alldepartments",
+    ),
+    url(
+        r"^pricelevels/?$",
+        registration.views.attendee.getPriceLevels,
+        name="pricelevels",
+    ),
+    url(
+        r"^adultpricelevels/?$",
+        registration.views.attendee.getAdultPriceLevels,
+        name="adultpricelevels",
+    ),
+    url(
+        r"^minorpricelevels/?$",
+        registration.views.attendee.getMinorPriceLevels,
+        name="minorpricelevels",
+    ),
     url(
         r"^accompaniedpricelevels/?$",
-        views.getAccompaniedPriceLevels,
+        registration.views.attendee.getAccompaniedPriceLevels,
         name="accompaniedpricelevels",
     ),
-    url(r"^freepricelevels/?$", views.getFreePriceLevels, name="freepricelevels"),
-    url(r"^shirts/?$", views.getShirtSizes, name="shirtsizes"),
-    url(r"^tables/?$", views.getTableSizes, name="tablesizes"),
-    url(r"^addresses/?$", views.getSessionAddresses, name="addresses"),
-    url(r"^utility/badges?$", views.basicBadges, name="basicBadges"),
-    url(r"^utility/vips?$", views.vipBadges, name="vipBadges"),
-    url(r"^flush/?$", views.flush, name="flush"),
-    url(r"^pdf/?$", views.servePDF, name="pdf"),
-    url(r"^print/?$", views.printNametag, name="print"),
-    url(r"^firebase/register/?", views.firebaseRegister, name="firebaseRegister"),
-    url(r"^firebase/lookup/?", views.firebaseLookup, name="firebaseLookup"),
+    url(
+        r"^freepricelevels/?$",
+        registration.views.attendee.getFreePriceLevels,
+        name="freepricelevels",
+    ),
+    url(r"^shirts/?$", registration.views.common.getShirtSizes, name="shirtsizes"),
+    url(r"^tables/?$", registration.views.dealers.getTableSizes, name="tablesizes"),
+    url(
+        r"^addresses/?$",
+        registration.views.common.getSessionAddresses,
+        name="addresses",
+    ),
+    url(
+        r"^utility/badges?$", registration.views.common.basicBadges, name="basicBadges"
+    ),
+    url(r"^utility/vips?$", registration.views.common.vipBadges, name="vipBadges"),
+    url(r"^flush/?$", registration.views.common.flush, name="flush"),
+    url(r"^pdf/?$", registration.views.printing.servePDF, name="pdf"),
+    url(r"^print/?$", registration.views.printing.printNametag, name="print"),
+    url(
+        r"^firebase/register/?",
+        registration.views.onsite_admin.firebaseRegister,
+        name="firebaseRegister",
+    ),
+    url(
+        r"^firebase/lookup/?",
+        registration.views.onsite_admin.firebaseLookup,
+        name="firebaseLookup",
+    ),
 ]
 
 if settings.DEBUG:
