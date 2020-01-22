@@ -368,7 +368,7 @@ var paymentForm = new SqPaymentForm({
 <script type="text/javascript">
 	var addresses = [];
 	$( "body" ).ready(function() {
-                $.getJSON("{% url 'addresses' %}", function(data) {
+                $.getJSON("{% url 'registration:addresses' %}", function(data) {
 		addresses = data;
                 });
 	});
@@ -403,7 +403,7 @@ var paymentForm = new SqPaymentForm({
 	});
 
 	$("#cancel").click(function(e){
-                $.getJSON("{% url 'flush' %}", function(data) {
+                $.getJSON("{% url 'registration:flush' %}", function(data) {
 			window.location.reload();
                 });
 	});
@@ -448,7 +448,7 @@ function doCheckout(card_data) {
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'checkoutDealer' %}",
+		    "url": "{% url 'registration:checkoutDealer' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -460,11 +460,11 @@ function doCheckout(card_data) {
 		    },
             "success": function (result, status) {
                     if (result.success) {
-				        window.location = "{% url 'doneDealer' %}";
+				        window.location = "{% url 'registration:doneDealer' %}";
                     } else {
                         if (result.message.indexOf("email") > -1) {
                             alert(result.message);
-                            window.location = "{% url 'doneDealer' %}";
+                            window.location = "{% url 'registration:doneDealer' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
 			                $("#checkout").removeAttr("disabled");

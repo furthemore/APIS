@@ -64,7 +64,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'infoUpgrade' %}",
+		    "url": "{% url 'registration:infoUpgrade' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -78,7 +78,7 @@
 			}
 		    },
                     "success": function () {
-                        window.location = "{% url 'findUpgrade' %}";
+                        window.location = "{% url 'registration:findUpgrade' %}";
                     }
 		});
 	}

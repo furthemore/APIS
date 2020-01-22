@@ -2,6 +2,8 @@ import json
 import time
 from datetime import datetime
 
+from attendee import get_attendee_age
+from common import logger
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Max, Q
@@ -10,13 +12,11 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from printing import printNametag
 
 from registration import printing
 from registration.models import *
 from registration.pushy import PushyAPI
-from registration.views.attendee import get_attendee_age
-from registration.views.common import logger
-from registration.views.printing import printNametag
 
 
 @staff_member_required

@@ -335,7 +335,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'addDealer' %}",
+		    "url": "{% url 'registration:addDealer' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -352,7 +352,7 @@
                     "success": function (result, status) {
                         if (result.success)
                         {
-                            window.location = "{% url 'invoiceDealer' %}";
+                            window.location = "{% url 'registration:invoiceDealer' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
                             alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");

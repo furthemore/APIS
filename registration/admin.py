@@ -16,9 +16,9 @@ from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedModelAdmin, NestedTabularInline
 
+import registration.emails
 import registration.views.printing
 
-from .emails import *
 from .models import *
 
 admin.site.site_url = None

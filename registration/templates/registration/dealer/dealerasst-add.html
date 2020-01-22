@@ -303,7 +303,7 @@ var paymentForm = new SqPaymentForm({
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'checkoutAsstDealer' %}",
+		    "url": "{% url 'registration:checkoutAsstDealer' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -315,7 +315,7 @@ var paymentForm = new SqPaymentForm({
 		    },
             "success": function (result, status) {
                 if (result.success) {
-                    window.location = "{% url 'doneAsstDealer' %}";
+                    window.location = "{% url 'registration:doneAsstDealer' %}";
                 } else {
                         alert("An error has occurred: " + result.message + " If this error continues, please contact {{ event.dealerEmail }} for assistance.");
     			$("#checkout").removeAttr("disabled");

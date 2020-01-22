@@ -1,17 +1,11 @@
+from common import get_client_ip, getOptionsDict, getRegistrationEmail, handler, logger
 from django.forms import model_to_dict
 from django.http import HttpResponseServerError, JsonResponse
 from django.shortcuts import render
+from ordering import doCheckout, doZeroCheckout, getTotal
 
 import registration.emails
 from registration.models import *
-from registration.views.common import (
-    get_client_ip,
-    getOptionsDict,
-    getRegistrationEmail,
-    handler,
-    logger,
-)
-from registration.views.orders import doCheckout, doZeroCheckout, getTotal
 
 
 def upgrade(request, guid):
