@@ -8,12 +8,13 @@ import registration.views.common
 import registration.views.dealers
 import registration.views.onsite
 import registration.views.onsite_admin
-import registration.views.orders
+import registration.views.ordering
 import registration.views.printing
 import registration.views.staff
 import registration.views.upgrade
+from registration import views
 
-from . import views
+app_name = "registration"
 
 urlpatterns = [
     url(r"^$", registration.views.common.index, name="index"),
@@ -201,8 +202,13 @@ urlpatterns = [
         registration.views.cart.removeFromCart,
         name="removeFromCart",
     ),
-    url(r"^cart/discount/?$", registration.views.orders.applyDiscount, name="discount"),
-    url(r"^cart/checkout/?$", registration.views.orders.checkout, name="checkout"),
+    url(
+        r"^cart/abandon/?$", registration.views.ordering.cancelOrder, name="cancelOrder"
+    ),
+    url(
+        r"^cart/discount/?$", registration.views.ordering.applyDiscount, name="discount"
+    ),
+    url(r"^cart/checkout/?$", registration.views.ordering.checkout, name="checkout"),
     url(r"^cart/done/?$", registration.views.cart.cartDone, name="done"),
     url(r"^events/?$", registration.views.common.getEvents, name="events"),
     url(
@@ -263,8 +269,3 @@ urlpatterns = [
         name="firebaseLookup",
     ),
 ]
-
-if settings.DEBUG:
-    import debug_toolbar
-
-    urlpatterns = [url(r"^__debug__/", include(debug_toolbar.urls)),] + urlpatterns

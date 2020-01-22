@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from django.shortcuts import render
+from ordering import getTotal
 
 from registration.models import *
-from registration.views.orders import getTotal
 
 
 def onsite(request):

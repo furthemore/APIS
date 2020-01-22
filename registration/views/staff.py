@@ -1,18 +1,13 @@
+import json
 from datetime import datetime
 
+from common import abort, clear_session, get_client_ip, handler, logger, success
 from django.forms import model_to_dict
 from django.http import HttpResponseServerError, JsonResponse
 from django.shortcuts import render
+from ordering import doCheckout, doZeroCheckout
 
-from registration.views.common import (
-    abort,
-    clear_session,
-    get_client_ip,
-    handler,
-    logger,
-    success,
-)
-from registration.views.orders import doCheckout, doZeroCheckout
+from registration.models import *
 
 
 def newStaff(request, guid):

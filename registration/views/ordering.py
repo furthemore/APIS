@@ -1,27 +1,23 @@
+import logging
+
+import cart
+import common
 from django.http import JsonResponse
 
 import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
-from registration.views.cart import saveCart
-from registration.views.common import (
-    abort,
-    clear_session,
-    get_client_ip,
-    getConfirmationToken,
-    getRegistrationEmail,
-    logger,
-    success,
-)
+
+logger = logging.getLogger(__name__)
 
 
 def doCheckout(
     billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
 ):
     event = Event.objects.get(default=True)
-    reference = getConfirmationToken()
+    reference = common.getConfirmationToken()
     while Order.objects.filter(reference=reference).exists():
-        reference = getConfirmationToken()
+        reference = common.getConfirmationToken()
 
     order = Order(
         total=Decimal(total),
@@ -44,7 +40,7 @@ def doCheckout(
             order.billingCountry = billingData["country"]
             order.billingEmail = billingData["email"]
         except KeyError as e:
-            abort(
+            common.abort(
                 400,
                 "Address collection is required, but request is missing required field: {0}".format(
                     e
@@ -57,14 +53,16 @@ def doCheckout(
         order.billingPostal = card_data["billing_postal_code"]
         order.lastFour = card_data["last_4"]
     except KeyError as e:
-        abort(400, "A required field was missing from billingData: {0}".format(e))
+        common.abort(
+            400, "A required field was missing from billingData: {0}".format(e)
+        )
 
     status, response = charge_payment(order, billingData)
 
     if status:
         if cartItems:
             for item in cartItems:
-                orderItem = saveCart(item)
+                orderItem = cart.saveCart(item)
                 orderItem.order = order
                 orderItem.save()
         elif orderItems:
@@ -91,9 +89,9 @@ def doZeroCheckout(discount, cartItems, orderItems):
         billingName = "{0} {1}".format(attendee.firstName, attendee.lastName)
         billingEmail = attendee.email
 
-    reference = getConfirmationToken()
+    reference = common.getConfirmationToken()
     while Order.objects.filter(reference=reference).count() > 0:
-        reference = getConfirmationToken()
+        reference = common.getConfirmationToken()
 
     logger.debug(attendee)
     order = Order(
@@ -111,7 +109,7 @@ def doZeroCheckout(discount, cartItems, orderItems):
 
     if cartItems:
         for item in cartItems:
-            orderItem = saveCart(item)
+            orderItem = cart.saveCart(item)
             orderItem.order = order
             orderItem.save()
     elif orderItems:
@@ -240,13 +238,13 @@ def checkout(request):
 
     # Safety valve (in case session times out before checkout is complete)
     if len(sessionItems) == 0 and len(orderItems) == 0:
-        abort(400, "Session expired or no session is stored for this client")
+        common.abort(400, "Session expired or no session is stored for this client")
 
     try:
         postData = json.loads(request.body)
     except ValueError as e:
         logger.error("Unable to decode JSON for checkout()")
-        return abort(400, "Unable to parse input options")
+        return common.abort(400, "Unable to parse input options")
 
     discount = Discount.objects.filter(codeName=pdisc)
     if discount.count() > 0 and discount.first().isValid():
@@ -262,7 +260,7 @@ def checkout(request):
     if subtotal == 0:
         status, message, order = doZeroCheckout(discount, cartItems, orderItems)
         if not status:
-            return abort(400, message)
+            return common.abort(400, message)
 
         request.session.flush()
         try:
@@ -270,14 +268,14 @@ def checkout(request):
         except Exception as e:
             logger.error("Error sending RegistrationEmail - zero sum.")
             logger.exception(e)
-            registrationEmail = getRegistrationEmail(event)
-            return abort(
+            registrationEmail = common.getRegistrationEmail(event)
+            return common.abort(
                 400,
                 "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
                     registrationEmail
                 ),
             )
-        return success()
+        return common.success()
 
     porg = Decimal(postData["orgDonation"].strip() or "0.00")
     pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
@@ -289,11 +287,11 @@ def checkout(request):
         pcharity = 0
 
     total = subtotal + porg + pcharity
-    ip = get_client_ip(request)
+    ip = common.get_client_ip(request)
 
     onsite = postData["onsite"]
     if onsite:
-        reference = getConfirmationToken()
+        reference = common.getConfirmationToken()
         order = Order(
             total=Decimal(total),
             reference=reference,
@@ -307,11 +305,11 @@ def checkout(request):
 
         if cartItems:
             for item in cartItems:
-                orderItem = saveCart(item)
+                orderItem = cart.saveCart(item)
                 orderItem.order = order
                 orderItem.save()
         while Order.objects.filter(reference=reference).count() > 0:
-            reference = getConfirmationToken()
+            reference = common.getConfirmationToken()
 
         if discount:
             discount.used = discount.used + 1
@@ -328,24 +326,24 @@ def checkout(request):
         # Delete cart when done
         cartItems = Cart.objects.filter(id__in=sessionItems)
         cartItems.delete()
-        clear_session(request)
+        common.clear_session(request)
         try:
             registration.emails.sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             event = Event.objects.get(default=True)
-            registrationEmail = getRegistrationEmail(event)
+            registrationEmail = common.getRegistrationEmail(event)
 
             logger.error("Error sending RegistrationEmail.")
             logger.exception(e)
-            return abort(
+            return common.abort(
                 500,
                 "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
                     registrationEmail
                 ),
             )
-        return success()
+        return common.success()
     else:
-        return abort(400, message)
+        return common.abort(400, message)
 
 
 def deleteOrderItem(id):
@@ -356,3 +354,18 @@ def deleteOrderItem(id):
     orderItem.badge.attendee.delete()
     orderItem.badge.delete()
     orderItem.delete()
+
+
+def cancelOrder(request):
+    # (DEPRECATED) XXX [Is it actually? Button still hooked up in frontend -R]
+    # remove order from session
+    order = request.session.get("order_items", [])
+    for item in order:
+        deleteOrderItem(item)
+    # Delete carts
+    sessionItems = request.session.get("cart_items", [])
+    cartItems = Cart.objects.filter(id__in=sessionItems)
+    cartItems.delete()
+    # Clear session values
+    common.clear_session(request)
+    return common.success()
