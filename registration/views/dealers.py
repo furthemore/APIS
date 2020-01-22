@@ -1,13 +1,13 @@
 from datetime import datetime
 
+from common import get_client_ip, handler, logger
 from django.forms import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render
+from ordering import doCheckout, doZeroCheckout, getDiscountTotal
 
 import registration.emails
 from registration.models import *
-from registration.views.common import get_client_ip, handler, logger
-from registration.views.orders import doCheckout, doZeroCheckout, getDiscountTotal
 
 
 def dealers(request, guid):

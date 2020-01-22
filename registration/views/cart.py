@@ -1,18 +1,13 @@
+import json
 import logging
 from datetime import datetime
 
+import common
+import ordering
+from attendee import checkBanList
 from django.shortcuts import render
 
 from registration.models import *
-from registration.views.attendee import checkBanList
-from registration.views.common import (
-    abort,
-    get_request_meta,
-    getRegistrationEmail,
-    logger,
-    success,
-)
-from registration.views.orders import *
 
 
 def getCart(request):
@@ -29,7 +24,7 @@ def getCart(request):
             discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0:
                 discount = discount.first()
-        total, total_discount = getTotal([], orderItems, discount)
+        total, total_discount = ordering.getTotal([], orderItems, discount)
 
         hasMinors = False
         for item in orderItems:
@@ -54,7 +49,7 @@ def getCart(request):
             discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0:
                 discount = discount.first()
-        total, total_discount = getTotal(cartItems, [], discount)
+        total, total_discount = ordering.getTotal(cartItems, [], discount)
 
         hasMinors = False
         for cart in cartItems:
@@ -188,7 +183,7 @@ def addToCart(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        return abort(400, "Unable to decode JSON body")
+        return common.abort(400, "Unable to decode JSON body")
 
     event = Event.objects.get(default=True)
 
@@ -198,13 +193,13 @@ def addToCart(request):
         pda["lastName"]
         pda["email"]
     except KeyError:
-        return abort(400, "Required parameters not found in POST body")
+        return common.abort(400, "Required parameters not found in POST body")
 
     banCheck = checkBanList(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
         logger.error("***ban list registration attempt***")
-        registrationEmail = getRegistrationEmail()
-        return abort(
+        registrationEmail = common.getRegistrationEmail()
+        return common.abort(
             403,
             "We are sorry, but you are unable to register for {0}. If you have any questions, or would like further information or assistance, please contact Registration at {1}".format(
                 event, registrationEmail
@@ -212,7 +207,9 @@ def addToCart(request):
         )
 
     cart = Cart(
-        form=Cart.ATTENDEE, formData=request.body, formHeaders=get_request_meta(request)
+        form=Cart.ATTENDEE,
+        formData=request.body,
+        formHeaders=common.get_request_meta(request),
     )
     cart.save()
 
@@ -220,7 +217,7 @@ def addToCart(request):
     cartItems = request.session.get("cart_items", [])
     cartItems.append(cart.id)
     request.session["cart_items"] = cartItems
-    return success()
+    return common.success()
 
 
 def removeFromCart(request):
@@ -230,31 +227,31 @@ def removeFromCart(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        return abort(400, "Unable to decode JSON parameters")
+        return common.abort(400, "Unable to decode JSON parameters")
     if "id" not in postData.keys():
-        return abort(400, "Required parameter `id` not specified")
+        return common.abort(400, "Required parameter `id` not specified")
     id = postData["id"]
 
     # Old workflow
-    logger.debug("order_items: {0}".format(order))
-    logger.debug("delete order from session: {0}".format(id))
+    common.logger.debug("order_items: {0}".format(order))
+    common.logger.debug("delete order from session: {0}".format(id))
     if int(id) in order:
         order.remove(int(id))
         deleted = True
         request.session["order_items"] = order
-        return success()
+        return common.success()
 
     # New cart workflow
     cartItems = request.session.get("cart_items", [])
-    logger.debug("cartItems: {0}".format(cartItems))
+    common.logger.debug("cartItems: {0}".format(cartItems))
     for item in cartItems:
         if str(item) == str(id):
             cart = Cart.objects.get(id=id)
             cart.delete()
             deleted = True
     if not deleted:
-        return abort(404, "Cart ID not in session")
-    return success()
+        return common.abort(404, "Cart ID not in session")
+    return common.success()
 
 
 def cartDone(request):
