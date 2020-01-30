@@ -397,15 +397,17 @@ def completeSquareTransaction(request):
 
     for order in orders:
         order.billingType = Order.CREDIT
-        order.status = "Complete"
+        order.status = Order.COMPLETED
         order.settledDate = datetime.now()
         order.notes = json.dumps(
             {
-                "type": "square",
+                "type": "square_register",
                 "clientTransactionId": clientTransactionId,
                 "serverTransactionId": serverTransactionId,
             }
         )
+        # FIXME: Call out to the Square API to populate the transaction details server-side:
+
         order.save()
 
     return JsonResponse({"success": True})
@@ -437,7 +439,7 @@ def completeCashTransaction(request):
         )
 
     order.billingType = Order.CASH
-    order.status = "Complete"
+    order.status = Order.COMPLETED
     order.settledDate = datetime.now()
     order.notes = json.dumps({"type": "cash", "tendered": tendered})
     order.save()
