@@ -1129,6 +1129,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         "discount",
         "status",
     )
+    readonly_fields = ("createdDate",)
     save_on_top = True
     inlines = [OrderItemInline]
     actions = [
@@ -1139,7 +1140,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
             None,
             {
                 "fields": (
-                    ("total", "billingType"),
+                    ("total", "billingType", "createdDate"),
                     ("reference", "status"),
                     ("discount", "lastFour"),
                     ("orgDonation", "charityDonation"),
@@ -1163,6 +1164,12 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         ),
         ("Notes", {"fields": ("notes",), "classes": ("collapse",)}),
     )
+
+    def save_model(self, request, obj, form, change):
+        if not request.user.has_perm("registration.issue_refund"):
+            if form.data["status"] == Order.REFUNDED:
+                raise forms.ValidationError
+        obj.save()
 
 
 admin.site.register(Order, OrderAdmin)
