@@ -27,7 +27,8 @@ class HoldType(LookupTable):
 
 
 class ShirtSizes(LookupTable):
-    pass
+    class Meta:
+        verbose_name_plural = "Shirt sizes"
 
 
 class Discount(models.Model):
@@ -68,6 +69,10 @@ class PriceLevelOption(models.Model):
     active = models.BooleanField(default=False)
     rank = models.IntegerField(default=0)
     description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Price level option"
+        verbose_name_plural = "Price level options (merchandise)"
 
     def __str__(self):
         return "{0} (${1})".format(self.optionName, self.optionPrice)
@@ -112,6 +117,9 @@ class Charity(LookupTable):
     url = models.CharField(
         max_length=500, verbose_name="URL", help_text="Charity link", blank=True
     )
+
+    class Meta:
+        verbose_name_plural = "Charities"
 
 
 class Event(LookupTable):
@@ -428,6 +436,9 @@ class Staff(models.Model):
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
     checkedIn = models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name_plural = "Staff"
+
     def __str__(self):
         return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
 
@@ -514,6 +525,10 @@ class DealerAsst(models.Model):
     sent = models.BooleanField(default=False)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = "Dealer assistant"
+        verbose_name_plural = "Dealer assistants"
+
     def __str__(self):
         return self.name
 
@@ -554,33 +569,68 @@ class Order(models.Model):
         (CASH, "Cash"),
         (COMP, "Comp"),
     )
+    PENDING = "Pending"  # Card was captured and authorized, but not yet completed via settlement
+    CAPTURED = "Captured"  # Card details were captured, but no online authorization was performed
+    COMPLETED = "Completed"  # Card was captured and [later] settled
+    FAILED = "Failed"  # Card was rejected by online authorization
+    REFUNDED = "Refunded"
+    STATUS_CHOICES = (
+        (PENDING, "Pending"),
+        (CAPTURED, "Captured"),
+        (COMPLETED, "Completed"),
+        (REFUNDED, "Refunded"),
+        (FAILED, "Failed"),
+    )
     total = models.DecimalField(max_digits=8, decimal_places=2)
-    status = models.CharField(max_length=50, default="Pending")
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=PENDING)
     reference = models.CharField(max_length=50)
-    createdDate = models.DateTimeField(auto_now_add=True, null=True)
-    settledDate = models.DateTimeField(auto_now_add=True, null=True)
+    createdDate = models.DateTimeField(
+        auto_now_add=True, null=True, verbose_name="Created Date"
+    )
+    settledDate = models.DateTimeField(
+        auto_now_add=True, null=True, verbose_name="Settled Date"
+    )
     discount = models.ForeignKey(
         Discount, null=True, on_delete=models.SET_NULL, blank=True
     )
     orgDonation = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, default=0
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        default=0,
+        verbose_name="Organization Donation",
     )
     charityDonation = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, default=0
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        default=0,
+        verbose_name="Charity Donation",
     )
     notes = models.TextField(blank=True)
-    billingName = models.CharField(max_length=200, blank=True)
-    billingAddress1 = models.CharField(max_length=200, blank=True)
-    billingAddress2 = models.CharField(max_length=200, blank=True)
-    billingCity = models.CharField(max_length=200, blank=True)
-    billingState = models.CharField(max_length=200, blank=True)
-    billingCountry = models.CharField(max_length=200, blank=True)
-    billingPostal = models.CharField(max_length=20, blank=True)
-    billingEmail = models.CharField(max_length=200, blank=True)
-    billingType = models.CharField(
-        max_length=20, choices=BILLING_TYPE_CHOICES, default=CREDIT
+    billingName = models.CharField(max_length=200, blank=True, verbose_name="Name")
+    billingAddress1 = models.CharField(
+        max_length=200, blank=True, verbose_name="Address 1"
     )
-    lastFour = models.CharField(max_length=4, blank=True)
+    billingAddress2 = models.CharField(
+        max_length=200, blank=True, verbose_name="Address 2"
+    )
+    billingCity = models.CharField(max_length=200, blank=True, verbose_name="City")
+    billingState = models.CharField(max_length=200, blank=True, verbose_name="State")
+    billingCountry = models.CharField(
+        max_length=200, blank=True, verbose_name="Country"
+    )
+    billingPostal = models.CharField(
+        max_length=20, blank=True, verbose_name="Postal Code"
+    )
+    billingEmail = models.CharField(max_length=200, blank=True, verbose_name="Email")
+    billingType = models.CharField(
+        max_length=20,
+        choices=BILLING_TYPE_CHOICES,
+        default=CREDIT,
+        verbose_name="Billing Type",
+    )
+    lastFour = models.CharField(max_length=4, blank=True, verbose_name="Last 4")
     apiData = models.TextField(blank=True)
 
     def __str__(self):
@@ -589,7 +639,12 @@ class Order(models.Model):
         )
 
     class Meta:
-        permissions = (("issue_refund", "Can create refunds"),)
+        permissions = (
+            ("issue_refund", "Can create refunds"),
+            ("cash", "Can handle cash transactions"),
+            ("cash_admin", "Can open and close cash drawer amounts (manager)"),
+            ("discount", "Can create discounts of arbitrary amount"),
+        )
 
 
 class OrderItem(models.Model):
@@ -627,6 +682,10 @@ class AttendeeOptions(models.Model):
     optionValue2 = models.CharField(max_length=200, blank=True)
     optionValue3 = models.CharField(max_length=200, blank=True)
 
+    class Meta:
+        verbose_name = "Attendee option"
+        verbose_name_plural = "Attendee options"
+
     def getTotal(self):
         if self.option.optionExtraType == "int":
             return int(self.optionValue) * self.option.optionPrice
@@ -644,6 +703,9 @@ class BanList(models.Model):
     lastName = models.CharField(max_length=200, blank=True)
     email = models.CharField(max_length=400, blank=True)
     reason = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Ban list"
 
 
 class Firebase(models.Model):
