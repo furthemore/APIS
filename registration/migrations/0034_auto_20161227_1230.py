@@ -4,10 +4,15 @@ from __future__ import unicode_literals
 
 import datetime
 
+import pytz
 from django.db import migrations, models
+
+PT = pytz.timezone("US/Pacific")
 
 
 class Migration(migrations.Migration):
+
+    DEFAULT_DATETIME = PT.localize(datetime.datetime.now())
 
     dependencies = [
         ("registration", "0033_discount_used"),
@@ -17,65 +22,49 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="event",
             name="attendeeRegEnd",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 29, 14, 919844)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="attendeeRegStart",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 29, 33, 273653)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="dealerRegEnd",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 30, 2, 634132)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="dealerRegStart",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 30, 9, 48132)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="onlineRegEnd",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 30, 13, 626466)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="onlineRegStart",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 30, 18, 265170)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="staffRegEnd",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 30, 22, 617158)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name="event",
             name="staffRegStart",
-            field=models.DateTimeField(
-                default=datetime.datetime(2016, 12, 27, 12, 30, 28, 51655)
-            ),
+            field=models.DateTimeField(default=DEFAULT_DATETIME),
             preserve_default=False,
         ),
     ]
