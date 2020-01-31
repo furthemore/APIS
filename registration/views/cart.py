@@ -170,7 +170,7 @@ def saveCart(cart):
                 )
         attendeeOption.save()
 
-    cart.transferedDate = datetime.now()
+    cart.transferedDate = timezone.now()
     cart.save()
 
     return orderItem
