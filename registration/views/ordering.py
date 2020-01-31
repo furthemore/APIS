@@ -60,17 +60,19 @@ def doCheckout(
     status, response = charge_payment(order, billingData)
 
     if status:
-        if cartItems:
-            for item in cartItems:
-                orderItem = cart.saveCart(item)
-                orderItem.order = order
-                orderItem.save()
-        elif orderItems:
-            for oitem in orderItems:
-                oitem.order = order
-                oitem.save()
         order.status = "Paid"
         order.save()
+
+        if cartItems:
+            for item in cartItems:
+                order_item = cart.saveCart(item)
+                order_item.order = order
+                order_item.save()
+        elif orderItems:
+            for order_item in orderItems:
+                order_item.order = order
+                order_item.save()
+
         if discount:
             discount.used = discount.used + 1
             discount.save()

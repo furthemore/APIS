@@ -16,7 +16,7 @@ logging.disable(logging.NOTSET)
 logger.setLevel(logging.DEBUG)
 
 tz = timezone.get_current_timezone()
-now = tz.localize(datetime.now())
+now = timezone.now()
 ten_days = timedelta(days=10)
 
 DEFAULT_EVENT_ARGS = dict(
