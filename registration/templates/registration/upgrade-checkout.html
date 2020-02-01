@@ -3,7 +3,11 @@
 {% load settings %}
 
 {% block head %}
-    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+    {% if SQUARE_ENVIRONMENT == "sandbox" %}
+      <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
+    {% else %}
+      <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+    {% endif %}
 
     <script type="text/javascript">
 var paymentForm = new SqPaymentForm({
