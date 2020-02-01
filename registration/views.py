@@ -2362,7 +2362,10 @@ def checkout(request):
         return success()
 
     porg = Decimal(postData["orgDonation"].strip() or "0.00")
-    pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
+    pcharity = Decimal("0.00")
+    if "charityDonation" in postData:
+        pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
+
     pbill = postData["billingData"]
 
     if porg < 0:
