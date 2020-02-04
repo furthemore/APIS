@@ -204,7 +204,7 @@
 			        <input type="text" name="city" id="city" placeholder="City" class="form-control validate" required data-error="City is required." />
 		        </div>
                 <div class="col-sm-2">
-			        <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+			        <select class="form-control bfh-states" id="state" data-country="country" data-state="VA" name="state"></select>
                 </div>
                 <div class="col-sm-3">
                     <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control validate" data-minlength="5" data-error="Zip code is required." />
@@ -364,7 +364,7 @@
 		<h1>Checkout</h1>
 		<h3>There are no attendees in your order</h3>
 		<hr>
-		<a class="btn btn-primary" href="{% url 'index' %}">Add Attendee</a>
+		<a class="btn btn-primary" href="{% url 'registration:index' %}">Add Attendee</a>
 
 
 	</div>
@@ -381,7 +381,7 @@
 
 	$( "body" ).ready(function() {
         {% if event.collectAddress %}
-        $.getJSON("{% url 'addresses' %}", function(data) {
+        $.getJSON("{% url 'registration:addresses' %}", function(data) {
             addresses = data;
         });
         {% endif %}
@@ -396,7 +396,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'removeFromCart' %}",
+		    "url": "{% url 'registration:removeFromCart' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -416,7 +416,7 @@
 	});
 
 	$("#addAnother").click(function() {
-		window.location = "{% url 'index' %}";
+		window.location = "{% url 'registration:index' %}";
 	});
 
 	$("#cancel").click(function() {
@@ -425,8 +425,8 @@
             return;
         }
 
-        $.getJSON("{% url 'cancelOrder' %}", function(data) {
-            window.location = "{% url 'index' %}";
+        $.getJSON("{% url 'registration:cancelOrder' %}", function(data) {
+            window.location = "{% url 'registration:index' %}";
         });
 	});
 
@@ -440,7 +440,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'discount' %}",
+		    "url": "{% url 'registration:discount' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -526,7 +526,7 @@ function doCheckout(card_data) {
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'checkout' %}",
+		    "url": "{% url 'registration:checkout' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -549,16 +549,16 @@ function doCheckout(card_data) {
                 error_message += "If this error continues, please contact {{event.registrationEmail}} for assistance.";
                 alert(error_message);
     			$("#checkout").removeAttr("disabled");
-                window.location = "{% url 'cart' %}";
+                window.location = "{% url 'registration:cart' %}";
     		},
             "success": function (result, status) {
                 if (result.success) {
-	    			window.location = "{% url 'done' %}";
+	    			window.location = "{% url 'registration:done' %}";
                 } else {
 			        $("#checkout").removeAttr("disabled");
                     if (result.message.indexOf("email") > -1) {
                         alert(result.message);
-                        window.location = "{% url 'done' %}";
+                        window.location = "{% url 'registration:done' %}";
                     } else {
                         alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.")
                     }
