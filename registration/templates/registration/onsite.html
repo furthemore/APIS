@@ -99,7 +99,7 @@
             <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
             </div>
                     <div class="col-sm-2">
-            <select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
+            <select class="form-control bfh-states" id="state" data-country="country" data-state="VA" name="state"></select>
                     </div>
             <div class="col-sm-3">
             <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
@@ -271,7 +271,7 @@
                 changeYear: true
             });
         }
-        $.getJSON("{% url 'pricelevels' %}", function(data) {
+        $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
                 levelTemplateData.push({
@@ -285,7 +285,7 @@
             $(".changeLevel").hide();
 
         });
-        $.getJSON("{% url 'minorpricelevels' %}", function(data) {
+        $.getJSON("{% url 'registration:minorpricelevels' %}", function(data) {
             minorLevelData = data;
             $.each( data, function( key, val ) {
                 minorLevelTemplateData.push({
@@ -297,7 +297,7 @@
             });
 
         });
-        $.getJSON("{% url 'accompaniedpricelevels' %}", function(data) {
+        $.getJSON("{% url 'registration:accompaniedpricelevels' %}", function(data) {
             accompaniedLevelData = data;
             $.each( data, function( key, val ) {
                 accompaniedLevelTemplateData.push({
@@ -309,7 +309,7 @@
             });
 
         });
-        $.getJSON("{% url 'freepricelevels' %}", function(data) {
+        $.getJSON("{% url 'registration:freepricelevels' %}", function(data) {
             freeLevelData = data;
             $.each( data, function( key, val ) {
                 freeLevelTemplateData.push({
@@ -321,13 +321,13 @@
             });
 
         });
-        $.getJSON("{% url 'departments' %}", function(data) {
+        $.getJSON("{% url 'registration:departments' %}", function(data) {
             deptData = data;
             $.each(data, function(key, val) {
                 $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
             });
         });
-        $.getJSON("{% url 'shirtsizes' %}", function(data) {
+        $.getJSON("{% url 'registration:shirtsizes' %}", function(data) {
             shirtSizes = data;
         });
     });
@@ -550,14 +550,14 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'addToCart' %}",
+            "url": "{% url 'registration:addToCart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "success": function(result) {
-                window.location = "{% url 'onsiteCart' %}";
+                window.location = "{% url 'registration:onsiteCart' %}";
             },
             "error": function(result, status) {
             alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.")

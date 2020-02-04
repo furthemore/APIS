@@ -39,7 +39,7 @@
                     <i class="fas fa-user"></i><span class="sr-only">User options</span>
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="user">
-                    <li><a href="{% url 'logout' %}?next={% url 'onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
+                    <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
                 </ul>
             </div>
         </div>
@@ -55,14 +55,14 @@
       <i class="fas fa-exclamation-triangle"></i>
       <span class="sr-only">Error:</span>
       <b>There was a problem while connecting to the server.</b>
-       <a class="alert-link" href="{% url 'onsiteAdmin' %}">Reload</a>
+       <a class="alert-link" href="{% url 'registration:onsiteAdmin' %}">Reload</a>
     </div>
 
     <div class="row">
       <div class="col-md-6">
         <div class="row">
           <div class="col-md-12">
-            <form class="form-inline my-lg-0" action="{% url 'onsiteAdmin' %}" method="get">
+            <form class="form-inline my-lg-0" action="{% url 'registration:onsiteAdmin' %}" method="get">
                 <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
                     autofocus="autofocus" autocomplete="off" name="search">
@@ -117,7 +117,7 @@
               </a>
             </h2>
           </div><div class="col-md-4" style="margin-top: 20px">
-            <a href="{% url 'onsiteAdminClearCart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}" class="btn btn-danger right">Clear</a>
+            <a href="{% url 'registration:onsiteAdminClearCart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}" class="btn btn-danger right">Clear</a>
           </div></div>
           <div id="cart"></div>
           <div class="total" id="total"></div>
@@ -342,7 +342,7 @@ var print_badges = function(e) {
         var printIDs = []
         $.each(printQueue, function(idx, badge) {
             printIDs.push(badge.id);
-            $.getJSON("{% url 'assignBadgeNumber' %}", { id : badge.id, number : badge.badgeNumber }, function (data) {
+            $.getJSON("{% url 'registration:assignBadgeNumber' %}", { id : badge.id, number : badge.badgeNumber }, function (data) {
                 if (!data.success) {
                     alert("Error while assigning badge number: " + data.message);
                 }
@@ -350,7 +350,7 @@ var print_badges = function(e) {
         });
 
         // print badges
-        $.getJSON("{% url 'onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
+        $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
             if (!data.success) {
                 alert("Error while printing badges");
             }
@@ -358,7 +358,7 @@ var print_badges = function(e) {
         });
         // clear cart
 
-        $.getJSON("{% url 'onsiteAdminClearCart' %}");
+        $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
         refresh_cart();
     }
 };
@@ -394,7 +394,7 @@ $(document).ready(function () {
 
     refresh_cart = function() {
       $("#cart-error").fadeOut();
-      $.getJSON("{% url 'onsiteAdminCart' %}", function(data) {
+      $.getJSON("{% url 'registration:onsiteAdminCart' %}", function(data) {
         cartData = data;
         var enable_print = false;
         if (data.success) {
@@ -458,7 +458,7 @@ $(document).ready(function () {
         e.preventDefault();
         var id = $(this).data("id");
         $(this).attr("disabled", "disabled");
-        $.getJSON("{% url 'onsiteAddToCart' %}", { id : id }, function (data) {
+        $.getJSON("{% url 'registration:onsiteAddToCart' %}", { id : id }, function (data) {
             if (data.success) {
                 refresh_cart();
             } else {
@@ -469,7 +469,7 @@ $(document).ready(function () {
 
     $("#open-terminal").click(function (e) {
         e.preventDefault();
-        $.getJSON("{% url 'openTerminal' %}", {}, function (data) {
+        $.getJSON("{% url 'registration:openTerminal' %}", {}, function (data) {
             if (!data.success) {
                 alert("Error while opening terminal: " + data.message);
             }
@@ -478,7 +478,7 @@ $(document).ready(function () {
 
     $("#close-terminal").click(function (e) {
         e.preventDefault();
-        $.getJSON("{% url 'closeTerminal' %}", {}, function (data) {
+        $.getJSON("{% url 'registration:closeTerminal' %}", {}, function (data) {
             if (!data.success) {
                 alert("Error while closing terminal: " + data.message);
             }
@@ -488,7 +488,7 @@ $(document).ready(function () {
 
     $("#credit_button").click(function (e) {
         e.preventDefault();
-        $.getJSON("{% url 'enablePayment' %}", {}, function (data) {
+        $.getJSON("{% url 'registration:enablePayment' %}", {}, function (data) {
             if (!data.success) {
                 alert("Error while closing terminal: " + data.message);
             }
@@ -512,7 +512,7 @@ $(document).ready(function () {
             'total' : total,
             'tendered' : tendered
         }
-        $.getJSON("{% url 'completeCashTransaction' %}", data, function (data) {
+        $.getJSON("{% url 'registration:completeCashTransaction' %}", data, function (data) {
             if (data.success) {
                 refresh_cart();
             } else {
@@ -539,7 +539,7 @@ $(document).ready(function () {
     var remove_badge = function (e) {
         e.preventDefault();
         var id = $(this).attr("id").split("-")[1];
-        $.getJSON("{% url 'onsiteRemoveFromCart' %}", { id : id }, function (data) {
+        $.getJSON("{% url 'registration:onsiteRemoveFromCart' %}", { id : id }, function (data) {
             if (data.success) {
                 refresh_cart();
             } else {

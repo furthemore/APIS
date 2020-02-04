@@ -1,10 +1,10 @@
 {% load site %}
-Your dealer application for {{ dealer.event }} has been approved! 
+Your dealer application for {{ dealer.event }} has been approved!
 
 Please go to the url below and enter the email address you used to register.
-https://{% current_domain %}{% url 'dealers' guid=dealer.registrationToken %}
+https://{% current_domain %}{% url 'registration:dealers' guid=dealer.registrationToken %}
 
-You will receive an email with a confirmation number after submitting your payment. 
+You will receive an email with a confirmation number after submitting your payment.
 If you have any further questions, please feel free to contact us: {{ dealer.event.dealerEmail }}
 
 Thank you and welcome to the {{ dealer.event }} Dealer's Den!
