@@ -16,7 +16,7 @@ logging.disable(logging.NOTSET)
 logger.setLevel(logging.DEBUG)
 
 tz = timezone.get_current_timezone()
-now = tz.localize(datetime.now())
+now = timezone.now()
 ten_days = timedelta(days=10)
 
 DEFAULT_EVENT_ARGS = dict(
@@ -47,17 +47,17 @@ class Index(TestCase):
 
     # unit tests skip methods that start with uppercase letters
     def TestIndex(self):
-        response = self.client.get(reverse("index"))
+        response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Welcome to the registration system")
 
     def TestIndexClosed(self):
-        response = self.client.get(reverse("index"))
+        response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "is closed. If you have any")
 
     def TestIndexNoEvent(self):
-        response = self.client.get(reverse("index"))
+        response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "no default event was found")
 
@@ -261,7 +261,7 @@ class OrdersTestCases(TestCase):
         self.client = Client()
 
     def test_get_prices(self):
-        response = self.client.get(reverse("pricelevels"))
+        response = self.client.get(reverse("registration:pricelevels"))
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result.__len__(), 3)
@@ -273,7 +273,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(minor.__len__(), 1)
 
     def test_get_adult_prices(self):
-        response = self.client.get(reverse("adultpricelevels"))
+        response = self.client.get(reverse("registration:adultpricelevels"))
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result.__len__(), 2)
@@ -294,7 +294,7 @@ class OrdersTestCases(TestCase):
         ]
         self.add_to_cart(self.attendee_regular_2, self.price_45, options)
 
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -369,7 +369,9 @@ class OrdersTestCases(TestCase):
         }
 
         response = self.client.post(
-            reverse("addToCart"), json.dumps(postData), content_type="application/json"
+            reverse("registration:addToCart"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         logging.info(response.content)
         self.assertEqual(response.status_code, 200)
@@ -377,7 +379,9 @@ class OrdersTestCases(TestCase):
     def zero_checkout(self):
         postData = {}
         response = self.client.post(
-            reverse("checkout"), json.dumps(postData), content_type="application/json"
+            reverse("registration:checkout"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         return response
 
@@ -409,7 +413,9 @@ class OrdersTestCases(TestCase):
         }
 
         response = self.client.post(
-            reverse("checkout"), json.dumps(postData), content_type="application/json"
+            reverse("registration:checkout"),
+            json.dumps(postData),
+            content_type="application/json",
         )
 
         return response
@@ -422,16 +428,16 @@ class OrdersTestCases(TestCase):
 
         self.add_to_cart(self.attendee_regular_1, self.price_45, options)
 
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
         self.assertEqual(total, 45)
 
-        response = self.client.get(reverse("cancelOrder"))
+        response = self.client.get(reverse("registration:cancelOrder"))
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 0)
@@ -442,7 +448,7 @@ class OrdersTestCases(TestCase):
     def test_vip_checkout(self):
         self.add_to_cart(self.attendee_regular_2, self.price_675, [])
 
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -472,7 +478,7 @@ class OrdersTestCases(TestCase):
         ]
         self.add_to_cart(self.attendee_regular_2, self.price_45, options)
 
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -481,10 +487,12 @@ class OrdersTestCases(TestCase):
 
         postData = {"discount": "OneTime"}
         response = self.client.post(
-            reverse("discount"), json.dumps(postData), content_type="application/json"
+            reverse("registration:discount"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -499,7 +507,9 @@ class OrdersTestCases(TestCase):
 
         postData = {"discount": "OneTime"}
         response = self.client.post(
-            reverse("discount"), json.dumps(postData), content_type="application/json"
+            reverse("registration:discount"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -509,7 +519,9 @@ class OrdersTestCases(TestCase):
 
         postData = {"discount": "Bogus"}
         response = self.client.post(
-            reverse("discount"), json.dumps(postData), content_type="application/json"
+            reverse("registration:discount"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -521,7 +533,7 @@ class OrdersTestCases(TestCase):
         options = [{"id": self.option_conbook.id, "value": "true"}]
         self.add_to_cart(self.attendee_regular_2, self.price_45, options)
 
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -530,10 +542,12 @@ class OrdersTestCases(TestCase):
 
         postData = {"discount": "StaffDiscount"}
         response = self.client.post(
-            reverse("discount"), json.dumps(postData), content_type="application/json"
+            reverse("registration:discount"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -597,7 +611,9 @@ class OrdersTestCases(TestCase):
             "token": staff.registrationToken,
         }
         response = self.client.post(
-            reverse("findStaff"), json.dumps(postData), content_type="application/json"
+            reverse("registration:findStaff"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.content, "Staff matching query does not exist.")
@@ -605,7 +621,9 @@ class OrdersTestCases(TestCase):
         # Regular staff reg
         postData = {"email": attendee.email, "token": staff.registrationToken}
         response = self.client.post(
-            reverse("findStaff"), json.dumps(postData), content_type="application/json"
+            reverse("registration:findStaff"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
@@ -651,10 +669,12 @@ class OrdersTestCases(TestCase):
             "event": self.event.name,
         }
         response = self.client.post(
-            reverse("addStaff"), json.dumps(postData), content_type="application/json"
+            reverse("registration:addStaff"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -678,13 +698,15 @@ class OrdersTestCases(TestCase):
         self.assertEqual(order.charityDonation, 0)
         self.assertEqual(order.discount.used, discountUsed + 1)
 
-        response = self.client.get(reverse("flush"))
+        response = self.client.get(reverse("registration:flush"))
         self.assertEqual(response.status_code, 200)
 
         # Staff zero-sum
         postData = {"email": attendee2.email, "token": staff2.registrationToken}
         response = self.client.post(
-            reverse("findStaff"), json.dumps(postData), content_type="application/json"
+            reverse("registration:findStaff"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
@@ -730,11 +752,13 @@ class OrdersTestCases(TestCase):
             "event": self.event.name,
         }
         response = self.client.post(
-            reverse("addStaff"), json.dumps(postData), content_type="application/json"
+            reverse("registration:addStaff"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(reverse("cart"))
+        response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -755,7 +779,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(order.total, 0)
         self.assertEqual(order.discount.used, discountUsed + 1)
 
-        response = self.client.get(reverse("flush"))
+        response = self.client.get(reverse("registration:flush"))
         self.assertEqual(response.status_code, 200)
 
     def test_dealer(self):
@@ -804,7 +828,7 @@ class OrdersTestCases(TestCase):
         }
 
         response = self.client.post(
-            reverse("addNewDealer"),
+            reverse("registration:addNewDealer"),
             json.dumps(dealer_pay),
             content_type="application/json",
         )
@@ -854,7 +878,7 @@ class OrdersTestCases(TestCase):
         }
 
         response = self.client.post(
-            reverse("addNewDealer"),
+            reverse("registration:addNewDealer"),
             json.dumps(dealer_free),
             content_type="application/json",
         )
@@ -912,7 +936,7 @@ class OrdersTestCases(TestCase):
         }
 
         response = self.client.post(
-            reverse("addNewDealer"),
+            reverse("registration:addNewDealer"),
             json.dumps(dealer_partners),
             content_type="application/json",
         )
@@ -940,7 +964,7 @@ class OrdersTestCases(TestCase):
         dealer = Dealer.objects.get(attendee=attendee)
         self.assertNotEqual(dealer, None)
 
-        response = self.client.get(reverse("flush"))
+        response = self.client.get(reverse("registration:flush"))
         self.assertEqual(response.status_code, 200)
 
         # Dealer
@@ -949,7 +973,9 @@ class OrdersTestCases(TestCase):
         dealer = Dealer.objects.get(attendee=attendee)
         postData = {"token": dealer.registrationToken, "email": attendee.email}
         response = self.client.post(
-            reverse("findDealer"), json.dumps(postData), content_type="application/json"
+            reverse("registration:findDealer"),
+            json.dumps(postData),
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
 
@@ -957,15 +983,13 @@ class OrdersTestCases(TestCase):
         dealer_pay["dealer"]["id"] = dealer.id
         dealer_pay["priceLevel"] = {"id": self.price_45.id, "options": []}
 
-        print self.event.dealerDiscount
-
         response = self.client.post(
-            reverse("addDealer"),
+            reverse("registration:addDealer"),
             json.dumps(dealer_pay),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("invoiceDealer"))
+        response = self.client.get(reverse("registration:invoiceDealer"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -988,7 +1012,7 @@ class LookupTestCases(TestCase):
 
     def test_shirts(self):
         client = Client()
-        response = client.get(reverse("shirtsizes"))
+        response = client.get(reverse("registration:shirtsizes"))
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result.__len__(), 2)
@@ -997,7 +1021,7 @@ class LookupTestCases(TestCase):
 
     def test_departments(self):
         client = Client()
-        response = client.get(reverse("departments"))
+        response = client.get(reverse("registration:departments"))
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result.__len__(), 2)
@@ -1029,28 +1053,29 @@ class Onsite(TestCase):
 
     def test_onsite_login_required(self):
         self.client.logout()
-        response = self.client.get(reverse("onsiteAdmin"), follow=True)
+        response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
         self.assertRedirects(
-            response, "/admin/login/?next={0}".format(reverse("onsiteAdmin"))
+            response,
+            "/admin/login/?next={0}".format(reverse("registration:onsiteAdmin")),
         )
 
     def TEST_onsite_admin_required(self):
         # FIXME: always gets a 200
         self.assertTrue(self.client.login(username="john", password="john"))
-        response = self.client.get(reverse("onsiteAdmin"), follow=True)
+        response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
         self.assertEqual(response.status_code, 401)
         self.client.logout()
 
     def test_onsite_admin(self):
         self.client.logout()
         self.assertTrue(self.client.login(username="admin", password="admin"))
-        response = self.client.get(reverse("onsiteAdmin"), follow=True)
+        response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context["errors"]), 0)
         self.assertEqual(len(response.context["terminals"]), 1)
 
         self.terminal.delete()
-        response = self.client.get(reverse("onsiteAdmin"))
+        response = self.client.get(reverse("registration:onsiteAdmin"))
         self.assertEqual(response.status_code, 200)
         errors = [e["code"] for e in response.context["errors"]]
         # import pdb; pdb.set_trace()
@@ -1058,7 +1083,9 @@ class Onsite(TestCase):
 
         self.terminal = Firebase(token="test", name="Terminal 1")
         self.terminal.save()
-        response = self.client.get(reverse("onsiteAdmin"), {"search": "doesntexist"})
+        response = self.client.get(
+            reverse("registration:onsiteAdmin"), {"search": "doesntexist"}
+        )
         self.assertEqual(response.status_code, 200)
         self.assertTrue("results" in response.context.keys())
         self.assertEqual(len(response.context["results"]), 0)
