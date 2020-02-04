@@ -49,12 +49,10 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'mathfilters',
     'nested_inline',
-    'events.apps.EventsConfig',
     'import_export',
     'django_extensions',
     'django_u2f',
     'registration',
-    'volunteer.apps.VolunteerConfig',
 ]
 
 MIDDLEWARE_CLASSES = [

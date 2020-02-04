@@ -4,6 +4,10 @@ import views
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+import registration.views.common
+import registration.views.dealers
+import registration.views.staff
+
 from .models import *
 
 logger = logging.getLogger("registration.emails")
@@ -22,7 +26,9 @@ def sendRegistrationEmail(order, email):
 
     # send registration confirmations to all people in the order
     for oi in orderItems:
-        registrationEmail = views.getRegistrationEmail(oi.badge.event)
+        registrationEmail = registration.views.common.getRegistrationEmail(
+            oi.badge.event
+        )
         if oi.badge.attendee.email == email:
             # send payment receipt to the payor
             data = {
@@ -113,7 +119,7 @@ def sendStaffRegistrationEmail(orderId):
     msgTxt = render_to_string("registration/emails/staffRegistration.txt", data)
     msgHtml = render_to_string("registration/emails/staffRegistration.html", data)
     event = Event.objects.get(default=True)
-    staffEmail = views.getStaffEmail(event)
+    staffEmail = registration.views.staff.getStaffEmail(event)
     sendEmail(
         staffEmail,
         [email],
@@ -127,7 +133,7 @@ def sendStaffPromotionEmail(staff):
     data = {"registrationToken": staff.registrationToken, "event": staff.event}
     msgTxt = render_to_string("registration/emails/staffPromotion.txt", data)
     msgHtml = render_to_string("registration/emails/staffPromotion.html", data)
-    staffEmail = views.getStaffEmail(staff.event)
+    staffEmail = registration.views.staff.getStaffEmail(staff.event)
     sendEmail(
         staffEmail,
         [staff.attendee.email],
@@ -142,7 +148,7 @@ def sendNewStaffEmail(token):
     data = {"registrationToken": token.token, "event": event}
     msgTxt = render_to_string("registration/emails/newStaff.txt", data)
     msgHtml = render_to_string("registration/emails/newStaff.html", data)
-    staffEmail = views.getStaffEmail(event)
+    staffEmail = registration.views.staff.getStaffEmail(event)
     sendEmail(
         staffEmail,
         [token.email],
@@ -157,7 +163,7 @@ def sendDealerApplicationEmail(dealerId):
     data = {"event": dealer.event, "dealer": dealer}
     msgTxt = render_to_string("registration/emails/dealer.txt", data)
     msgHtml = render_to_string("registration/emails/dealer.html", data)
-    dealerEmail = views.getDealerEmail(dealer.event)
+    dealerEmail = registration.views.dealers.getDealerEmail(dealer.event)
     sendEmail(
         dealerEmail,
         [dealer.attendee.email],
@@ -181,7 +187,7 @@ def sendDealerAsstFormEmail(dealer):
     data = {"dealer": dealer, "event": dealer.event}
     msgTxt = render_to_string("registration/emails/dealerAsstForm.txt", data)
     msgHtml = render_to_string("registration/emails/dealerAsstForm.html", data)
-    dealerEmail = views.getDealerEmail(dealer.event)
+    dealerEmail = registration.views.dealers.getDealerEmail(dealer.event)
     sendEmail(
         dealerEmail,
         [dealer.attendee.email],
@@ -196,7 +202,7 @@ def sendDealerAsstEmail(dealerId):
     data = {"dealer": dealer, "event": dealer.event}
     msgTxt = render_to_string("registration/emails/dealerAsst.txt", data)
     msgHtml = render_to_string("registration/emails/dealerAsst.html", data)
-    dealerEmail = views.getDealerEmail(dealer.event)
+    dealerEmail = registration.views.dealers.getDealerEmail(dealer.event)
     sendEmail(
         dealerEmail,
         [dealer.attendee.email],
@@ -218,7 +224,7 @@ def sendDealerPaymentEmail(dealer, order):
     }
     msgTxt = render_to_string("registration/emails/dealerPayment.txt", data)
     msgHtml = render_to_string("registration/emails/dealerPayment.html", data)
-    dealerEmail = views.getDealerEmail(dealer.event)
+    dealerEmail = registration.views.dealers.getDealerEmail(dealer.event)
 
     sendEmail(
         dealerEmail,
@@ -234,7 +240,7 @@ def sendDealerUpdateEmail(dealerId):
     data = {"dealer": dealer, "event": dealer.event}
     msgTxt = render_to_string("registration/emails/dealerUpdate.txt", data)
     msgHtml = render_to_string("registration/emails/dealerUpdate.html", data)
-    dealerEmail = views.getDealerEmail(dealer.event)
+    dealerEmail = registration.views.dealers.getDealerEmail(dealer.event)
 
     sendEmail(
         dealerEmail,
@@ -250,7 +256,7 @@ def sendApprovalEmail(dealerQueryset):
         data = {"dealer": dealer, "event": dealer.event}
         msgTxt = render_to_string("registration/emails/dealerApproval.txt", data)
         msgHtml = render_to_string("registration/emails/dealerApproval.html", data)
-        dealerEmail = views.getDealerEmail(dealer.event)
+        dealerEmail = registration.views.dealers.getDealerEmail(dealer.event)
         sendEmail(
             dealerEmail,
             [dealer.attendee.email],
