@@ -199,7 +199,7 @@
                 changeYear: true
             });
         }
-        $.getJSON("{% url 'pricelevels' %}", function(data) {
+        $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
                 levelTemplateData.push({
@@ -220,13 +220,13 @@
             $(".changeLevel").hide();
 
         });
-        $.getJSON("{% url 'departments' %}", function(data) {
+        $.getJSON("{% url 'registration:departments' %}", function(data) {
             deptData = data;
             $.each(data, function(key, val) {
                 $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
             });
         });
-        $.getJSON("{% url 'shirtsizes' %}", function(data) {
+        $.getJSON("{% url 'registration:shirtsizes' %}", function(data) {
             shirtSizes = data;
         });
     });
@@ -397,7 +397,7 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'addToCart' %}",
+            "url": "{% url 'registration:addToCart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -405,7 +405,7 @@
             },
             "success": function(result) {
                 if (result.success) {
-                    window.location = "{% url 'cart' %}";
+                    window.location = "{% url 'registration:cart' %}";
                 } else {
                     alert(result.message);
                 }

@@ -114,7 +114,7 @@
         <h1>Checkout</h1>
         <h3>There are no attendees in your order</h3>
         <hr>
-        <a class="btn btn-primary" href="{% url 'onsite' %}">Add Attendee</a>
+        <a class="btn btn-primary" href="{% url 'registration:onsite' %}">Add Attendee</a>
 
 
     </div>
@@ -139,7 +139,7 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'removeFromCart' %}",
+            "url": "{% url 'registration:removeFromCart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -159,15 +159,15 @@
     });
 
     $("#addAnother").click(function() {
-        window.location = "{% url 'onsite' %}";
+        window.location = "{% url 'registration:onsite' %}";
     });
 
     $("#cancel").click(function() {
         var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
         if (cancel == false) { return;}
 
-                $.getJSON("{% url 'cancelOrder' %}", function(data) {
-            window.location = "{% url 'onsite' %}";
+                $.getJSON("{% url 'registration:cancelOrder' %}", function(data) {
+            window.location = "{% url 'registration:onsite' %}";
                 });
     });
 
@@ -189,7 +189,7 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'checkout' %}",
+            "url": "{% url 'registration:checkout' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -201,7 +201,7 @@
             },
                     "success": function (result, status) {
                         if (result.success) {
-                window.location = "{% url 'onsiteDone' %}";
+                window.location = "{% url 'registration:onsiteDone' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
                 $("#checkout").removeAttr("disabled");
