@@ -6,7 +6,7 @@
 
     <body>
         <script>
-            var w = window.open("{% url 'pdf' %}" + "/?file={{ file }}");
+            var w = window.open("{% url 'registration:pdf' %}" + "/?file={{ file }}");
             w.onload = function () {
                 w.print();
                 w.onfocus = function () {

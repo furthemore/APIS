@@ -81,13 +81,11 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'mathfilters',
     'nested_inline',
-    'events.apps.EventsConfig',
     'import_export',
     'django_extensions',
     'django_u2f',
     'argonauts',
     'registration',
-    'volunteer.apps.VolunteerConfig',
     'debug_toolbar',
 ]
 

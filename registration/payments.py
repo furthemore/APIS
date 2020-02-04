@@ -65,7 +65,12 @@ def charge_payment(order, cc_data):
     logger.debug("---- Charge Submitted ----")
     logger.debug(api_response)
 
+    # Square still returns data for failed payments
+    order.apiData = json.dumps(api_response.body)
+
     if api_response.is_success():
+        order.status = Order.COMPLETED
+        order.notes = "Square: #" + api_response.body["payment"]["id"][:4]
         card_details = api_response.body["payment"]["card_details"]
         order.lastFour = "0000"
         if (
@@ -73,13 +78,13 @@ def charge_payment(order, cc_data):
             and card_details is not None
         ):
             order.lastFour = card_details["card"].get("last_4")
-        order.apiData = json.dumps(api_response.body)
-        order.notes = "Square: #" + api_response.body["payment"]["id"][:4]
-        order.save()
+
     elif api_response.is_error():
         logger.debug(api_response.errors)
         message = format_errors(api_response.errors)
         logger.debug("---- Transaction Failed ----")
+        order.status = Order.FAILED
+        order.save()
         return False, {"errors": api_response.errors}
 
     logger.debug("---- End Transaction ----")

@@ -216,7 +216,7 @@
                 changeYear: true
             });
         }
-                $.getJSON("{% url 'tablesizes' %}", function(data) {
+                $.getJSON("{% url 'registration:tablesizes' %}", function(data) {
                         tableSizes = data;
             $.each(tableSizes, function (key, item) {
                 $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
@@ -372,12 +372,12 @@
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
                 'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': false
             },
-            'event': '{{event}}'
+            'event': '{{event}}
         };
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'addNewDealer' %}",
+            "url": "{% url 'registration:addNewDealer' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
@@ -387,7 +387,7 @@
                         alert("An error has occurred. Please contact marketplacehead@furthemore.org and we will correct the problem.")
             },
                     "success": function () {
-                        window.location = "{% url 'thanksDealer' %}";
+                        window.location = "{% url 'registration:thanksDealer' %}";
                     }
         });
     }
