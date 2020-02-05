@@ -1,2 +1,6 @@
 [run]
-omit = venv/*
+omit =
+    */migrations/*
+    */tests/*
+    venv/*
+    /home/travis/virtualenv/*
