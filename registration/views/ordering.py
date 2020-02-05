@@ -182,11 +182,11 @@ def getTotal(cartItems, orderItems, disc=""):
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
         effLevel = item.badge.effectiveLevel()
-        # FIXME Why was this here?
-        # if effLevel:
-        #    itemTotal = itemSubTotal - effLevel.basePrice
-        # else:
-        itemTotal = itemSubTotal
+
+        if effLevel:
+            itemTotal = itemSubTotal - effLevel.basePrice
+        else:
+            itemTotal = itemSubTotal
 
         itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
 
@@ -264,7 +264,7 @@ def checkout(request):
         if not status:
             return common.abort(400, message)
 
-        request.session.flush()
+        common.clear_session(request)
         try:
             registration.emails.sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
@@ -279,8 +279,8 @@ def checkout(request):
             )
         return common.success()
 
-    porg = Decimal(postData["orgDonation"].strip() or "0.00")
-    pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
+    porg = Decimal(postData.get("orgDonation") or "0.00")
+    pcharity = Decimal(postData.get("charityDonation") or "0.00")
     pbill = postData["billingData"]
 
     if porg < 0:
