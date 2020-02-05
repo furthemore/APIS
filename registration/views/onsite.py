@@ -4,6 +4,7 @@ from django.shortcuts import render
 from ordering import getTotal
 
 from registration.models import *
+from registration.views.common import clear_session
 
 
 def onsite(request):
@@ -24,7 +25,7 @@ def onsiteCart(request):
 
     if not cartItems:
         context = {"orderItems": [], "total": 0}
-        request.session.flush()
+        clear_session(request)
     else:
         cartItems = list(Cart.objects.filter(id__in=sessionItems))
         orderItems = []
@@ -100,5 +101,5 @@ def onsiteCart(request):
 
 def onsiteDone(request):
     context = {}
-    request.session.flush()
+    clear_session(request)
     return render(request, "registration/onsite-done.html", context)
