@@ -1,7 +1,19 @@
-from common import get_client_ip, getOptionsDict, getRegistrationEmail, handler, logger
+from common import (
+    clear_session,
+    get_client_ip,
+    getOptionsDict,
+    getRegistrationEmail,
+    handler,
+    logger,
+)
 from django.forms import model_to_dict
-from django.http import HttpResponseServerError, JsonResponse
-from django.shortcuts import render
+from django.http import (
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    HttpResponseServerError,
+    JsonResponse,
+)
+from django.shortcuts import get_object_or_404, render
 from ordering import doCheckout, doZeroCheckout, getTotal
 
 import registration.emails
@@ -19,56 +31,53 @@ def infoUpgrade(request):
         postData = json.loads(request.body)
     except ValueError as e:
         logger.error("Unable to decode JSON for infoUpgrade()")
-        return JsonResponse({"success": False})
+        return JsonResponse({"success": False}, status=400)
 
-    try:
-        email = postData["email"]
-        token = postData["token"]
+    email = postData.get("email")
+    token = postData.get("token")
+    if email is None or token is None:
+        return HttpResponseBadRequest("email, token are required fields")
 
-        evt = postData["event"]
-        event = Event.objects.get(name=evt)
+    badge = get_object_or_404(Badge, registrationToken=token)
 
-        badge = Badge.objects.get(registrationToken=token)
-        if not badge:
-            return HttpResponseServerError("No Record Found")
+    attendee = badge.attendee
+    if attendee.email.lower() != email.lower():
+        return HttpResponseNotFound("No Record Found")
 
-        attendee = badge.attendee
-        if attendee.email.lower() != email.lower():
-            return HttpResponseServerError("No Record Found")
-
-        request.session["attendee_id"] = attendee.id
-        request.session["badge_id"] = badge.id
-        return JsonResponse({"success": True, "message": "ATTENDEE"})
-    except Exception as e:
-        logger.exception("Error in starting upgrade.")
-        return HttpResponseServerError(str(e))
+    request.session["attendee_id"] = attendee.id
+    request.session["badge_id"] = badge.id
+    return JsonResponse({"success": True, "message": "ATTENDEE"})
 
 
 def findUpgrade(request):
     event = Event.objects.get(default=True)
     context = {"attendee": None, "event": event}
     try:
-        attId = request.session["attendee_id"]
-        badgeId = request.session["badge_id"]
+        attendee_id = request.session["attendee_id"]
+        badge_id = request.session["badge_id"]
     except Exception as e:
-        return render(request, "registration/attendee-upgrade.html", context)
+        return render(
+            request, "registration/attendee-upgrade.html", context, status=400
+        )
 
-    attendee = Attendee.objects.get(id=attId)
-    if attendee:
-        badge = Badge.objects.get(id=badgeId)
-        attendee_dict = model_to_dict(attendee)
-        badge_dict = {"id": badge.id}
-        lvl = badge.effectiveLevel()
-        existingOIs = badge.getOrderItems()
-        lvl_dict = {"basePrice": lvl.basePrice, "options": getOptionsDict(existingOIs)}
-        context = {
-            "attendee": attendee,
-            "badge": badge,
-            "event": event,
-            "jsonAttendee": json.dumps(attendee_dict, default=handler),
-            "jsonBadge": json.dumps(badge_dict, default=handler),
-            "jsonLevel": json.dumps(lvl_dict, default=handler),
-        }
+    attendee = get_object_or_404(Attendee, id=attendee_id)
+    badge = get_object_or_404(Badge, id=badge_id)
+    attendee_dict = model_to_dict(attendee)
+    badge_dict = {"id": badge.id}
+    level = badge.effectiveLevel()
+    existing_order_items = badge.getOrderItems()
+    level_dict = {
+        "basePrice": level.basePrice,
+        "options": getOptionsDict(existing_order_items),
+    }
+    context = {
+        "attendee": attendee,
+        "badge": badge,
+        "event": event,
+        "jsonAttendee": json.dumps(attendee_dict, default=handler),
+        "jsonBadge": json.dumps(badge_dict, default=handler),
+        "jsonLevel": json.dumps(level_dict, default=handler),
+    }
     return render(request, "registration/attendee-upgrade.html", context)
 
 
@@ -117,13 +126,13 @@ def invoiceUpgrade(request):
     sessionItems = request.session.get("order_items", [])
     if not sessionItems:
         context = {"orderItems": [], "total": 0, "discount": {}}
-        request.session.flush()
+        clear_session(request)
     else:
         attendeeId = request.session.get("attendee_id", -1)
         badgeId = request.session.get("badge_id", -1)
         if attendeeId == -1 or badgeId == -1:
             context = {"orderItems": [], "total": 0, "discount": {}}
-            request.session.flush()
+            clear_session(request)
         else:
             badge = Badge.objects.get(id=badgeId)
             attendee = Attendee.objects.get(id=attendeeId)
@@ -135,7 +144,6 @@ def invoiceUpgrade(request):
                 "orderItems": orderItems,
                 "total": total,
                 "total_discount": total_discount,
-                "grand_total": total - lvl_dict["basePrice"],
                 "attendee": attendee,
                 "prevLevel": lvl_dict,
                 "event": badge.event,
@@ -149,48 +157,53 @@ def doneUpgrade(request):
     return render(request, "registration/upgrade-done.html", context)
 
 
+def send_upgrade_email(request, attendee, order):
+    event = Event.objects.get(default=True)
+    clear_session(request)
+    try:
+        registration.emails.sendUpgradePaymentEmail(attendee, order)
+    except Exception as e:
+        logger.exception("Error sending UpgradePaymentEmail")
+        registration_email = getRegistrationEmail(event)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Your upgrade payment succeeded but we may have been unable to send you a "
+                "confirmation email. If you do not receive one within the next hour, please "
+                "contact {0} to get your confirmation number.".format(
+                    registration_email
+                ),
+            }
+        )
+    return JsonResponse({"success": True})
+
+
 def checkoutUpgrade(request):
     try:
-        sessionItems = request.session.get("order_items", [])
-        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+        session_items = request.session.get("order_items", [])
+        order_items = list(OrderItem.objects.filter(id__in=session_items))
         if "attendee_id" not in request.session:
-            return HttpResponseServerError("Session expired")
+            return HttpResponseBadRequest("Session expired")
 
         attendee = Attendee.objects.get(id=request.session.get("attendee_id"))
         try:
-            postData = json.loads(request.body)
+            post_data = json.loads(request.body)
         except ValueError as e:
             logger.error("Unable to decode JSON for checkoutUpgrade()")
             return JsonResponse({"success": False})
 
-        event = Event.objects.get(default=True)
-
-        subtotal, total_discount = getTotal([], orderItems)
+        subtotal, total_discount = getTotal([], order_items)
 
         if subtotal == 0:
-            status, message, order = doZeroCheckout(None, None, orderItems)
+            status, message, order = doZeroCheckout(None, None, order_items)
 
             if not status:
                 return JsonResponse({"success": False, "message": message})
 
-            request.session.flush()
-            try:
-                registration.emails.sendUpgradePaymentEmail(attendee, order)
-            except Exception as e:
-                logger.exception("Error sending UpgradePaymentEmail - zero sum.")
-                registrationEmail = getRegistrationEmail(event)
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                            registrationEmail
-                        ),
-                    }
-                )
-            return JsonResponse({"success": True})
+            return send_upgrade_email(request, attendee, order)
 
-        porg = Decimal(postData["orgDonation"].strip() or "0.00")
-        pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
+        porg = Decimal(post_data.get("orgDonation") or "0.00")
+        pcharity = Decimal(post_data.get("charityDonation") or "0.00")
         if porg < 0:
             porg = 0
         if pcharity < 0:
@@ -198,28 +211,14 @@ def checkoutUpgrade(request):
 
         total = subtotal + porg + pcharity
 
-        pbill = postData["billingData"]
+        pbill = post_data["billingData"]
         ip = get_client_ip(request)
         status, message, order = doCheckout(
-            pbill, total, None, [], orderItems, porg, pcharity
+            pbill, total, None, [], order_items, porg, pcharity
         )
 
         if status:
-            request.session.flush()
-            try:
-                registration.emails.sendUpgradePaymentEmail(attendee, order)
-            except Exception as e:
-                logger.exception("Error sending UpgradePaymentEmail.")
-                registrationEmail = getRegistrationEmail(event)
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Your upgrade payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                            registrationEmail
-                        ),
-                    }
-                )
-            return JsonResponse({"success": True})
+            return send_upgrade_email(request, attendee, order)
         else:
             order.delete()
             return JsonResponse({"success": False, "message": message})

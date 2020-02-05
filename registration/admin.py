@@ -549,7 +549,7 @@ make_staff.short_description = "Add to Staff"
 
 def send_upgrade_form_email(modeladmin, request, queryset):
     for badge in queryset:
-        sendUpgradeFormEmail(badge)
+        registration.emails.send_upgrade_instructions(badge)
 
 
 send_upgrade_form_email.short_description = "Send upgrade info email"
