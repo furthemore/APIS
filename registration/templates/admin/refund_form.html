@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Issue refund ({{ order.reference }})</h1>
+
+${{ order.total }}<br>
+Billing type: {{ order.billingType }} ({{ order.status }})<br>
+
+Notes: {{ order.notes }}
+
+<form method="post">
+
+    {{ form }}
+
+    {% csrf_token %}
+    <input type="submit" name="apply" value="Partial Refund" />
+</form>
+
+{% endblock %}

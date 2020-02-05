@@ -5,6 +5,7 @@ from datetime import date
 import printing
 import views
 from django import forms
+from django.conf.urls import url
 from django.contrib import admin, auth, messages
 from django.contrib.admin.models import DELETION, LogEntry
 from django.core.urlresolvers import reverse
@@ -20,6 +21,8 @@ import registration.emails
 import registration.views.printing
 
 from .models import *
+
+TWOPLACES = Decimal(10) ** -2
 
 admin.site.site_url = None
 admin.site.site_header = "APIS Backoffice"
@@ -1113,7 +1116,7 @@ admin.site.register(OrderItem, OrderItemAdmin)
 
 def send_registration_email(modeladmin, request, queryset):
     for order in queryset:
-        sendRegistrationEmail(order, order.billingEmail)
+        registration.emails.sendRegistrationEmail(order, order.billingEmail)
 
 
 send_registration_email.short_description = "Send registration email"
@@ -1165,11 +1168,69 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         ("Notes", {"fields": ("notes",), "classes": ("collapse",)}),
     )
 
+    class RefundForm(forms.Form):
+        amount = forms.DecimalField(min_value=0, decimal_places=2)
+
     def save_model(self, request, obj, form, change):
         if not request.user.has_perm("registration.issue_refund"):
             if form.data["status"] == Order.REFUNDED:
-                raise forms.ValidationError
+                status = Order.PENDING
+                if obj.id:
+                    status = Order.objects.get(id=obj.id).status
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "You do not have permission to issue refunds. "
+                    "The order status has been reverted to {0}".format(status),
+                )
+                obj.status = status
         obj.save()
+
+    def get_urls(self):
+        urls = super(OrderAdmin, self).get_urls()
+        my_urls = [
+            url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
+        ]
+        return my_urls + urls
+
+    def refund_view(self, request, order_id, extra_context=None):
+        form = None
+
+        order = Order.objects.get(id=order_id)
+
+        if "amount" in request.POST:
+            form = self.RefundForm(request.POST)
+
+            if form.is_valid():
+                amount = Decimal(form.cleaned_data["amount"]).quantize(TWOPLACES)
+
+                if amount <= 0:
+                    messages.error(
+                        request,
+                        "Refund amount (${0}) cannot be negative or non-zero".format(
+                            amount
+                        ),
+                    )
+                elif amount > order.total:
+                    messages.error(
+                        request,
+                        "Refund amount (${0}) cannot exceed order total (${1})".format(
+                            amount, order.total
+                        ),
+                    )
+                else:
+                    messages.success(request, "refund amount: {0}".format(amount))
+                return HttpResponseRedirect(request.get_full_path())
+
+        if not form:
+            form = self.RefundForm(initial={"amount": order.total,})
+
+        context = {
+            "form": form,
+            "order": order,
+        }
+
+        return render(request, "admin/refund_form.html", context)
 
 
 admin.site.register(Order, OrderAdmin)
