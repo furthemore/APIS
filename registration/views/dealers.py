@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from common import get_client_ip, handler, logger
+from common import clear_session, get_client_ip, handler, logger
 from django.forms import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render
@@ -132,12 +132,12 @@ def invoiceDealer(request):
     sessionDiscount = request.session.get("discount", "")
     if not sessionItems:
         context = {"orderItems": [], "total": 0, "discount": {}}
-        request.session.flush()
+        clear_session(request)
     else:
         dealerId = request.session.get("dealer_id", -1)
         if dealerId == -1:
             context = {"orderItems": [], "total": 0, "discount": {}}
-            request.session.flush()
+            clear_session(request)
         else:
             dealer = Dealer.objects.get(id=dealerId)
             orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
@@ -228,7 +228,7 @@ def checkoutAsstDealer(request):
     status, message, order = doCheckout(pbill, total, None, [], [orderItem], 0, 0)
 
     if status:
-        request.session.flush()
+        clear_session(request)
         try:
             registration.emails.sendDealerAsstEmail(dealer.id)
         except Exception as e:
@@ -371,7 +371,7 @@ def checkoutDealer(request):
             if not status:
                 return JsonResponse({"success": False, "message": message})
 
-            request.session.flush()
+            clear_session(request)
 
             try:
                 registration.emails.sendDealerPaymentEmail(dealer, order)
@@ -404,7 +404,7 @@ def checkoutDealer(request):
         )
 
         if status:
-            request.session.flush()
+            clear_session(request)
             try:
                 dealer.resetToken()
                 registration.emails.sendDealerPaymentEmail(dealer, order)
