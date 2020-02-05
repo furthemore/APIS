@@ -316,7 +316,7 @@ def checkoutStaff(request):
         if not status:
             return JsonResponse({"success": False, "message": message})
 
-        request.session.flush()
+        clear_session(request)
         try:
             emails.sendStaffRegistrationEmail(order.id)
         except Exception as e:
