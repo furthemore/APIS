@@ -1,4 +1,5 @@
 import logging
+import uuid
 from datetime import datetime, timedelta
 from unittest import skip
 
@@ -219,7 +220,7 @@ class OrdersTestCases(TestCase):
         self.table_130.save()
         self.table_160.save()
 
-        self.attendee_regular_1 = {
+        self.attendee_form_1 = {
             "firstName": "Tester",
             "lastName": "Testerson",
             "address1": "123 Somewhere St",
@@ -238,7 +239,7 @@ class OrdersTestCases(TestCase):
             "volDepts": "",
             "surveyOk": "false",
         }
-        self.attendee_regular_2 = {
+        self.attendee_form_2 = {
             "firstName": "Bea",
             "lastName": "Testerson",
             "address1": "123 Somewhere St",
@@ -257,6 +258,49 @@ class OrdersTestCases(TestCase):
             "volDepts": "",
             "surveyOk": "false",
         }
+
+        self.attendee_form_upgrade = self.attendee_form_1
+        self.attendee_form_upgrade["firstName"] = "Upgrade"
+        self.attendee_form_upgrade["lastName"] = "Me"
+        self.attendee_form_upgrade["badgeName"] = "Upgrade Test"
+
+        self.attendee_form_upgrade_checkout = {
+            "billingData": {
+                "address1": "Qui qui quasi amet",
+                "address2": "Sunt voluptas dolori",
+                "card_data": {
+                    "billing_postal_code": "94044",
+                    "card_brand": "VISA",
+                    "digital_wallet_type": "NONE",
+                    "exp_month": 12,
+                    "exp_year": 2021,
+                    "last_4": "1111",
+                },
+                "cc_firstname": "Whitney",
+                "cc_lastname": "Thompson",
+                "city": "Quam earum Nam dolor",
+                "country": "FK",
+                "email": "apis@mailinator.net",
+                "nonce": "cnon:card-nonce-ok",
+                "postal": "13271",
+                "state": "",
+            },
+            "onsite": False,
+            "orgDonation": "10",
+        }
+
+        self.attendee_upgrade = dict(
+            firstName="Test",
+            lastName="Upgrader",
+            address1="123 Somewhere St",
+            city="Place",
+            state="PA",
+            country="US",
+            postalCode=12345,
+            phone="1112223333",
+            email="apis@mailinator.org",
+            birthdate="1990-01-01",
+        )
 
         self.client = Client()
 
@@ -292,7 +336,7 @@ class OrdersTestCases(TestCase):
             {"id": self.option_conbook.id, "value": "true"},
             {"id": self.option_shirt.id, "value": self.shirt1.id},
         ]
-        self.add_to_cart(self.attendee_regular_2, self.price_45, options)
+        self.add_to_cart(self.attendee_form_2, self.price_45, options)
 
         response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
@@ -333,7 +377,7 @@ class OrdersTestCases(TestCase):
         pass
 
     def assert_square_error(self, nonce, error):
-        self.add_to_cart(self.attendee_regular_2, self.price_45, [])
+        self.add_to_cart(self.attendee_form_2, self.price_45, [])
         result = self.checkout(nonce)
         self.assertEqual(result.status_code, 400)
 
@@ -426,7 +470,7 @@ class OrdersTestCases(TestCase):
             {"id": self.option_shirt.id, "value": self.shirt1.id},
         ]
 
-        self.add_to_cart(self.attendee_regular_1, self.price_45, options)
+        self.add_to_cart(self.attendee_form_1, self.price_45, options)
 
         response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
@@ -446,7 +490,7 @@ class OrdersTestCases(TestCase):
         self.assertEqual(PriceLevel.objects.filter(id=self.price_45.id).count(), 1)
 
     def test_vip_checkout(self):
-        self.add_to_cart(self.attendee_regular_2, self.price_675, [])
+        self.add_to_cart(self.attendee_form_2, self.price_675, [])
 
         response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
@@ -476,7 +520,7 @@ class OrdersTestCases(TestCase):
             {"id": self.option_conbook.id, "value": "true"},
             {"id": self.option_shirt.id, "value": self.shirt1.id},
         ]
-        self.add_to_cart(self.attendee_regular_2, self.price_45, options)
+        self.add_to_cart(self.attendee_form_2, self.price_45, options)
 
         response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
@@ -531,7 +575,7 @@ class OrdersTestCases(TestCase):
 
     def test_discount_zero_sum(self):
         options = [{"id": self.option_conbook.id, "value": "true"}]
-        self.add_to_cart(self.attendee_regular_2, self.price_45, options)
+        self.add_to_cart(self.attendee_form_2, self.price_45, options)
 
         response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
@@ -562,6 +606,214 @@ class OrdersTestCases(TestCase):
 
         discount = Discount.objects.get(codeName="StaffDiscount")
         self.assertEqual(discount.used, discountUsed + 1)
+
+    def test_upgrade_index(self):
+        guid = "ARSTBCESKFGHAIESTRK"
+        response = self.client.get(reverse("registration:upgrade", args=[guid]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, guid)
+
+    def test_infoUpgrade_bad_json(self):
+        response = self.client.post(
+            reverse("registration:infoUpgrade"),
+            "notJSON-",
+            content_type="application/json",
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data, {"success": False})
+
+    def test_infoUpgrade_wrong_token(self):
+        # Failed lookup against infoUpgrade()
+        attendee = Attendee(**self.attendee_upgrade)
+        attendee.save()
+        badge = Badge(attendee=attendee, event=self.event, badgeName="Test Upgrade")
+        badge.save()
+        post_data = {
+            "email": attendee.email,
+            "token": "notTheRightToken",
+            "event": self.event.name,
+        }
+        response = self.client.post(
+            reverse("registration:infoUpgrade"),
+            json.dumps(post_data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        badge.delete()
+        attendee.delete()
+
+    def test_infoUpgrade_wrong_email(self):
+        # Failed lookup against infoUpgrade()
+        attendee = Attendee(**self.attendee_upgrade)
+        attendee.save()
+        badge = Badge(attendee=attendee, event=self.event, badgeName="Test Upgrade")
+        badge.save()
+        post_data = {
+            "email": "nottherightemail@somewhere.com",
+            "token": badge.registrationToken,
+        }
+        response = self.client.post(
+            reverse("registration:infoUpgrade"),
+            json.dumps(post_data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        badge.delete()
+        attendee.delete()
+
+    def test_infoUpgrade_happy_path(self):
+        attendee = Attendee(**self.attendee_upgrade)
+        attendee.save()
+        badge = Badge(attendee=attendee, event=self.event, badgeName="Test Upgrade")
+        badge.save()
+        post_data = {
+            "event": self.event.name,
+            "email": badge.attendee.email,
+            "token": badge.registrationToken,
+        }
+        response = self.client.post(
+            reverse("registration:infoUpgrade"),
+            json.dumps(post_data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        badge.delete()
+        attendee.delete()
+
+    def test_findUpgrade_happy_path(self):
+        options = [
+            {"id": self.option_conbook.id, "value": "true"},
+            {"id": self.option_shirt.id, "value": self.shirt1.id},
+        ]
+        self.add_to_cart(self.attendee_form_upgrade, self.price_45, options)
+
+        response = self.client.get(reverse("registration:cart"))
+        self.assertEqual(response.status_code, 200)
+        response = self.checkout("cnon:card-nonce-ok", "0", "0")
+        self.assertEqual(response.status_code, 200)
+
+        # Check that user was successfully saved
+        attendee = Attendee.objects.get(firstName="Upgrade", lastName="Me")
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
+        self.assertEqual(badge.effectiveLevel(), self.price_45)
+
+        post_data = {
+            "event": self.event.name,
+            "email": badge.attendee.email,
+            "token": badge.registrationToken,
+        }
+        response = self.client.post(
+            reverse("registration:infoUpgrade"),
+            json.dumps(post_data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse("registration:findUpgrade"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["attendee"], attendee)
+        self.assertEqual(response.context["badge"], badge)
+
+        badge.delete()
+        attendee.delete()
+
+    def setup_upgrade(self):
+        # set up existing registration
+        options = [
+            {"id": self.option_conbook.id, "value": "true"},
+            {"id": self.option_shirt.id, "value": self.shirt1.id},
+        ]
+        self.add_to_cart(self.attendee_form_upgrade, self.price_45, options)
+
+        response = self.client.get(reverse("registration:cart"))
+        self.assertEqual(response.status_code, 200)
+        cart = response.context["orderItems"]
+        self.assertEqual(len(cart), 1)
+        total = response.context["total"]
+        self.assertEqual(total, 45)
+
+        response = self.checkout("cnon:card-nonce-ok", "0", "0")
+        self.assertEqual(response.status_code, 200)
+
+        # Check that user was successfully saved
+        attendee = Attendee.objects.get(firstName="Upgrade", lastName="Me")
+        badge = Badge.objects.get(attendee=attendee, event=self.event)
+        self.assertEqual(badge.effectiveLevel(), self.price_45)
+
+        # infoUpgrade()
+        post_data = {
+            "event": self.event.name,
+            "email": badge.attendee.email,
+            "token": badge.registrationToken,
+        }
+        response = self.client.post(
+            reverse("registration:infoUpgrade"),
+            json.dumps(post_data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        return badge, attendee
+
+    def upgrade_add_and_checkout(self, price_level, form, badge, attendee):
+        # addUpgrade()
+        post_data = {
+            "event": self.event.name,
+            "badge": {"id": badge.id,},
+            "attendee": {"id": attendee.id,},
+            "priceLevel": {"id": price_level.id, "options": [],},
+        }
+        self.client.post(
+            reverse("registration:addUpgrade"),
+            json.dumps(post_data),
+            content_type="application/json",
+        )
+        cart_response = self.client.get(reverse("registration:invoiceUpgrade"))
+
+        checkout_response = self.client.post(
+            reverse("registration:checkoutUpgrade"),
+            json.dumps(form),
+            content_type="application/json",
+        )
+        return cart_response, checkout_response
+
+    def test_upgrade(self):
+        badge, attendee = self.setup_upgrade()
+        cart, checkout = self.upgrade_add_and_checkout(
+            self.price_90, self.attendee_form_upgrade_checkout, badge, attendee
+        )
+        self.assertEqual(cart.status_code, 200)
+        self.assertEqual(cart.context["total"], self.price_45.basePrice)
+        self.assertEqual(cart.context["total_discount"], 0)
+        self.assertEqual(cart.status_code, 200)
+        self.assertEqual(badge.effectiveLevel(), self.price_90)
+        badge.delete()
+        attendee.delete()
+
+    def test_upgrade_zero(self):
+        badge, attendee = self.setup_upgrade()
+        cart, checkout = self.upgrade_add_and_checkout(
+            self.price_45, self.attendee_form_upgrade_checkout, badge, attendee
+        )
+        self.assertEqual(checkout.status_code, 200)
+        self.assertEqual(badge.effectiveLevel(), self.price_45)
+        badge.delete()
+        attendee.delete()
+
+    def test_upgrade_card_declined(self):
+        form = self.attendee_form_upgrade_checkout
+        form["nonce"] = "cnon:card-nonce-declined"
+        badge, attendee = self.setup_upgrade()
+        cart, checkout = self.upgrade_add_and_checkout(
+            self.price_45, form, badge, attendee
+        )
+        self.assertEqual(checkout.status_code, 200)
+        self.assertEqual(badge.effectiveLevel(), self.price_45)
+        badge.delete()
+        attendee.delete()
+
+    def test_upgrade_sad_path(self):
+        pass
 
     def test_new_staff(self):
         pass
@@ -1039,6 +1291,7 @@ class Onsite(TestCase):
         self.normal_user = User.objects.create_user(
             "john", "lennon@thebeatles.com", "john"
         )
+        self.normal_user.staff_member = False
         self.normal_user.save()
 
         # Create some test terminals to push notifications to
@@ -1059,11 +1312,12 @@ class Onsite(TestCase):
             "/admin/login/?next={0}".format(reverse("registration:onsiteAdmin")),
         )
 
-    def TEST_onsite_admin_required(self):
-        # FIXME: always gets a 200
+    def test_onsite_admin_required(self):
+        self.client.logout()
         self.assertTrue(self.client.login(username="john", password="john"))
         response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "are not authorized to access this page")
         self.client.logout()
 
     def test_onsite_admin(self):
