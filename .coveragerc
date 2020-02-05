@@ -3,4 +3,4 @@ omit =
     */migrations/*
     */tests/*
     venv/*
-    /home/travis/*
+    /home/travis/virtualenv/*
