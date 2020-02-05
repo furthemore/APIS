@@ -17,7 +17,7 @@ logger = logging.getLogger("django.request")
 
 
 def flush(request):
-    request.session.flush()
+    clear_session(request)
     return JsonResponse({"success": True})
 
 
@@ -534,11 +534,11 @@ def getTotal(cartItems, orderItems, disc=""):
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
         effLevel = item.badge.effectiveLevel()
-        # FIXME Why was this here?
-        # if effLevel:
-        #    itemTotal = itemSubTotal - effLevel.basePrice
-        # else:
-        itemTotal = itemSubTotal
+
+        if effLevel:
+            itemTotal = itemSubTotal - effLevel.basePrice
+        else:
+            itemTotal = itemSubTotal
 
         itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
 
@@ -616,7 +616,7 @@ def checkout(request):
         if not status:
             return abort(400, message)
 
-        request.session.flush()
+        clear_session(request)
         try:
             registration.emails.sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
@@ -682,7 +682,7 @@ def checkout(request):
         cartItems.delete()
         clear_session(request)
         try:
-            emails.sendRegistrationEmail(order, order.billingEmail)
+            registration.emails.sendRegistrationEmail(order, order.billingEmail)
         except Exception as e:
             event = Event.objects.get(default=True)
             registrationEmail = getRegistrationEmail(event)
