@@ -104,55 +104,84 @@ def format_errors(errors):
 def refresh_payment(order):
     # Function raises ValueError if there's a problem decoding the stored data
     api_data = json.loads(order.apiData)
+    order_total = 0
 
     payment_id = api_data["payment"]["id"]
     payments_response = payments_api.get_payment(payment_id)
 
+    payment = payments_response.body.get("payment")
     if payments_response.is_success():
-        payment = payments_response.body.get("payment")
         api_data["payment"] = payment
         status = payment.get("status")
         if status == "COMPLETED":
             order.status = Order.COMPLETED
+            order_total = payment["total_money"]["amount"]
         elif status == "FAILED":
             order.status = Order.FAILED
         elif status == "APPROVED":
             # Payment was only captured, approved, and never settled (not usually what we do)
             # https://developer.squareup.com/docs/payments-api/overview#payments-api-workflow
             order.status = Order.CAPTURED
+            order_total = payment["total_money"]["amount"]
         elif status == "CANCELED":
             order.status = Order.FAILED
     else:
         return False, format_errors(payments_response.errors)
 
-    # Check if there is any refund stored:
-    refunds = api_data.get("refunds")
-    if refunds:
-        for refund in refunds:
-            refund_id = refund["id"]
-            refunds_response = refunds_api.get_payment_refund(refund_id)
+    # FIXME: Payments API call includes references to any refunds associated with that payment in `refund_ids`
+    # We should use that here instead.
+    refunds = []
+    refund_errors = []
+    refunded_money = payment.get("refunded_money")
+    print(refunded_money, order_total)
+    if refunded_money:
+        order_total -= refunded_money["amount"]
+    refund_ids = payment.get("refund_ids")
 
-            if refunds_response.is_success():
-                refund = refunds_response.body.get("refund")
-                if refund:
-                    api_data["refund"] = refund
-                    status = refund.get("status")
-                    if status == "COMPLETED":
-                        order.status = Order.REFUNDED
-                    elif status == "PENDING":
-                        order.status = Order.REFUND_PENDING
-                    elif (
-                        status in ("REJECTED", "FAILED")
-                        and order.status != Order.COMPLETED
-                    ):
-                        pass
-                        # This logic gets a little more complicated with multiple partial refunds
-                        # order.status = Order.COMPLETED
-                        # order.total += Decimal(refund["amount_money"]["amount"]) ** -2
-            else:
-                return False, format_errors(payments_response.errors)
+    stored_refunds = api_data.get("refunds")
+    # Keep any potentially pending refunds that may fail (which wouldn't show up in payment.refund_ids)
+    if stored_refunds:
+        stored_refund_ids = [
+            refund["id"] for refund in stored_refunds if refund["id"] not in refund_ids
+        ]
+        refund_ids.extend(stored_refund_ids)
+
+    for refund_id in refund_ids:
+        refunds_response = refunds_api.get_payment_refund(refund_id)
+
+        if refunds_response.is_success():
+            refund = refunds_response.body.get("refund")
+            if refund:
+                refunds.append(refund)
+                status = refund.get("status")
+                if status == "COMPLETED":
+                    order.status = Order.REFUNDED
+                elif status == "PENDING":
+                    order.status = Order.REFUND_PENDING
+                elif (
+                    status in ("REJECTED", "FAILED") and order.status != Order.COMPLETED
+                ):
+                    pass
+        else:
+            refund_errors.append(format_errors(payments_response.errors))
+
+    api_data["refunds"] = refunds
+
+    if refund_errors:
+        return False, "; ".join(refund_errors)
 
     order.apiData = json.dumps(api_data)
+    order.total = Decimal(order_total) / 100
+
+    if order.orgDonation + order.charityDonation > order.total:
+        order.orgDonation = 0
+        order.charityDonation = order.total
+        message = "Refunded order has caused charity and organization donation amounts to reset."
+        logger.warning(message)
+        order.notes += "\n{0}: {1}".format(timezone.now(), message)
+        order.save()
+        return False, message
+
     order.save()
     return True, None
 
@@ -211,7 +240,7 @@ def refund_card_payment(order, amount, reason=None, request=None):
         # Reset org & charity donations if the remaining total isn't enough to cover them:
         if order.orgDonation + order.charityDonation > order.total:
             order.orgDonation = 0
-            order.charityDonation = 0
+            order.charityDonation = order.total
             logger.warning(
                 "Refunded order has caused charity and organization donation amounts to reset."
             )

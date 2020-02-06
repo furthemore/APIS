@@ -1175,7 +1175,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
 
     def render_change_form(self, request, context, *args, **kwargs):
         obj = kwargs.get("obj")
-        if obj:
+        if obj and obj.billingType == Order.CREDIT:
             try:
                 api_data = json.loads(obj.apiData)
                 context["api_data"] = api_data
@@ -1235,6 +1235,9 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                     e
                 ),
             )
+            return HttpResponseRedirect(
+                reverse("admin:registration_order_change", args=(order_id,))
+            )
 
         if success:
             messages.success(
@@ -1273,20 +1276,17 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.warning(request, "External payment data could not be decoded")
 
         if "amount" in request.POST:
+            if not request.user.has_perm("registration.issue_refund"):
+                messages.error(request, "You do not have permission to issue refunds.")
+                return HttpResponseRedirect(request.get_full_path())
+
             form = self.RefundForm(request.POST)
 
             if form.is_valid():
                 amount = Decimal(form.cleaned_data["amount"]).quantize(TWOPLACES)
                 reason = form.cleaned_data.get("reason")
 
-                if amount <= 0:
-                    messages.error(
-                        request,
-                        "Refund amount (${0}) cannot be negative or non-zero".format(
-                            amount
-                        ),
-                    )
-                elif amount > order.total:
+                if amount > order.total:
                     messages.error(
                         request,
                         "Refund amount (${0}) cannot exceed order total (${1})".format(
@@ -1298,8 +1298,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                         reason = "[{0}]".format(request.user)
                     else:
                         reason += " [{0}]".format(request.user)
-                    # result, msg = payments.refund_payment(order, amount, reason)
-                    result, msg = True, "Testing"
+                    result, msg = payments.refund_payment(order, amount, reason)
                     if result:
                         messages.success(
                             request,
@@ -1313,6 +1312,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                         reverse("admin:registration_order_change", args=(order_id,))
                     )
                 return HttpResponseRedirect(request.get_full_path())
+            else:
+                messages.error(request, "Invalid form data.")
 
         if not form:
             form = self.RefundForm(initial={"amount": order.total,})

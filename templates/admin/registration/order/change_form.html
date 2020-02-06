@@ -25,6 +25,7 @@
 {% endblock %}
 
 {% block after_field_sets %}
+    {% if api_data.payment %}
     <fieldset class="module aligned collapse collapsed">
         <h2>Square data</h2>
         <div>
@@ -56,4 +57,5 @@
             </p>
         </div>
     </fieldset>
+    {% endif %}
 {% endblock %}
