@@ -1,5 +1,6 @@
 import cgi
 import copy
+import logging
 from datetime import date
 
 import printing
@@ -10,6 +11,7 @@ from django.contrib import admin, auth, messages
 from django.contrib.admin.models import DELETION, LogEntry
 from django.core.urlresolvers import reverse
 from django.db.models import Max
+from django.forms import NumberInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.html import escape, format_html, urlencode
@@ -20,7 +22,10 @@ from nested_inline.admin import NestedModelAdmin, NestedTabularInline
 import registration.emails
 import registration.views.printing
 
+from . import payments
 from .models import *
+
+logger = logging.getLogger(__name__)
 
 TWOPLACES = Decimal(10) ** -2
 
@@ -1168,41 +1173,111 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         ("Notes", {"fields": ("notes",), "classes": ("collapse",)}),
     )
 
+    def render_change_form(self, request, context, *args, **kwargs):
+        obj = kwargs.get("obj")
+        if obj:
+            try:
+                api_data = json.loads(obj.apiData)
+                context["api_data"] = api_data
+            except ValueError as e:
+                messages.warning(
+                    request,
+                    "Error while loading JSON from apiData field for this order: {0}".format(
+                        e
+                    ),
+                )
+                logger.warn(
+                    "Error while loading JSON from api_data for order {0}".format(obj)
+                )
+                logger.error(e)
+
+        return super(OrderAdmin, self).render_change_form(
+            request, context, *args, **kwargs
+        )
+
     class RefundForm(forms.Form):
-        amount = forms.DecimalField(min_value=0, decimal_places=2)
+        amount = forms.DecimalField(
+            min_value=0,
+            decimal_places=2,
+            widget=NumberInput(attrs={"size": "10", "style": "width: 70px"}),
+        )
+        reason = forms.CharField(
+            widget=forms.TextInput(
+                attrs={"size": "40", "maxlength": 192, "autofocus": "autofocus"}
+            ),
+            required=False,
+        )
 
     def save_model(self, request, obj, form, change):
         if not request.user.has_perm("registration.issue_refund"):
-            if form.data["status"] == Order.REFUNDED:
+            if form.data["status"] in (Order.REFUNDED, Order.REFUND_PENDING):
                 status = Order.PENDING
                 if obj.id:
                     status = Order.objects.get(id=obj.id).status
-                messages.add_message(
+                messages.error(
                     request,
-                    messages.ERROR,
                     "You do not have permission to issue refunds. "
                     "The order status has been reverted to {0}".format(status),
                 )
                 obj.status = status
         obj.save()
 
+    def refresh_view(self, request, order_id, extra_context=None):
+        # Get Square Order ID, and grab latest info from the transactions API
+        # Update status accordingly
+        order = Order.objects.get(id=order_id)
+        try:
+            success, message = payments.refresh_payment(order)
+        except ValueError as e:
+            messages.error(
+                request,
+                "There was a problem while parsing the API data for this order: {0}".format(
+                    e
+                ),
+            )
+
+        if success:
+            messages.success(
+                request, "Refreshed order information from Square successfully"
+            )
+        else:
+            messages.error(
+                request,
+                "There was a problem while refreshing information about this order: {0}".format(
+                    message
+                ),
+            )
+        return HttpResponseRedirect(
+            reverse("admin:registration_order_change", args=(order_id,))
+        )
+
     def get_urls(self):
         urls = super(OrderAdmin, self).get_urls()
         my_urls = [
             url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
+            url(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
         ]
         return my_urls + urls
 
     def refund_view(self, request, order_id, extra_context=None):
+        # TODO: Produce an error if a full refund has already been completed
         form = None
 
         order = Order.objects.get(id=order_id)
+
+        api_data = None
+        try:
+            api_data = json.loads(order.apiData)
+        except ValueError:
+            if order.billingType == Order.CREDIT:
+                messages.warning(request, "External payment data could not be decoded")
 
         if "amount" in request.POST:
             form = self.RefundForm(request.POST)
 
             if form.is_valid():
                 amount = Decimal(form.cleaned_data["amount"]).quantize(TWOPLACES)
+                reason = form.cleaned_data.get("reason")
 
                 if amount <= 0:
                     messages.error(
@@ -1219,7 +1294,24 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                         ),
                     )
                 else:
-                    messages.success(request, "refund amount: {0}".format(amount))
+                    if reason is None:
+                        reason = "[{0}]".format(request.user)
+                    else:
+                        reason += " [{0}]".format(request.user)
+                    # result, msg = payments.refund_payment(order, amount, reason)
+                    result, msg = True, "Testing"
+                    if result:
+                        messages.success(
+                            request,
+                            "{0} - refund amount: {1} (reason: {2})".format(
+                                msg, amount, reason
+                            ),
+                        )
+                    else:
+                        messages.error(request, msg)
+                    return HttpResponseRedirect(
+                        reverse("admin:registration_order_change", args=(order_id,))
+                    )
                 return HttpResponseRedirect(request.get_full_path())
 
         if not form:
@@ -1228,6 +1320,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         context = {
             "form": form,
             "order": order,
+            "api_data": api_data,
         }
 
         return render(request, "admin/refund_form.html", context)

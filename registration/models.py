@@ -574,11 +574,13 @@ class Order(models.Model):
     COMPLETED = "Completed"  # Card was captured and [later] settled
     FAILED = "Failed"  # Card was rejected by online authorization
     REFUNDED = "Refunded"
+    REFUND_PENDING = "Refund Pending"
     STATUS_CHOICES = (
         (PENDING, "Pending"),
         (CAPTURED, "Captured"),
         (COMPLETED, "Completed"),
         (REFUNDED, "Refunded"),
+        (REFUND_PENDING, "Refund Pending"),
         (FAILED, "Failed"),
     )
     total = models.DecimalField(max_digits=8, decimal_places=2)

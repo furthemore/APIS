@@ -60,7 +60,6 @@ def doCheckout(
     status, response = charge_payment(order, billingData)
 
     if status:
-        order.status = "Paid"
         order.save()
 
         if cartItems:
