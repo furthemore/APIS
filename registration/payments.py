@@ -133,10 +133,10 @@ def refresh_payment(order):
     refunds = []
     refund_errors = []
     refunded_money = payment.get("refunded_money")
-    print(refunded_money, order_total)
+
     if refunded_money:
         order_total -= refunded_money["amount"]
-    refund_ids = payment.get("refund_ids")
+    refund_ids = payment.get("refund_ids", [])
 
     stored_refunds = api_data.get("refunds")
     # Keep any potentially pending refunds that may fail (which wouldn't show up in payment.refund_ids)
@@ -187,15 +187,18 @@ def refresh_payment(order):
 
 
 def refund_payment(order, amount, reason=None, request=None):
+    if order.status == Order.FAILED:
+        return False, "Failed orders cannot be refunded."
     if order.billingType == Order.CREDIT:
         result, message = refund_card_payment(order, amount, reason, request=None)
+        return result, message
     if order.billingType == Order.CASH:
         result, message = refund_cash_payment(order, amount, reason)
-    return result, message
+        return result, message
     if order.billingType == Order.COMP:
         return False, "Comped orders cannot be refunded."
-    if order.billingType == Order.FAILED:
-        return False, "Failed orders cannot be refunded."
+    if order.billingType == Order.UNPAID:
+        return False, "Unpaid orders cannot be refunded."
     return False, "Not sure how to refund order type {0}!".format(order.billingType)
 
 
@@ -220,6 +223,12 @@ def refund_card_payment(order, amount, reason=None, request=None):
         body["reason"] = reason
 
     result = refunds_api.refund_payment(body)
+    logger.debug(result.body)
+
+    if result.is_error():
+        errors = format_errors(result.errors)
+        logger.error("Error in square refund: {0}".format(errors))
+        return False, errors
 
     stored_refunds = api_data.get("refunds")
     if stored_refunds is None:
@@ -250,14 +259,9 @@ def refund_card_payment(order, amount, reason=None, request=None):
         order.status = Order.COMPLETED
 
     order.save()
-    if result.is_success():
-        message = "Square refund has been submitted and is {0}".format(status)
-        logger.debug(message)
-        return True, message
-    else:
-        errors = format_errors(result.errors)
-        logger.error("Error in square refund: {0}".format(errors))
-        return False, errors
+    message = "Square refund has been submitted and is {0}".format(status)
+    logger.debug(message)
+    return True, message
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent

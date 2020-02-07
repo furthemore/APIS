@@ -1,4 +1,5 @@
 import logging
+import time
 import uuid
 from datetime import datetime, timedelta
 from unittest import skip
@@ -10,7 +11,7 @@ from django.test import Client, TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
-from . import admin
+from . import admin, payments
 from .admin import OrderAdmin
 from .models import *
 
@@ -1320,6 +1321,12 @@ class TestOrderAdmin(TestCase):
             status=Order.COMPLETED,
             reference="UNPAID_ORDER_1",
         )
+        self.failed_order = Order(
+            total=100,
+            billingType=Order.CREDIT,
+            status=Order.FAILED,
+            reference="FAILED_ORDER_1",
+        )
 
         self.square_order = Order(
             total=100,
@@ -1450,9 +1457,20 @@ class TestOrderAdmin(TestCase):
         }
         """
         self.square_order.save()
+
+        self.square_order_bad_id = Order(
+            total=100,
+            billingType=Order.CREDIT,
+            status=Order.COMPLETED,
+            reference="SQUARE_ORDER_1",
+        )
+        self.square_order_bad_id.apiData = '{"payment" : { "id" : "bad-payment-id" }}'
+        self.square_order_bad_id.save()
+
         self.cash_order.save()
         self.credit_order.save()
         self.comped_order.save()
+        self.failed_order.save()
         self.unpaid_order.save()
 
     def test_save_model(self):
@@ -1550,8 +1568,123 @@ class TestOrderAdmin(TestCase):
     def test_cash_refund(self):
         pass
 
+    def test_refund_comped_and_failed(self):
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        form_data = {
+            "amount": self.comped_order.total,
+            "reason": "comped and failed test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(self.comped_order.id,)),
+            form_data,
+            follow=True,
+        )
+        self.assertContains(response, "Comped orders cannot be refunded")
+
+        response = self.client.post(
+            reverse("admin:order_refund", args=(self.failed_order.id,)),
+            form_data,
+            follow=True,
+        )
+        self.assertContains(response, "Failed orders cannot be refunded")
+
+        response = self.client.post(
+            reverse("admin:order_refund", args=(self.unpaid_order.id,)),
+            form_data,
+            follow=True,
+        )
+        self.assertContains(response, "Unpaid orders cannot be refunded")
+
+    def create_square_order(self, nonce="cnon:card-nonce-ok", autocomplete=True):
+        order = Order(
+            total=100,
+            billingType=Order.CREDIT,
+            status=Order.COMPLETED,
+            reference="SQUARE_ORDER_2",
+            lastFour="1111",
+        )
+        body = {
+            "idempotency_key": str(uuid.uuid4()),
+            "source_id": nonce,
+            "autocomplete": autocomplete,
+            "amount_money": {"amount": 10000, "currency": settings.SQUARE_CURRENCY,},
+            "reference_id": order.reference,
+            "billing_address": {"postal_code": "94042",},
+            "location_id": settings.SQUARE_LOCATION_ID,
+        }
+        square_response = payments.payments_api.create_payment(body)
+        order.apiData = json.dumps(square_response.body)
+        order.save()
+        if nonce == "cnon:card-nonce-ok":
+            self.assertTrue(square_response.is_success())
+        time.sleep(2)
+        return order
+
     def test_square_refund(self):
-        pass
+        order = self.create_square_order()
+
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        form_data = {
+            "amount": order.total,
+            "reason": "full refund test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+        )
+
+        order = Order.objects.get(id=order.id)
+        self.refunded_square_order = order
+        self.assertEquals(order.total, 0)
+        self.assertEqual(order.status, Order.REFUND_PENDING)
+
+    def test_partial_refund(self):
+        order = self.create_square_order()
+        order.orgDonation = 20
+        order.charityDonation = 20
+        order.save()
+
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        form_data = {
+            "amount": "25",
+            "reason": "1st $25 refund test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+        )
+
+        order = Order.objects.get(id=order.id)
+        self.refunded_square_order = order
+        self.assertEquals(order.total, 75)
+        self.assertEquals(order.charityDonation, 20)
+        self.assertEquals(order.orgDonation, 20)
+        self.assertEquals(order.status, Order.REFUND_PENDING)
+
+        form_data = {
+            "amount": "50",
+            "reason": "2nd $50 refund test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+        )
+        order = Order.objects.get(id=order.id)
+        self.assertContains(
+            response,
+            "Refunded order has caused charity and organization donation amounts to reset.",
+        )
+        self.refunded_square_order = order
+        self.assertEquals(order.total, 25)
+        self.assertEquals(order.charityDonation, 25)
+        self.assertEquals(order.orgDonation, 0)
+        self.assertEqual(order.status, Order.REFUND_PENDING)
 
     def test_refresh_view(self):
         self.client.logout()
@@ -1567,6 +1700,71 @@ class TestOrderAdmin(TestCase):
             response,
             "Error while loading JSON from apiData field for this order: No JSON object could be decoded",
         )
+
+        # Test with bad square ID:
+        response = self.client.get(
+            reverse("admin:order_refresh", args=(self.square_order_bad_id.id,)),
+            follow=True,
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "admin:registration_order_change", args=(self.square_order_bad_id.id,)
+            ),
+        )
+        self.assertContains(
+            response, "INVALID_REQUEST_ERROR - NOT_FOUND",
+        )
+        self.assertContains(response, "There was a problem")
+
+        # Test against captured & failed transactions:
+        order = self.create_square_order(nonce="cnon:card-nonce-declined")
+        response = self.client.get(
+            reverse("admin:order_refresh", args=(order.id,)), follow=True
+        )
+        self.assertRedirects(
+            response, reverse("admin:registration_order_change", args=(order.id,)),
+        )
+        order = Order.objects.get(id=order.id)
+        self.assertEquals(order.status, order.FAILED)
+
+        order = self.create_square_order(autocomplete=False)
+        response = self.client.get(
+            reverse("admin:order_refresh", args=(order.id,)), follow=True
+        )
+        self.assertRedirects(
+            response, reverse("admin:registration_order_change", args=(order.id,)),
+        )
+        order = Order.objects.get(id=order.id)
+        self.assertEquals(order.status, order.CAPTURED)
+
+        # Create refund to test admin form data against:
+        order = self.create_square_order()
+        form_data = {
+            "amount": order.total,
+            "reason": "full refund test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+        )
+
+        order = Order.objects.get(id=order.id)
+        response = self.client.get(
+            reverse("admin:order_refresh", args=(order.id,)), follow=True
+        )
+        self.assertRedirects(
+            response, reverse("admin:registration_order_change", args=(order.id,)),
+        )
+        self.assertContains(
+            response, "Refreshed order information from Square successfully"
+        )
+        self.assertContains(response, "Square data")
+        self.assertContains(response, "$100")
+        self.assertContains(response, "-$100")
+        self.assertContains(response, "full refund test [admin]")
 
 
 class TestCashDrawerAdmin(TestCase):
