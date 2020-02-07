@@ -574,11 +574,13 @@ class Order(models.Model):
     COMPLETED = "Completed"  # Card was captured and [later] settled
     FAILED = "Failed"  # Card was rejected by online authorization
     REFUNDED = "Refunded"
+    REFUND_PENDING = "Refund Pending"
     STATUS_CHOICES = (
         (PENDING, "Pending"),
         (CAPTURED, "Captured"),
         (COMPLETED, "Completed"),
         (REFUNDED, "Refunded"),
+        (REFUND_PENDING, "Refund Pending"),
         (FAILED, "Failed"),
     )
     total = models.DecimalField(max_digits=8, decimal_places=2)
@@ -713,6 +715,7 @@ class Firebase(models.Model):
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)
+    printer_url = models.CharField(max_length=500, null=True, blank=True)
 
 
 class Cashdrawer(models.Model):
@@ -735,6 +738,13 @@ class Cashdrawer(models.Model):
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    position = models.ForeignKey(
+        Firebase,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="firebase_cashdrawer",
     )
 
 
