@@ -158,10 +158,6 @@ def refresh_payment(order):
                     order.status = Order.REFUNDED
                 elif status == "PENDING":
                     order.status = Order.REFUND_PENDING
-                elif (
-                    status in ("REJECTED", "FAILED") and order.status != Order.COMPLETED
-                ):
-                    pass
         else:
             refund_errors.append(format_errors(payments_response.errors))
 
@@ -203,7 +199,18 @@ def refund_payment(order, amount, reason=None, request=None):
 
 
 def refund_cash_payment(order, amount, reason=None):
-    return False, "Unimplimented"
+    # Change order status
+    order.status = Order.REFUNDED
+    order.notes += "\nRefund issued {0}: {1}".format(timezone.now(), reason)
+
+    # Reset order total
+    order.total -= amount
+    order.save()
+
+    # Record cashdrawer withdraw
+    withdraw = Cashdrawer(action=Cashdrawer.TRANSACTION, total=-amount)
+    withdraw.save()
+    return True, None
 
 
 def refund_card_payment(order, amount, reason=None, request=None):

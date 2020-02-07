@@ -11,9 +11,11 @@
             <a href="{{ api_data.payment.receipt_url }}" class="historylink" target="_blank">Receipt</a>
         </li>
      {% endif %}
-    <li>
-        <a href="{% url 'admin:order_refresh' original.pk %}" class="historylink">API Sync</a>
-    </li>
+    {% if api_data %}
+        <li>
+            <a href="{% url 'admin:order_refresh' original.pk %}" class="historylink">API Sync</a>
+        </li>
+    {% endif %}
     <li>
         <a href="{% url opts|admin_urlname:'history' original.pk|admin_urlquote %}" class="historylink">{% trans "History" %}</a>
     </li>

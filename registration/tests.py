@@ -14,6 +14,7 @@ from django.utils import timezone
 from . import admin, payments
 from .admin import OrderAdmin
 from .models import *
+from .pushy import PushyAPI
 
 logger = logging.getLogger(__name__)
 logging.disable(logging.NOTSET)
@@ -1565,8 +1566,45 @@ class TestOrderAdmin(TestCase):
         self.assertEqual(self.cash_order.total, 100)
         self.assertEqual(self.cash_order.status, Order.COMPLETED)
 
-    def test_cash_refund(self):
-        pass
+    def test_full_cash_refund(self):
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+
+        form_data = {
+            "amount": self.cash_order.total,
+            "reason": "Full cash refund test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(self.cash_order.id,)),
+            form_data,
+            follow=True,
+        )
+
+        order = Order.objects.get(id=self.cash_order.id)
+        self.assertEquals(order.total, 0)
+        self.assertEqual(order.status, Order.REFUNDED)
+
+    def test_partial_cash_refund(self):
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+
+        form_data = {
+            "amount": "50.00",
+            "reason": "Partial cash refund test",
+        }
+        form = OrderAdmin.RefundForm(data=form_data)
+
+        self.assertTrue(form.is_valid())
+        response = self.client.post(
+            reverse("admin:order_refund", args=(self.cash_order.id,)),
+            form_data,
+            follow=True,
+        )
+
+        order = Order.objects.get(id=self.cash_order.id)
+        self.assertEquals(order.total, 50)
+        self.assertEqual(order.status, Order.REFUNDED)
 
     def test_refund_comped_and_failed(self):
         self.assertTrue(self.client.login(username="admin", password="admin"))
@@ -1864,3 +1902,8 @@ class Onsite(TestCase):
         self.assertEqual(len(response.context["results"]), 0)
 
         self.client.logout()
+
+
+class TestPushyAPI(TestCase):
+    def test_sendPushNotification(self):
+        PushyAPI.sendPushNotification("data", "to", None)

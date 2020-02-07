@@ -715,6 +715,7 @@ class Firebase(models.Model):
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)
+    printer_url = models.CharField(max_length=500, null=True, blank=True)
 
 
 class Cashdrawer(models.Model):
@@ -737,6 +738,13 @@ class Cashdrawer(models.Model):
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    position = models.ForeignKey(
+        Firebase,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="firebase_cashdrawer",
     )
 
 
