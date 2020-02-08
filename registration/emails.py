@@ -13,8 +13,8 @@ from .models import *
 logger = logging.getLogger("registration.emails")
 
 
-def sendRegistrationEmail(order, email):
-    logger.debug("Enter sendRegistrationEmail...")
+def send_registration_email(order, email):
+    logger.debug("Enter send_registration_email...")
     order_items = OrderItem.objects.filter(order=order)
     order_dict = {}
     has_minors = False
@@ -157,7 +157,7 @@ def sendStaffRegistrationEmail(orderId):
     )
 
 
-def sendStaffPromotionEmail(staff):
+def send_staff_promotion_email(staff):
     data = {"registrationToken": staff.registrationToken, "event": staff.event}
     msg_txt = render_to_string("registration/emails/staffPromotion.txt", data)
     msg_html = render_to_string("registration/emails/staffPromotion.html", data)
@@ -171,7 +171,7 @@ def sendStaffPromotionEmail(staff):
     )
 
 
-def sendNewStaffEmail(token):
+def send_new_staff_email(token):
     event = Event.objects.get(default=True)
     data = {"registrationToken": token.token, "event": event}
     msg_txt = render_to_string("registration/emails/newStaff.txt", data)
@@ -211,7 +211,7 @@ def sendDealerApplicationEmail(dealerId):
     )
 
 
-def sendDealerAsstFormEmail(dealer):
+def send_dealer_asst_form_email(dealer):
     data = {"dealer": dealer, "event": dealer.event}
     msg_txt = render_to_string("registration/emails/dealerAsstForm.txt", data)
     msg_html = render_to_string("registration/emails/dealerAsstForm.html", data)
@@ -240,7 +240,7 @@ def sendDealerAsstEmail(dealerId):
     )
 
 
-def sendDealerPaymentEmail(dealer, order):
+def send_dealer_payment_email(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
     options = AttendeeOptions.objects.filter(orderItem=orderItem)
     data = {
@@ -279,7 +279,7 @@ def sendDealerUpdateEmail(dealerId):
     )
 
 
-def sendApprovalEmail(dealerQueryset):
+def send_approval_email(dealerQueryset):
     for dealer in dealerQueryset:
         data = {"dealer": dealer, "event": dealer.event}
         msg_txt = render_to_string("registration/emails/dealerApproval.txt", data)

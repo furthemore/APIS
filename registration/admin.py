@@ -94,7 +94,7 @@ admin.site.register(BanList, BanListAdmin)
 
 def send_staff_token_email(modeladmin, request, queryset):
     for token in queryset:
-        sendNewStaffEmail(token)
+        registration.emails.send_new_staff_email(token)
         token.sent = True
         token.save()
 
@@ -111,7 +111,7 @@ admin.site.register(TempToken, TempTokenAdmin)
 
 
 def send_approval_email(modeladmin, request, queryset):
-    sendApprovalEmail(queryset)
+    registration.emails.send_approval_email(queryset)
     queryset.update(emailed=True)
 
 
@@ -132,7 +132,7 @@ def send_payment_email(modeladmin, request, queryset):
         badge = dealer.getBadge()
         oi = OrderItem.objects.filter(badge=badge).first()
         if oi and oi.order:
-            sendDealerPaymentEmail(dealer, oi.order)
+            registration.emails.send_dealer_payment_email(dealer, oi.order)
 
 
 send_payment_email.short_description = "Resend payment confirmation email"
@@ -140,10 +140,10 @@ send_payment_email.short_description = "Resend payment confirmation email"
 
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
-        sendDealerAsstFormEmail(dealer)
+        registration.emails.send_dealer_asst_form_email(dealer)
 
 
-send_assistant_form_email.short_description = "Send assistent addition form email"
+send_assistant_form_email.short_description = "Send assistant addition form email"
 
 
 class DealerAsstInline(NestedTabularInline):
@@ -362,7 +362,7 @@ checkin_staff.short_description = "Check in staff"
 
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
-        sendStaffPromotionEmail(staff)
+        registration.emails.send_staff_promotion_email(staff)
 
 
 send_staff_registration_email.short_description = "Send registration instructions"
@@ -1121,7 +1121,7 @@ admin.site.register(OrderItem, OrderItemAdmin)
 
 def send_registration_email(modeladmin, request, queryset):
     for order in queryset:
-        registration.emails.sendRegistrationEmail(order, order.billingEmail)
+        registration.emails.send_registration_email(order, order.billingEmail)
 
 
 send_registration_email.short_description = "Send registration email"
