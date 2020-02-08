@@ -265,7 +265,7 @@ def checkout(request):
 
         common.clear_session(request)
         try:
-            registration.emails.sendRegistrationEmail(order, order.billingEmail)
+            registration.emails.send_registration_email(order, order.billingEmail)
         except Exception as e:
             logger.error("Error sending RegistrationEmail - zero sum.")
             logger.exception(e)
@@ -329,7 +329,7 @@ def checkout(request):
         cartItems.delete()
         common.clear_session(request)
         try:
-            registration.emails.sendRegistrationEmail(order, order.billingEmail)
+            registration.emails.send_registration_email(order, order.billingEmail)
         except Exception as e:
             event = Event.objects.get(default=True)
             registrationEmail = common.getRegistrationEmail(event)
