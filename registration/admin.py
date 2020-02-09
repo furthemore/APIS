@@ -577,6 +577,9 @@ def assign_badge_numbers(modeladmin, request, queryset):
     reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
 
     for badge in queryset.order_by("registeredDate"):
+        if badge in assigned_badge_numbers:
+            continue
+
         filter_list = set(assigned_badge_numbers) - set(reserved_badges)
 
         # Skip badges which have already been assigned
