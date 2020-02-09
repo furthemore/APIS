@@ -587,15 +587,12 @@ def assign_badge_numbers(modeladmin, request, queryset):
             continue
 
         # Pick the next largest candidate assignment
-        if filter_list:
-            highest = max(filter_list)
-        else:
+        if len(filter_list) == 0:
             highest = 1
+        else:
+            highest = max(filter_list)
 
-        while (
-            highest not in assigned_badge_numbers
-            and highest not in reserved_badge_numbers
-        ):
+        while highest in filter_list and highest in reserved_badge_numbers:
             highest += 1
 
         badge.badgeNumber = highest
