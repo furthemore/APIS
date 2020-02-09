@@ -566,16 +566,40 @@ send_upgrade_form_email.short_description = "Send upgrade info email"
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
     firstBadge = queryset[0]
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=firstBadge.event)
-    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
+    event = firstBadge.event or Event.objects.get(default=True)
+    badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
+    assigned_badge_numbers = [
+        badge.badgeNumber for badge in badges if badge.badgeNumber is not None
+    ]
+
+    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
+    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
+
     for badge in queryset.order_by("registeredDate"):
-        if badge.badgeNumber:
+        if badge not in badges:
             continue
+
+        filter_list = set(assigned_badge_numbers) - set(reserved_badge_numbers)
+
+        # Skip badges which have already been assigned
+        if badge.badgeNumber is not None:
+            continue
+        # Skip badges that are not assigned a registration level
         if badge.effectiveLevel() is None:
             continue
-        highest = highest + 1
+
+        # Pick the next largest candidate assignment
+        if len(filter_list) == 0:
+            highest = 1
+        else:
+            highest = max(filter_list) + 1
+
+        while highest in reserved_badge_numbers:
+            highest += 1
+
         badge.badgeNumber = highest
         badge.save()
+        assigned_badge_numbers.append(highest)
 
 
 assign_badge_numbers.short_description = "Assign badge number"
@@ -1377,3 +1401,11 @@ class CashdrawerAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(Cashdrawer, CashdrawerAdmin)
+
+
+class ReservedBadgeNumbersAdmin(admin.ModelAdmin):
+    list_display = ("event", "badgeNumber")
+    list_filter = ("event",)
+
+
+admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
