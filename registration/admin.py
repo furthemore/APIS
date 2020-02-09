@@ -566,7 +566,37 @@ send_upgrade_form_email.short_description = "Send upgrade info email"
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
     firstBadge = queryset[0]
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=firstBadge.event)
+    event = firstBadge.event or Event.objects.get(default=True)
+    badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
+    assigned_badge_numbers = [
+        badge.badgeNumber for badge in badges if badge.badgeNumber is not None
+    ]
+
+    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
+    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
+
+    for badge in queryset.order_by("registeredDate"):
+        filter_list = set(assigned_badge_numbers) - set(reserved_badges)
+
+        # Skip badges which have already been assigned
+        if badge.badgeNumber:
+            continue
+        # Skip badges that are not assigned a registration level
+        if badge.effectiveLevel() is None:
+            continue
+
+        # Pick the next largest candidate assignment
+        highest = max(filter_list)
+        while (
+            highest not in assigned_badge_numbers
+            and highest not in reserved_badge_numbers
+        ):
+            highest += 1
+
+        badge.badgeNumber = highest
+        badge.save()
+        assigned_badge_numbers.append(highest)
+
     highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
     for badge in queryset.order_by("registeredDate"):
         if badge.badgeNumber:

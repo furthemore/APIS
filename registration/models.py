@@ -748,4 +748,11 @@ class Cashdrawer(models.Model):
     )
 
 
+class ReservedBadgeNumbers(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    badgeNumber = models.IntegerField()
+    priceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
+    notes = models.TextField(blank=True)
+
+
 # vim: ts=4 sts=4 sw=4 expandtab smartindent
