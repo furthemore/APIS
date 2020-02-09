@@ -751,7 +751,9 @@ class Cashdrawer(models.Model):
 class ReservedBadgeNumbers(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     badgeNumber = models.IntegerField()
-    priceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
+    priceLevel = models.ForeignKey(
+        PriceLevel, null=True, blank=True, on_delete=models.SET_NULL
+    )
     notes = models.TextField(blank=True)
 
 

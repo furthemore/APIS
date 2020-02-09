@@ -39,6 +39,7 @@ admin.site.register(Event)
 admin.site.register(Charity)
 admin.site.register(TableSize)
 admin.site.register(Cart)
+admin.site.register(ReservedBadgeNumbers)
 
 
 def disable_two_factor(modeladmin, request, queryset):
