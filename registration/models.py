@@ -756,5 +756,13 @@ class ReservedBadgeNumbers(models.Model):
     )
     notes = models.TextField(blank=True)
 
+    def __str__(self):
+        return "<Reserved Badge Number({0}, event={1})>".format(
+            self.event, self.badgeNumber
+        )
+
+    class Meta:
+        verbose_name_plural = "Reserved Badge Numbers"
+
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent
