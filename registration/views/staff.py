@@ -7,7 +7,7 @@ from django.http import HttpResponseServerError, JsonResponse
 from django.shortcuts import render
 from ordering import doCheckout, doZeroCheckout, getTotal
 
-from registration import emails
+import registration.emails
 from registration.models import *
 
 
@@ -334,7 +334,7 @@ def checkoutStaff(request):
 
         clear_session(request)
         try:
-            emails.sendStaffRegistrationEmail(order.id)
+            registration.emails.sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
             staffEmail = getStaffEmail()
@@ -366,7 +366,7 @@ def checkoutStaff(request):
     if status:
         clear_session(request)
         try:
-            emails.sendStaffRegistrationEmail(order.id)
+            registration.emails.sendStaffRegistrationEmail(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
             staffEmail = getStaffEmail()
