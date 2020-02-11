@@ -5,8 +5,9 @@ from common import abort, clear_session, get_client_ip, handler, logger, success
 from django.forms import model_to_dict
 from django.http import HttpResponseServerError, JsonResponse
 from django.shortcuts import render
-from ordering import doCheckout, doZeroCheckout
+from ordering import doCheckout, doZeroCheckout, getTotal
 
+from registration import emails
 from registration.models import *
 
 
@@ -165,7 +166,7 @@ def infoStaff(request):
     try:
         staffId = request.session["staff_id"]
     except Exception as e:
-        return render(request, "registration/staff-payment.html", context)
+        return render(request, "registration/staff/staff-payment.html", context)
 
     staff = Staff.objects.get(id=staffId)
     if staff:
@@ -296,6 +297,20 @@ def addStaff(request):
     return JsonResponse({"success": True})
 
 
+def getStaffTotal(orderItems, discount, staff):
+    badge = Badge.objects.get(attendee=staff.attendee, event=staff.event)
+
+    if badge.effectiveLevel():
+        discount = None
+    subTotal = getTotal(orderItems, discount)
+    alreadyPaid = badge.paidTotal()
+    total = subTotal - alreadyPaid
+
+    if total < 0:
+        return 0
+    return total
+
+
 def checkoutStaff(request):
     sessionItems = request.session.get("order_items", [])
     pdisc = request.session.get("discount", "")
@@ -307,7 +322,8 @@ def checkoutStaff(request):
         logger.error("Unable to decode JSON for checkoutStaff()")
         return JsonResponse({"success": False})
 
-    discount = Discount.objects.get(codeName="StaffDiscount")
+    event = Event.objects.get(default=True)
+    discount = event.staffDiscount
     staff = Staff.objects.get(id=staffId)
     subtotal = getStaffTotal(orderItems, discount, staff)
 
