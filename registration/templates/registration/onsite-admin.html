@@ -338,26 +338,34 @@ var print_badges = function(e) {
     //conf = true;
     if (conf) {
         // assign badge number
-
         var printIDs = []
         $.each(printQueue, function(idx, badge) {
             printIDs.push(badge.id);
-            $.getJSON("{% url 'registration:assignBadgeNumber' %}", { id : badge.id, number : badge.badgeNumber }, function (data) {
-                if (!data.success) {
-                    alert("Error while assigning badge number: " + data.message);
+            $.post(
+                "{% url 'registration:assignBadgeNumber' %}",
+                { id : badge.id, number : badge.badgeNumber }
+            )
+            .done(function(data) {
+                console.log(data.success);
+            })
+            .fail(function(data){
+                if(!data.success){
+                    alert("Error while assigning badge number: " + data.message)
                 }
             });
         });
 
         // print badges
-        $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
-            if (!data.success) {
-                alert("Error while printing badges");
+        $.getJSON(
+            "{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="),
+            function (data) {
+                if (!data.success) {
+                    alert("Error while printing badges");
+                }
+                window.open(data.url);
             }
-            window.open(data.url);
-        });
+        );
         // clear cart
-
         $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
         refresh_cart();
     }
