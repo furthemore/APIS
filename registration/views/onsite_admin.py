@@ -222,9 +222,9 @@ def onsiteSelectTerminal(request):
 
 
 def assignBadgeNumber(request):
-    badge_id = request.GET.get("id")
-    badge_number = request.GET.get("number")
-    badge_name = request.GET.get("badge", None)
+    badge_id = request.POST.get("id")
+    badge_number = request.POST.get("number")
+    badge_name = request.POST.get("badge", None)
     badge = None
     event = Event.objects.get(default=True)
     logger.info(
