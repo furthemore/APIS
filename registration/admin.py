@@ -606,19 +606,7 @@ assign_badge_numbers.short_description = "Assign badge number"
 
 
 def assign_numbers_and_print(modeladmin, request, queryset):
-    nonstaff = Attendee.objects.filter(staff=None)
-    firstBadge = queryset[0]
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=firstBadge.event)
-    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-
-    for badge in queryset.order_by("registeredDate"):
-        if badge.badgeNumber:
-            continue
-        if badge.effectiveLevel() is None:
-            continue
-        highest = highest + 1
-        badge.badgeNumber = highest
-        badge.save()
+    assign_badge_numbers(modeladmin, request, queryset)
 
     con = printing.Main(local=True)
     tags = []
@@ -701,49 +689,6 @@ def print_badges(modeladmin, request, queryset):
 print_badges.short_description = "Print Badges"
 
 
-def print_label_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
-
-        # Exclude staff badges
-        try:
-            staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-            messages.warning(
-                request,
-                u"{0} is on staff, so we skipped printing an attendee badge".format(
-                    badge.badgeName
-                ),
-            )
-        except Staff.DoesNotExist:
-            tags.append(
-                {
-                    "name": cgi.escape(badge.badgeName),
-                    "number": badgeNumber,
-                    "level": cgi.escape(str(badge.effectiveLevel())),
-                    "title": "",
-                    "age": get_attendee_age(badge.attendee),
-                }
-            )
-            badge.printed = True
-            badge.save()
-    con.nametags(tags, theme="fd_labels")
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
-
-
-print_label_badges.short_description = "Print Label Badges"
-
-
 def print_dealerasst_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
@@ -752,11 +697,11 @@ def print_dealerasst_badges(modeladmin, request, queryset):
         if badge.badgeNumber is None:
             badgeNumber = ""
         else:
-            badgeNumber = "S{:03}".format(badge.badgeNumber)
+            badgeNumber = "{:03}".format(badge.badgeNumber)
         tags.append(
             {
                 "name": cgi.escape(badge.badgeName),
-                "number": badge.badgeNumber,
+                "number": badgeNumber,
                 "level": "Dealer",
                 "title": "",
                 "age": get_attendee_age(badge.attendee),
@@ -784,7 +729,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         if badge.badgeNumber is None:
             badgeNumber = ""
         else:
-            badgeNumber = "S{:03}".format(badge.badgeNumber)
+            badgeNumber = "{:03}".format(badge.badgeNumber)
         try:
             dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
         except Dealer.DoesNotExist:
@@ -799,7 +744,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         tags.append(
             {
                 "name": cgi.escape(badge.badgeName),
-                "number": badge.badgeNumber,
+                "number": badgeNumber,
                 "level": "Dealer",
                 "title": "",
                 "age": get_attendee_age(badge.attendee),
@@ -1029,7 +974,6 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     actions = [
         assign_badge_numbers,
         print_badges,
-        print_label_badges,
         print_dealerasst_badges,
         assign_numbers_and_print,
         print_dealer_badges,
