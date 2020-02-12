@@ -194,7 +194,6 @@ def getTotal(cartItems, orderItems, disc=""):
             total_discount += discount
             itemTotal -= discount
 
-        # FIXME Why?
         if itemTotal > 0:
             total += itemTotal
 
