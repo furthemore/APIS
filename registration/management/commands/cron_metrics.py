@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
             active_staff_count = 0
             for s in staff:
-                if s.attendee and s.attendee.getBadge():
+                if s.attendee and s.attendee.badge_set.filter().count():
                     active_staff_count += 1
 
             print "Event: {0} - (total: {1})".format(event, total_count)
