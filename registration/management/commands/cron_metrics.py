@@ -23,6 +23,7 @@ def get_paid_order_items(event):
     order_items = OrderItem.objects.filter(badge__event=event).exclude(
         Q(order__isnull=True)
         | Q(order__billingType=Order.UNPAID)
+        | Q(order__status__in=(Order.FAILED, Order.REFUNDED, Order.REFUND_PENDING))
         | Q(priceLevel__isnull=True)
     )
     return order_items
