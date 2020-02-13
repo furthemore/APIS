@@ -488,7 +488,9 @@ class Dealer(models.Model):
     logo = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
-        return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        if self.attendee:
+            return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        return "<Dealer(orphan)>"
 
     def getPartnerCount(self):
         partnercount = self.dealerasst_set.count()

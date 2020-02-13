@@ -8,3 +8,4 @@ test-db.sqlite3
 registration/resources/nametag/apis/tmp*.html
 .idea/
 .coverage
+.envrc
