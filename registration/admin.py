@@ -428,6 +428,7 @@ class StaffResource(resources.ModelResource):
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
     actions = [send_staff_registration_email, checkin_staff, "copy_to_event"]
+    raw_id_fields = ("attendee",)
     list_display = (
         "attendee",
         "get_badge",

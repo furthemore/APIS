@@ -45,13 +45,15 @@ class Command(BaseCommand):
                 level_bins[level.id] = order_items.filter(priceLevel=level).count()
 
             # Staff counts
-            staff = Staff.objects.filter(event=event)
+            staff = Staff.objects.filter(event=event).select_related("attendee")
             total_staff_count = staff.count()
 
-            active_staff_count = 0
-            for s in staff:
-                if s.attendee and s.attendee.badge_set.filter().count():
-                    active_staff_count += 1
+            active_staff = (
+                Staff.objects.filter(event=event)
+                .prefetch_related("attendee__badge")
+                .filter(attendee__badge__event=event)
+            )
+            active_staff_count = active_staff.count()
 
             print "Event: {0} - (total: {1})".format(event, total_count)
             for level in price_levels:
