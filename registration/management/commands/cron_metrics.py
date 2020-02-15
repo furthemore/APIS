@@ -75,12 +75,12 @@ class Command(BaseCommand):
             print "Event: {0} - (total: {1})".format(event, total_count)
             for level in price_levels:
                 print level, "-", level_bins[level.id]
-                backend.write(event, level, level_bins[level.id])
+                backend_writer(event, level, level_bins[level.id])
             print "Staff: {0} ({1} active)".format(
                 total_staff_count, active_staff_count
             )
-            backend.write(event, "staff_total", total_staff_count)
-            backend.write(event, "staff_active", active_staff_count)
+            backend_writer(event, "staff_total", total_staff_count)
+            backend_writer(event, "staff_active", active_staff_count)
             print ("==========")
 
         if hasattr(backend, "batch"):
