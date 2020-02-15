@@ -39,6 +39,9 @@ class Command(BaseCommand):
     help = "Calculates metrics for all events to record to time-series"
 
     def handle(self, *args, **options):
+        now = datetime.datetime.now()
+        today = now.date()
+
         backend_class = eval(settings.APIS_METRICS_BACKEND)
         try:
             backend_settings = settings.APIS_METRICS_SETTINGS
@@ -51,6 +54,8 @@ class Command(BaseCommand):
             backend_writer = backend.batch
 
         for event in Event.objects.filter():
+            days_to_event = event.eventStart - today
+
             # Attendee data
             order_items = get_paid_order_items(event)
             total_count = order_items.count()
@@ -76,7 +81,13 @@ class Command(BaseCommand):
             for level in price_levels:
                 print level, "-", level_bins[level.id]
 
-                backend_writer(event, "badge_total", level_bins[level.id], level=level)
+                backend_writer(
+                    event,
+                    "badge_total",
+                    level_bins[level.id],
+                    level=level,
+                    days_to_event=days_to_event,
+                )
 
             print "Staff: {0} ({1} active)".format(
                 total_staff_count, active_staff_count
