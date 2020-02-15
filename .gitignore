@@ -1,10 +1,14 @@
 *.pyc
 fm_eventmanager/dev.py
 fm_eventmanager/settings.py
-static/
+^static/
 venv/
 db.sqlite3
 test-db.sqlite3
 registration/resources/nametag/apis/tmp*.html
 .idea/
 .coverage
+fm_eventmanager/maintenance_mode_state.txt
+localhost.crt
+localhost.key
+venv3/
