@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Q
+from django.db.models import Q, Sum
 from influxdb import InfluxDBClient
 
 from registration.models import *
@@ -76,6 +76,26 @@ class Command(BaseCommand):
                 .filter(attendee__badge__event=event)
             )
             active_staff_count = active_staff.count()
+
+            # Charity donations
+            charity_donations = 0
+            if event.charity:
+                charity_donations = event.charity.donations
+            charity_sum = order_items.aggregate(Sum("order__charityDonation"))[
+                "order__charityDonation__sum"
+            ]
+            if charity_sum:
+                charity_donations += charity_sum
+            backend_writer(event, "charity_donations", charity_donations)
+
+            # Organization donations
+            org_donations = event.donations
+            org_sum = order_items.aggregate(Sum("order__orgDonation"))[
+                "order__orgDonation__sum"
+            ]
+            if org_sum:
+                org_donations += org_sum
+            backend_writer(event, "org_donations", org_donations)
 
             print "Event: {0} - (total: {1})".format(event, total_count)
             for level in price_levels:
