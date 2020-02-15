@@ -54,7 +54,7 @@ class Command(BaseCommand):
             backend_writer = backend.batch
 
         for event in Event.objects.filter():
-            days_to_event = event.eventStart - today
+            days_to_event = (event.eventStart - today).days()
 
             # Attendee data
             order_items = get_paid_order_items(event)
