@@ -2,6 +2,7 @@ import datetime
 from abc import ABCMeta, abstractmethod
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from influxdb import InfluxDBClient
@@ -38,6 +39,17 @@ class Command(BaseCommand):
     help = "Calculates metrics for all events to record to time-series"
 
     def handle(self, *args, **options):
+        backend_class = eval(settings.APIS_METRICS_BACKEND)
+        try:
+            backend_settings = settings.APIS_METRICS_SETTINGS
+        except AttributeError:
+            backend_settings = {}
+        backend = backend_class(backend_settings)
+
+        backend_writer = backend.write
+        if hasattr(backend, "batch"):
+            backend_writer = backend.batch
+
         for event in Event.objects.filter():
             # Attendee data
             order_items = get_paid_order_items(event)
@@ -60,13 +72,6 @@ class Command(BaseCommand):
             )
             active_staff_count = active_staff.count()
 
-            backend_class = eval(settings.APIS_METRICS_BACKEND)
-            try:
-                backend_settings = settings.APIS_METRICS_SETTINGS
-            except AttributeError:
-                backend_settings = {}
-            backend = backend_class(backend_settings)
-
             print "Event: {0} - (total: {1})".format(event, total_count)
             for level in price_levels:
                 print level, "-", level_bins[level.id]
@@ -74,16 +79,19 @@ class Command(BaseCommand):
             print "Staff: {0} ({1} active)".format(
                 total_staff_count, active_staff_count
             )
-            backend.write(event, "_staff_total", total_staff_count)
-            backend.write(event, "_staff_active", active_staff_count)
+            backend.write(event, "staff_total", total_staff_count)
+            backend.write(event, "staff_active", active_staff_count)
             print ("==========")
+
+        if hasattr(backend, "batch"):
+            backend.flush()
 
 
 class CronReporterABC:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(selfself, config):
+    def __init__(self, config):
         pass
 
     @abstractmethod
@@ -115,6 +123,34 @@ class InfluxDBReporter(CronReporterABC):
         if db_name:
             self.client.create_database(db_name)
 
+        self.json_body = []
+
+    @staticmethod
+    def timestamp():
+        now = datetime.datetime.utcnow()
+        return now.isoformat("T") + "Z"
+
+    def batch(self, event, topic, value):
+        """
+        Stage a data point to record to be committed to the database in bulk
+
+        :param event:
+        :param topic:
+        :param value:
+        :return:
+        """
+        document = {
+            "measurement": topic,
+            "tags": {"event": event, "site": Site.objects.get_current().domain,},
+            "time": self.timestamp(),
+            "fields": {"Int_value": value,},
+        }
+        self.json_body.append(document)
+
+    def flush(self):
+        self.client.write_points(self.json_body)
+        self.json_body = []
+
     def write(self, event, topic, value):
         now = datetime.datetime.utcnow()
         timestamp = now.isoformat("T") + "Z"
@@ -122,7 +158,7 @@ class InfluxDBReporter(CronReporterABC):
         json_body = [
             {
                 "measurement": topic,
-                "tags": {"event": event,},
+                "tags": {"event": event, "site": Site.objects.get_current().domain,},
                 "time": timestamp,
                 "fields": {"Int_value": value,},
             }
