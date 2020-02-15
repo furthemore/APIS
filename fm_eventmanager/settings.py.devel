@@ -217,3 +217,9 @@ REGISTER_PRINTER_URI = 'https://print.example.com:5000'
 
 # Firebase/Pushy.me cloud-push API key
 CLOUD_MESSAGING_KEY = "AAA..."
+
+# Cron metrics recording provider and settings
+APIS_METRICS_BACKEND = "DummyReporter"
+APIS_METRICS_SETTINGS = {
+    "database" : "apis"
+}

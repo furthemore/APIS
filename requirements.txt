@@ -12,6 +12,7 @@ squareup==4.1.0.20200122
 pyOpenSSL==18.0.0
 django-u2f==0.3.0
 Pillow>=5.3
+influxdb==5.2.3
 #Devel
 Werkzeug
 django-debug-toolbar
