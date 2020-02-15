@@ -86,7 +86,7 @@ class Command(BaseCommand):
             ]
             if charity_sum:
                 charity_donations += charity_sum
-            backend_writer(event, "charity_donations", charity_donations)
+            backend_writer(event, "charity_donations", int(charity_donations * 100))
 
             # Organization donations
             org_donations = event.donations
@@ -95,7 +95,7 @@ class Command(BaseCommand):
             ]
             if org_sum:
                 org_donations += org_sum
-            backend_writer(event, "org_donations", org_donations)
+            backend_writer(event, "org_donations", int(org_donations * 100))
 
             print "Event: {0} - (total: {1})".format(event, total_count)
             for level in price_levels:
