@@ -11,6 +11,7 @@ django-widget-tweaks==1.4.3
 squareup==4.1.0.20200122
 pyOpenSSL==18.0.0
 django-u2f==0.3.0
+django-maintenance-mode==0.14.0
 Pillow>=5.3
 #Devel
 Werkzeug
