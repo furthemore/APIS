@@ -107,11 +107,11 @@ class InfluxDBReporter(CronReporterABC):
         """
         Statistics collecting backend for recording to InfluxDB
 
-        :param settings: dictionary of InfluxDB-specific client parameters
+        :param config: dictionary of InfluxDB-specific client parameters
                (see https://influxdb-python.readthedocs.io/en/latest/api-documentation.html#influxdbclient)
         """
-        self.client = InfluxDBClient(*config)
-        db_name = settings.get("database")
+        self.client = InfluxDBClient(**config)
+        db_name = config.get("database")
         if db_name:
             self.client.create_database(db_name)
 
@@ -119,14 +119,16 @@ class InfluxDBReporter(CronReporterABC):
         now = datetime.datetime.utcnow()
         timestamp = now.isoformat("T") + "Z"
 
-        json_body = {
-            "measurement": topic,
-            "tags": {"event": event,},
-            "time": timestamp,
-            "fields": {"Int_value": value,},
-        }
+        json_body = [
+            {
+                "measurement": topic,
+                "tags": {"event": event,},
+                "time": timestamp,
+                "fields": {"Int_value": value,},
+            }
+        ]
 
-        self.client.write(json_body)
+        self.client.write_points(json_body)
 
 
 CronReporterABC.register(InfluxDBReporter)
