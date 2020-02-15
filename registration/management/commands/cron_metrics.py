@@ -75,7 +75,9 @@ class Command(BaseCommand):
             print "Event: {0} - (total: {1})".format(event, total_count)
             for level in price_levels:
                 print level, "-", level_bins[level.id]
-                backend_writer(event, level, level_bins[level.id])
+
+                backend_writer(event, "badge_total", level_bins[level.id], level=level)
+
             print "Staff: {0} ({1} active)".format(
                 total_staff_count, active_staff_count
             )
@@ -103,7 +105,7 @@ class DummyReporter(CronReporterABC):
     def __init__(self, config):
         pass
 
-    def write(self, event, topic, value):
+    def write(self, event, topic, value, **kwargs):
         pass
 
 
@@ -130,7 +132,7 @@ class InfluxDBReporter(CronReporterABC):
         now = datetime.datetime.utcnow()
         return now.isoformat("T") + "Z"
 
-    def batch(self, event, topic, value):
+    def batch(self, event, topic, value, **kwargs):
         """
         Stage a data point to record to be committed to the database in bulk
 
@@ -139,9 +141,14 @@ class InfluxDBReporter(CronReporterABC):
         :param value:
         :return:
         """
+        tags = {
+            "event": event,
+            "site": Site.objects.get_current().domain,
+        }
+        tags.update(kwargs)
         document = {
             "measurement": topic,
-            "tags": {"event": event, "site": Site.objects.get_current().domain,},
+            "tags": tags,
             "time": self.timestamp(),
             "fields": {"Int_value": value,},
         }
@@ -151,15 +158,17 @@ class InfluxDBReporter(CronReporterABC):
         self.client.write_points(self.json_body)
         self.json_body = []
 
-    def write(self, event, topic, value):
-        now = datetime.datetime.utcnow()
-        timestamp = now.isoformat("T") + "Z"
-
+    def write(self, event, topic, value, **kwargs):
+        tags = {
+            "event": event,
+            "site": Site.objects.get_current().domain,
+        }
+        tags.update(kwargs)
         json_body = [
             {
                 "measurement": topic,
                 "tags": {"event": event, "site": Site.objects.get_current().domain,},
-                "time": timestamp,
+                "time": self.timestamp(),
                 "fields": {"Int_value": value,},
             }
         ]
