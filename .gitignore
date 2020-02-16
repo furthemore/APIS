@@ -8,6 +8,7 @@ test-db.sqlite3
 registration/resources/nametag/apis/tmp*.html
 .idea/
 .coverage
+.envrc
 fm_eventmanager/maintenance_mode_state.txt
 localhost.crt
 localhost.key
