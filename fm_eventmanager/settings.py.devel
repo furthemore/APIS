@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'import_export',
     'django_extensions',
     'django_u2f',
+    'argonauts',
     'maintenance_mode',
     'registration',
 ]
@@ -97,7 +98,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'maintenance_mode.middleware.MaintenanceModeMiddleware'
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
 ROOT_URLCONF = 'fm_eventmanager.urls'
@@ -174,6 +176,10 @@ USE_TZ = True
 SITE_ID = 1
 
 MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
+<<<<<<< HEAD
+MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
+=======
+>>>>>>> a8108b99452e4518a6627e67c57fcc921cf73725
 
 LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
 LOGIN_URL = 'u2f:login'

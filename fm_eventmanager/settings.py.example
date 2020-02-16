@@ -146,6 +146,7 @@ USE_TZ = True
 SITE_ID = 1
 
 MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
+MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
 
 # Login handling for 2-Factor authentication
 LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
