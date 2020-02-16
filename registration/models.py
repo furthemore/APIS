@@ -117,6 +117,12 @@ class Charity(LookupTable):
     url = models.CharField(
         max_length=500, verbose_name="URL", help_text="Charity link", blank=True
     )
+    donations = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="External donations to add to metrics",
+    )
 
     class Meta:
         verbose_name_plural = "Charities"
@@ -228,6 +234,12 @@ class Event(LookupTable):
     )
     charity = models.ForeignKey(
         Charity, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    donations = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="External donations to add to metrics ",
     )
 
 
@@ -488,7 +500,9 @@ class Dealer(models.Model):
     logo = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
-        return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        if self.attendee:
+            return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        return "<Dealer(orphan)>"
 
     def getPartnerCount(self):
         partnercount = self.dealerasst_set.count()
