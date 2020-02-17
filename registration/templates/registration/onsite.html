@@ -75,7 +75,7 @@
                 <div class="form-group">
                     <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="tel" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9]{1,}$" data-minlength="10" maxlength=10 data-error="A 10-digit phone number is required. Please enter only numbers.">
+                        <input type="tel" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9\-+\(\)\./ ]+$" data-error="A phone number is required. Please enter only numbers.">
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -102,7 +102,7 @@
             <select class="form-control bfh-states" id="state" data-country="country" data-state="VA" name="state"></select>
                     </div>
             <div class="col-sm-3">
-            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5" data-error="Zip code is required.">
+            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="1" data-error="Zip code is required.">
             </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -135,9 +135,9 @@
         <p>Select your registration options and level.</p>
         <hr>
                 <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
+                    <label for="badgeName" class="col-sm-3 control-label" >Badge Name <span style="color:red;">*</span></label>
                     <div class="col-sm-9">
-                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
+                        <input type="text" id="badgeName" name="badgeName" autocomplete="off" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required>
                     </div>
             <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
                 </div>
@@ -402,18 +402,33 @@
             alert(e);
         }
 
+        var level_data = [];
+
+        if (age < 0) {
+            alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
+            return false;
+        }
+
         if (age < 7) {
-            $("#levelContainer").loadTemplate($("#levelTemplate"), freeLevelTemplateData);
-            $(".changeLevel").hide();
+            level_data = freeLevelTemplateData
 
         } else if (age < 13) {
-            $("#levelContainer").loadTemplate($("#levelTemplate"), accompaniedLevelTemplateData);
-            $(".changeLevel").hide();
+            level_data = accompaniedLevelTemplateData;
 
         } else if (age < 18) {
-            $("#levelContainer").loadTemplate($("#levelTemplate"), minorLevelTemplateData);
-            $(".changeLevel").hide();
+            level_data = minorLevelTemplateData;
+
+        } else {
+            level_data = levelTemplateData;
         }
+
+        if (level_data.length == 0) {
+            alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
+            return false;
+        }
+
+        $("#levelContainer").loadTemplate($("#levelTemplate"), level_data);
+        $(".changeLevel").hide();
 
     });
 
@@ -556,14 +571,14 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'registration:addToCart' %}",
+            "url": "{% url 'registration:add_to_cart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "success": function(result) {
-                window.location = "{% url 'registration:onsiteCart' %}";
+                window.location = "{% url 'registration:onsite_cart' %}";
             },
             "error": function(result, status) {
             alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.")

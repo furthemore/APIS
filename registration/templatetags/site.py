@@ -42,16 +42,17 @@ def js_date(date):
 
 
 @register.simple_tag
-def event_start_date(event):
+def event_start_date(event, freeze_time=None):
     """
     Returns a "sliding" event date:
         event.startDate if startDate is in the future, otherwise
         today's date, up to the event endDate
 
+    :param freeze_time: For unit testing
     :param event: event
     :return: javascript-formatted date object
     """
-    today = datetime.datetime.now().date()
+    today = freeze_time or datetime.datetime.now().date()
     if today < event.eventStart:
         return js_date(event.eventStart)
     else:

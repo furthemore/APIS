@@ -165,7 +165,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         total = response.context["total"]
         self.assertEqual(total, 45)
 
-        response = self.client.get(reverse("registration:cancelOrder"))
+        response = self.client.get(reverse("registration:cancel_order"))
         self.assertEqual(response.status_code, 200)
         response = self.client.get(reverse("registration:cart"))
         self.assertEqual(response.status_code, 200)
@@ -753,70 +753,6 @@ class LookupTestCases(TestCase):
         self.assertNotEqual(reg, [])
         safety = [item for item in result if item["name"] == "Safety"]
         self.assertEqual(safety, [])
-
-
-class Onsite(TestCase):
-    def setUp(self):
-        # Create some users
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
-        self.admin_user.save()
-        self.normal_user = User.objects.create_user(
-            "john", "lennon@thebeatles.com", "john"
-        )
-        self.normal_user.staff_member = False
-        self.normal_user.save()
-
-        # Create some test terminals to push notifications to
-        self.terminal = Firebase(token="test", name="Terminal 1")
-        self.terminal.save()
-
-        # At least one event always mandatory
-        self.event = Event(**DEFAULT_EVENT_ARGS)
-        self.event.save()
-
-        self.client = Client()
-
-    def test_onsite_login_required(self):
-        self.client.logout()
-        response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
-        self.assertRedirects(
-            response,
-            "/admin/login/?next={0}".format(reverse("registration:onsiteAdmin")),
-        )
-
-    def test_onsite_admin_required(self):
-        self.client.logout()
-        self.assertTrue(self.client.login(username="john", password="john"))
-        response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "are not authorized to access this page")
-        self.client.logout()
-
-    def test_onsite_admin(self):
-        self.client.logout()
-        self.assertTrue(self.client.login(username="admin", password="admin"))
-        response = self.client.get(reverse("registration:onsiteAdmin"), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["errors"]), 0)
-        self.assertEqual(len(response.context["terminals"]), 1)
-
-        self.terminal.delete()
-        response = self.client.get(reverse("registration:onsiteAdmin"))
-        self.assertEqual(response.status_code, 200)
-        errors = [e["code"] for e in response.context["errors"]]
-        # import pdb; pdb.set_trace()
-        self.assertTrue("ERROR_NO_TERMINAL" in errors)
-
-        self.terminal = Firebase(token="test", name="Terminal 1")
-        self.terminal.save()
-        response = self.client.get(
-            reverse("registration:onsiteAdmin"), {"search": "doesntexist"}
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue("results" in response.context.keys())
-        self.assertEqual(len(response.context["results"]), 0)
-
-        self.client.logout()
 
 
 class TestPushyAPI(TestCase):

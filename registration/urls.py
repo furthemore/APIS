@@ -123,8 +123,8 @@ urlpatterns = [
         name="dealerAsst",
     ),
     url(r"^onsite/?$", registration.views.onsite.onsite, name="onsite"),
-    url(r"^onsite/cart/?$", registration.views.onsite.onsiteCart, name="onsiteCart"),
-    url(r"^onsite/done/?$", registration.views.onsite.onsiteDone, name="onsiteDone"),
+    url(r"^onsite/cart/?$", registration.views.onsite.onsite_cart, name="onsite_cart"),
+    url(r"^onsite/done/?$", registration.views.onsite.onsite_done, name="onsite_done"),
     url(
         r"^onsite/register/?$",
         registration.views.onsite_admin.onsiteAdmin,
@@ -195,28 +195,34 @@ urlpatterns = [
         registration.views.onsite_admin.onsiteSignature,
         name="onsiteSignature",
     ),
-    url(r"^cart/?$", registration.views.cart.getCart, name="cart"),
-    url(r"^cart/add/?$", registration.views.cart.addToCart, name="addToCart"),
+    url(r"^cart/?$", registration.views.cart.get_cart, name="cart"),
+    url(r"^cart/add/?$", registration.views.cart.add_to_cart, name="add_to_cart"),
     url(
         r"^cart/remove/?$",
-        registration.views.cart.removeFromCart,
-        name="removeFromCart",
+        registration.views.cart.remove_from_cart,
+        name="remove_from_cart",
     ),
     url(
-        r"^cart/abandon/?$", registration.views.ordering.cancelOrder, name="cancelOrder"
+        r"^cart/abandon/?$",
+        registration.views.ordering.cancel_order,
+        name="cancel_order",
     ),
     url(
-        r"^cart/discount/?$", registration.views.ordering.applyDiscount, name="discount"
+        r"^cart/discount/?$",
+        registration.views.ordering.apply_discount,
+        name="discount",
     ),
     url(r"^cart/checkout/?$", registration.views.ordering.checkout, name="checkout"),
-    url(r"^cart/done/?$", registration.views.cart.cartDone, name="done"),
-    url(r"^events/?$", registration.views.common.getEvents, name="events"),
+    url(r"^cart/done/?$", registration.views.cart.cart_done, name="done"),
+    url(r"^events/?$", registration.views.common.get_events, name="events"),
     url(
-        r"^departments/?$", registration.views.common.getDepartments, name="departments"
+        r"^departments/?$",
+        registration.views.common.get_departments,
+        name="departments",
     ),
     url(
         r"^alldepartments/?$",
-        registration.views.common.getAllDepartments,
+        registration.views.common.get_all_departments,
         name="alldepartments",
     ),
     url(

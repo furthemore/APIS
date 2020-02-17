@@ -98,7 +98,7 @@ def getOptionsDict(orderItems):
     return orderDict
 
 
-def getEvents(request):
+def get_events(request):
     events = Event.objects.all()
     data = [
         {
@@ -280,13 +280,13 @@ def vipBadges(request):
     )
 
 
-def getDepartments(request):
+def get_departments(request):
     depts = Department.objects.filter(volunteerListOk=True).order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def getAllDepartments(request):
+def get_all_departments(request):
     depts = Department.objects.order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type="application/json")
@@ -565,7 +565,7 @@ def applyDiscount(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for applyDiscount()")
+        logger.error("Unable to decode JSON for apply_discount()")
         return JsonResponse({"success": False})
     dis = postData["discount"]
 

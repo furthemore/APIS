@@ -17,3 +17,4 @@ influxdb==5.2.3
 #Devel
 Werkzeug
 django-debug-toolbar
+mock

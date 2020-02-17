@@ -15,6 +15,7 @@ logger.setLevel(logging.DEBUG)
 tz = timezone.get_current_timezone()
 now = timezone.now()
 ten_days = timedelta(days=10)
+one_day = timedelta(days=1)
 
 DEFAULT_EVENT_ARGS = dict(
     default=True,
@@ -25,8 +26,8 @@ DEFAULT_EVENT_ARGS = dict(
     staffRegEnd=now + ten_days,
     attendeeRegStart=now - ten_days,
     attendeeRegEnd=now + ten_days,
-    onlineRegStart=now - ten_days,
-    onlineRegEnd=now + ten_days,
+    onsiteRegStart=now - ten_days,
+    onsiteRegEnd=now + ten_days,
     eventStart=now - ten_days,
     eventEnd=now + ten_days,
 )
@@ -301,7 +302,7 @@ class OrdersTestCase(TestCase):
         }
 
         response = self.client.post(
-            reverse("registration:addToCart"),
+            reverse("registration:add_to_cart"),
             json.dumps(postData),
             content_type="application/json",
         )
@@ -317,9 +318,16 @@ class OrdersTestCase(TestCase):
         )
         return response
 
-    def checkout(self, nonce, orgDonation="", charityDonation=""):
+    def checkout(self, nonce, orgDonation="", charityDonation="", onsite=False):
         postData = {
-            "billingData": {
+            "billingData": {},
+            "charityDonation": charityDonation,
+            "onsite": False,
+            "orgDonation": orgDonation,
+        }
+
+        if not onsite:
+            postData["billingData"] = {
                 "address1": "123 Any Street",
                 "address2": "Apt 4",
                 "card_data": {
@@ -338,11 +346,7 @@ class OrdersTestCase(TestCase):
                 "nonce": nonce,
                 "postal": "45733",
                 "state": "ID",
-            },
-            "charityDonation": charityDonation,
-            "onsite": False,
-            "orgDonation": orgDonation,
-        }
+            }
 
         response = self.client.post(
             reverse("registration:checkout"),
