@@ -1,0 +1,63 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+{% block object-tools-items %}
+    {% if perms.registration.issue_refund %}
+<li xmlns:admin="http://www.w3.org/1999/xhtml">
+        <a href="{% url "admin:order_refund" original.pk %}" class="historylink">Refund</a>
+    </li>
+    {% endif %}
+    {% if api_data.payment.receipt_url %}
+        <li>
+            <a href="{{ api_data.payment.receipt_url }}" class="historylink" target="_blank">Receipt</a>
+        </li>
+     {% endif %}
+    {% if api_data %}
+        <li>
+            <a href="{% url 'admin:order_refresh' original.pk %}" class="historylink">API Sync</a>
+        </li>
+    {% endif %}
+    <li>
+        <a href="{% url opts|admin_urlname:'history' original.pk|admin_urlquote %}" class="historylink">{% trans "History" %}</a>
+    </li>
+    {% if has_absolute_url %}
+        <li>
+            <a href="{% url 'admin:view_on_site' content_type_id original.pk %}" class="viewsitelink">{% trans "View on site" %}</a>
+        </li>
+    {% endif %}
+{% endblock %}
+
+{% block after_field_sets %}
+    {% if api_data.payment %}
+    <fieldset class="module aligned collapse collapsed">
+        <h2>Square data</h2>
+        <div>
+            <p>
+            <h3 style="color: green">
+                ${{ api_data.payment.amount_money.amount |slugify| slice:":-2" }}.{{ api_data.payment.amount_money.amount |slugify| slice:"-2:" }}
+                {{ api_data.payment.amount_money.currency }}
+                Payment ({{ api_data.payment.status }})
+            </h3>
+            <strong>ID:</strong> {{ api_data.payment.id }}<br>
+            <strong>AVS:</strong> {{ api_data.payment.card_details.avs_status }}
+            <strong>CVV:</strong> {{ api_data.payment.card_details.cvv_status }}<br>
+            <strong>Card:</strong> {{ api_data.payment.card_details.card.card_brand }} ending in {{ api_data.payment.card_details.card.last_4 }}
+            (expires {{ api_data.payment.card_details.card.exp_month }}/{{ api_data.payment.card_details.card.exp_year }})<br>
+            <strong>Entry method:</strong> {{ api_data.payment.card_details.entry_method }}<br>
+            <strong>Statement Description:</strong> <code>{{ api_data.payment.card_details.statement_description }}</code><br>
+
+            {% for refund in api_data.refunds %}
+                <br><hr>
+                <h3 style="color: red">-${{ refund.amount_money.amount|slugify|slice:":-2" }}.{{ refund.amount_money.amount|slugify|slice:"-2:" }}
+                {{ refund.amount_money.currency }}
+                Refund ({{ refund.status }})</h3>
+                <strong>Reason:</strong> {{ refund.reason }}<br>
+                <strong>Created:</strong> {{ refund.created_at }}<br>
+                <strong>Updated:</strong> {{ refund.updated_at }}<br>
+                <strong>Refund ID:</strong> {{ refund.id }}<br>
+
+            {% endfor %}
+            </p>
+        </div>
+    </fieldset>
+    {% endif %}
+{% endblock %}

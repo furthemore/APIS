@@ -1,14 +1,17 @@
 import json
+import logging
 import urllib2
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class PushyAPI:
     @staticmethod
     def sendPushNotification(data, to, options):
         # Insert your Pushy Secret API Key here
-        apiKey = settings.PUSHY_KEY
+        apiKey = settings.CLOUD_MESSAGING_KEY
 
         # Default post data to provided options or empty object
         postData = options or {}
@@ -28,4 +31,6 @@ class PushyAPI:
             response = urllib2.urlopen(req, json.dumps(postData))
         except urllib2.HTTPError as e:
             # Print response errors
-            print "Pushy API returned HTTP error " + str(e.code) + ": " + e.read()
+            logger.error(
+                "Pushy API returned HTTP error " + str(e.code) + ": " + e.read()
+            )

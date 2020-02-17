@@ -374,7 +374,7 @@ def checkoutDealer(request):
             clear_session(request)
 
             try:
-                registration.emails.sendDealerPaymentEmail(dealer, order)
+                registration.emails.send_dealer_payment_email(dealer, order)
             except Exception as e:
                 logger.exception("Error sending DealerPaymentEmail - zero sum.")
                 dealerEmail = getDealerEmail()
@@ -407,7 +407,7 @@ def checkoutDealer(request):
             clear_session(request)
             try:
                 dealer.resetToken()
-                registration.emails.sendDealerPaymentEmail(dealer, order)
+                registration.emails.send_dealer_payment_email(dealer, order)
             except Exception as e:
                 logger.exception("Error sending DealerPaymentEmail. " + request.body)
                 dealerEmail = getDealerEmail()
