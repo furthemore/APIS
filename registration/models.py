@@ -117,6 +117,12 @@ class Charity(LookupTable):
     url = models.CharField(
         max_length=500, verbose_name="URL", help_text="Charity link", blank=True
     )
+    donations = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="External donations to add to metrics",
+    )
 
     class Meta:
         verbose_name_plural = "Charities"
@@ -228,6 +234,12 @@ class Event(LookupTable):
     )
     charity = models.ForeignKey(
         Charity, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    donations = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        help_text="External donations to add to metrics ",
     )
 
 
@@ -488,7 +500,9 @@ class Dealer(models.Model):
     logo = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
-        return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        if self.attendee:
+            return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        return "<Dealer(orphan)>"
 
     def getPartnerCount(self):
         partnercount = self.dealerasst_set.count()
@@ -574,11 +588,13 @@ class Order(models.Model):
     COMPLETED = "Completed"  # Card was captured and [later] settled
     FAILED = "Failed"  # Card was rejected by online authorization
     REFUNDED = "Refunded"
+    REFUND_PENDING = "Refund Pending"
     STATUS_CHOICES = (
         (PENDING, "Pending"),
         (CAPTURED, "Captured"),
         (COMPLETED, "Completed"),
         (REFUNDED, "Refunded"),
+        (REFUND_PENDING, "Refund Pending"),
         (FAILED, "Failed"),
     )
     total = models.DecimalField(max_digits=8, decimal_places=2)
@@ -713,6 +729,7 @@ class Firebase(models.Model):
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)
+    printer_url = models.CharField(max_length=500, null=True, blank=True)
 
 
 class Cashdrawer(models.Model):
@@ -736,6 +753,30 @@ class Cashdrawer(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )
+    position = models.ForeignKey(
+        Firebase,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="firebase_cashdrawer",
+    )
+
+
+class ReservedBadgeNumbers(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    badgeNumber = models.IntegerField()
+    priceLevel = models.ForeignKey(
+        PriceLevel, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return "<Reserved Badge Number({0}, event={1})>".format(
+            self.event, self.badgeNumber
+        )
+
+    class Meta:
+        verbose_name_plural = "Reserved Badge Numbers"
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent

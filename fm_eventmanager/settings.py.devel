@@ -85,8 +85,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_u2f',
     'argonauts',
+    'maintenance_mode',
     'registration',
-    'debug_toolbar',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -99,6 +99,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
 ROOT_URLCONF = 'fm_eventmanager.urls'
@@ -116,6 +117,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'maintenance_mode.context_processors.maintenance_mode',
                 'registration.context_processors.square_environment',
             ],
         },
@@ -173,6 +175,12 @@ USE_TZ = True
 
 SITE_ID = 1
 
+MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
+<<<<<<< HEAD
+MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
+=======
+>>>>>>> a8108b99452e4518a6627e67c57fcc921cf73725
+
 LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
 LOGIN_URL = 'u2f:login'
 
@@ -217,3 +225,9 @@ REGISTER_PRINTER_URI = 'https://print.example.com:5000'
 
 # Firebase/Pushy.me cloud-push API key
 CLOUD_MESSAGING_KEY = "AAA..."
+
+# Cron metrics recording provider and settings
+APIS_METRICS_BACKEND = "DummyReporter"
+APIS_METRICS_SETTINGS = {
+    "database" : "apis"
+}

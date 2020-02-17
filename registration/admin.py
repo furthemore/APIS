@@ -1,14 +1,17 @@
 import cgi
 import copy
+import logging
 from datetime import date
 
 import printing
 import views
 from django import forms
+from django.conf.urls import url
 from django.contrib import admin, auth, messages
 from django.contrib.admin.models import DELETION, LogEntry
 from django.core.urlresolvers import reverse
 from django.db.models import Max
+from django.forms import NumberInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.html import escape, format_html, urlencode
@@ -19,7 +22,12 @@ from nested_inline.admin import NestedModelAdmin, NestedTabularInline
 import registration.emails
 import registration.views.printing
 
+from . import payments
 from .models import *
+
+logger = logging.getLogger(__name__)
+
+TWOPLACES = Decimal(10) ** -2
 
 admin.site.site_url = None
 admin.site.site_header = "APIS Backoffice"
@@ -86,7 +94,7 @@ admin.site.register(BanList, BanListAdmin)
 
 def send_staff_token_email(modeladmin, request, queryset):
     for token in queryset:
-        sendNewStaffEmail(token)
+        registration.emails.send_new_staff_email(token)
         token.sent = True
         token.save()
 
@@ -103,7 +111,7 @@ admin.site.register(TempToken, TempTokenAdmin)
 
 
 def send_approval_email(modeladmin, request, queryset):
-    sendApprovalEmail(queryset)
+    registration.emails.send_approval_email(queryset)
     queryset.update(emailed=True)
 
 
@@ -124,7 +132,7 @@ def send_payment_email(modeladmin, request, queryset):
         badge = dealer.getBadge()
         oi = OrderItem.objects.filter(badge=badge).first()
         if oi and oi.order:
-            sendDealerPaymentEmail(dealer, oi.order)
+            registration.emails.send_dealer_payment_email(dealer, oi.order)
 
 
 send_payment_email.short_description = "Resend payment confirmation email"
@@ -132,10 +140,10 @@ send_payment_email.short_description = "Resend payment confirmation email"
 
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
-        sendDealerAsstFormEmail(dealer)
+        registration.emails.send_dealer_asst_form_email(dealer)
 
 
-send_assistant_form_email.short_description = "Send assistent addition form email"
+send_assistant_form_email.short_description = "Send assistant addition form email"
 
 
 class DealerAsstInline(NestedTabularInline):
@@ -354,7 +362,7 @@ checkin_staff.short_description = "Check in staff"
 
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
-        sendStaffPromotionEmail(staff)
+        registration.emails.send_staff_promotion_email(staff)
 
 
 send_staff_registration_email.short_description = "Send registration instructions"
@@ -420,6 +428,7 @@ class StaffResource(resources.ModelResource):
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
     actions = [send_staff_registration_email, checkin_staff, "copy_to_event"]
+    raw_id_fields = ("attendee",)
     list_display = (
         "attendee",
         "get_badge",
@@ -558,35 +567,47 @@ send_upgrade_form_email.short_description = "Send upgrade info email"
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
     firstBadge = queryset[0]
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=firstBadge.event)
-    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
+    event = firstBadge.event or Event.objects.get(default=True)
+    badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
+    assigned_badge_numbers = [
+        badge.badgeNumber for badge in badges if badge.badgeNumber is not None
+    ]
+
+    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
+    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
+
     for badge in queryset.order_by("registeredDate"):
-        if badge.badgeNumber:
+        if badge not in badges:
             continue
+
+        filter_list = set(assigned_badge_numbers) - set(reserved_badge_numbers)
+
+        # Skip badges which have already been assigned
+        if badge.badgeNumber is not None:
+            continue
+        # Skip badges that are not assigned a registration level
         if badge.effectiveLevel() is None:
             continue
-        highest = highest + 1
+
+        # Pick the next largest candidate assignment
+        if len(filter_list) == 0:
+            highest = 1
+        else:
+            highest = max(filter_list) + 1
+
+        while highest in reserved_badge_numbers:
+            highest += 1
+
         badge.badgeNumber = highest
         badge.save()
+        assigned_badge_numbers.append(highest)
 
 
 assign_badge_numbers.short_description = "Assign badge number"
 
 
 def assign_numbers_and_print(modeladmin, request, queryset):
-    nonstaff = Attendee.objects.filter(staff=None)
-    firstBadge = queryset[0]
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=firstBadge.event)
-    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-
-    for badge in queryset.order_by("registeredDate"):
-        if badge.badgeNumber:
-            continue
-        if badge.effectiveLevel() is None:
-            continue
-        highest = highest + 1
-        badge.badgeNumber = highest
-        badge.save()
+    assign_badge_numbers(modeladmin, request, queryset)
 
     con = printing.Main(local=True)
     tags = []
@@ -669,49 +690,6 @@ def print_badges(modeladmin, request, queryset):
 print_badges.short_description = "Print Badges"
 
 
-def print_label_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
-
-        # Exclude staff badges
-        try:
-            staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-            messages.warning(
-                request,
-                u"{0} is on staff, so we skipped printing an attendee badge".format(
-                    badge.badgeName
-                ),
-            )
-        except Staff.DoesNotExist:
-            tags.append(
-                {
-                    "name": cgi.escape(badge.badgeName),
-                    "number": badgeNumber,
-                    "level": cgi.escape(str(badge.effectiveLevel())),
-                    "title": "",
-                    "age": get_attendee_age(badge.attendee),
-                }
-            )
-            badge.printed = True
-            badge.save()
-    con.nametags(tags, theme="fd_labels")
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
-
-
-print_label_badges.short_description = "Print Label Badges"
-
-
 def print_dealerasst_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
@@ -720,11 +698,11 @@ def print_dealerasst_badges(modeladmin, request, queryset):
         if badge.badgeNumber is None:
             badgeNumber = ""
         else:
-            badgeNumber = "S{:03}".format(badge.badgeNumber)
+            badgeNumber = "{:03}".format(badge.badgeNumber)
         tags.append(
             {
                 "name": cgi.escape(badge.badgeName),
-                "number": badge.badgeNumber,
+                "number": badgeNumber,
                 "level": "Dealer",
                 "title": "",
                 "age": get_attendee_age(badge.attendee),
@@ -752,7 +730,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         if badge.badgeNumber is None:
             badgeNumber = ""
         else:
-            badgeNumber = "S{:03}".format(badge.badgeNumber)
+            badgeNumber = "{:03}".format(badge.badgeNumber)
         try:
             dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
         except Dealer.DoesNotExist:
@@ -767,7 +745,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         tags.append(
             {
                 "name": cgi.escape(badge.badgeName),
-                "number": badge.badgeNumber,
+                "number": badgeNumber,
                 "level": "Dealer",
                 "title": "",
                 "age": get_attendee_age(badge.attendee),
@@ -997,7 +975,6 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     actions = [
         assign_badge_numbers,
         print_badges,
-        print_label_badges,
         print_dealerasst_badges,
         assign_numbers_and_print,
         print_dealer_badges,
@@ -1113,7 +1090,7 @@ admin.site.register(OrderItem, OrderItemAdmin)
 
 def send_registration_email(modeladmin, request, queryset):
     for order in queryset:
-        sendRegistrationEmail(order, order.billingEmail)
+        registration.emails.send_registration_email(order, order.billingEmail)
 
 
 send_registration_email.short_description = "Send registration email"
@@ -1165,11 +1142,158 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         ("Notes", {"fields": ("notes",), "classes": ("collapse",)}),
     )
 
+    def render_change_form(self, request, context, *args, **kwargs):
+        obj = kwargs.get("obj")
+        if obj and obj.billingType == Order.CREDIT:
+            try:
+                api_data = json.loads(obj.apiData)
+                context["api_data"] = api_data
+            except ValueError as e:
+                messages.warning(
+                    request,
+                    "Error while loading JSON from apiData field for this order: {0}".format(
+                        e
+                    ),
+                )
+                logger.warn(
+                    "Error while loading JSON from api_data for order {0}".format(obj)
+                )
+                logger.error(e)
+
+        return super(OrderAdmin, self).render_change_form(
+            request, context, *args, **kwargs
+        )
+
+    class RefundForm(forms.Form):
+        amount = forms.DecimalField(
+            min_value=0,
+            decimal_places=2,
+            widget=NumberInput(attrs={"size": "10", "style": "width: 70px"}),
+        )
+        reason = forms.CharField(
+            widget=forms.TextInput(
+                attrs={"size": "40", "maxlength": 192, "autofocus": "autofocus"}
+            ),
+            required=False,
+        )
+
     def save_model(self, request, obj, form, change):
         if not request.user.has_perm("registration.issue_refund"):
-            if form.data["status"] == Order.REFUNDED:
-                raise forms.ValidationError
+            if form.data["status"] in (Order.REFUNDED, Order.REFUND_PENDING):
+                status = Order.PENDING
+                if obj.id:
+                    status = Order.objects.get(id=obj.id).status
+                messages.error(
+                    request,
+                    "You do not have permission to issue refunds. "
+                    "The order status has been reverted to {0}".format(status),
+                )
+                obj.status = status
         obj.save()
+
+    def refresh_view(self, request, order_id, extra_context=None):
+        # Get Square Order ID, and grab latest info from the transactions API
+        # Update status accordingly
+        order = Order.objects.get(id=order_id)
+        try:
+            success, message = payments.refresh_payment(order)
+        except ValueError as e:
+            messages.error(
+                request,
+                "There was a problem while parsing the API data for this order: {0}".format(
+                    e
+                ),
+            )
+            return HttpResponseRedirect(
+                reverse("admin:registration_order_change", args=(order_id,))
+            )
+
+        if success:
+            messages.success(
+                request, "Refreshed order information from Square successfully"
+            )
+        else:
+            messages.error(
+                request,
+                "There was a problem while refreshing information about this order: {0}".format(
+                    message
+                ),
+            )
+        return HttpResponseRedirect(
+            reverse("admin:registration_order_change", args=(order_id,))
+        )
+
+    def get_urls(self):
+        urls = super(OrderAdmin, self).get_urls()
+        my_urls = [
+            url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
+            url(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
+        ]
+        return my_urls + urls
+
+    def refund_view(self, request, order_id, extra_context=None):
+        # TODO: Produce an error if a full refund has already been completed
+        form = None
+
+        order = Order.objects.get(id=order_id)
+
+        api_data = None
+        try:
+            api_data = json.loads(order.apiData)
+        except ValueError:
+            if order.billingType == Order.CREDIT:
+                messages.warning(request, "External payment data could not be decoded")
+
+        if "amount" in request.POST:
+            if not request.user.has_perm("registration.issue_refund"):
+                messages.error(request, "You do not have permission to issue refunds.")
+                return HttpResponseRedirect(request.get_full_path())
+
+            form = self.RefundForm(request.POST)
+
+            if form.is_valid():
+                amount = Decimal(form.cleaned_data["amount"]).quantize(TWOPLACES)
+                reason = form.cleaned_data.get("reason")
+
+                if amount > order.total:
+                    messages.error(
+                        request,
+                        "Refund amount (${0}) cannot exceed order total (${1})".format(
+                            amount, order.total
+                        ),
+                    )
+                else:
+                    if reason is None:
+                        reason = "[{0}]".format(request.user)
+                    else:
+                        reason += " [{0}]".format(request.user)
+                    result, msg = payments.refund_payment(order, amount, reason)
+                    if result:
+                        messages.success(
+                            request,
+                            "{0} - refund amount: {1} (reason: {2})".format(
+                                msg, amount, reason
+                            ),
+                        )
+                    else:
+                        messages.error(request, msg)
+                    return HttpResponseRedirect(
+                        reverse("admin:registration_order_change", args=(order_id,))
+                    )
+                return HttpResponseRedirect(request.get_full_path())
+            else:
+                messages.error(request, "Invalid form data.")
+
+        if not form:
+            form = self.RefundForm(initial={"amount": order.total,})
+
+        context = {
+            "form": form,
+            "order": order,
+            "api_data": api_data,
+        }
+
+        return render(request, "admin/refund_form.html", context)
 
 
 admin.site.register(Order, OrderAdmin)
@@ -1222,3 +1346,11 @@ class CashdrawerAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(Cashdrawer, CashdrawerAdmin)
+
+
+class ReservedBadgeNumbersAdmin(admin.ModelAdmin):
+    list_display = ("event", "badgeNumber")
+    list_filter = ("event",)
+
+
+admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
