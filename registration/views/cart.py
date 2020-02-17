@@ -4,7 +4,7 @@ from datetime import datetime
 
 import common
 import ordering
-from attendee import checkBanList
+from attendee import check_ban_list
 from django.shortcuts import render
 
 from registration.models import *
@@ -195,7 +195,7 @@ def addToCart(request):
     except KeyError:
         return common.abort(400, "Required parameters not found in POST body")
 
-    banCheck = checkBanList(pda["firstName"], pda["lastName"], pda["email"])
+    banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
         logger.error("***ban list registration attempt***")
         registrationEmail = common.getRegistrationEmail()

@@ -1,12 +1,10 @@
 from __future__ import unicode_literals
 
-import json
 import random
 import string
 from decimal import *
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 

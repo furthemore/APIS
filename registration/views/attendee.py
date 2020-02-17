@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from django.core.serializers.json import DjangoJSONEncoder
@@ -13,16 +14,16 @@ def get_attendee_age(attendee):
     return age
 
 
-def checkBanList(firstName, lastName, email):
-    banCheck = BanList.objects.filter(
+def check_ban_list(firstName, lastName, email):
+    ban_check = BanList.objects.filter(
         firstName=firstName, lastName=lastName, email=email
     )
-    if banCheck.count() > 0:
+    if ban_check.count() > 0:
         return True
     return False
 
 
-def getPriceLevelList(levels):
+def get_price_level_list(levels):
     data = [
         {
             "name": level.name,
@@ -51,18 +52,18 @@ def getPriceLevelList(levels):
     return data
 
 
-def getMinorPriceLevels(request):
+def get_minor_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
         public=False, startDate__lte=now, endDate__gte=now, name__icontains="minor"
     ).order_by("basePrice")
-    data = getPriceLevelList(levels)
+    data = get_price_level_list(levels)
     return HttpResponse(
         json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"
     )
 
 
-def getAccompaniedPriceLevels(request):
+def get_accompanied_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
         public=False,
@@ -70,24 +71,24 @@ def getAccompaniedPriceLevels(request):
         endDate__gte=now,
         name__icontains="accompanied",
     ).order_by("basePrice")
-    data = getPriceLevelList(levels)
+    data = get_price_level_list(levels)
     return HttpResponse(
         json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"
     )
 
 
-def getFreePriceLevels(request):
+def get_free_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
         public=False, startDate__lte=now, endDate__gte=now, name__icontains="free"
     )
-    data = getPriceLevelList(levels)
+    data = get_price_level_list(levels)
     return HttpResponse(
         json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"
     )
 
 
-def getPriceLevels(request):
+def get_price_levels(request):
     dealer = request.session.get("dealer_id", -1)
     staff = request.session.get("staff_id", -1)
     attendee = request.session.get("attendee_id", -1)
@@ -113,13 +114,13 @@ def getPriceLevels(request):
     ).order_by("basePrice")
     if att and badge and badge.effectiveLevel():
         levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
-    data = getPriceLevelList(levels)
+    data = get_price_level_list(levels)
     return HttpResponse(
         json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"
     )
 
 
-def getAdultPriceLevels(request):
+def get_adult_price_levels(request):
     dealer = request.session.get("dealer_id", -1)
     staff = request.session.get("staff_id", -1)
     attendee = request.session.get("attendee_id", -1)
@@ -145,7 +146,7 @@ def getAdultPriceLevels(request):
     ).order_by("basePrice")
     if att and badge and badge.effectiveLevel():
         levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
-    data = getPriceLevelList(levels)
+    data = get_price_level_list(levels)
     return HttpResponse(
         json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"
     )

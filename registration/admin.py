@@ -1,5 +1,6 @@
 import cgi
 import copy
+import json
 import logging
 from datetime import date
 
@@ -9,6 +10,7 @@ from django import forms
 from django.conf.urls import url
 from django.contrib import admin, auth, messages
 from django.contrib.admin.models import DELETION, LogEntry
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.forms import NumberInput

@@ -394,7 +394,13 @@
             // American middle-endian format put out by datepicker javascript
             var birthdate = new Date(Date.parse($("#birthDate").val()));
         }
-        var age = getAge(birthdate);
+
+        try {
+            var age = getAge(birthdate);
+        } catch (e) {
+            console.log(e);
+            alert(e);
+        }
 
         if (age < 7) {
             $("#levelContainer").loadTemplate($("#levelTemplate"), freeLevelTemplateData);

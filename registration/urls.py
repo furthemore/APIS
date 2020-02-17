@@ -221,27 +221,27 @@ urlpatterns = [
     ),
     url(
         r"^pricelevels/?$",
-        registration.views.attendee.getPriceLevels,
+        registration.views.attendee.get_price_levels,
         name="pricelevels",
     ),
     url(
         r"^adultpricelevels/?$",
-        registration.views.attendee.getAdultPriceLevels,
+        registration.views.attendee.get_adult_price_levels,
         name="adultpricelevels",
     ),
     url(
         r"^minorpricelevels/?$",
-        registration.views.attendee.getMinorPriceLevels,
+        registration.views.attendee.get_minor_price_levels,
         name="minorpricelevels",
     ),
     url(
         r"^accompaniedpricelevels/?$",
-        registration.views.attendee.getAccompaniedPriceLevels,
+        registration.views.attendee.get_accompanied_price_levels,
         name="accompaniedpricelevels",
     ),
     url(
         r"^freepricelevels/?$",
-        registration.views.attendee.getFreePriceLevels,
+        registration.views.attendee.get_free_price_levels,
         name="freepricelevels",
     ),
     url(r"^shirts/?$", registration.views.common.getShirtSizes, name="shirtsizes"),
