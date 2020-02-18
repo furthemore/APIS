@@ -345,6 +345,7 @@ def onsiteSignature(request):
     return render(request, "registration/signature.html", context)
 
 
+# TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
 def completeSquareTransaction(request):
     key = request.GET.get("key", "")

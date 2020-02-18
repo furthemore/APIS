@@ -18,9 +18,7 @@ def check_ban_list(firstName, lastName, email):
     ban_check = BanList.objects.filter(
         firstName=firstName, lastName=lastName, email=email
     )
-    if ban_check.count() > 0:
-        return True
-    return False
+    return ban_check.count() > 0
 
 
 def get_price_level_list(levels):
