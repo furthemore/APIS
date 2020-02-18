@@ -97,7 +97,9 @@ class Command(BaseCommand):
                 org_donations += org_sum
             backend_writer(event, "org_donations", int(org_donations * 100))
 
-            print "Event: {0} - (total: {1})".format(event, total_count)
+            print "Event: {0} - (total completed orders: {1})".format(
+                event, total_count
+            )
             for level in price_levels:
                 print level, "-", level_bins[level.id]
 
@@ -114,6 +116,7 @@ class Command(BaseCommand):
             )
             backend_writer(event, "staff_total", total_staff_count)
             backend_writer(event, "staff_active", active_staff_count)
+            backend_writer(event, "orders", total_count)
             print ("==========")
 
         if hasattr(backend, "batch"):
