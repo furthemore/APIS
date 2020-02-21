@@ -515,6 +515,7 @@ def onsiteAdminCart(request):
     request.session["heartbeat"] = time.time()  # Keep session alive
     cart = request.session.get("cart", None)
     if cart is None:
+        request.session["cart"] = []
         return JsonResponse(
             {"success": False, "message": "Cart not initialized"}, status=400
         )

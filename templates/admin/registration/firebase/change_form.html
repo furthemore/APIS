@@ -1,9 +1,9 @@
 {% extends "admin/change_form.html" %}
 {% load i18n admin_urls %}
 {% block object-tools-items %}
-    {% if perms.registration.issue_refund %}
-<li xmlns:admin="http://www.w3.org/1999/xhtml">
-        <a href="{% url 'admin:order_refund' original.pk %}" class="historylink">Refund</a>
+    {% if user.is_superuser %}
+    <li>
+        <a href="{% url 'admin:firebase_provision' original.pk %}" class="historylink">Provision App</a>
     </li>
     {% endif %}
 
