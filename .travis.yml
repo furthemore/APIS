@@ -1,37 +1,30 @@
 language: python
-
-# Run jobs on container-based infrastructure, can be overridden per job
 sudo: false
-
-# Travis whitelists the installable packages, additions can be requested
-#   https://github.com/travis-ci/apt-package-whitelist
 addons:
   apt:
     packages:
-      - swig
-
-# Save pip's downloads/packages/wheels between job runs
+    - swig
 cache:
   directories:
-    - $HOME/.cache/pip
-
+  - "$HOME/.cache/pip"
 python:
-  - 2.7
+- 2.7
 env:
-  - DJANGO_PACKAGE="Django>=1.11,<1.12"
-
+- DJANGO_PACKAGE="Django>=1.11,<1.12"
 matrix:
-    exclude:
-       - python 2.7
-
+  exclude:
+  - python 2.7
 install:
-  - pip install --upgrade pip wheel
-  - pip install -r requirements.txt
-  - pip install coveralls
-  - pip freeze
-  - cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+- pip install --upgrade pip wheel
+- pip install -r requirements.txt
+- pip install coveralls
+- pip freeze
+- cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
 script:
-  - coverage run manage.py test registration
-  - coverage report
+- coverage run manage.py test registration
+- coverage report
 after_success:
-  - coveralls
+- coveralls
+notifications:
+  slack:
+    secure: N62ZbiJUodjMz/a3aVK4w75vaizlRgajJpKl0vheJGpc2+uRLRwzmnhNl2W4Wl5JsmXdZ0JRe92g9RVXPOmHhE0nSyiSK6WiZZgzpxE11Utdgylit2dskP+qviYVZYjLTXn8wi6FTBhMdOLrug+7GdRDUgZq2iuc7P1yelP3zbCNbU7xFzoLXbnMeiKSJROIYcNwoicOEydhHm6fMTE8m7tbWYGfcTuwQRgOnfpWOBKzUyO52QQKT4fPI2WqtTpuZAB2APk0kngAdUzBENW0Qc6tTrqGJQV4QH2ifGxp1z/OfeUpGIBSirbLv6j1SdJAtRrhcIpyO0wnro11Ps1Pa3OnTo+TQcRXZvOP2mEazPtyad7CrwtbWy3P9mnpCCyWoGRV5mPntFF120mpG+u8WJlaYj5HD7z5kxKzS2vo+Dtdhe1XHNCXsJ1OtbbHI8rErUnKOzeipI2EgM3tOT0E5zKZwBuS5p3P29n+ns8zKV5PhhoCQW6HJ4Nm3Bm7vErImV850Md0TZNctrlRowjyh9p/Q2pepiMJvtsca0EIYJ4mmPWpYJZ0F2uuiPNNYqJv9BM0Po87GtscIngPVlMYTPJBaLNTkQwLoUjH4IigycyWW24v8jc3KX1r48F1kvmTicxyZXZEQE/C3i5wau8bjHBV4ow3UXu594SnjCIQNcw=
