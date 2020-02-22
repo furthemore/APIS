@@ -631,7 +631,7 @@ def assign_numbers_and_print(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -681,7 +681,7 @@ def print_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -713,7 +713,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -757,9 +757,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         con.nametags(tags, theme=badge.event.badgeTheme)
         # serve up this file
         pdf_path = con.pdf.split("/")[-1]
-        response = HttpResponseRedirect(
-            reverse(registration.views.printing.printNametag)
-        )
+        response = HttpResponseRedirect(reverse(reverse("registration:print")))
         url_params = {"file": pdf_path, "next": request.get_full_path()}
         response["Location"] += "?{}".format(urlencode(url_params))
         return response
@@ -828,7 +826,7 @@ def print_staff_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
