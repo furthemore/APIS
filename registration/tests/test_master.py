@@ -1,20 +1,14 @@
-import json
-import logging
-import time
-import uuid
-from datetime import datetime, timedelta
+import io
+import urllib2
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
 from django.test.utils import override_settings
-from django.utils import timezone
+from mock import patch
 
-from registration import admin, payments
-from registration.admin import OrderAdmin
 from registration.models import *
-from registration.pushy import PushyAPI
+from registration.pushy import PushyAPI, PushyError
 from registration.tests.common import *
 
 
@@ -756,5 +750,22 @@ class LookupTestCases(TestCase):
 
 
 class TestPushyAPI(TestCase):
-    def test_sendPushNotification(self):
-        PushyAPI.sendPushNotification("data", "to", None)
+    @patch("urllib2.urlopen")
+    def test_sendPushNotification(self, mock_urlopen):
+        data = {"data": "some cool message here"}
+        PushyAPI.sendPushNotification(data, "to", None)
+        mock_urlopen.assert_called_once()
+
+    @patch("urllib2.urlopen")
+    def test_sendPushNotification_sad_path(self, mock_urlopen):
+        data = {"data": "some cool message here"}
+        mock_urlopen.side_effect = urllib2.HTTPError(
+            "https://api.pushy.me/push",
+            400,
+            "Pushy didn't like that!",
+            None,
+            io.StringIO(),
+        )
+        with self.assertRaises(PushyError):
+            PushyAPI.sendPushNotification(data, "to", None)
+        mock_urlopen.assert_called_once()
