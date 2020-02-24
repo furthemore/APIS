@@ -141,12 +141,12 @@ class Printer:
             args.append(html)
 
         # create temp file to write to
-        out = tempfile.NamedTemporaryFile(delete=False)
+        out = tempfile.NamedTemporaryFile(delete=False, prefix="apis", suffix=".pdf")
         out.close()
         args.append(out.name)  # append output file name
 
         self.log.debug("Calling {0} with arguments <".format(wkhtmltopdf))
-        self.log.debug("{0} >".format(args))
+        self.log.debug("{0} >".format(" ".join(args)))
 
         if args[0] != wkhtmltopdf:
             args.insert(0, wkhtmltopdf)  # prepend program name
@@ -269,7 +269,7 @@ class Nametag:
         try:
             resource = os.listdir(directory)
         except OSError as e:
-            logger.error("({0})".format(e))
+            self.log.error("({0})".format(e))
             return []
 
         themes = []
@@ -372,14 +372,9 @@ class Nametag:
         # generate barcode of secure code, code128:
         if barcode:
             try:
-                if secure == "":
-                    codebar.gen(
-                        "code128", os.path.join(directory, "default-secure.png"), code
-                    )
-                else:
-                    codebar.gen(
-                        "code128", os.path.join(directory, "default-secure.png"), secure
-                    )
+                codebar.gen(
+                    "code128", os.path.join(directory, "default-secure.png"), barcode
+                )
             except NotImplementedError as e:
                 self.log.error("Unable to generate barcode: {0}".format(e))
                 html = html.replace(u"default-secure.png", u"white.gif")
@@ -580,10 +575,13 @@ class Main:
         self.con.printout(filename, printer, orientation)
 
     def cleanup(self, trash=None):
+        self.log.debug("Cleaning up files...")
         if trash is not None:
             for item in trash:
+                self.log.debug("Delete {0}".format(item))
                 os.unlink(item)
         else:
+            self.log.debug("Delete {0}".format(self.pdf))
             os.unlink(self.pdf)
         self.section = ""
 
@@ -592,14 +590,14 @@ if __name__ == "__main__":
 
     tags = [
         {
-            "name": "Barkley Woofington",
+            "name": u"🦊 Barkley Woofington 🐶",
             "number": "S-6969",
             "level": "Top Dog",
             "title": "",
             "age": 20,
         },
         {
-            "name": "Rechner Foxer",
+            "name": u"🦊 rechñer fox",
             "number": "S-0001",
             "level": "Foxo",
             "title": "",

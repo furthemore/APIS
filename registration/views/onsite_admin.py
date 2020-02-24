@@ -93,7 +93,7 @@ def onsiteAdminSearch(request):
     terminals = list(Firebase.objects.all())
     query = request.POST.get("search", None)
     if query is None:
-        return redirect("onsiteAdmin")
+        return redirect("registration:onsiteAdmin")
 
     errors = []
     results = Badge.objects.filter(
@@ -123,6 +123,7 @@ def openTerminal(request):
 
 
 def sendMessageToTerminal(request, data):
+    # import pdb; pdb.set_trace()
     request.session["heartbeat"] = time.time()  # Keep session alive
     url_terminal = request.GET.get("terminal", None)
     logger.info("Terminal from GET parameter: {0}".format(url_terminal))
@@ -132,13 +133,14 @@ def sendMessageToTerminal(request, data):
         try:
             active = Firebase.objects.get(id=int(url_terminal))
             request.session["terminal"] = active.id
+            session_terminal = active.id
         except Firebase.DoesNotExist:
             return JsonResponse(
                 {
                     "success": False,
                     "message": "The payment terminal specified has not registered with the server",
                 },
-                status=500,
+                status=404,
             )
         except ValueError:
             # weren't passed an integer
@@ -206,19 +208,6 @@ def notifyTerminal(request, data):
     ]
 
     PushyAPI.sendPushNotification(display, to, None)
-
-
-@staff_member_required
-def onsiteSelectTerminal(request):
-    selected = request.POST.get("terminal", None)
-    try:
-        active = Firebase.objects.get(id=selected)
-    except Firebase.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "reason": "Terminal does not exist"}, status=404
-        )
-    request.session["terminal"] = selected
-    return JsonResponse({"success": True})
 
 
 def assignBadgeNumber(request):
@@ -339,7 +328,7 @@ def onsitePrintBadges(request):
     con.nametags(tags, theme=theme)
     pdf_path = con.pdf.split("/")[-1]
 
-    file_url = reverse(printNametag) + "?file={0}".format(pdf_path)
+    file_url = reverse("registration:print") + "?file={0}".format(pdf_path)
 
     return JsonResponse(
         {
@@ -356,6 +345,7 @@ def onsiteSignature(request):
     return render(request, "registration/signature.html", context)
 
 
+# TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
 def completeSquareTransaction(request):
     key = request.GET.get("key", "")
@@ -525,7 +515,10 @@ def onsiteAdminCart(request):
     request.session["heartbeat"] = time.time()  # Keep session alive
     cart = request.session.get("cart", None)
     if cart is None:
-        return JsonResponse({"success": False, "reason": "Cart not initialized"})
+        request.session["cart"] = []
+        return JsonResponse(
+            {"success": False, "message": "Cart not initialized"}, status=400
+        )
 
     badges = []
     for id in cart:
@@ -573,7 +566,7 @@ def onsiteAdminCart(request):
             "abandoned": badge.abandoned,
             "effectiveLevel": effectiveLevel,
             "discount": badge.getDiscount(),
-            "age": get_attendee_age(badge),
+            "age": get_attendee_age(badge.attendee),
         }
         result.append(item)
 
