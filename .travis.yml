@@ -1,40 +1,34 @@
 language: python
-
 dist: xenial
-
-# Travis whitelists the installable packages, additions can be requested
-#   https://github.com/travis-ci/apt-package-whitelist
 before_install:
-  - wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-  - sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
-
+- wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
+- sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
+- sudo apt-get -y -f install
 addons:
   apt:
     packages:
-      - swig
-
-# Save pip's downloads/packages/wheels between job runs
+    - swig
 cache:
   directories:
-    - $HOME/.cache/pip
-
+  - "$HOME/.cache/pip"
 python:
-  - 2.7
+- 2.7
 env:
-  - DJANGO_PACKAGE="Django>=1.11,<1.12"
-
+- DJANGO_PACKAGE="Django>=1.11,<1.12"
 matrix:
-    exclude:
-       - python 2.7
-
+  exclude:
+  - python 2.7
 install:
-  - pip install --upgrade pip wheel
-  - pip install -r requirements.txt
-  - pip install coveralls
-  - pip freeze
-  - cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+- pip install --upgrade pip wheel
+- pip install -r requirements.txt
+- pip install coveralls
+- pip freeze
+- cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
 script:
-  - coverage run manage.py test registration
-  - coverage report
+- coverage run manage.py test registration
+- coverage report
 after_success:
-  - coveralls
+- coveralls
+notifications:
+  slack:
+    secure: b7oQcaJ5OHbIKL4Xw5ThTYUvRCzwhyZ82+TJQk81pADywT2SxooJGUmU+oKocqHZZkE9SmgUjv8ZLZnOQEQPNYpqP+BZZFP/wl0MflyRrFOnQ+nn96W2yPTRhdHpw4wSMO7xtTNjqwiq4z7UfLJIQroAvuKFh/PunUMfCiWA3d6OIC18488knSooc0qXGl0UILa4iO6k8A/YFr0pKy2opHGDvuuQhkynKqtGzB5dvrV7KlmDubVgkLGsnTgakQHilW9KdeFH4JjLmcsINA9B9T/IgGYqNk2ZZYmJdPbZvzQUhT1vV4fEvkQZx1BQ4mqJKyJ0BL1uGOWDjyo0b0VjBeM3ny1i3c9z6mh1NcIEPcaX/eY+biMfEAuYNX0IHUJ28XQqy7kbnKMIECIK5BpKMPnTUj/MOrczF0/fwVifSRA6kaH5oL4tgHfqBInqQNDzMsMn/xNh64Fgd+0rNqk/1XVuxNO310SfQ3EGpvkPVSSxb+8c0EgBxAh2PvB/uXPI3fHHiEhrZICe/P7XgyCuDLd4Mu/AbrvmreM/ZRCZLcvB8dbd1LZQskMViZz7oVWPbMj5PRb9O2EtAGoDjlsh6GUgZxN8bNtpldH8BPeY+Co8TnLm6M6EDgytvddFs3zuaNRVD8xKlaYzBA8F01Wdvr/tSEFKlAB9mtCv7QFWRcI=
