@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from django.shortcuts import render
@@ -12,12 +13,12 @@ def onsite(request):
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {"event": event}
-    if event.onlineRegStart <= today <= event.onlineRegEnd:
+    if event.onsiteRegStart <= today <= event.onsiteRegEnd:
         return render(request, "registration/onsite.html", context)
     return render(request, "registration/closed.html", context)
 
 
-def onsiteCart(request):
+def onsite_cart(request):
     sessionItems = request.session.get("cart_items", [])
     cartItems = list(Cart.objects.filter(id__in=sessionItems))
     orderItems = request.session.get("order_items", [])
@@ -99,7 +100,7 @@ def onsiteCart(request):
     return render(request, "registration/onsite-checkout.html", context)
 
 
-def onsiteDone(request):
+def onsite_done(request):
     context = {}
     clear_session(request)
     return render(request, "registration/onsite-done.html", context)

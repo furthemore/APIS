@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+{% if request.user.is_superuser %}
+<br>
+  {{ qr_svg | safe }}<br><br>
+
+  <h2>Setup payment terminal</h2>
+  <p>Press the clock on the payment terminal you wish to provision, and press "Provision Settings"</p>
+
+  <input type="button" onclick="javascript:window.history.back();" class="cancel" value="Go Back"/>
+
+{% else %}
+  <h1>Sorry</h1>
+  <p>You must be a superuser to access this URL.</p>
+{% endif %}
+
+{% endblock %}
