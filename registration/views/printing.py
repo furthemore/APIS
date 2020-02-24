@@ -15,14 +15,15 @@ def printNametag(request):
 def servePDF(request):
     filename = request.GET.get("file", None)
     if filename is None:
-        return JsonResponse({"success": False})
+        return JsonResponse({"success": False, "reason": "Bad request"}, status=400)
     filename = filename.replace("..", "/")
     try:
         fsock = open("/tmp/%s" % filename)
     except IOError as e:
-        return JsonResponse({"success": False})
+        return JsonResponse({"success": False, "reason": "file not found"}, status=404)
     response = HttpResponse(fsock, content_type="application/pdf")
     # response['Content-Disposition'] = 'attachment; filename=download.pdf'
+    response["Access-Control-Allow-Origin"] = "*"
     fsock.close()
-    os.unlink("/tmp/%s" % filename)
+    # os.unlink("/tmp/%s" % filename)
     return response
