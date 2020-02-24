@@ -328,7 +328,7 @@ def onsitePrintBadges(request):
     con.nametags(tags, theme=theme)
     pdf_path = con.pdf.split("/")[-1]
 
-    file_url = reverse(printNametag) + "?file={0}".format(pdf_path)
+    file_url = reverse("registration:print") + "?file={0}".format(pdf_path)
 
     return JsonResponse(
         {
