@@ -391,26 +391,20 @@ def completeSquareTransaction(request):
     if serverTransactionId:
         payment_ids = payments.get_payments_from_order_id(serverTransactionId)
         store_api_data = {
-            "payment": {"id": payment_ids[0],},
             "onsite": {
                 "client_transaction_id": clientTransactionId,
                 "server_transaction_id": serverTransactionId,
             },
         }
+        if payment_ids:
+            store_api_data["payment"] = {"id": payment_ids[0]}
 
     for order in orders:
         order.billingType = Order.CREDIT
         order.status = Order.COMPLETED
         order.settledDate = datetime.now()
-        order.notes = json.dumps(
-            {
-                "type": "square_register",
-                "clientTransactionId": clientTransactionId,
-                "serverTransactionId": serverTransactionId,
-            }
-        )
 
-        order.apiData = store_api_data
+        order.apiData = json.dumps(store_api_data)
         status, errors = payments.refresh_payment(order)
 
         if not status:
@@ -533,7 +527,7 @@ def onsiteAdminCart(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=400
+            {"success": False, "message": "Cart not initialized"}, status=200
         )
 
     badges = []

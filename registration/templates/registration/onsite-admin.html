@@ -381,7 +381,12 @@ $(document).ready(function () {
             }
     });
 
-
+    if (navigator.userAgent.match(/iPad|iPhone/)) {
+        $("#pos").append('<option value="ios">This device (iOS)</option>');
+    }
+    if (navigator.userAgent.match(/Android/)) {
+        $("#pos").append('<option value="android">This device (Android)</option>');
+    }
 
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {

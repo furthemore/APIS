@@ -228,7 +228,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:onsiteAdminCart"))
         message = response.json()
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(message["success"], False)
         self.assertEqual(message["message"], "Cart not initialized")
 
