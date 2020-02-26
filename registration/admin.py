@@ -645,7 +645,8 @@ send_upgrade_form_email.short_description = "Send upgrade info email"
 
 def resend_confirmation_email(modeladmin, request, queryset):
     for badge in queryset:
-        registration.emails.send_registration_email(badge)
+        order = getOrder()
+        registration.emails.send_registration_email(order, badge.attendee.email)
 
 
 resend_confirmation_email.short_description = "Resend confirmation email"
