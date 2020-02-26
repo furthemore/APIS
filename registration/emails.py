@@ -13,7 +13,7 @@ from .models import *
 logger = logging.getLogger("registration.emails")
 
 
-def send_registration_email(order, email):
+def send_registration_email(order, email, send_vip=True):
     logger.debug("Enter send_registration_email...")
     order_items = OrderItem.objects.filter(order=order)
     order_dict = {}
@@ -69,7 +69,7 @@ def send_registration_email(order, email):
             )
 
         # send vip notification if necessary
-        if oi.priceLevel.emailVIP:
+        if oi.priceLevel.emailVIP and send_vip:
             data = {"badge": oi.badge, "event": oi.badge.event}
             msg_txt = render_to_string("registration/emails/vipNotification.txt", data)
             msg_html = render_to_string(
