@@ -643,6 +643,17 @@ def send_upgrade_form_email(modeladmin, request, queryset):
 send_upgrade_form_email.short_description = "Send upgrade info email"
 
 
+def resend_confirmation_email(modeladmin, request, queryset):
+    for badge in queryset:
+        order = getOrder()
+        registration.emails.send_registration_email(
+            order, badge.attendee.email, send_vip=False
+        )
+
+
+resend_confirmation_email.short_description = "Resend confirmation email"
+
+
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
     firstBadge = queryset[0]
