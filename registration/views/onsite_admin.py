@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from printing import printNametag
 
-from registration import printing
+from registration import payments, printing
 from registration.models import *
 from registration.pushy import PushyAPI
 
@@ -168,7 +168,7 @@ def sendMessageToTerminal(request, data):
 
 @staff_member_required
 def enablePayment(request):
-    data = {"command": "enable_payment"}
+    data = {"command": "process_payment"}
     return sendMessageToTerminal(request, data)
 
 
@@ -349,6 +349,8 @@ def onsiteSignature(request):
 @csrf_exempt
 def completeSquareTransaction(request):
     key = request.GET.get("key", "")
+    # FIXME: Need to work on a list of order references, so that every order gets
+    # FIXME: updated and no badge is left orphaned.
     reference = request.GET.get("reference", None)
     clientTransactionId = request.GET.get("clientTransactionId", None)
     serverTransactionId = request.GET.get("serverTransactionId", None)
@@ -385,6 +387,17 @@ def completeSquareTransaction(request):
             status=404,
         )
 
+    # Lookup the payment(s?) associated with this order:
+    if serverTransactionId:
+        payment_ids = payments.get_payments_from_order_id(serverTransactionId)
+        store_api_data = {
+            "payment": {"id": payment_ids[0],},
+            "onsite": {
+                "client_transaction_id": clientTransactionId,
+                "server_transaction_id": serverTransactionId,
+            },
+        }
+
     for order in orders:
         order.billingType = Order.CREDIT
         order.status = Order.COMPLETED
@@ -396,9 +409,12 @@ def completeSquareTransaction(request):
                 "serverTransactionId": serverTransactionId,
             }
         )
-        # FIXME: Call out to the Square API to populate the transaction details server-side:
 
-        order.save()
+        order.apiData = store_api_data
+        status, errors = payments.refresh_payment(order)
+
+        if not status:
+            return JsonResponse({"success": False, "error": errors,}, status=210)
 
     return JsonResponse({"success": True})
 

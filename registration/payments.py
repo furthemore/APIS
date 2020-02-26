@@ -12,6 +12,7 @@ client = Client(
 )
 payments_api = client.payments
 refunds_api = client.refunds
+orders_api = client.orders
 
 logger = logging.getLogger("registration.payments")
 
@@ -270,6 +271,37 @@ def refund_card_payment(order, amount, reason=None, request=None):
     message = "Square refund has been submitted and is {0}".format(status)
     logger.debug(message)
     return True, message
+
+
+def get_payments_from_order_id(order_id):
+    """
+    Returns a list of payment IDs (tenders) from the serverTransactionId
+    returned from the POS SDK.
+
+    :param order_id:
+    :return: list of payment IDs, or None if there was an error
+    """
+
+    body = {"order_ids": [order_id,]}
+
+    result = orders_api.batch_retrieve_orders(settings.SQUARE_LOCATION_ID, body)
+
+    if result.is_success():
+        if result.body:
+            tenders = result.body["orders"][0]["tenders"]
+            payment_ids = [payment["id"] for payment in tenders]
+            return payment_ids
+        else:
+            return []
+
+    elif result.is_error():
+        logger.error(
+            "There was a problem while fetching order id {0} from Square:".format(
+                order_id
+            )
+        )
+        logger.error(format_errors(result.errors))
+        return None
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent
