@@ -558,6 +558,10 @@ def onsiteAdminCart(request):
             order.reference = first_order.reference
             order.save()
 
+        holdType = None
+        if badge.attendee.holdType:
+            holdType = badge.attendee.holdType.name
+
         item = {
             "id": badge.id,
             "firstName": badge.attendee.firstName,
@@ -567,6 +571,7 @@ def onsiteAdminCart(request):
             "effectiveLevel": effectiveLevel,
             "discount": badge.getDiscount(),
             "age": get_attendee_age(badge.attendee),
+            "holdType": holdType,
         }
         result.append(item)
 
