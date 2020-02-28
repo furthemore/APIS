@@ -31,6 +31,12 @@ class PushyAPI:
             response = urllib2.urlopen(req, json.dumps(postData))
         except urllib2.HTTPError as e:
             # Print response errors
-            logger.error(
+            error_message = (
                 "Pushy API returned HTTP error " + str(e.code) + ": " + e.read()
             )
+            logger.error(error_message)
+            raise PushyError(error_message)
+
+
+class PushyError(Exception):
+    pass
