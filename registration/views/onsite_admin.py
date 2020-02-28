@@ -351,6 +351,8 @@ def onsiteSignature(request):
 @csrf_exempt
 def completeSquareTransaction(request):
     key = request.GET.get("key", "")
+    # FIXME: Need to work on a list of order references, so that every order gets
+    # FIXME: updated and no badge is left orphaned.
     reference = request.GET.get("reference", None)
     clientTransactionId = request.GET.get("clientTransactionId", None)
     serverTransactionId = request.GET.get("serverTransactionId", None)
@@ -550,7 +552,7 @@ def onsiteAdminCart(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=400
+            {"success": False, "message": "Cart not initialized"}, status=200
         )
 
     badges = []

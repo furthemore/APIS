@@ -108,12 +108,19 @@ def refresh_payment(order):
     api_data = json.loads(order.apiData)
     order_total = 0
 
-    payment_id = api_data["payment"]["id"]
+    try:
+        payment_id = api_data["payment"]["id"]
+    except KeyError:
+        return False, "MISSING_PAYMENT_ID"
     payments_response = payments_api.get_payment(payment_id)
 
     payment = payments_response.body.get("payment")
     if payments_response.is_success():
         api_data["payment"] = payment
+        try:
+            order.lastFour = api_data["payment"]["card_details"]["card"]["last_4"]
+        except KeyError:
+            logger.warning("Unable to update last_4 details for order")
         status = payment.get("status")
         if status == "COMPLETED":
             order.status = Order.COMPLETED

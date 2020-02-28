@@ -335,6 +335,18 @@ class Attendee(models.Model):
             return "--attendee--"
 
 
+def badge_signature_svg_path(instance, filename):
+    return "event_{0}/badge_{1}/sig_svg_{2}".format(
+        instance.event.id, instance.id, filename
+    )
+
+
+def badge_signature_bitmap_path(instance, filename):
+    return "event_{0}/badge_{1}/sig_bmp_{2}".format(
+        instance.event.id, instance.id, filename
+    )
+
+
 class Badge(models.Model):
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.CASCADE
@@ -346,6 +358,12 @@ class Badge(models.Model):
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
     printCount = models.IntegerField(default=0)
+    signature_svg = models.FileField(
+        upload_to=badge_signature_svg_path, null=True, blank=True
+    )
+    signature_bitmap = models.ImageField(
+        upload_to=badge_signature_bitmap_path, null=True, blank=True
+    )
 
     def __str__(self):
         if self.badgeNumber is not None or self.badgeNumber == "":
@@ -658,6 +676,7 @@ class Order(models.Model):
     )
     lastFour = models.CharField(max_length=4, blank=True, verbose_name="Last 4")
     apiData = models.TextField(blank=True)
+    onsite_reference = models.UUIDField(null=True, blank=True)
 
     def __str__(self):
         return "${0} {1} ({2}) [{3}]".format(
