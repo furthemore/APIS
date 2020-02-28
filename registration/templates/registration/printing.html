@@ -5,21 +5,21 @@
     </head>
 
     <body>
+        <a href="{{ next }}">Go Back</a>
         <script>
-            var w = window.open("{% url 'registration:pdf' %}" + "/?file={{ file }}");
-            w.onload = function () {
-                w.print();
-                w.onfocus = function () {
-                    setTimeout(function () {
-                        w.close();
-                        {% if next %}
-                            window.location.replace('{{ next }}');
-                        {% endif %}
-                    }, 10);
-                };
-            };
-        </script>
+                var w = window.open("{% url 'registration:pdf' %}" + "/?file={{ file }}", "", "width=400,height=400");
+                window.location.href = "{{ next }}";
 
+                /*
+                w.onload = function () {
+                    w.print();
+                };
+
+                window.setTimeout(function(){
+                    window.location.href = "{{ next }}";
+                }, 1000);
+                */
+        </script>
         <!-- redirect after close -->
     </body>
 </html>

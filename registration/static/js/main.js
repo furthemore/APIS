@@ -1,9 +1,10 @@
 // ==== forms ====
 function getAge(birthdate) {
-    // FIXME: This date should be pulled from the start date for current event
-    var curr  = new Date(2019, 3, 17); // Note: months are 0-indexed
-    var diff = curr.getTime() - birthdate.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+    if (typeof event_start_date !== 'undefined') {
+        var diff = event_start_date.getTime() - birthdate.getTime();
+        return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+    }
+    throw TypeError("event_start_date is undefined (perhaps event was not passed to your template)");
 }
 function toDateFormat(birthdate){
     var month = birthdate.getMonth();

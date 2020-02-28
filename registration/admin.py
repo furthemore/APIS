@@ -1,14 +1,18 @@
 import cgi
 import copy
+import json
 import logging
 from datetime import date
 
 import printing
+import qrcode
 import views
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin, auth, messages
 from django.contrib.admin.models import DELETION, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.forms import NumberInput
@@ -18,12 +22,15 @@ from django.utils.html import escape, format_html, urlencode
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedModelAdmin, NestedTabularInline
+from qrcode.image.svg import SvgPathImage
+from six import BytesIO
 
 import registration.emails
 import registration.views.printing
-
-from . import payments
-from .models import *
+from registration import payments
+from registration.forms import FirebaseForm
+from registration.models import *
+from registration.pushy import PushyAPI, PushyError
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +87,78 @@ admin.site.register(User, UserProfileAdmin)
 
 class FirebaseAdmin(admin.ModelAdmin):
     list_display = ("name", "token", "closed")
+    form = FirebaseForm
+
+    def render_change_form(self, request, context, *args, **kwargs):
+        obj = kwargs.get("obj")
+
+        return super(FirebaseAdmin, self).render_change_form(
+            request, context, *args, **kwargs
+        )
+
+    def get_urls(self):
+        urls = super(FirebaseAdmin, self).get_urls()
+        my_urls = [
+            url(r"^(.+)/provision/$", self.provision_view, name="firebase_provision"),
+        ]
+        return my_urls + urls
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        data = {
+            "command": "settings",
+            "json": self.get_provisioning(obj, closed=obj.closed),
+        }
+
+        try:
+            PushyAPI.sendPushNotification(data, [obj.token,], None)
+        except PushyError as e:
+            messages.warning(
+                request,
+                "We tried to update the terminal's settings, but there was a problem: {0}".format(
+                    e
+                ),
+            )
+
+    @staticmethod
+    def get_provisioning(firebase, **kwargs):
+        current_site = Site.objects.get_current()
+        endpoint = settings.REGISTER_ENDPOINT
+        if endpoint is None:
+            endpoint = "http://{0}{1}".format(current_site.domain, reverse("root"))
+
+        document = {
+            "v": 1,
+            "client_id": settings.SQUARE_APPLICATION_ID,
+            "api_key": settings.REGISTER_KEY,
+            "endpoint": endpoint,
+            "name": firebase.name,
+            "location_id": settings.REGISTER_SQUARE_LOCATION,
+            "force_location": settings.REGISTER_FORCE_LOCATION,
+            "bg": firebase.background_color,
+            "fg": firebase.foreground_color,
+            "webview": firebase.webview,
+        }
+        document.update(kwargs)
+
+        return json.dumps(document)
+
+    @staticmethod
+    def get_qrcode(data):
+        img = qrcode.make(data, image_factory=SvgPathImage)
+        buf = BytesIO()
+        img.save(buf)
+        return buf.getvalue()
+
+    def provision_view(self, request, pk):
+        obj = Firebase.objects.get(id=pk)
+        provisioning = self.get_provisioning(obj)
+
+        context = {
+            "qr_svg": self.get_qrcode(provisioning),
+        }
+
+        return render(request, "admin/firebase_qr.html", context)
 
 
 admin.site.register(Firebase, FirebaseAdmin)
@@ -564,6 +643,17 @@ def send_upgrade_form_email(modeladmin, request, queryset):
 send_upgrade_form_email.short_description = "Send upgrade info email"
 
 
+def resend_confirmation_email(modeladmin, request, queryset):
+    for badge in queryset:
+        order = badge.getOrder()
+        registration.emails.send_registration_email(
+            order, badge.attendee.email, send_vip=False
+        )
+
+
+resend_confirmation_email.short_description = "Resend confirmation email"
+
+
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
     firstBadge = queryset[0]
@@ -631,7 +721,7 @@ def assign_numbers_and_print(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -681,7 +771,7 @@ def print_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -713,7 +803,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -757,9 +847,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         con.nametags(tags, theme=badge.event.badgeTheme)
         # serve up this file
         pdf_path = con.pdf.split("/")[-1]
-        response = HttpResponseRedirect(
-            reverse(registration.views.printing.printNametag)
-        )
+        response = HttpResponseRedirect(reverse("registration:print"))
         url_params = {"file": pdf_path, "next": request.get_full_path()}
         response["Location"] += "?{}".format(urlencode(url_params))
         return response
@@ -828,7 +916,7 @@ def print_staff_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse(registration.views.printing.printNametag))
+    response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
@@ -981,6 +1069,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         assign_staff_badge_numbers,
         print_staff_badges,
         send_upgrade_form_email,
+        resend_confirmation_email,
         "cull_abandoned_carts",
     ]
     fieldsets = (

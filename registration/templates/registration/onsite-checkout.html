@@ -139,14 +139,14 @@
         $.ajax({
             "type": "POST",
             "dataType": "json",
-            "url": "{% url 'registration:removeFromCart' %}",
+            "url": "{% url 'registration:remove_from_cart' %}",
             "data": JSON.stringify(data),
             "beforeSend": function(xhr, settings) {
                 console.log("Before Send");
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                        alert(error);
             },
                     "success": function (result, status) {
                         if (result.success) {
@@ -166,7 +166,7 @@
         var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
         if (cancel == false) { return;}
 
-                $.getJSON("{% url 'registration:cancelOrder' %}", function(data) {
+                $.getJSON("{% url 'registration:cancel_order' %}", function(data) {
             window.location = "{% url 'registration:onsite' %}";
                 });
     });
@@ -201,7 +201,7 @@
             },
                     "success": function (result, status) {
                         if (result.success) {
-                window.location = "{% url 'registration:onsiteDone' %}";
+                window.location = "{% url 'registration:onsite_done' %}";
                         } else {
                             alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
                 $("#checkout").removeAttr("disabled");

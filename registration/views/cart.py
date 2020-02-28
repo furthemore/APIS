@@ -4,13 +4,13 @@ from datetime import datetime
 
 import common
 import ordering
-from attendee import checkBanList
+from attendee import check_ban_list
 from django.shortcuts import render
 
 from registration.models import *
 
 
-def getCart(request):
+def get_cart(request):
     sessionItems = request.session.get("cart_items", [])
     sessionOrderItems = request.session.get("order_items", [])
     discount = request.session.get("discount", "")
@@ -176,7 +176,7 @@ def saveCart(cart):
     return orderItem
 
 
-def addToCart(request):
+def add_to_cart(request):
     """
     Create attendee from request post.
     """
@@ -195,7 +195,7 @@ def addToCart(request):
     except KeyError:
         return common.abort(400, "Required parameters not found in POST body")
 
-    banCheck = checkBanList(pda["firstName"], pda["lastName"], pda["email"])
+    banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
         logger.error("***ban list registration attempt***")
         registrationEmail = common.getRegistrationEmail()
@@ -220,7 +220,7 @@ def addToCart(request):
     return common.success()
 
 
-def removeFromCart(request):
+def remove_from_cart(request):
     # locate attendee in session order
     deleted = False
     order = request.session.get("order_items", [])
@@ -254,7 +254,7 @@ def removeFromCart(request):
     return common.success()
 
 
-def cartDone(request):
+def cart_done(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/done.html", context)

@@ -1,3 +1,4 @@
+import json
 import logging
 
 import cart
@@ -200,7 +201,7 @@ def getTotal(cartItems, orderItems, disc=""):
     return total, total_discount
 
 
-def applyDiscount(request):
+def apply_discount(request):
     dis = request.session.get("discount", "")
     if dis:
         return JsonResponse(
@@ -210,7 +211,7 @@ def applyDiscount(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for applyDiscount()")
+        logger.error("Unable to decode JSON for apply_discount()")
         return JsonResponse({"success": False})
     dis = postData["discount"]
 
@@ -356,7 +357,7 @@ def deleteOrderItem(id):
     orderItem.delete()
 
 
-def cancelOrder(request):
+def cancel_order(request):
     # (DEPRECATED) XXX [Is it actually? Button still hooked up in frontend -R]
     # remove order from session
     order = request.session.get("order_items", [])

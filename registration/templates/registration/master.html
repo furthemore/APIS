@@ -1,5 +1,4 @@
-{% load site %}
-{% load static %}
+{% load site static %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -34,6 +33,12 @@
 </div>
 </div>
 </div>
+
+<script>
+	{% if event %}
+	  var event_start_date = new {% event_start_date event %};
+	{% endif %}
+</script>
 
 <script src="{% static 'js/modernizr-custom.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>

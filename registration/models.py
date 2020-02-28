@@ -1,12 +1,10 @@
 from __future__ import unicode_literals
 
-import json
 import random
 import string
 from decimal import *
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
@@ -28,6 +26,7 @@ class HoldType(LookupTable):
 
 class ShirtSizes(LookupTable):
     class Meta:
+        db_table = "registration_shirt_sizes"
         verbose_name_plural = "Shirt sizes"
 
 
@@ -71,6 +70,7 @@ class PriceLevelOption(models.Model):
     description = models.TextField(blank=True)
 
     class Meta:
+        db_table = "registration_price_level_option"
         verbose_name = "Price level option"
         verbose_name_plural = "Price level options (merchandise)"
 
@@ -109,6 +109,9 @@ class PriceLevel(models.Model):
     emailVIPEmails = models.CharField(max_length=400, blank=True, default="")
     isMinor = models.BooleanField(default=False)
 
+    class Meta:
+        db_table = "registration_price_level"
+
     def __str__(self):
         return self.name
 
@@ -140,11 +143,11 @@ class Event(LookupTable):
     staffRegEnd = models.DateTimeField(verbose_name="Staff Registration End")
     attendeeRegStart = models.DateTimeField(verbose_name="Attendee Registration Start")
     attendeeRegEnd = models.DateTimeField(verbose_name="Attendee Registration End")
-    onlineRegStart = models.DateTimeField(
+    onsiteRegStart = models.DateTimeField(
         "On-site Registration Start",
         help_text="Start time for /registration/onsite form",
     )
-    onlineRegEnd = models.DateTimeField(verbose_name="On-site Registration End")
+    onsiteRegEnd = models.DateTimeField(verbose_name="On-site Registration End")
     eventStart = models.DateField(verbose_name="Event Start Date")
     eventEnd = models.DateField(verbose_name="Event End Date")
     default = models.BooleanField(
@@ -254,6 +257,9 @@ class TableSize(LookupTable):
     basePrice = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
 
+    class Meta:
+        db_table = "registration_table_size"
+
     def __str__(self):
         if self.event is None:
             return self.name
@@ -285,6 +291,9 @@ class TempToken(models.Model):
     used = models.BooleanField(default=False)
     usedDate = models.DateTimeField(null=True, blank=True)
     sent = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "registration_temp_token"
 
 
 class Attendee(models.Model):
@@ -540,6 +549,7 @@ class DealerAsst(models.Model):
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
+        db_table = "registration_dealer_asst"
         verbose_name = "Dealer assistant"
         verbose_name_plural = "Dealer assistants"
 
@@ -670,6 +680,9 @@ class OrderItem(models.Model):
     enteredBy = models.CharField(max_length=100)
     enteredDate = models.DateTimeField(auto_now_add=True, null=True)
 
+    class Meta:
+        db_table = "registration_order_item"
+
     def getOptions(self):
         return list(
             AttendeeOptions.objects.filter(orderItem=self).order_by(
@@ -699,6 +712,7 @@ class AttendeeOptions(models.Model):
     optionValue3 = models.CharField(max_length=200, blank=True)
 
     class Meta:
+        db_table = "registration_attendee_options"
         verbose_name = "Attendee option"
         verbose_name_plural = "Attendee options"
 
@@ -721,6 +735,7 @@ class BanList(models.Model):
     reason = models.TextField(blank=True)
 
     class Meta:
+        db_table = "registration_ban_list"
         verbose_name_plural = "Ban list"
 
 
@@ -730,6 +745,11 @@ class Firebase(models.Model):
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)
     printer_url = models.CharField(max_length=500, null=True, blank=True)
+    background_color = models.CharField(max_length=10, default="#0099cc")
+    foreground_color = models.CharField(max_length=10, default="#ffffff")
+    webview = models.CharField(
+        max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
+    )
 
 
 class Cashdrawer(models.Model):
@@ -776,6 +796,7 @@ class ReservedBadgeNumbers(models.Model):
         )
 
     class Meta:
+        db_table = "registration_reserved_badge_numbers"
         verbose_name_plural = "Reserved Badge Numbers"
 
 

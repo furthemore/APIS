@@ -104,7 +104,7 @@
 					<label for="discount" class="sr-only">Discount Code</label>
 					<input type="text" id="discount" class="form-control" />
 				</div>
-				<button class="btn btn-primary" id="applyDiscount">Apply</button>
+				<button class="btn btn-primary" id="apply_discount">Apply</button>
                 <p>&nbsp;</p>
 			</div>
 		</div>
@@ -254,7 +254,7 @@
         {% else %}
             <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
         {% endif %}
-        
+
         <script type="text/javascript">
     var paymentForm = new SqPaymentForm({
 
@@ -396,7 +396,7 @@
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'registration:removeFromCart' %}",
+		    "url": "{% url 'registration:remove_from_cart' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");
@@ -425,12 +425,12 @@
             return;
         }
 
-        $.getJSON("{% url 'registration:cancelOrder' %}", function(data) {
+        $.getJSON("{% url 'registration:cancel_order' %}", function(data) {
             window.location = "{% url 'registration:index' %}";
         });
 	});
 
-	$("#applyDiscount").click(function(e) {
+	$("#apply_discount").click(function(e) {
 		var discount = $("#discount").val();
 		if (discount == '') {
 			alert("You must enter a discount to apply.");

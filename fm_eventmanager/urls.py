@@ -10,7 +10,7 @@ urlpatterns = [
     url(r"^registration/", include("registration.urls", namespace="registration")),
     url(r"^admin/", admin.site.urls),
     url(r"^u2f/", include(django_u2f.urls, namespace="u2f")),
-    url(r"^$", RedirectView.as_view(url="registration")),
+    url(r"^$", RedirectView.as_view(url="registration"), name="root"),
 ]
 
 if settings.DEBUG:

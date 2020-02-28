@@ -1,4 +1,5 @@
 # Make attributes from settings.py available to templates
+
 from django import template
 from django.conf import settings
 
