@@ -1,3 +1,4 @@
+import re
 import json
 import time
 from datetime import datetime
@@ -13,6 +14,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from printing import printNametag
+from django.db import IntegrityError, transaction
+
 
 from registration import printing
 from registration.models import *
@@ -222,78 +225,62 @@ def onsiteSelectTerminal(request):
 
 
 def assignBadgeNumber(request):
-    badge_id = request.POST.get("id")
-    badge_number = request.POST.get("number")
-    badge_name = request.POST.get("badge", None)
-    badge = None
+    msgs = []
+    successful_ids = []
     event = Event.objects.get(default=True)
-    logger.info(
-        "assignBadgeNumber: id='{0}' badge_nembr='{1}' badge_name='{2}'".format(
-            badge_id, badge_number, badge_name
-        )
-    )
+    queryset = request.POST
 
-    if badge_name is not None:
-        try:
-            badge = Badge.objects.filter(
-                badgeName__icontains=badge_name, event__name=event.name
-            ).first()
-        except BaseException:
-            return JsonResponse(
-                {"success": False, "reason": "Badge name search returned no results"}
-            )
-    else:
-        if badge_id is None or badge_number is None:
-            return JsonResponse(
-                {"success": False, "reason": "id and number are required parameters"},
-                status=400,
-            )
+    re_badge_id = re.compile('badges\[\d+\]\[id\]')
+    re_ind = re.compile('\[\d+\]')
+    badges = []
+    for key in queryset.keys():
+        if re.match(re_badge_id, key):
+            ind = re.search(re_ind, key).group(0)
+            badge_id = queryset['badges'+ ind +'[id]']
 
-    try:
-        badge_number = int(badge_number)
-    except ValueError:
-        return JsonResponse(
-            {"success": False, "message": "Badge number must be an integer"}, status=400
-        )
-    logger.info("assignBadgeNumber: int(badge_number) = {0}".format(badge_number))
+            # badge number recieved is int
+            if queryset['badges'+ ind +'[badgeNumber]'].isdigit():
+                badge_number = int(queryset['badges'+ ind +'[badgeNumber]'])
+                logger.info("assignBadgeNumber: int(badge_number) = {0}".format(badge_number))
+            else:
+                msgs.append(
+                    "Badge Name: {0} (PK: {1}), did not recieve valid badge number.".format(
+                        queryset['badges'+ ind +'[badgeName]'],
+                        badge_id
+                    )
+                )
+                continue
+            # cause lock
+            with transaction.atomic():
+                try:
+                    badge = Badge.objects.select_for_update().get(
+                        id=badge_id
+                    )
+                except Badge.DoesNotExist:
+                    msgs.append(
+                        "Badge ID: {0} does not exist.".format(
+                            badge_id
+                        )
+                    )
+                    continue
+                if badge_number < 0:
+                    # Auto assign
+                    badges = Badge.objects.filter(event=badge.event)
+                    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
+                    highest = highest + 1
+                    badge.badgeNumber = highest
+                else:
+                    badge.badgeNumber = badge_number
 
-    if badge is None:
-        try:
-            badge = Badge.objects.get(id=int(badge_id))
-        except Badge.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": "Badge ID specified does not exist"},
-                status=404,
-            )
-        except ValueError:
-            return JsonResponse(
-                {"success": False, "message": "Badge ID must be an integer"}, status=400
-            )
-
-    try:
-        if badge_number < 0:
-            # Auto assign
-            badges = Badge.objects.filter(event=badge.event)
-            highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-            highest = highest + 1
-            badge.badgeNumber = highest
-        else:
-            badge.badgeNumber = badge_number
-        badge.save(update_fields=["badgeNumber"])
-        logger.info(
-            "assignBadgeNumber: Badge number saved - {0}".format(badge.badgeNumber)
-        )
-    except Exception as e:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Error while saving badge number",
-                "error": str(e),
-            },
-            status=500,
-        )
-
-    return JsonResponse({"success": True})
+                badge.save(update_fields=["badgeNumber"])
+                successful_ids.append(badge_id)
+                logger.info(
+                    "assignBadgeNumber: Badge number saved - {0}".format(badge.badgeNumber)
+                )
+    if not msgs:
+        return JsonResponse({"success": True, "successful_ids": successful_ids})
+    if msgs:
+        return JsonResponse({"success": False, "message": msgs, "successful_ids": successful_ids})
 
 
 @staff_member_required
