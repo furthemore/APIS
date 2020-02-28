@@ -18,6 +18,8 @@ from registration import printing
 from registration.models import *
 from registration.pushy import PushyAPI
 
+flatten = lambda l: [item for sublist in l for item in sublist]
+
 
 @staff_member_required
 def onsiteAdmin(request):
@@ -375,7 +377,7 @@ def completeSquareTransaction(request):
 
     try:
         # order = Order.objects.get(reference=reference)
-        orders = Order.objects.filter(reference=reference)
+        orders = Order.objects.filter(reference=reference).prefetch_related()
     except Order.DoesNotExist:
         return JsonResponse(
             {
@@ -385,20 +387,35 @@ def completeSquareTransaction(request):
             status=404,
         )
 
-    for order in orders:
-        order.billingType = Order.CREDIT
-        order.status = Order.COMPLETED
-        order.settledDate = datetime.now()
-        order.notes = json.dumps(
-            {
-                "type": "square_register",
-                "clientTransactionId": clientTransactionId,
-                "serverTransactionId": serverTransactionId,
-            }
-        )
-        # FIXME: Call out to the Square API to populate the transaction details server-side:
+    # If there is more than one order, we should flatten them into one by reassigning all these
+    # orderItems to the first order, and deleting the rest.
+    if len(orders) > 1:
+        first_order = orders[0]
 
-        order.save()
+        order_items = []
+        for order in orders[1:]:
+            order_items += order.orderitem_set.all()
+
+        for order_item in order_items:
+            old_order = order_item.order
+            order_item.order = first_order
+            old_order.delete()
+            order_item.save()
+
+    order = orders[0]
+    order.billingType = Order.CREDIT
+    order.status = Order.COMPLETED
+    order.settledDate = datetime.now()
+    order.notes = json.dumps(
+        {
+            "type": "square_register",
+            "clientTransactionId": clientTransactionId,
+            "serverTransactionId": serverTransactionId,
+        }
+    )
+    # FIXME: Call out to the Square API to populate the transaction details server-side:
+
+    order.save()
 
     return JsonResponse({"success": True})
 

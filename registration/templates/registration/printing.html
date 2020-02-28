@@ -8,16 +8,21 @@
         <a href="{{ next }}">Go Back</a>
         <script>
                 var w = window.open("{% url 'registration:pdf' %}" + "/?file={{ file }}", "", "width=400,height=400");
-                window.location.href = "{{ next }}";
-
-                /*
                 w.onload = function () {
                     w.print();
                 };
 
+                if(!w || w.closed || typeof w.closed=='undefined') {
+                    // Didn't popup
+                    document.write("<h1>Problem printing - check your popup blocker!</h2>");
+                } else {
+                    window.location.href = "{{ next }}";
+                }
+
+                /*
                 window.setTimeout(function(){
                     window.location.href = "{{ next }}";
-                }, 1000);
+                }, 10000);
                 */
         </script>
         <!-- redirect after close -->
