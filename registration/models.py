@@ -52,6 +52,17 @@ class Discount(models.Model):
             return False
         return True
 
+    @property
+    def status(self):
+        now = timezone.now()
+        if self.startDate > now:
+            return "Inactive"
+        if self.endDate < now:
+            return "Expired"
+        if self.oneTime and self.used > 0:
+            return "Consumed"
+        return "Active"
+
 
 def content_file_name(instance, filename):
     return "/".join(["priceleveloption", str(instance.pk), filename])
