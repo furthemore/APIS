@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 
 from django.shortcuts import render
@@ -6,6 +7,8 @@ from ordering import getTotal
 
 from registration.models import *
 from registration.views.common import clear_session
+
+logger = logging.getLogger(__name__)
 
 
 def onsite(request):
