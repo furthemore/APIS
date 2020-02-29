@@ -195,6 +195,11 @@ urlpatterns = [
         registration.views.onsite_admin.onsiteSignature,
         name="onsiteSignature",
     ),
+    url(
+        r"^onsite/admin/signature/?$",
+        registration.views.onsite_admin.onsiteSignaturePrompt,
+        name="onsiteSignaturePrompt",
+    ),
     url(r"^cart/?$", registration.views.cart.get_cart, name="cart"),
     url(r"^cart/add/?$", registration.views.cart.add_to_cart, name="add_to_cart"),
     url(

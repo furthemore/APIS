@@ -633,6 +633,17 @@ def onsiteAdminCart(request):
     return JsonResponse(data)
 
 
+@staff_member_required()
+def onsiteSignaturePrompt(request):
+    data = {
+        "command": "signature",
+        "name": "Kasper Finch",
+        "agreement": "I have read and agree to the FurTheMore 2020 Code of Conduct",
+        "badge_id": "5",
+    }
+    return sendMessageToTerminal(request, data)
+
+
 @staff_member_required
 def onsiteAddToCart(request):
     id = request.GET.get("id", None)

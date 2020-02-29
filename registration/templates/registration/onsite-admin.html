@@ -318,6 +318,7 @@ var print_badges = function(e) {
     var printQueue = get_printable();
     var badge_preview = "";
     var stop = false;
+    /*
     $.each(printQueue, function(idx, badge) {
         badge_number = prompt("Scan or key in badge stock number for " + badge.badgeName);
         if (badge_number == null) {
@@ -335,7 +336,9 @@ var print_badges = function(e) {
     }
 
     conf = confirm("Assign badge numbers?\n\n" + badge_preview);
-    //conf = true;
+    */
+
+    conf = true;
     if (conf) {
         // assign badge number
 
