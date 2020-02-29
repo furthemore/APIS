@@ -1409,7 +1409,7 @@ admin.site.register(PriceLevelOption, PriceLevelOptionAdmin)
 
 
 class DiscountAdmin(admin.ModelAdmin):
-    list_display = ("codeName", "amountOff", "percentOff", "oneTime", "used")
+    list_display = ("codeName", "amountOff", "percentOff", "oneTime", "used", "status")
     save_on_top = True
 
 
