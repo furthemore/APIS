@@ -65,6 +65,8 @@ class OnsiteBaseTestCase(TestCase):
         self.shirt1.save()
 
         self.client = Client()
+        self.boogeyman_hold = HoldType(name="Boogeyman")
+        self.boogeyman_hold.save()
 
     def add_to_cart(self, level, options):
         form_data = {
@@ -269,6 +271,9 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             reverse("registration:onsiteAdminSearch"), {"search": "Christian",},
         )
         self.assertEqual(response.status_code, 200)
+        attendee = response.context["results"][0].attendee
+        attendee.holdType = self.boogeyman_hold
+        attendee.save()
 
         response = self.client.get(
             reverse("registration:onsiteAdmin"),
@@ -286,6 +291,8 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         response = self.client.get(reverse("registration:onsiteAdminCart"))
         message = response.json()
+
+        self.assertEqual(message["result"][0]["holdType"], self.boogeyman_hold.name)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(message["success"], True)
         self.assertEqual(float(message["total"]), float(self.price_45.basePrice))

@@ -233,6 +233,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <span data-content="abandoned" data-format="PaidBadgeFormatter"></span>
+        <span data-content="holdType" data-format="HoldTypeFormatter"></span>
         <span data-content="name"></span>
         <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-minus-circle"></i></a>
         <span data-content="age" data-format="MinorFormFormatter" class="age"></span>
@@ -300,7 +301,7 @@ var get_printable = function () {
     // Anything in the cart marked as paid is eligable for printing
     var printQueue = [];
     $.each(cartData.result, function(key, value) {
-      if (value.abandoned.toUpperCase() == "PAID") {
+      if ((value.abandoned.toUpperCase() == "PAID") && (value.holdType === null)) {
           printQueue.push(value);
       }
     });
@@ -391,6 +392,15 @@ $(document).ready(function () {
         $("#pos").append('<option value="android">This device (Android)</option>');
     }
 
+    $.addTemplateFormatter("HoldTypeFormatter",
+        function(value, template) {
+            if (value === null) {
+                return '';
+            } else {
+                return '<span class="label label-danger">' + value + '</span>';
+            }
+    });
+
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
@@ -405,6 +415,7 @@ $(document).ready(function () {
       $.getJSON("{% url 'registration:onsiteAdminCart' %}", function(data) {
         cartData = data;
         var enable_print = false;
+        var onHold = false;
         if (data.success) {
           cartTemplateData = [];
           $.each( data.result, function( key, val ) {
@@ -425,9 +436,13 @@ $(document).ready(function () {
                   level : level,
                   price : price,
                   delete_id : "delete-" + val.id,
-                  state : state
+                  state : state,
+                  holdType : val.holdType
             });
-
+            if (!!val.holdType) {
+              onHold = true;
+              enable_print = false;
+            }
           });
           $("#total").html("");
           $("#cart").html("");
@@ -435,7 +450,7 @@ $(document).ready(function () {
           $(".remove-badge").click(remove_badge);
 
           var price = parseFloat(data.total);
-          if ((!isNaN(price)) && (price != 0)) {
+          if (((!isNaN(price)) && (price != 0)) && (!onHold)) {
               $("#total").loadTemplate($("#totalTemplate"), data);
               $("#cash_button").removeAttr("disabled");
               $("#credit_button").removeAttr("disabled");
