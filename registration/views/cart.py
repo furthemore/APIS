@@ -9,6 +9,8 @@ from django.shortcuts import render
 
 from registration.models import *
 
+logger = logging.getLogger(__name__)
+
 
 def get_cart(request):
     sessionItems = request.session.get("cart_items", [])

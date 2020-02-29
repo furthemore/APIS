@@ -1,7 +1,10 @@
+import logging
 import os
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+
+logger = logging.getLogger(__name__)
 
 
 def printNametag(request):
