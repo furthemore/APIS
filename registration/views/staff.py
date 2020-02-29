@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 
 from common import abort, clear_session, get_client_ip, handler, logger, success
@@ -9,6 +10,8 @@ from ordering import doCheckout, doZeroCheckout, getTotal
 
 import registration.emails
 from registration.models import *
+
+logger = logging.getLogger(__name__)
 
 
 def newStaff(request, guid):
