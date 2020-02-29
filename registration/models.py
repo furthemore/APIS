@@ -55,7 +55,9 @@ class Discount(models.Model):
     @property
     def status(self):
         now = timezone.now()
-        if self.startDate > now or self.endDate < now:
+        if self.startDate > now:
+            return "Inactive"
+        if self.endDate < now:
             return "Expired"
         if self.oneTime and self.used > 0:
             return "Consumed"
