@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from datetime import datetime
 
@@ -17,6 +18,8 @@ from printing import printNametag
 from registration import printing
 from registration.models import *
 from registration.pushy import PushyAPI
+
+logger = logging.getLogger(__name__)
 
 
 @staff_member_required

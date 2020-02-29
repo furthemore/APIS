@@ -1,10 +1,13 @@
 import json
+import logging
 from datetime import date
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 
 from registration.models import *
+
+logger = logging.getLogger(__name__)
 
 
 def get_attendee_age(attendee):

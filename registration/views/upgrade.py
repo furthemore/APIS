@@ -1,4 +1,5 @@
 import json
+import logging
 
 from common import (
     clear_session,
@@ -20,6 +21,8 @@ from ordering import doCheckout, doZeroCheckout, getTotal
 
 import registration.emails
 from registration.models import *
+
+logger = logging.getLogger(__name__)
 
 
 def upgrade(request, guid):
