@@ -645,7 +645,7 @@ send_upgrade_form_email.short_description = "Send upgrade info email"
 
 def resend_confirmation_email(modeladmin, request, queryset):
     for badge in queryset:
-        order = getOrder()
+        order = badge.getOrder()
         registration.emails.send_registration_email(
             order, badge.attendee.email, send_vip=False
         )
@@ -1069,6 +1069,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         assign_staff_badge_numbers,
         print_staff_badges,
         send_upgrade_form_email,
+        resend_confirmation_email,
         "cull_abandoned_carts",
     ]
     fieldsets = (
