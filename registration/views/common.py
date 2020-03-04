@@ -87,14 +87,6 @@ def getOptionsDict(orderItems):
                     }
                 )
 
-            orderDict.append(
-                {
-                    "name": ao.option.optionName,
-                    "value": ao.optionValue,
-                    "id": ao.option.id,
-                    "type": ao.option.optionExtraType,
-                }
-            )
     return orderDict
 
 
@@ -201,7 +193,7 @@ def basicBadges(request):
     bdata = [
         {
             "badgeName": oi.badge.badgeName,
-            "level": oi.badge.effectiveLevel().name,
+            "level": oi.badge.effectiveLevel(),
             "assoc": oi.badge.abandoned,
             "firstName": oi.badge.attendee.firstName.lower(),
             "lastName": oi.badge.attendee.lastName.lower(),
@@ -227,7 +219,7 @@ def basicBadges(request):
         if sbadge:
             staff["badgeName"] = sbadge.badgeName
             if sbadge.effectiveLevel():
-                staff["level"] = sbadge.effectiveLevel().name
+                staff["level"] = sbadge.effectiveLevel()
             else:
                 staff["level"] = "none"
             staff["assoc"] = sbadge.abandoned
@@ -263,14 +255,18 @@ def vipBadges(request):
         {
             "badge": oi.badge,
             "orderItems": getOptionsDict(oi.badge.orderitem_set.all()),
-            "level": oi.badge.effectiveLevel().name,
+            "level": oi.badge.effectiveLevel(),
             "assoc": oi.badge.abandoned,
         }
         for oi in vip_order_items
         if oi.badge.abandoned != "Staff"
     ]
 
-    return render(request, "registration/utility/holidaylist.html", {"badges": badges},)
+    return render(
+        request,
+        "registration/utility/holidaylist.html",
+        {"badges": badges, "event": event},
+    )
 
 
 def get_departments(request):
