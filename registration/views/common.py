@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 import registration.emails
 from registration.models import *
@@ -193,23 +193,23 @@ def manualDiscount(request):
 
 @staff_member_required
 def basicBadges(request):
-    badges = Badge.objects.all()
-    staff = Staff.objects.all()
     event = Event.objects.get(default=True)
+
+    staff = Staff.objects.filter(event=event)
+    order_items = OrderItem.objects.filter(badge__event=event)
 
     bdata = [
         {
-            "badgeName": badge.badgeName,
-            "level": badge.effectiveLevel().name,
-            "assoc": badge.abandoned,
-            "firstName": badge.attendee.firstName.lower(),
-            "lastName": badge.attendee.lastName.lower(),
-            "printed": badge.printed,
-            "discount": badge.getDiscount(),
-            "orderItems": getOptionsDict(badge.orderitem_set.all()),
+            "badgeName": oi.badge.badgeName,
+            "level": oi.badge.effectiveLevel().name,
+            "assoc": oi.badge.abandoned,
+            "firstName": oi.badge.attendee.firstName.lower(),
+            "lastName": oi.badge.attendee.lastName.lower(),
+            "printed": oi.badge.printed,
+            "discount": oi.badge.getDiscount(),
+            "orderItems": getOptionsDict(oi.badge.orderitem_set.all()),
         }
-        for badge in badges
-        if badge.effectiveLevel() is not None and badge.event == event
+        for oi in order_items
     ]
 
     staffdata = [
@@ -220,7 +220,6 @@ def basicBadges(request):
             "id": s.id,
         }
         for s in staff
-        if s.event == event
     ]
 
     for staff in staffdata:
@@ -249,35 +248,29 @@ def basicBadges(request):
 
 @staff_member_required
 def vipBadges(request):
-    badges = Badge.objects.all()
-    # Assumes VIP levels based on being marked as "vip" group, or EmailVIP set
-    priceLevels = PriceLevel.objects.filter(Q(emailVIP=True) | Q(group__iexact="vip"))
-    vipLevels = [level.name for level in priceLevels]
+    default_event = Event.objects.get(default=True)
+    event_id = request.GET.get("event", default_event.id)
+    event = get_object_or_404(Event, id=event_id)
 
-    # FIXME list comprehension is sloooooooow - there must be a way to do this in SQL -R
-    bdata = [
+    # Assumes VIP levels based on being marked as "vip" group, or EmailVIP set
+    price_levels = PriceLevel.objects.filter(Q(emailVIP=True) | Q(group__iexact="vip"))
+
+    vip_order_items = OrderItem.objects.filter(
+        priceLevel__in=price_levels, badge__event=event
+    )
+
+    badges = [
         {
-            "badge": badge,
-            "orderItems": getOptionsDict(badge.orderitem_set.all()),
-            "level": badge.effectiveLevel().name,
-            "assoc": badge.abandoned,
+            "badge": oi.badge,
+            "orderItems": getOptionsDict(oi.badge.orderitem_set.all()),
+            "level": oi.badge.effectiveLevel().name,
+            "assoc": oi.badge.abandoned,
         }
-        for badge in badges
-        if badge.effectiveLevel() is not None
-        and badge.effectiveLevel() != "Unpaid"
-        and badge.effectiveLevel().name in vipLevels
-        and badge.abandoned != "Staff"
+        for oi in vip_order_items
+        if oi.badge.abandoned != "Staff"
     ]
 
-    events = Event.objects.all()
-    # FIXME this doesn't actually affect the order in the resulting template render
-    events.reverse()
-
-    return render(
-        request,
-        "registration/utility/holidaylist.html",
-        {"badges": bdata, "events": events},
-    )
+    return render(request, "registration/utility/holidaylist.html", {"badges": badges},)
 
 
 def get_departments(request):
