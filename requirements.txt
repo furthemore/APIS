@@ -15,6 +15,6 @@ django-u2f==0.3.0
 django-maintenance-mode==0.14.0
 Pillow>=5.3
 influxdb==5.2.3
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 django-debug-toolbar==1.11
 mock
