@@ -1,9 +1,6 @@
 
 <h1>VIP Attendees</h1>
-
-{% for ev in events %}
-
-<h2>{{ev.name}}</h2>
+<h2>{{event}}</h2>
 
 <table border="1" cellspacing="0" cellpadding="6">
 <tr>
@@ -17,7 +14,6 @@
   <th>Options </th>
 </tr>
 {% for b in badges %}
-  {% if b.badge.event == ev %}
   <tr>
     <td>{{b.level}}</td>
     <td>{{b.assoc}}</td>
@@ -34,10 +30,6 @@
 
     </td>
   </tr>
-  {% endif %}
 {% endfor %}
 
 </table>
-
-
-{% endfor %}
