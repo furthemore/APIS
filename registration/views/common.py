@@ -516,7 +516,7 @@ def getTotal(cartItems, orderItems, disc=""):
     if not cartItems and not orderItems:
         return 0, 0
     for item in cartItems:
-        postData = json.loads(str(item.formData))
+        postData = json.loads(item.formData)
         pdp = postData["priceLevel"]
         priceLevel = PriceLevel.objects.get(id=pdp["id"])
         itemTotal = priceLevel.basePrice

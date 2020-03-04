@@ -282,12 +282,13 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Add to cart
+        badge_id = response.context["results"][0].id
+
         response = self.client.get(
-            reverse("registration:onsiteAddToCart"),
-            {"id": response.context["results"][0].id},
+            reverse("registration:onsiteAddToCart"), {"id": badge_id},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.session["cart"], ["1",])
+        self.assertEqual(self.client.session["cart"], [str(badge_id),])
 
         response = self.client.get(reverse("registration:onsiteAdminCart"))
         message = response.json()
