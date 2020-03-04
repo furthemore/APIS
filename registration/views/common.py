@@ -87,14 +87,6 @@ def getOptionsDict(orderItems):
                     }
                 )
 
-            orderDict.append(
-                {
-                    "name": ao.option.optionName,
-                    "value": ao.optionValue,
-                    "id": ao.option.id,
-                    "type": ao.option.optionExtraType,
-                }
-            )
     return orderDict
 
 
