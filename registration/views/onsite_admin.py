@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from datetime import datetime
 
@@ -19,6 +20,7 @@ from registration.models import *
 from registration.pushy import PushyAPI
 
 flatten = lambda l: [item for sublist in l for item in sublist]
+logger = logging.getLogger(__name__)
 
 
 @staff_member_required
