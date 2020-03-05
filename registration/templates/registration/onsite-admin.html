@@ -378,16 +378,18 @@ var print_badges = function(e) {
     var stop = false;
 
     $.each(printQueue, function(idx, badge) {
-        /*
-        badge_number = prompt("Scan or key in badge stock number for " + badge.badgeName);
-        if (badge_number == null) {
+
+        badge_number_str = prompt("Scan or key in badge stock number for " + badge.badgeName);
+
+        if (badge_number_str == null) {
             stop = true;
             return false;
         }
-        */
-        badge_number = -1; //  auto-assign
+
+        badge_number = parseInt(badge_number_str.split("-")[1]);
+
+        //badge_number = -1; //  auto-assign
         badge.badgeNumber = badge_number;
-        badge.badgeNumber = -1;
         badge_preview += badge_number  + ' - ' + badge.badgeName + "\n";
     });
 
@@ -395,22 +397,18 @@ var print_badges = function(e) {
         return;
     }
 
-    /*
     conf = confirm("Assign badge numbers?\n\n" + badge_preview);
-    */
 
     conf = true;
     if (conf) {
-        // assign badge number
-
-        var printIDs = []
-        $.each(printQueue, function(idx, badge) {
-            printIDs.push(badge.id);
-            $.getJSON("{% url 'registration:assignBadgeNumber' %}", { id : badge.id, number : badge.badgeNumber }, function (data) {
-                if (!data.success) {
-                    alert("Error while assigning badge number: " + data.message);
-                }
-            });
+        // assign badge numbers
+        $.ajax("{% url 'registration:assignBadgeNumber' %}", {
+          data : JSON.stringify(printQueue),
+          contentType : 'application/json',
+          type : 'POST'
+        })
+        .done(function(data) {
+            console.log(data.success);
         });
 
         // print badges
@@ -420,6 +418,7 @@ var print_badges = function(e) {
             }
             window.open(data.url);
         });
+
         // clear cart
 
         $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");

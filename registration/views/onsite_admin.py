@@ -177,6 +177,37 @@ def sendMessageToTerminal(request, data):
 
 @staff_member_required
 def enablePayment(request):
+    cart = request.session.get("cart", None)
+    if cart is None:
+        request.session["cart"] = []
+        return JsonResponse(
+            {"success": False, "message": "Cart not initialized"}, status=200
+        )
+
+    badges = []
+    first_order = None
+
+    for id in cart:
+        try:
+            badge = Badge.objects.get(id=id)
+            badges.append(badge)
+        except Badge.DoesNotExist:
+            cart.remove(id)
+            logger.error(
+                "ID {0} was in cart but doesn't exist in the database".format(id)
+            )
+
+    order = badge.getOrder()
+    if first_order is None:
+        first_order = order
+    else:
+        # FIXME: Move this to fire on "Tender Cash" or Tender Credit" buttons
+        # FIXME: use order.onsite_reference instead.
+        # Reassign order references of items in cart to match first:
+        order = badge.getOrder()
+        order.reference = first_order.reference
+        order.save()
+
     data = {"command": "process_payment"}
     return sendMessageToTerminal(request, data)
 
@@ -226,13 +257,49 @@ def notifyTerminal(request, data):
 
 
 def assignBadgeNumber(request):
-    badge_list = request.GET.getlist("id")
     event = Event.objects.get(default=True)
 
+    request_badges = json.loads(request.body)
+
+    badge_list = [b["id"] for b in request]
     badge_set = Badge.objects.filter(id__in=badge_list)
 
-    admin.assign_badge_numbers(admin.BadgeAdmin, request, badge_set)
+    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
+    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
 
+    errors = []
+
+    for badge in badge_set.order_by("registeredDate"):
+        # Skip badges which have already been assigned
+        if badge.badgeNumber is not None:
+            errors.append(
+                "{0} was already assigned badge number {1}.".format(
+                    badge, badge.badgeNumber
+                )
+            )
+            continue
+        # Skip badges that are not assigned a registration level
+        if badge.effectiveLevel() is None:
+            errors.append("{0} is not assigned a registration level.".format(badge))
+            continue
+
+        # Check if proposed badge number is reserved:
+        if request_badges in reserved_badge_numbers:
+            errors.append(
+                "{0} is a reserved badge number. {1} was not assigned a badge number.".format(
+                    number_list[idx], badge
+                )
+            )
+            continue
+
+        badge.badgeNumber = number_list[idx]
+        badge.save()
+
+    if errors:
+        return JsonResponse(
+            {"success": False, "errors": errors, "message": "\n".join(errors)},
+            status=400,
+        )
     return JsonResponse({"success": True})
 
 
@@ -352,8 +419,6 @@ def completeSquareTransaction(request):
             order_item.order = first_order
             old_order.delete()
             order_item.save()
-
-    order = orders[0]
 
     store_api_data = {
         "onsite": {
@@ -572,16 +637,10 @@ def onsiteAdminCart(request):
                 level_subtotal += level.basePrice
 
         subtotal += level_subtotal
+
         order = badge.getOrder()
         if first_order is None:
             first_order = order
-        else:
-            # FIXME: Move this to fire on "Tender Cash" or Tender Credit" buttons
-            # FIXME: use order.onsite_reference instead.
-            # Reassign order references of items in cart to match first:
-            order = badge.getOrder()
-            order.reference = first_order.reference
-            order.save()
 
         holdType = None
         if badge.attendee.holdType:
