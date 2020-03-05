@@ -979,6 +979,7 @@ class BadgeResource(resources.ModelResource):
             "event__name",
             "printed",
             "badge_level",
+            "abandoned",
             "registeredDate",
             "attendee__firstName",
             "attendee__lastName",
