@@ -15,9 +15,11 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from printing import printNametag
 
-from registration import payments, printing
+from registration import admin, payments, printing
+from registration.admin import TWOPLACES
 from registration.models import *
-from registration.pushy import PushyAPI
+from registration.pushy import PushyAPI, PushyError
+from registration.views.ordering import getDiscountTotal, getOrderItemOptionTotal
 
 flatten = lambda l: [item for sublist in l for item in sublist]
 logger = logging.getLogger(__name__)
@@ -166,7 +168,10 @@ def sendMessageToTerminal(request, data):
         active.token,
     ]
 
-    PushyAPI.sendPushNotification(data, to, None)
+    try:
+        PushyAPI.sendPushNotification(data, to, None)
+    except PushyError as e:
+        return JsonResponse({"success": False, "message": e.message})
     return JsonResponse({"success": True})
 
 
@@ -211,80 +216,22 @@ def notifyTerminal(request, data):
         active.token,
     ]
 
-    PushyAPI.sendPushNotification(display, to, None)
+    try:
+        PushyAPI.sendPushNotification(display, to, None)
+    except PushyError as e:
+        logger.error("Problem while sending push notification:")
+        logger.error(e)
+        return False
+    return True
 
 
 def assignBadgeNumber(request):
-    badge_id = request.GET.get("id")
-    badge_number = request.GET.get("number")
-    badge_name = request.GET.get("badge", None)
-    badge = None
+    badge_list = request.GET.getlist("id")
     event = Event.objects.get(default=True)
-    logger.info(
-        "assignBadgeNumber: id='{0}' badge_nembr='{1}' badge_name='{2}'".format(
-            badge_id, badge_number, badge_name
-        )
-    )
 
-    if badge_name is not None:
-        try:
-            badge = Badge.objects.filter(
-                badgeName__icontains=badge_name, event__name=event.name
-            ).first()
-        except BaseException:
-            return JsonResponse(
-                {"success": False, "reason": "Badge name search returned no results"}
-            )
-    else:
-        if badge_id is None or badge_number is None:
-            return JsonResponse(
-                {"success": False, "reason": "id and number are required parameters"},
-                status=400,
-            )
+    badge_set = Badge.objects.filter(id__in=badge_list)
 
-    try:
-        badge_number = int(badge_number)
-    except ValueError:
-        return JsonResponse(
-            {"success": False, "message": "Badge number must be an integer"}, status=400
-        )
-    logger.info("assignBadgeNumber: int(badge_number) = {0}".format(badge_number))
-
-    if badge is None:
-        try:
-            badge = Badge.objects.get(id=int(badge_id))
-        except Badge.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": "Badge ID specified does not exist"},
-                status=404,
-            )
-        except ValueError:
-            return JsonResponse(
-                {"success": False, "message": "Badge ID must be an integer"}, status=400
-            )
-
-    try:
-        if badge_number < 0:
-            # Auto assign
-            badges = Badge.objects.filter(event=badge.event)
-            highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-            highest = highest + 1
-            badge.badgeNumber = highest
-        else:
-            badge.badgeNumber = badge_number
-        badge.save(update_fields=["badgeNumber"])
-        logger.info(
-            "assignBadgeNumber: Badge number saved - {0}".format(badge.badgeNumber)
-        )
-    except Exception as e:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Error while saving badge number",
-                "error": str(e),
-            },
-            status=500,
-        )
+    admin.assign_badge_numbers(admin.BadgeAdmin, request, badge_set)
 
     return JsonResponse({"success": True})
 
@@ -546,6 +493,41 @@ def firebaseLookup(request):
         )
 
 
+def get_discount_dict(discount):
+    if discount:
+        return {
+            "name": discount.codeName,
+            "percent_off": discount.percentOff,
+            "amount_off": discount.amountOff,
+            "id": discount.id,
+            "valid": discount.isValid(),
+            "status": discount.status,
+        }
+    return None
+
+
+def get_line_items(attendee_options):
+    out = []
+    for option in attendee_options:
+        if option.option.optionExtraType == "int":
+            if option.optionValue:
+                option_dict = {
+                    "item": option.option.optionName,
+                    "price": option.option.optionPrice,
+                    "quantity": option.optionValue,
+                    "total": option.option.optionPrice * Decimal(option.optionValue),
+                }
+        else:
+            option_dict = {
+                "item": option.option.optionName,
+                "price": option.option.optionPrice,
+                "quantity": 1,
+                "total": option.option.optionPrice,
+            }
+        out.append(option_dict)
+    return out
+
+
 @staff_member_required
 def onsiteAdminCart(request):
     # Returns dataset to render onsite cart preview
@@ -570,26 +552,32 @@ def onsiteAdminCart(request):
 
     order = None
     subtotal = 0
+    total_discount = 0
     result = []
     first_order = None
     for badge in badges:
         oi = badge.getOrderItems()
         level = None
+        level_subtotal = 0
+        attendee_options = []
         for item in oi:
             level = item.priceLevel
-            # WHY?
-            if item.order is not None:
-                order = item.order
-        if level is None:
-            effectiveLevel = None
-        else:
-            effectiveLevel = {"name": level.name, "price": level.basePrice}
-            subtotal += level.basePrice
+            attendee_options.append(get_line_items(item.attendeeoptions_set.all()))
+            level_subtotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
 
+            if level is None:
+                effectiveLevel = None
+            else:
+                effectiveLevel = {"name": level.name, "price": level.basePrice}
+                level_subtotal += level.basePrice
+
+        subtotal += level_subtotal
         order = badge.getOrder()
         if first_order is None:
             first_order = order
         else:
+            # FIXME: Move this to fire on "Tender Cash" or Tender Credit" buttons
+            # FIXME: use order.onsite_reference instead.
             # Reassign order references of items in cart to match first:
             order = badge.getOrder()
             order.reference = first_order.reference
@@ -599,6 +587,11 @@ def onsiteAdminCart(request):
         if badge.attendee.holdType:
             holdType = badge.attendee.holdType.name
 
+        level_discount = (
+            Decimal(getDiscountTotal(order.discount, level_subtotal) * 100) * TWOPLACES
+        )
+        total_discount += level_discount
+
         item = {
             "id": badge.id,
             "firstName": badge.attendee.firstName,
@@ -606,9 +599,13 @@ def onsiteAdminCart(request):
             "badgeName": badge.badgeName,
             "abandoned": badge.abandoned,
             "effectiveLevel": effectiveLevel,
-            "discount": badge.getDiscount(),
+            "discount": get_discount_dict(order.discount),
             "age": get_attendee_age(badge.attendee),
             "holdType": holdType,
+            "level_subtotal": level_subtotal,
+            "level_discount": level_discount,
+            "level_total": level_subtotal - level_discount,
+            "attendee_options": attendee_options,
         }
         result.append(item)
 
@@ -623,7 +620,9 @@ def onsiteAdminCart(request):
     data = {
         "success": True,
         "result": result,
-        "total": total,
+        "subtotal": subtotal,
+        "total": total - total_discount,
+        "total_discount": total_discount,
         "charityDonation": charityDonation,
         "orgDonation": orgDonation,
     }

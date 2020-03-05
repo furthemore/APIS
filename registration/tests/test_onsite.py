@@ -296,7 +296,10 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(message["result"][0]["holdType"], self.boogeyman_hold.name)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(message["success"], True)
-        self.assertEqual(float(message["total"]), float(self.price_45.basePrice))
+        self.assertEqual(
+            float(message["total"]),
+            float(self.price_45.basePrice + self.option_shirt.optionPrice),
+        )
 
     @patch("registration.pushy.PushyAPI.sendPushNotification")
     def test_onsite_admin_cart_with_donations(self, mock_sendPushNotification):
