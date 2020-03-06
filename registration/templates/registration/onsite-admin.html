@@ -421,6 +421,8 @@ var print_badges = function(e) {
                   alert("Error while printing badges");
               }
               window.open(data.url);
+          }).fail(function (data) {
+            $("#cart-error").html("Server error while assigning badge numbers:<br>"+data.message).fadeIn();
           });
 
           // clear cart
