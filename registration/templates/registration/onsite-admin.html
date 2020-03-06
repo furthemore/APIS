@@ -409,20 +409,27 @@ var print_badges = function(e) {
         })
         .done(function(data) {
             console.log(data.success);
+        }).success(function (data) {
+           var printIDs = [];
+           $.each(printQueue, function(idx, badge) {
+              printIDs.push(badge.id);
+           });
+           // print badges
+
+          $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
+              if (!data.success) {
+                  alert("Error while printing badges");
+              }
+              window.open(data.url);
+          });
+
+          // clear cart
+
+          $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
+          refresh_cart();
         });
 
-        // print badges
-        $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
-            if (!data.success) {
-                alert("Error while printing badges");
-            }
-            window.open(data.url);
-        });
 
-        // clear cart
-
-        $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
-        refresh_cart();
     }
 };
 

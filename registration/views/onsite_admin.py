@@ -261,8 +261,10 @@ def assignBadgeNumber(request):
 
     request_badges = json.loads(request.body)
 
-    badge_list = [b["id"] for b in request]
-    badge_set = Badge.objects.filter(id__in=badge_list)
+    badge_payload = {badge["id"]: badge for badge in request_badges}
+
+    badge_list = [b["id"] for b in request_badges]
+    badge_set = Badge.objects.filter(id__in=badge_payload.keys())
 
     reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
     reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
@@ -271,28 +273,28 @@ def assignBadgeNumber(request):
 
     for badge in badge_set.order_by("registeredDate"):
         # Skip badges which have already been assigned
-        if badge.badgeNumber is not None:
-            errors.append(
-                "{0} was already assigned badge number {1}.".format(
-                    badge, badge.badgeNumber
-                )
-            )
-            continue
+        # if badge.badgeNumber is not None:
+        #    errors.append(
+        #        "{0} was already assigned badge number {1}.".format(
+        #            badge, badge.badgeNumber
+        #        )
+        #    )
+        #    continue
         # Skip badges that are not assigned a registration level
         if badge.effectiveLevel() is None:
             errors.append("{0} is not assigned a registration level.".format(badge))
             continue
 
         # Check if proposed badge number is reserved:
-        if request_badges in reserved_badge_numbers:
+        if badge_payload[badge.id]["badgeNumber"] in reserved_badge_numbers:
             errors.append(
                 "{0} is a reserved badge number. {1} was not assigned a badge number.".format(
-                    number_list[idx], badge
+                    badge.request_badges["badgeNumber"], badge
                 )
             )
             continue
 
-        badge.badgeNumber = number_list[idx]
+        badge.badgeNumber = badge_payload[badge.id]["badgeNumber"]
         badge.save()
 
     if errors:
