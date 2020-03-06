@@ -1,3 +1,4 @@
+from django import forms
 from django.forms import ModelForm
 from django.forms.widgets import TextInput
 
@@ -12,3 +13,9 @@ class FirebaseForm(ModelForm):
             "foreground_color": TextInput(attrs={"type": "color"}),
             "background_color": TextInput(attrs={"type": "color"}),
         }
+
+
+class SignatureUploadForm(forms.Form):
+    badge_id = forms.IntegerField()
+    svg_file = forms.FileField()
+    png_file = forms.FileField()

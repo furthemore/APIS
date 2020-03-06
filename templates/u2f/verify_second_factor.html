@@ -77,7 +77,7 @@
 
         {% for field in forms.totp.visible_fields %}
           <div class="form-group">
-            {% render_field field class="form-control" autofocus="autofocus" placeholder="Token"%}
+            {% render_field field class="form-control" autofocus="autofocus" placeholder="Token" type="tel" %}
             {% if field.help_text %}
               <small class="help-block">{{ field.help_text }}</small>
             {% endif %}

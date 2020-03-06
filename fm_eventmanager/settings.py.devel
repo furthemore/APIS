@@ -176,10 +176,7 @@ USE_TZ = True
 SITE_ID = 1
 
 MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
-<<<<<<< HEAD
 MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
-=======
->>>>>>> a8108b99452e4518a6627e67c57fcc921cf73725
 
 LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
 LOGIN_URL = 'u2f:login'
@@ -234,4 +231,16 @@ CLOUD_MESSAGING_KEY = "AAA..."
 APIS_METRICS_BACKEND = "DummyReporter"
 APIS_METRICS_SETTINGS = {
     "database" : "apis"
+}
+
+# MQTT for cash-drawer worker
+MQTT_BROKER = {
+    "host": "localhost",
+    "port": 1883,
+    "keepalive": 60,
+}
+
+MQTT_LOGIN = {
+    "username": "printing",
+    "password": "secret",
 }
