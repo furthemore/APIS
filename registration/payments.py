@@ -105,7 +105,11 @@ def format_errors(errors):
 
 def refresh_payment(order):
     # Function raises ValueError if there's a problem decoding the stored data
-    api_data = json.loads(order.apiData)
+    try:
+        api_data = json.loads(order.apiData)
+    except ValueError:
+        logger.warn("No order data yet for {0}".format(order.reference))
+        return False, "No order data yet for {0}".format(order.reference)
     order_total = 0
 
     try:
