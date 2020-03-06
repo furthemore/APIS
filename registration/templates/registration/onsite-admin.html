@@ -624,7 +624,7 @@ $(document).ready(function () {
         data = {
             'reference' : cartData.reference,
             'total' : total,
-            'tendered' : tendered
+            'tendered' : parsed
         }
         $.getJSON("{% url 'registration:completeCashTransaction' %}", data, function (data) {
             if (data.success) {
@@ -633,17 +633,6 @@ $(document).ready(function () {
                 alert("Error while posting transaction to server");
             }
         });
-
-        data = {
-            'reference' : cartData.reference,
-            'organisation' : cartData.orgDonation,
-            'charity'  : cartData.charityDonation,
-            'total' : total,
-            'tendered' : tendered,
-            'change' : change
-        }
-
-        $.getJSON("{{ printer_uri }}/print/drawer", data);
 
         alert("Change: $" + change);
 

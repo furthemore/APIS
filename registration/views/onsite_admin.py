@@ -1,9 +1,9 @@
 import json
 import logging
+import subprocess
 import time
 from datetime import datetime
 
-import paho.mqtt.publish as mqtt_publish
 from attendee import get_attendee_age
 from common import logger
 from django.conf import settings
@@ -27,14 +27,30 @@ logger = logging.getLogger(__name__)
 
 
 def send_mqtt_message(topic, payload):
-    mqtt_publish.single(
+    payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
+
+    mqtt_command = [
+        "mosquitto_pub",
+        "-h",
+        settings.MQTT_BROKER["host"],
+        "-p",
+        str(settings.MQTT_BROKER["port"]),
+        "-t",
         topic,
-        payload,
-        hostname=settings.MQTT_BROKER["host"],
-        port=settings.MQTT_BROKER["port"],
-        keepalive=settings.MQTT_BROKER["keepalive"],
-        auth=settings.MQTT_LOGIN,
-    )
+        "-u",
+        settings.MQTT_LOGIN["username"],
+        "-P",
+        settings.MQTT_LOGIN["password"],
+        "-m",
+        payload_json,
+    ]
+    logger.info("Sending MQTT message ({0})".format(payload_json))
+    try:
+        subprocess.check_call(mqtt_command)
+    except subprocess.CalledProcessError as exc:
+        logger.info("Failed to send MQTT message: {0!s}".format(exc))
+    else:
+        logger.info("Sent MQTT message successfully.")
 
 
 @staff_member_required
@@ -468,6 +484,16 @@ def completeSquareTransaction(request):
     return JsonResponse({"success": True})
 
 
+class JSONDecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Decimal):
+            return str(o.quantize(Decimal("1.00")))
+        return o
+
+
+# json.dumps(the_thing, cls=JSONDecimalEncoder)
+
+
 def completeCashTransaction(request):
     reference = request.GET.get("reference", None)
     total = request.GET.get("total", None)
@@ -507,7 +533,7 @@ def completeCashTransaction(request):
     order_items = OrderItem.objects.filter(order=order)
     attendee_options = []
     for item in order_items:
-        attendee_options.append(get_line_items(item.attendeeoptions_set.all()))
+        attendee_options.extend(get_line_items(item.attendeeoptions_set.all()))
 
     # discounts
     if order.discount:
@@ -525,23 +551,26 @@ def completeCashTransaction(request):
         "v": 1,
         "event": event.name,
         "line_items": attendee_options,
-        "donations": {
-            "org": {"name": event.name, "price": order.orgDonation},
-            "charity": {"name": event.charity.name, "price": order.charityDonation},
-        },
+        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)},},
         "total": order.total,
         "payment": {
             "type": order.billingType,
-            "tendered": tendered,
-            "change": tendered - total,
-            "details": "Ref: {0}}".format(order.reference),
+            "tendered": Decimal(tendered),
+            "change": Decimal(tendered) - Decimal(total),
+            "details": "Ref: {0}".format(order.reference),
         },
         "reference": order.reference,
     }
 
+    if event.charity:
+        payload["donations"]["charity"] = (
+            {"name": event.charity.name, "price": str(order.charityDonation)},
+        )
+
     term = request.session.get("terminal", None)
     active = Firebase.objects.get(id=term)
     topic = "apis/receipts/{0}/print_cash".format(active.name)
+
     send_mqtt_message(topic, payload)
 
     return JsonResponse({"success": True})
