@@ -458,6 +458,8 @@ def completeSquareTransaction(request):
     )
 
     order.apiData = store_api_data
+    order.save()
+
     status, errors = payments.refresh_payment(order)
 
     if not status:
