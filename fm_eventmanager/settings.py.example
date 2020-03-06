@@ -200,3 +200,15 @@ METRICS_BACKEND = "InfluxDBReporter"
 METRICS_SETTINGS = {
     "database" : "apis",
 }
+
+# MQTT for cash-drawer worker
+MQTT_BROKER = {
+    "host": "localhost",
+    "port": 1883,
+    "keepalive": 60,
+}
+
+MQTT_LOGIN = {
+    "username": "printing",
+    "password": "secret",
+}

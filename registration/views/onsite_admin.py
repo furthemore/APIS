@@ -3,6 +3,7 @@ import logging
 import time
 from datetime import datetime
 
+import paho.mqtt.publish as mqtt_publish
 from attendee import get_attendee_age
 from common import logger
 from django.conf import settings
@@ -15,11 +16,25 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from printing import printNametag
 
-from registration import printing
+from registration import admin, payments, printing
+from registration.admin import TWOPLACES
 from registration.models import *
-from registration.pushy import PushyAPI
+from registration.pushy import PushyAPI, PushyError
+from registration.views.ordering import getDiscountTotal, getOrderItemOptionTotal
 
+flatten = lambda l: [item for sublist in l for item in sublist]
 logger = logging.getLogger(__name__)
+
+
+def send_mqtt_message(topic, payload):
+    mqtt_publish.single(
+        topic,
+        payload,
+        hostname=settings.MQTT_BROKER["host"],
+        port=settings.MQTT_BROKER["port"],
+        keepalive=settings.MQTT_BROKER["keepalive"],
+        auth=settings.MQTT_LOGIN,
+    )
 
 
 @staff_member_required
@@ -165,13 +180,47 @@ def sendMessageToTerminal(request, data):
         active.token,
     ]
 
-    PushyAPI.sendPushNotification(data, to, None)
+    try:
+        PushyAPI.sendPushNotification(data, to, None)
+    except PushyError as e:
+        return JsonResponse({"success": False, "message": e.message})
     return JsonResponse({"success": True})
 
 
 @staff_member_required
 def enablePayment(request):
-    data = {"command": "enable_payment"}
+    cart = request.session.get("cart", None)
+    if cart is None:
+        request.session["cart"] = []
+        return JsonResponse(
+            {"success": False, "message": "Cart not initialized"}, status=200
+        )
+
+    badges = []
+    first_order = None
+
+    for id in cart:
+        try:
+            badge = Badge.objects.get(id=id)
+            badges.append(badge)
+        except Badge.DoesNotExist:
+            cart.remove(id)
+            logger.error(
+                "ID {0} was in cart but doesn't exist in the database".format(id)
+            )
+
+    order = badge.getOrder()
+    if first_order is None:
+        first_order = order
+    else:
+        # FIXME: Move this to fire on "Tender Cash" or Tender Credit" buttons
+        # FIXME: use order.onsite_reference instead.
+        # Reassign order references of items in cart to match first:
+        order = badge.getOrder()
+        order.reference = first_order.reference
+        order.save()
+
+    data = {"command": "process_payment"}
     return sendMessageToTerminal(request, data)
 
 
@@ -210,81 +259,61 @@ def notifyTerminal(request, data):
         active.token,
     ]
 
-    PushyAPI.sendPushNotification(display, to, None)
+    try:
+        PushyAPI.sendPushNotification(display, to, None)
+    except PushyError as e:
+        logger.error("Problem while sending push notification:")
+        logger.error(e)
+        return False
+    return True
 
 
 def assignBadgeNumber(request):
-    badge_id = request.GET.get("id")
-    badge_number = request.GET.get("number")
-    badge_name = request.GET.get("badge", None)
-    badge = None
     event = Event.objects.get(default=True)
-    logger.info(
-        "assignBadgeNumber: id='{0}' badge_nembr='{1}' badge_name='{2}'".format(
-            badge_id, badge_number, badge_name
-        )
-    )
 
-    if badge_name is not None:
-        try:
-            badge = Badge.objects.filter(
-                badgeName__icontains=badge_name, event__name=event.name
-            ).first()
-        except BaseException:
-            return JsonResponse(
-                {"success": False, "reason": "Badge name search returned no results"}
-            )
-    else:
-        if badge_id is None or badge_number is None:
-            return JsonResponse(
-                {"success": False, "reason": "id and number are required parameters"},
-                status=400,
-            )
+    request_badges = json.loads(request.body)
 
-    try:
-        badge_number = int(badge_number)
-    except ValueError:
+    badge_payload = {badge["id"]: badge for badge in request_badges}
+
+    badge_list = [b["id"] for b in request_badges]
+    badge_set = Badge.objects.filter(id__in=badge_payload.keys())
+
+    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
+    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
+
+    errors = []
+
+    for badge in badge_set.order_by("registeredDate"):
+        # Skip badges which have already been assigned
+        # if badge.badgeNumber is not None:
+        #    errors.append(
+        #        "{0} was already assigned badge number {1}.".format(
+        #            badge, badge.badgeNumber
+        #        )
+        #    )
+        #    continue
+        # Skip badges that are not assigned a registration level
+        if badge.effectiveLevel() is None:
+            errors.append("{0} is not assigned a registration level.".format(badge))
+            continue
+
+        # Check if proposed badge number is reserved:
+        if badge_payload[badge.id]["badgeNumber"] in reserved_badge_numbers:
+            errors.append(
+                "{0} is a reserved badge number. {1} was not assigned a badge number.".format(
+                    badge.request_badges["badgeNumber"], badge
+                )
+            )
+            continue
+
+        badge.badgeNumber = badge_payload[badge.id]["badgeNumber"]
+        badge.save()
+
+    if errors:
         return JsonResponse(
-            {"success": False, "message": "Badge number must be an integer"}, status=400
+            {"success": False, "errors": errors, "message": "\n".join(errors)},
+            status=400,
         )
-    logger.info("assignBadgeNumber: int(badge_number) = {0}".format(badge_number))
-
-    if badge is None:
-        try:
-            badge = Badge.objects.get(id=int(badge_id))
-        except Badge.DoesNotExist:
-            return JsonResponse(
-                {"success": False, "message": "Badge ID specified does not exist"},
-                status=404,
-            )
-        except ValueError:
-            return JsonResponse(
-                {"success": False, "message": "Badge ID must be an integer"}, status=400
-            )
-
-    try:
-        if badge_number < 0:
-            # Auto assign
-            badges = Badge.objects.filter(event=badge.event)
-            highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-            highest = highest + 1
-            badge.badgeNumber = highest
-        else:
-            badge.badgeNumber = badge_number
-        badge.save(update_fields=["badgeNumber"])
-        logger.info(
-            "assignBadgeNumber: Badge number saved - {0}".format(badge.badgeNumber)
-        )
-    except Exception as e:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Error while saving badge number",
-                "error": str(e),
-            },
-            status=500,
-        )
-
     return JsonResponse({"success": True})
 
 
@@ -352,6 +381,8 @@ def onsiteSignature(request):
 @csrf_exempt
 def completeSquareTransaction(request):
     key = request.GET.get("key", "")
+    # FIXME: Need to work on a list of order references, so that every order gets
+    # FIXME: updated and no badge is left orphaned.
     reference = request.GET.get("reference", None)
     clientTransactionId = request.GET.get("clientTransactionId", None)
     serverTransactionId = request.GET.get("serverTransactionId", None)
@@ -378,7 +409,7 @@ def completeSquareTransaction(request):
 
     try:
         # order = Order.objects.get(reference=reference)
-        orders = Order.objects.filter(reference=reference)
+        orders = Order.objects.filter(reference=reference).prefetch_related()
     except Order.DoesNotExist:
         return JsonResponse(
             {
@@ -388,20 +419,49 @@ def completeSquareTransaction(request):
             status=404,
         )
 
-    for order in orders:
-        order.billingType = Order.CREDIT
-        order.status = Order.COMPLETED
-        order.settledDate = datetime.now()
-        order.notes = json.dumps(
-            {
-                "type": "square_register",
-                "clientTransactionId": clientTransactionId,
-                "serverTransactionId": serverTransactionId,
-            }
-        )
-        # FIXME: Call out to the Square API to populate the transaction details server-side:
+    # If there is more than one order, we should flatten them into one by reassigning all these
+    # orderItems to the first order, and deleting the rest.
+    if len(orders) > 1:
+        first_order = orders[0]
 
-        order.save()
+        order_items = []
+        for order in orders[1:]:
+            order_items += order.orderitem_set.all()
+
+        for order_item in order_items:
+            old_order = order_item.order
+            order_item.order = first_order
+            old_order.delete()
+            order_item.save()
+
+    store_api_data = {
+        "onsite": {
+            "client_transaction_id": clientTransactionId,
+            "server_transaction_id": serverTransactionId,
+        },
+    }
+    # Lookup the payment(s?) associated with this order:
+    if serverTransactionId:
+        payment_ids = payments.get_payments_from_order_id(serverTransactionId)
+        store_api_data["payment"] = {"id": payment_ids[0]}
+
+    order = orders[0]
+    order.billingType = Order.CREDIT
+    order.status = Order.COMPLETED
+    order.settledDate = datetime.now()
+    order.notes = json.dumps(
+        {
+            "type": "square_register",
+            "clientTransactionId": clientTransactionId,
+            "serverTransactionId": serverTransactionId,
+        }
+    )
+
+    order.apiData = store_api_data
+    status, errors = payments.refresh_payment(order)
+
+    if not status:
+        return JsonResponse({"success": False, "error": errors,}, status=210)
 
     return JsonResponse({"success": True})
 
@@ -441,6 +501,46 @@ def completeCashTransaction(request):
         action=Cashdrawer.TRANSACTION, total=total, tendered=tendered, user=request.user
     )
     txn.save()
+
+    order_items = OrderItem.objects.filter(order=order)
+    attendee_options = []
+    for item in order_items:
+        attendee_options.append(get_line_items(item.attendeeoptions_set.all()))
+
+    # discounts
+    if order.discount:
+        if order.discount.amountOff:
+            attendee_options.append(
+                {"item": "Discount", "price": "-${0}".format(order.discount.amountOff)}
+            )
+        elif order.discount.percentOff:
+            attendee_options.append(
+                {"item": "Discount", "price": "-%{0}".format(order.discount.percentOff)}
+            )
+
+    event = Event.objects.get(default=True)
+    payload = {
+        "v": 1,
+        "event": event.name,
+        "line_items": attendee_options,
+        "donations": {
+            "org": {"name": event.name, "price": order.orgDonation},
+            "charity": {"name": event.charity.name, "price": order.charityDonation},
+        },
+        "total": order.total,
+        "payment": {
+            "type": order.billingType,
+            "tendered": tendered,
+            "change": tendered - total,
+            "details": "Ref: {0}}".format(order.reference),
+        },
+        "reference": order.reference,
+    }
+
+    term = request.session.get("terminal", None)
+    active = Firebase.objects.get(id=term)
+    topic = "apis/receipts/{0}/print_cash".format(active.name)
+    send_mqtt_message(topic, payload)
 
     return JsonResponse({"success": True})
 
@@ -512,6 +612,41 @@ def firebaseLookup(request):
         )
 
 
+def get_discount_dict(discount):
+    if discount:
+        return {
+            "name": discount.codeName,
+            "percent_off": discount.percentOff,
+            "amount_off": discount.amountOff,
+            "id": discount.id,
+            "valid": discount.isValid(),
+            "status": discount.status,
+        }
+    return None
+
+
+def get_line_items(attendee_options):
+    out = []
+    for option in attendee_options:
+        if option.option.optionExtraType == "int":
+            if option.optionValue:
+                option_dict = {
+                    "item": option.option.optionName,
+                    "price": option.option.optionPrice,
+                    "quantity": option.optionValue,
+                    "total": option.option.optionPrice * Decimal(option.optionValue),
+                }
+        else:
+            option_dict = {
+                "item": option.option.optionName,
+                "price": option.option.optionPrice,
+                "quantity": 1,
+                "total": option.option.optionPrice,
+            }
+        out.append(option_dict)
+    return out
+
+
 @staff_member_required
 def onsiteAdminCart(request):
     # Returns dataset to render onsite cart preview
@@ -520,7 +655,7 @@ def onsiteAdminCart(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=400
+            {"success": False, "message": "Cart not initialized"}, status=200
         )
 
     badges = []
@@ -536,34 +671,39 @@ def onsiteAdminCart(request):
 
     order = None
     subtotal = 0
+    total_discount = 0
     result = []
     first_order = None
     for badge in badges:
         oi = badge.getOrderItems()
         level = None
+        level_subtotal = 0
+        attendee_options = []
         for item in oi:
             level = item.priceLevel
-            # WHY?
-            if item.order is not None:
-                order = item.order
-        if level is None:
-            effectiveLevel = None
-        else:
-            effectiveLevel = {"name": level.name, "price": level.basePrice}
-            subtotal += level.basePrice
+            attendee_options.append(get_line_items(item.attendeeoptions_set.all()))
+            level_subtotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
+
+            if level is None:
+                effectiveLevel = None
+            else:
+                effectiveLevel = {"name": level.name, "price": level.basePrice}
+                level_subtotal += level.basePrice
+
+        subtotal += level_subtotal
 
         order = badge.getOrder()
         if first_order is None:
             first_order = order
-        else:
-            # Reassign order references of items in cart to match first:
-            order = badge.getOrder()
-            order.reference = first_order.reference
-            order.save()
 
         holdType = None
         if badge.attendee.holdType:
             holdType = badge.attendee.holdType.name
+
+        level_discount = (
+            Decimal(getDiscountTotal(order.discount, level_subtotal) * 100) * TWOPLACES
+        )
+        total_discount += level_discount
 
         item = {
             "id": badge.id,
@@ -572,9 +712,13 @@ def onsiteAdminCart(request):
             "badgeName": badge.badgeName,
             "abandoned": badge.abandoned,
             "effectiveLevel": effectiveLevel,
-            "discount": badge.getDiscount(),
+            "discount": get_discount_dict(order.discount),
             "age": get_attendee_age(badge.attendee),
             "holdType": holdType,
+            "level_subtotal": level_subtotal,
+            "level_discount": level_discount,
+            "level_total": level_subtotal - level_discount,
+            "attendee_options": attendee_options,
         }
         result.append(item)
 
@@ -589,7 +733,9 @@ def onsiteAdminCart(request):
     data = {
         "success": True,
         "result": result,
-        "total": total,
+        "subtotal": subtotal,
+        "total": total - total_discount,
+        "total_discount": total_discount,
         "charityDonation": charityDonation,
         "orgDonation": orgDonation,
     }
@@ -604,6 +750,17 @@ def onsiteAdminCart(request):
     notifyTerminal(request, data)
 
     return JsonResponse(data)
+
+
+@staff_member_required()
+def onsiteSignaturePrompt(request):
+    data = {
+        "command": "signature",
+        "name": "Kasper Finch",
+        "agreement": "I have read and agree to the FurTheMore 2020 Code of Conduct",
+        "badge_id": "5",
+    }
+    return sendMessageToTerminal(request, data)
 
 
 @staff_member_required
