@@ -7,18 +7,17 @@
 		<h3>Thank you for your registering!</h3>
 		<hr>
 		<p>Please wait for the next available cashier to pay and pick up your badge.</p>
+		<a href="{% url 'registration:onsite' %}"><h3>Start a new registration</h3></a>
 	</div>
 	</div>
 {% endblock %}
 
 {% block javascript %}
 <script type="text/javascript">
-$( "body" ).ready(function () {
     setTimeout(function(){
        window.location = "{% url 'registration:onsite' %}";
 '
     }, 5000);
-});
 </script>
 
 {% endblock %}
