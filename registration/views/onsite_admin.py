@@ -460,7 +460,7 @@ def completeSquareTransaction(request):
     order.apiData = store_api_data
     order.save()
 
-    status, errors = payments.refresh_payment(order)
+    status, errors = payments.refresh_payment(order, api_data=store_api_data)
 
     if not status:
         return JsonResponse({"success": False, "error": errors,}, status=210)
