@@ -149,7 +149,10 @@ def getOrderItemOptionTotal(options):
 
 
 def getDiscountTotal(disc, subtotal):
-    discount = Discount.objects.get(codeName=disc)
+    try:
+        discount = Discount.objects.get(codeName=disc)
+    except Discount.DoesNotExist:
+        return 0
     if discount.isValid():
         if discount.amountOff:
             return discount.amountOff

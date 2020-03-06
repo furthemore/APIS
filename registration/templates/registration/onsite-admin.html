@@ -124,9 +124,11 @@
 
             <div class="row button-group">
                 <div class="col-md-6">
+                    {% if perms.registration.cash %}
                     <button class="btn btn-block btn-primary" id="cash_button" disabled>
                         <i class="fas fa-money-bill-alt"></i> Tender Cash
                     </button>
+                  {% endif %}
                 </div>
                 <div class="col-md-6">
                     <button class="btn btn-block btn-warning" id="credit_button" disabled>
@@ -135,12 +137,43 @@
                 </div>
             </div>
             <div class="row button-group">
-              <div class="col-md-12">
+              <div class="col-md-6">
                 <button class="btn btn-block btn-primary" id="print_button" disabled>
                   <i class="fas fa-print"></i> Print Badges
                 </button>
               </div>
+
+              <div class="col-md-6">
+                <button class="btn btn-block btn-primary" id="print_preview" disabled>
+                  <i class="fas fa-file-pdf"></i> Print Preview
+                </button>
+              </div>
             </div>
+
+            {% if perms.registration.discount %}
+            <div class="row">
+              <div class="col-md-6">
+                <button class="btn btn-block btn-primary" id="receipt_button" disabled>
+                  <i class="fas fa-receipt"></i> Print Receipt
+                </button>
+              </div>
+
+                <div class="col-md-6">
+                <button class="btn btn-block btn-danger" id="discount_button">
+                    <i class="fas fa-tag"></i> Discount
+                </button>
+                </div>
+            </div>
+          {% else %}
+            <div class="row">
+              <div class="col-md-12">
+                <button class="btn btn-block btn-primary" id="receipt_button" disabled>
+                  <i class="fas fa-receipt"></i> Print Receipt
+                </button>
+              </div>
+            </div>
+          {% endif %}
+
         </div>
       </div>
     </div>
@@ -229,6 +262,13 @@
         }
     </style>
 
+  <script type="text/html" id="itemRowTemplate">
+    <tr>
+      <td><span data-content="quantity"></span> &times; <span data-content="item"></span> (@<span data-content="price"></span>)</td>
+      <td>$<span data-content="total"></span></td>
+    </tr>
+  </script>
+
   <script type="text/html" id="cartTemplate">
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -250,15 +290,32 @@
           <tr data-class="state">
             <td data-content="badgeName"></td>
             <td data-content="level"></td>
-            <td><span class="price-line" data-content="price"></td>
+            <td><span class="price-line" data-content="price"></span></td>
           </tr>
         </tbody>
+      </table>
+      <table class="table">
+        <thead>
+          <tr data-class="state">
+            <th>Order Item</th>
+            <th>Price</th>
+           </tr>
+        </thead>
+        <tbody data-id="items_id"></tbody>
       </table>
     </div>
   </script>
 
   <script type="text/html" id="totalTemplate">
     <table class="total-table">
+      <tr>
+        <td>Subtotal:</td>
+        <td>$<span data-content="subtotal"></span></td>
+      </tr>
+      <tr>
+        <td>Discounts:</td>
+        <td>-$<span data-content="total_discount"></span></td>
+      </tr>
       <tr>
         <td>Donation to Charity:
         <td>$<span data-content="charityDonation"></span>
@@ -319,15 +376,20 @@ var print_badges = function(e) {
     var printQueue = get_printable();
     var badge_preview = "";
     var stop = false;
+
     $.each(printQueue, function(idx, badge) {
-        badge_number = prompt("Scan or key in badge stock number for " + badge.badgeName);
-        if (badge_number == null) {
+
+        badge_number_str = prompt("Scan or key in badge stock number for " + badge.badgeName);
+
+        if (badge_number_str == null) {
             stop = true;
             return false;
         }
-        // badge_number = -1; //  auto-assign
+
+        badge_number = parseInt(badge_number_str.split("-")[1]);
+
+        //badge_number = -1; //  auto-assign
         badge.badgeNumber = badge_number;
-        //badge.badgeNumber = -1;
         badge_preview += badge_number  + ' - ' + badge.badgeName + "\n";
     });
 
@@ -336,31 +398,40 @@ var print_badges = function(e) {
     }
 
     conf = confirm("Assign badge numbers?\n\n" + badge_preview);
-    //conf = true;
+
+    conf = true;
     if (conf) {
-        // assign badge number
+        // assign badge numbers
+        $.ajax("{% url 'registration:assignBadgeNumber' %}", {
+          data : JSON.stringify(printQueue),
+          contentType : 'application/json',
+          type : 'POST'
+        })
+        .done(function(data) {
+            console.log(data.success);
+        }).success(function (data) {
+           var printIDs = [];
+           $.each(printQueue, function(idx, badge) {
+              printIDs.push(badge.id);
+           });
+           // print badges
 
-        var printIDs = []
-        $.each(printQueue, function(idx, badge) {
-            printIDs.push(badge.id);
-            $.getJSON("{% url 'registration:assignBadgeNumber' %}", { id : badge.id, number : badge.badgeNumber }, function (data) {
-                if (!data.success) {
-                    alert("Error while assigning badge number: " + data.message);
-                }
-            });
+          $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
+              if (!data.success) {
+                  alert("Error while printing badges");
+              }
+              window.open(data.url);
+          }).fail(function (data) {
+            $("#cart-error").html("Server error while assigning badge numbers:<br>"+data.message).fadeIn();
+          });
+
+          // clear cart
+
+          $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
+          refresh_cart();
         });
 
-        // print badges
-        $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
-            if (!data.success) {
-                alert("Error while printing badges");
-            }
-            window.open(data.url);
-        });
-        // clear cart
 
-        $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
-        refresh_cart();
     }
 };
 
@@ -381,6 +452,16 @@ $(document).ready(function () {
                 return '<span class="label label-warning">' + value + '</span>';
             }
     });
+
+
+    /* This should probably be a checkbox instead, so that we can still send to a terminal's associated printer
+    if (navigator.userAgent.match(/iPad|iPhone/)) {
+        $("#pos").append('<option value="ios">This device (iOS)</option>');
+    }
+    if (navigator.userAgent.match(/Android/)) {
+        $("#pos").append('<option value="android">This device (Android)</option>');
+    }
+    */
 
     $.addTemplateFormatter("HoldTypeFormatter",
         function(value, template) {
@@ -408,6 +489,7 @@ $(document).ready(function () {
         var onHold = false;
         if (data.success) {
           cartTemplateData = [];
+          orderItemsData = {};
           $.each( data.result, function( key, val ) {
             var level = "?";
             var price = "?";
@@ -426,9 +508,24 @@ $(document).ready(function () {
                   level : level,
                   price : price,
                   delete_id : "delete-" + val.id,
+                  items_id: "order-items-" + val.id,
                   state : state,
-                  holdType : val.holdType
+                  holdType : val.holdType,
+                  discount: val.discount,
+                  level_discount: val.level_discount,
+                  level_subtotal: val.level_subtotal,
+                  level_total: val.level_total
             });
+            orderItemsData[val.id] = val.attendee_options;
+            if (val.discount) {
+                orderItemsData[val.id].push({
+                    quantity: 1,
+                    item: "Discount "+val.discount.name,
+                    price: "-"+val.discount.amount_off+" / "+val.discount.percent_off+"%",
+                    total: val.level_discount
+                });
+            }
+
             if (!!val.holdType) {
               onHold = true;
               enable_print = false;
@@ -438,6 +535,10 @@ $(document).ready(function () {
           $("#cart").html("");
           $("#cart").loadTemplate($("#cartTemplate"), cartTemplateData);
           $(".remove-badge").click(remove_badge);
+
+          $.each(orderItemsData, function(key, val) {
+              $("#order-items-"+key).loadTemplate($("#itemRowTemplate"), val);
+          });
 
           var price = parseFloat(data.total);
           if (((!isNaN(price)) && (price != 0)) && (!onHold)) {
@@ -453,8 +554,8 @@ $(document).ready(function () {
         }
 
       })
-      .fail(function () {
-          $("#cart-error").html("A server error occured while refreshing the cart").fadeIn();
+      .fail(function (data) {
+          $("#cart-error").html("A server error occured while refreshing the cart<br>"+data.message).fadeIn();
       });
     };
 
