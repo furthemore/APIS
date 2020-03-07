@@ -125,7 +125,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         current_site = Site.objects.get_current()
         endpoint = settings.REGISTER_ENDPOINT
         if endpoint is None:
-            endpoint = "http://{0}{1}".format(current_site.domain, reverse("root"))
+            endpoint = "https://{0}{1}".format(current_site.domain, reverse("root"))
 
         document = {
             "v": 1,

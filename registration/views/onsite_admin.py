@@ -236,6 +236,9 @@ def enablePayment(request):
                 "ID {0} was in cart but doesn't exist in the database".format(id)
             )
 
+    # Force a cart refresh to get the latest order reference to the terminal
+    onsiteAdminCart(request)
+
     data = {"command": "process_payment"}
     return sendMessageToTerminal(request, data)
 
@@ -427,6 +430,7 @@ def completeSquareTransaction(request):
         # order = Order.objects.get(reference=reference)
         orders = Order.objects.filter(reference=reference).prefetch_related()
     except Order.DoesNotExist:
+        logger.error("No order matching reference {0}".format(reference))
         return JsonResponse(
             {
                 "success": False,
@@ -457,13 +461,29 @@ def completeSquareTransaction(request):
             "server_transaction_id": serverTransactionId,
         },
     }
-    # Lookup the payment(s?) associated with this order:
-    if serverTransactionId:
-        payment_ids = payments.get_payments_from_order_id(serverTransactionId)
-        store_api_data["payment"] = {"id": payment_ids[0]}
 
     order = orders[0]
     order.billingType = Order.CREDIT
+
+    # Lookup the payment(s?) associated with this order:
+    if serverTransactionId:
+        for retry in range(4):
+            payment_ids = payments.get_payments_from_order_id(serverTransactionId)
+            if payment_ids:
+                break
+            time.sleep(0.5)
+        if payment_ids:
+            store_api_data["payment"] = {"id": payment_ids[0]}
+            order.status = Order.COMPLETED
+            order.settledDate = datetime.now()
+            order.notes = json.dumps(store_api_data)
+        else:
+            order.status = Order.CAPTURED
+            order.notes = "Need to refresh payment."
+    else:
+        order.status = Order.CAPTURED
+        order.notes = "No serverTransactionId."
+
     order.status = Order.COMPLETED
     order.settledDate = datetime.now()
     order.notes = json.dumps(store_api_data)

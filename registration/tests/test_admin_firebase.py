@@ -31,7 +31,7 @@ class TestFirebaseAdmin(TestCase):
         provision_dict = json.loads(provision_json)
 
         current_site = Site.objects.get_current()
-        endpoint = "http://{0}{1}".format(current_site.domain, reverse("root"))
+        endpoint = "https://{0}{1}".format(current_site.domain, reverse("root"))
 
         expected_result = {
             "v": 1,
