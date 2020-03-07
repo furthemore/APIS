@@ -484,6 +484,10 @@ def completeSquareTransaction(request):
         order.status = Order.CAPTURED
         order.notes = "No serverTransactionId."
 
+    order.status = Order.COMPLETED
+    order.settledDate = datetime.now()
+    order.notes = json.dumps(store_api_data)
+
     order.apiData = json.dumps(store_api_data)
     order.save()
 
