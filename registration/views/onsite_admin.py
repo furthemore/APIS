@@ -447,6 +447,7 @@ def completeSquareTransaction(request):
         for order_item in order_items:
             old_order = order_item.order
             order_item.order = first_order
+            logger.warn("Deleting old order id={0}".format(old_order.id))
             old_order.delete()
             order_item.save()
 
