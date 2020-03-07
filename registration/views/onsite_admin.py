@@ -219,22 +219,22 @@ def enablePayment(request):
         try:
             badge = Badge.objects.get(id=id)
             badges.append(badge)
+
+            order = badge.getOrder()
+            if first_order is None:
+                first_order = order
+            else:
+                # FIXME: use order.onsite_reference instead.
+                # FIXME: Put this in cash handling, too
+                # Reassign order references of items in cart to match first:
+                order = badge.getOrder()
+                order.reference = first_order.reference
+                order.save()
         except Badge.DoesNotExist:
             cart.remove(id)
             logger.error(
                 "ID {0} was in cart but doesn't exist in the database".format(id)
             )
-
-    order = badge.getOrder()
-    if first_order is None:
-        first_order = order
-    else:
-        # FIXME: Move this to fire on "Tender Cash" or Tender Credit" buttons
-        # FIXME: use order.onsite_reference instead.
-        # Reassign order references of items in cart to match first:
-        order = badge.getOrder()
-        order.reference = first_order.reference
-        order.save()
 
     data = {"command": "process_payment"}
     return sendMessageToTerminal(request, data)
@@ -437,8 +437,8 @@ def completeSquareTransaction(request):
 
     # If there is more than one order, we should flatten them into one by reassigning all these
     # orderItems to the first order, and deleting the rest.
+    first_order = orders[0]
     if len(orders) > 1:
-        first_order = orders[0]
 
         order_items = []
         for order in orders[1:]:
@@ -465,18 +465,12 @@ def completeSquareTransaction(request):
     order.billingType = Order.CREDIT
     order.status = Order.COMPLETED
     order.settledDate = datetime.now()
-    order.notes = json.dumps(
-        {
-            "type": "square_register",
-            "clientTransactionId": clientTransactionId,
-            "serverTransactionId": serverTransactionId,
-        }
-    )
+    order.notes = json.dumps(store_api_data)
 
-    order.apiData = store_api_data
+    order.apiData = json.dumps(store_api_data)
     order.save()
 
-    status, errors = payments.refresh_payment(order)
+    status, errors = payments.refresh_payment(order, store_api_data)
 
     if not status:
         return JsonResponse({"success": False, "error": errors,}, status=210)
