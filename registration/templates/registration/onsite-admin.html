@@ -399,7 +399,6 @@ var print_badges = function(e) {
 
     conf = confirm("Assign badge numbers?\n\n" + badge_preview);
 
-    conf = true;
     if (conf) {
         // assign badge numbers
         $.ajax("{% url 'registration:assignBadgeNumber' %}", {
