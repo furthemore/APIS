@@ -1,9 +1,9 @@
 # APIS EventManager
 [![Build Status](https://travis-ci.com/furthemore/APIS.svg?branch=production)](https://travis-ci.com/furthemore/APIS) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg?branch=production)](https://coveralls.io/github/furthemore/APIS?branch=production)
 
-Data Model: http://www.gliffy.com/go/publish/10890219
+Data Model: http://www.gliffy.com/go/publish/10890219 (broken link?)
 
-Registrtion Workflows: http://www.gliffy.com/go/publish/10892367
+Registration Workflows: http://www.gliffy.com/go/publish/10892367 (broken link?)
 
 Proposed Stack:
   + Ubuntu 18.04 (LTS)
@@ -12,7 +12,7 @@ Proposed Stack:
   + Python 2.7.6
   + Django 1.11.16
   + Bootstrap 3.3.7
-  + JQuery 1.9.1
+  + jQuery 1.9.1
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
@@ -40,7 +40,7 @@ To see a demo, or set up the project for development locally:
     pip install -r requirements.txt
 
     # Review your settings
-    cp fm_eventmanager/settings.py.dev fm_eventmanager/settings.py
+    cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
 
     python manage.py migrate
     python manage.py createsuperuser
