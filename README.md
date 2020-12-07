@@ -1,9 +1,7 @@
 # APIS EventManager
 [![Build Status](https://travis-ci.com/furthemore/APIS.svg?branch=production)](https://travis-ci.com/furthemore/APIS) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg?branch=production)](https://coveralls.io/github/furthemore/APIS?branch=production)
 
-Data Model: http://www.gliffy.com/go/publish/10890219 (broken link?)
-
-Registration Workflows: http://www.gliffy.com/go/publish/10892367 (broken link?)
+Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 
 Proposed Stack:
   + Ubuntu 18.04 (LTS)
