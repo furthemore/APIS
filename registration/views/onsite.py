@@ -3,10 +3,11 @@ import logging
 from datetime import datetime
 
 from django.shortcuts import render
-from ordering import getTotal
 
 from registration.models import *
 from registration.views.common import clear_session
+
+from .ordering import getTotal
 
 logger = logging.getLogger(__name__)
 

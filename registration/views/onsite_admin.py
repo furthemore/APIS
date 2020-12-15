@@ -4,8 +4,6 @@ import subprocess
 import time
 from datetime import datetime
 
-from attendee import get_attendee_age
-from common import logger
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Max, Q
@@ -14,13 +12,16 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from printing import printNametag
 
 from registration import admin, payments, printing
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
 from registration.views.ordering import getDiscountTotal, getOrderItemOptionTotal
+
+from .attendee import get_attendee_age
+from .common import logger
+from .printing import printNametag
 
 flatten = lambda l: [item for sublist in l for item in sublist]
 logger = logging.getLogger(__name__)
@@ -295,7 +296,7 @@ def assignBadgeNumber(request):
     badge_payload = {badge["id"]: badge for badge in request_badges}
 
     badge_list = [b["id"] for b in request_badges]
-    badge_set = Badge.objects.filter(id__in=badge_payload.keys())
+    badge_set = Badge.objects.filter(id__in=list(badge_payload.keys()))
 
     reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
     reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]

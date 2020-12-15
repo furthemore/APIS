@@ -99,7 +99,7 @@ def charge_payment(order, cc_data):
 def format_errors(errors):
     error_string = ""
     for error in errors:
-        error_string += u"{e[category]} - {e[code]}: {e[detail]}\n".format(e=error)
+        error_string += "{e[category]} - {e[code]}: {e[detail]}\n".format(e=error)
     return error_string
 
 

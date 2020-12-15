@@ -2,14 +2,15 @@ import json
 import logging
 from datetime import datetime
 
-from common import clear_session, get_client_ip, handler, logger
 from django.forms import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render
-from ordering import doCheckout, doZeroCheckout, getDiscountTotal
 
 import registration.emails
 from registration.models import *
+
+from .common import clear_session, get_client_ip, handler, logger
+from .ordering import doCheckout, doZeroCheckout, getDiscountTotal
 
 logger = logging.getLogger(__name__)
 

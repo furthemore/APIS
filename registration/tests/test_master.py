@@ -1,5 +1,7 @@
 import io
-import urllib2
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -236,9 +238,9 @@ class TestAttendeeCheckout(OrdersTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
+        response_json = json.loads(response.content)
         self.assertEqual(
-            response.content,
-            '{"message": "That discount is not valid.", "success": false}',
+            response_json, {"message": "That discount is not valid.", "success": False},
         )
 
         postData = {"discount": "Bogus"}
@@ -248,9 +250,9 @@ class TestAttendeeCheckout(OrdersTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
+        response_json = json.loads(response.content)
         self.assertEqual(
-            response.content,
-            '{"message": "That discount is not valid.", "success": false}',
+            response_json, {"message": "That discount is not valid.", "success": False},
         )
 
     def test_discount_zero_sum(self):
@@ -334,7 +336,7 @@ class TestAttendeeCheckout(OrdersTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.content, "Staff matching query does not exist.")
+        self.assertEqual(response.content, b"Staff matching query does not exist.")
 
         # Regular staff reg
         postData = {"email": attendee.email, "token": staff.registrationToken}
@@ -344,7 +346,8 @@ class TestAttendeeCheckout(OrdersTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
+        response_decoded = json.loads(response.content)
+        self.assertEqual(response_decoded, {"message": "STAFF", "success": True})
 
         postData = {
             "attendee": {
@@ -427,7 +430,8 @@ class TestAttendeeCheckout(OrdersTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, '{"message": "STAFF", "success": true}')
+        response_decoded = json.loads(response.content)
+        self.assertEqual(response_decoded, {"message": "STAFF", "success": True})
 
         postData = {
             "attendee": {
@@ -750,16 +754,16 @@ class LookupTestCases(TestCase):
 
 
 class TestPushyAPI(TestCase):
-    @patch("urllib2.urlopen")
+    @patch("urllib.request.urlopen")
     def test_sendPushNotification(self, mock_urlopen):
         data = {"data": "some cool message here"}
         PushyAPI.sendPushNotification(data, "to", None)
         mock_urlopen.assert_called_once()
 
-    @patch("urllib2.urlopen")
+    @patch("urllib.request.urlopen")
     def test_sendPushNotification_sad_path(self, mock_urlopen):
         data = {"data": "some cool message here"}
-        mock_urlopen.side_effect = urllib2.HTTPError(
+        mock_urlopen.side_effect = urllib.error.HTTPError(
             "https://api.pushy.me/push",
             400,
             "Pushy didn't like that!",

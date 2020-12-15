@@ -1,13 +1,13 @@
 import json
 import logging
 
-import cart
-import common
 from django.http import JsonResponse
 
 import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
+
+from . import cart, common
 
 logger = logging.getLogger(__name__)
 

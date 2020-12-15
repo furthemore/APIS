@@ -2,14 +2,15 @@ import json
 import logging
 from datetime import datetime
 
-from common import abort, clear_session, get_client_ip, handler, logger, success
 from django.forms import model_to_dict
 from django.http import HttpResponseServerError, JsonResponse
 from django.shortcuts import render
-from ordering import doCheckout, doZeroCheckout, getTotal
 
 import registration.emails
 from registration.models import *
+
+from .common import abort, clear_session, get_client_ip, handler, logger, success
+from .ordering import doCheckout, doZeroCheckout, getTotal
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,7 @@ def findStaff(request):
         request.session["staff_id"] = staff.id
         return JsonResponse({"success": True, "message": "STAFF"})
     except Exception as e:
-        logger.warning("Unable to find staff. " + request.body)
+        logger.warning(f"Unable to find staff. {request.body}")
         return HttpResponseServerError(str(e))
 
 
