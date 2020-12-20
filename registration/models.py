@@ -272,7 +272,7 @@ class TableSize(LookupTable):
     def __str__(self):
         if self.event is None:
             return self.name
-        return self.name + " " + self.event.name
+        return f"{self.name} {self.event.name}"
 
 
 class Department(models.Model):
@@ -335,13 +335,7 @@ class Attendee(models.Model):
     def __str__(self):
         if self is None:
             return "--"
-        # FIXME: Why are we afraid of Unicode here?
-        try:
-            test1 = self.firstName.decode("ascii")
-            test2 = self.lastName.decode("ascii")
-            return "%s %s" % (self.firstName, self.lastName)
-        except BaseException:
-            return "--attendee--"
+        return f"{self.firstName} {self.lastName}"
 
 
 def badge_signature_svg_path(instance, filename):
