@@ -29,7 +29,27 @@ Stack:
 ![Screenshot of Cash Register Position](https://i.imgur.com/8vB1m0q.png)
 
 ## Quick start
+### Running using Docker
 To see a demo, or set up the project for development locally:
+
+    # Edit .env with appropriate settings (API keys, etc)
+    cp example.env .env
+
+    # Build base docker image:
+    make build-base-docker-image
+
+    # Edit Dockerfile and replace the first line with output from last command...
+
+    # Build final image:
+    make build-docker-image
+
+    # Run in docker
+    docker-compose up -d
+
+    # Follow the prompts
+    docker-compose exec ./manage.py createsuperuser
+
+### Locally without docker (recommended for developers)
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
