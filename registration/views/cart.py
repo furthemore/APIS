@@ -2,12 +2,12 @@ import json
 import logging
 from datetime import datetime
 
-import common
-import ordering
-from attendee import check_ban_list
 from django.shortcuts import render
 
 from registration.models import *
+
+from . import common, ordering
+from .attendee import check_ban_list
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +230,7 @@ def remove_from_cart(request):
         postData = json.loads(request.body)
     except ValueError as e:
         return common.abort(400, "Unable to decode JSON parameters")
-    if "id" not in postData.keys():
+    if "id" not in list(postData.keys()):
         return common.abort(400, "Required parameter `id` not specified")
     id = postData["id"]
 
