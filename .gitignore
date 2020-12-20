@@ -13,3 +13,4 @@ fm_eventmanager/maintenance_mode_state.txt
 localhost.crt
 localhost.key
 venv3/
+.env

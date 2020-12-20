@@ -3,7 +3,7 @@ django-mathfilters~=0.4.0
 django-nested-inline~=0.3.7
 django-nested-admin~=3.2.4
 django-import-export~=1.1.0
-psycopg2-binary~=2.7.1
+psycopg2-binary~=2.8
 configobj==5.0.6
 django-extensions==2.1.4
 django-guardian==1.4.9
