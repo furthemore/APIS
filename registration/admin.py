@@ -4,9 +4,7 @@ import json
 import logging
 from datetime import date
 
-import printing
 import qrcode
-import views
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin, auth, messages
@@ -31,6 +29,8 @@ from registration import payments
 from registration.forms import FirebaseForm
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
+
+from . import printing, views
 
 logger = logging.getLogger(__name__)
 
@@ -752,7 +752,7 @@ def print_badges(modeladmin, request, queryset):
             staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
             messages.warning(
                 request,
-                u"{0} is on staff, so we skipped printing an attendee badge".format(
+                "{0} is on staff, so we skipped printing an attendee badge".format(
                     badge.badgeName
                 ),
             )
@@ -826,7 +826,7 @@ def print_dealer_badges(modeladmin, request, queryset):
         except Dealer.DoesNotExist:
             messages.warning(
                 request,
-                u"{0} is not a dealer, so we skipped printing a dealer badge for them".format(
+                "{0} is not a dealer, so we skipped printing a dealer badge for them".format(
                     badge.badgeName
                 ),
             )
@@ -888,7 +888,7 @@ def print_staff_badges(modeladmin, request, queryset):
         except Staff.DoesNotExist:
             messages.warning(
                 request,
-                u"{0} is not on staff, so we skipped printing a staff badge for them".format(
+                "{0} is not on staff, so we skipped printing a staff badge for them".format(
                     badge.badgeName
                 ),
             )
@@ -896,7 +896,7 @@ def print_staff_badges(modeladmin, request, queryset):
         except Staff.MultipleObjectsReturned:
             messages.error(
                 request,
-                u"{0} was added to staff multiple times! - dedupe and try again.".format(
+                "{0} was added to staff multiple times! - dedupe and try again.".format(
                     badge.attendee
                 ),
             )

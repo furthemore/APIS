@@ -1,9 +1,9 @@
-django>=1.11.17
-django-mathfilters==0.4.0
-django-nested-inline==0.3.7
-django-nested-admin==3.2.4
-django-import-export>=1.1.0
-psycopg2-binary>=2.7.1
+django~=1.11.28
+django-mathfilters~=0.4.0
+django-nested-inline~=0.3.7
+django-nested-admin~=3.2.4
+django-import-export~=1.1.0
+psycopg2-binary~=2.7.1
 configobj==5.0.6
 django-extensions==2.1.4
 django-guardian==1.4.9
@@ -19,3 +19,4 @@ Werkzeug==0.15.3
 django-debug-toolbar==1.11
 mock==3.0.5
 paho-mqtt==1.5.0
+sentry-sdk
