@@ -372,9 +372,9 @@ class Badge(models.Model):
         if self.badgeNumber is not None or self.badgeNumber == "":
             return '"{0}" #{1} ({2})'.format(
                 self.badgeName, self.badgeNumber, self.event
-            ).encode("utf-8")
+            )
         if self.badgeName != "":
-            return '"{0}" ({1})'.format(self.badgeName, self.event).encode("utf-8")
+            return '"{0}" ({1})'.format(self.badgeName, self.event)
         if self.registeredDate is not None:
             return "[Orphan {0}]".format(self.registeredDate)
         return "Badge object {0}".format(self.registrationToken)
@@ -716,12 +716,12 @@ class OrderItem(models.Model):
         try:
             return '{} (${}) - "{}"'.format(
                 self.order.status, self.order.total, self.badge.badgeName,
-            ).encode("utf-8")
+            )
         except BaseException:
             try:
                 return 'Incomplete from {}: "{}" ({})'.format(
                     self.enteredBy, self.badge.badgeName, self.priceLevel
-                ).encode("utf-8")
+                )
             except BaseException:
                 return "OrderItem object"
 
@@ -745,9 +745,7 @@ class AttendeeOptions(models.Model):
 
     def __str__(self):
         # return "[{0}] - {1}".format(self.orderItem.decode("utf-8"), 1).encode("utf-8")
-        return "[{0}] - {1}".format(
-            str(self.orderItem).decode("utf-8"), self.option
-        ).encode("utf-8")
+        return "[{0}] - {1}".format(str(self.orderItem), self.option)
 
 
 class BanList(models.Model):
