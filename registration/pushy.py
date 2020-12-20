@@ -1,6 +1,8 @@
 import json
 import logging
-import urllib2
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 
@@ -21,15 +23,15 @@ class PushyAPI:
         postData["data"] = data
 
         # Set URL to Send Notifications API endpoint
-        req = urllib2.Request("https://api.pushy.me/push?api_key=" + apiKey)
+        req = urllib.request.Request("https://api.pushy.me/push?api_key=" + apiKey)
 
         # Set Content-Type header since we're sending JSON
         req.add_header("Content-Type", "application/json")
 
         try:
             # Actually send the push
-            response = urllib2.urlopen(req, json.dumps(postData))
-        except urllib2.HTTPError as e:
+            response = urllib.request.urlopen(req, json.dumps(postData))
+        except urllib.error.HTTPError as e:
             # Print response errors
             error_message = (
                 "Pushy API returned HTTP error " + str(e.code) + ": " + e.read()

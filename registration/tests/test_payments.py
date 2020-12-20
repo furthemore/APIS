@@ -94,7 +94,7 @@ class TestSquareOrders(TestCase):
         result = payments.get_payments_from_order_id(
             TEST_ORDER_RESULT["orders"][0]["id"]
         )
-        self.assertEquals(result, ["7VceHkRWU2iFztahpbYt1AUCvaB"])
+        self.assertEqual(result, ["7VceHkRWU2iFztahpbYt1AUCvaB"])
 
     @patch("registration.payments.orders_api.batch_retrieve_orders")
     def test_get_payments_from_order_id_failure(self, mock_get_payments):
@@ -106,4 +106,4 @@ class TestSquareOrders(TestCase):
 
     def test_get_payments_from_order_id_invalid(self):
         result = payments.get_payments_from_order_id("doesntexist")
-        self.assertEquals(len(result), 0)
+        self.assertEqual(len(result), 0)

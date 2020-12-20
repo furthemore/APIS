@@ -30,7 +30,7 @@ def bootstrap_message(msg):
         "error": "alert-danger",
     }
 
-    if msg not in bootstrap.keys():
+    if msg not in list(bootstrap.keys()):
         return ""
 
     return bootstrap[msg]

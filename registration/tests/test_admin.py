@@ -308,7 +308,7 @@ class TestOrderAdmin(TestCase):
         )
 
         order = Order.objects.get(id=self.cash_order.id)
-        self.assertEquals(order.total, 0)
+        self.assertEqual(order.total, 0)
         self.assertEqual(order.status, Order.REFUNDED)
 
     def test_partial_cash_refund(self):
@@ -328,7 +328,7 @@ class TestOrderAdmin(TestCase):
         )
 
         order = Order.objects.get(id=self.cash_order.id)
-        self.assertEquals(order.total, 50)
+        self.assertEqual(order.total, 50)
         self.assertEqual(order.status, Order.REFUNDED)
 
     def test_refund_comped_and_failed(self):
@@ -402,7 +402,7 @@ class TestOrderAdmin(TestCase):
 
         order = Order.objects.get(id=order.id)
         self.refunded_square_order = order
-        self.assertEquals(order.total, 0)
+        self.assertEqual(order.total, 0)
         self.assertEqual(order.status, Order.REFUND_PENDING)
 
     def test_partial_refund(self):
@@ -424,10 +424,10 @@ class TestOrderAdmin(TestCase):
 
         order = Order.objects.get(id=order.id)
         self.refunded_square_order = order
-        self.assertEquals(order.total, 75)
-        self.assertEquals(order.charityDonation, 20)
-        self.assertEquals(order.orgDonation, 20)
-        self.assertEquals(order.status, Order.REFUND_PENDING)
+        self.assertEqual(order.total, 75)
+        self.assertEqual(order.charityDonation, 20)
+        self.assertEqual(order.orgDonation, 20)
+        self.assertEqual(order.status, Order.REFUND_PENDING)
 
         form_data = {
             "amount": "50",
@@ -444,9 +444,9 @@ class TestOrderAdmin(TestCase):
             "Refunded order has caused charity and organization donation amounts to reset.",
         )
         self.refunded_square_order = order
-        self.assertEquals(order.total, 25)
-        self.assertEquals(order.charityDonation, 25)
-        self.assertEquals(order.orgDonation, 0)
+        self.assertEqual(order.total, 25)
+        self.assertEqual(order.charityDonation, 25)
+        self.assertEqual(order.orgDonation, 0)
         self.assertEqual(order.status, Order.REFUND_PENDING)
 
     def test_refresh_view(self):
@@ -460,8 +460,7 @@ class TestOrderAdmin(TestCase):
             reverse("admin:registration_order_change", args=(self.credit_order.id,)),
         )
         self.assertContains(
-            response,
-            "Error while loading JSON from apiData field for this order: No JSON object could be decoded",
+            response, "Error while loading JSON from apiData field for this order",
         )
 
         # Test with bad square ID:
@@ -489,7 +488,7 @@ class TestOrderAdmin(TestCase):
             response, reverse("admin:registration_order_change", args=(order.id,)),
         )
         order = Order.objects.get(id=order.id)
-        self.assertEquals(order.status, order.FAILED)
+        self.assertEqual(order.status, order.FAILED)
 
         order = self.create_square_order(autocomplete=False)
         response = self.client.get(
@@ -499,7 +498,7 @@ class TestOrderAdmin(TestCase):
             response, reverse("admin:registration_order_change", args=(order.id,)),
         )
         order = Order.objects.get(id=order.id)
-        self.assertEquals(order.status, order.CAPTURED)
+        self.assertEqual(order.status, order.CAPTURED)
 
         # Create refund to test admin form data against:
         order = self.create_square_order()
@@ -547,8 +546,8 @@ class TestCashDrawerAdmin(TestCase):
             reverse("admin:registration_cashdrawer_add"), form_data, follow=True
         )
         cash_drawer = Cashdrawer.objects.get(id=1)
-        self.assertEquals(cash_drawer.tendered, 0)
-        self.assertEquals(cash_drawer.user, self.admin_user)
+        self.assertEqual(cash_drawer.tendered, 0)
+        self.assertEqual(cash_drawer.user, self.admin_user)
         cash_drawer.delete()
 
 

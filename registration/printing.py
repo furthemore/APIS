@@ -83,7 +83,7 @@ class Printer:
         args = []
         if len(piece) == 0:
             return []  # No options in section
-        for arg in piece.keys():
+        for arg in list(piece.keys()):
             if arg.lower() == "zoom":
                 args.append("--zoom")
                 args.append(piece[arg])
@@ -377,10 +377,10 @@ class Nametag:
                 )
             except NotImplementedError as e:
                 self.log.error("Unable to generate barcode: {0}".format(e))
-                html = html.replace(u"default-secure.png", u"white.gif")
+                html = html.replace("default-secure.png", "white.gif")
         else:
             # replace barcode image with white.gif
-            html = html.decode("utf-8").replace(u"default-secure.png", u"white.gif")
+            html = html.decode("utf-8").replace("default-secure.png", "white.gif")
             self.log.debug("Disabled barcode.")
 
         # get the current date/time
@@ -432,7 +432,7 @@ class _CUPS:
         """
         Returns a list of the names of available system printers.
         """
-        return self.con.getPrinters().keys()
+        return list(self.con.getPrinters().keys())
 
     def getPrinters(self):
         """
@@ -590,14 +590,14 @@ if __name__ == "__main__":
 
     tags = [
         {
-            "name": u"🦊 Barkley Woofington 🐶",
+            "name": "🦊 Barkley Woofington 🐶",
             "number": "S-6969",
             "level": "Top Dog",
             "title": "",
             "age": 20,
         },
         {
-            "name": u"🦊 rechñer fox",
+            "name": "🦊 rechñer fox",
             "number": "S-0001",
             "level": "Foxo",
             "title": "",
@@ -609,9 +609,9 @@ if __name__ == "__main__":
     con.nametags(tags, theme="apis")
     # con.nametag(theme='apis', name="Some Kind Of Horse", number="S-0000", title="Staff", level="Player")
 
-    print(con.pdf)
+    print((con.pdf))
     con.preview()
     # con.printout(printer="LabelWriter-450-Turbo")
 
-    raw_input(">")
+    input(">")
     con.cleanup()

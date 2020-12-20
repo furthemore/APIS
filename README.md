@@ -1,18 +1,16 @@
 # APIS EventManager
 [![Build Status](https://travis-ci.com/furthemore/APIS.svg?branch=production)](https://travis-ci.com/furthemore/APIS) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg?branch=production)](https://coveralls.io/github/furthemore/APIS?branch=production)
 
-Data Model: http://www.gliffy.com/go/publish/10890219
+Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 
-Registrtion Workflows: http://www.gliffy.com/go/publish/10892367
-
-Proposed Stack:
-  + Ubuntu 18.04 (LTS)
+Stack:
+  + Ubuntu 20.04 (LTS)
   + Apache2
-  + Postgres 9
-  + Python 2.7.6
-  + Django 1.11.16
-  + Bootstrap 3.3.7
-  + JQuery 1.9.1
+  + Postgres 11
+  + Python 3.7
+  + Django 1.11
+  + Bootstrap 3
+  + jQuery 1.9
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
@@ -31,16 +29,36 @@ Proposed Stack:
 ![Screenshot of Cash Register Position](https://i.imgur.com/8vB1m0q.png)
 
 ## Quick start
+### Running using Docker
 To see a demo, or set up the project for development locally:
+
+    # Edit .env with appropriate settings (API keys, etc)
+    cp example.env .env
+
+    # Build base docker image:
+    make build-base-docker-image
+
+    # Edit Dockerfile and replace the first line with output from last command...
+
+    # Build final image:
+    make build-docker-image
+
+    # Run in docker
+    docker-compose up -d
+
+    # Follow the prompts
+    docker-compose exec ./manage.py createsuperuser
+
+### Locally without docker (recommended for developers)
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
-    virtualenv -p python2 venv
+    python3 -v venv venv
     source venv/bin/activate
     pip install -r requirements.txt
 
     # Review your settings
-    cp fm_eventmanager/settings.py.dev fm_eventmanager/settings.py
+    cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
 
     python manage.py migrate
     python manage.py createsuperuser

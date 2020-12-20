@@ -1,14 +1,6 @@
 import json
 import logging
 
-from common import (
-    clear_session,
-    get_client_ip,
-    getOptionsDict,
-    getRegistrationEmail,
-    handler,
-    logger,
-)
 from django.forms import model_to_dict
 from django.http import (
     HttpResponseBadRequest,
@@ -17,10 +9,19 @@ from django.http import (
     JsonResponse,
 )
 from django.shortcuts import get_object_or_404, render
-from ordering import doCheckout, doZeroCheckout, getTotal
 
 import registration.emails
 from registration.models import *
+
+from .common import (
+    clear_session,
+    get_client_ip,
+    getOptionsDict,
+    getRegistrationEmail,
+    handler,
+    logger,
+)
+from .ordering import doCheckout, doZeroCheckout, getTotal
 
 logger = logging.getLogger(__name__)
 

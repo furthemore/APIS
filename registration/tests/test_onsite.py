@@ -126,17 +126,17 @@ class TestOnsiteCart(OnsiteBaseTestCase):
         self.event.onsiteRegStart = now - one_day
         self.event.save()
         response = self.client.get(reverse("registration:onsite"))
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.context["event"], self.event)
-        self.assertIn("Onsite Registration", response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["event"], self.event)
+        self.assertIn(b"Onsite Registration", response.content)
 
     def test_onsite_closed(self):
         self.event.onsiteRegStart = now + one_day
         self.event.save()
         response = self.client.get(reverse("registration:onsite"))
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.context["event"], self.event)
-        self.assertIn("is closed", response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["event"], self.event)
+        self.assertIn(b"is closed", response.content)
 
     def test_onsite_checkout_cost(self):
         options = [
@@ -147,12 +147,12 @@ class TestOnsiteCart(OnsiteBaseTestCase):
 
         response = self.client.get(reverse("registration:onsite_cart"))
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(self.event, response.context["event"])
-        self.assertEquals(
+        self.assertEqual(self.event, response.context["event"])
+        self.assertEqual(
             self.price_45.basePrice + self.option_shirt.optionPrice,
             response.context["total"],
         )
-        self.assertEquals(len(response.context["orderItems"]), 1)
+        self.assertEqual(len(response.context["orderItems"]), 1)
 
         self.checkout()
 
@@ -167,7 +167,7 @@ class TestOnsiteCart(OnsiteBaseTestCase):
 
     def test_onsite_done(self):
         response = self.client.get(reverse("registration:onsite_done"))
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestOnsiteAdmin(OnsiteBaseTestCase):
@@ -208,7 +208,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             reverse("registration:onsiteAdmin"), {"search": "doesntexist"}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("results" in response.context.keys())
+        self.assertTrue("results" in list(response.context.keys()))
         self.assertEqual(len(response.context["results"]), 0)
 
         response = self.client.get(

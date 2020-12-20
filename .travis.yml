@@ -13,7 +13,7 @@ cache:
   directories:
   - "$HOME/.cache/pip"
 python:
-- 2.7
+- 3.7
 env:
 - DJANGO_PACKAGE="Django>=1.11,<1.12"
 install:

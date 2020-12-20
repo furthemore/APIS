@@ -97,11 +97,11 @@ class Command(BaseCommand):
                 org_donations += org_sum
             backend_writer(event, "org_donations", int(org_donations * 100))
 
-            print "Event: {0} - (total completed orders: {1})".format(
-                event, total_count
+            print(
+                "Event: {0} - (total completed orders: {1})".format(event, total_count)
             )
             for level in price_levels:
-                print level, "-", level_bins[level.id]
+                print(level, "-", level_bins[level.id])
 
                 backend_writer(
                     event,
@@ -111,21 +111,19 @@ class Command(BaseCommand):
                     days_to_event=days_to_event,
                 )
 
-            print "Staff: {0} ({1} active)".format(
-                total_staff_count, active_staff_count
+            print(
+                "Staff: {0} ({1} active)".format(total_staff_count, active_staff_count)
             )
             backend_writer(event, "staff_total", total_staff_count)
             backend_writer(event, "staff_active", active_staff_count)
             backend_writer(event, "orders", total_count)
-            print ("==========")
+            print("==========")
 
         if hasattr(backend, "batch"):
             backend.flush()
 
 
-class CronReporterABC:
-    __metaclass__ = ABCMeta
-
+class CronReporterABC(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, config):
         pass

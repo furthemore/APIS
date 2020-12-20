@@ -46,12 +46,12 @@ class TestFirebaseAdmin(TestCase):
             "webview": firebase.webview,
         }
 
-        self.assertEquals(provision_dict, expected_result)
+        self.assertEqual(provision_dict, expected_result)
 
     def test_get_qrcode(self):
         qr_code = FirebaseAdmin.get_qrcode("foo")
         self.assertIn(
-            "<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"29mm\"", qr_code
+            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"29mm\"", qr_code
         )
 
     def test_provision_page_superuser(self):
@@ -59,9 +59,11 @@ class TestFirebaseAdmin(TestCase):
         response = self.client.get(
             reverse("admin:firebase_provision", args=(self.terminal_blue.id,))
         )
-        self.assertNotIn("You must be a superuser to access this URL", response.content)
+        self.assertNotIn(
+            b"You must be a superuser to access this URL", response.content
+        )
         self.assertIn(
-            "<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"77mm\"",
+            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"77mm\"",
             response.content,
         )
 
@@ -71,18 +73,18 @@ class TestFirebaseAdmin(TestCase):
             reverse("admin:firebase_provision", args=(self.terminal_blue.id,))
         )
 
-        self.assertIn("You must be a superuser to access this URL", response.content)
+        self.assertIn(b"You must be a superuser to access this URL", response.content)
 
     def test_change_form_superuser(self):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
             reverse("admin:registration_firebase_change", args=(self.terminal_blue.id,))
         )
-        self.assertIn("Provision App", response.content)
+        self.assertIn(b"Provision App", response.content)
 
     def test_change_form_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))
         response = self.client.get(
             reverse("admin:registration_firebase_change", args=(self.terminal_blue.id,))
         )
-        self.assertNotIn("Provision App", response.content)
+        self.assertNotIn(b"Provision App", response.content)
