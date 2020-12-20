@@ -11,6 +11,7 @@ Commands:
 	make build-base-docker-image	: Build the base docker image
 	make build-docker-image		: Make a local docker build of APIS
 
+	make dev			: Develop locally with Docker
 	make dev-setup			: Sets up a venv for local development
 	make pre-commit-setup		: Installs (or updates) pre-commit hooks
 
@@ -46,6 +47,10 @@ build-docker-image:
 push-docker-image:
 	docker push $(IMAGE):$(TAG)
 	docker push $(IMAGE):latest
+
+dev:
+	-docker-compose up -d
+	docker-compose exec app /bin/bash -c 'DJANGO_DEBUG=1 python /app/manage.py runserver_plus 0.0.0.0:8000'
 
 
 dev-setup:
