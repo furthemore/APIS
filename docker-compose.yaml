@@ -6,6 +6,7 @@ services:
     restart: always
     ports:
       - 8080:80
+      - 8000:8000
     volumes:
       - ./registration:/app/registration
       - ./fm_eventmanager/settings.py.docker:/app/fm_eventmanager/settings.py

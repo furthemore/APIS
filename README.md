@@ -47,7 +47,10 @@ To see a demo, or set up the project for development locally:
     docker-compose up -d
 
     # Follow the prompts
-    docker-compose exec ./manage.py createsuperuser
+    docker-compose exec /app/manage.py createsuperuser
+
+    # Run the development server
+    make dev
 
 ### Locally without docker (recommended for developers)
 
