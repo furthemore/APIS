@@ -2,7 +2,6 @@ import json
 import logging
 from datetime import datetime
 
-from cart import saveCart
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
@@ -13,6 +12,8 @@ from django.shortcuts import get_object_or_404, render
 import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
+
+from .cart import saveCart
 
 logger = logging.getLogger("django.request")
 
@@ -34,7 +35,7 @@ def clear_session(request):
     Soft-clears session by removing any non-protected session values.
     (anything prefixed with '_'; keeps Django user logged-in)
     """
-    for key in request.session.keys():
+    for key in list(request.session.keys()):
         if key[0] != "_":
             del request.session[key]
 
