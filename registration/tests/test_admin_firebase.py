@@ -50,9 +50,7 @@ class TestFirebaseAdmin(TestCase):
 
     def test_get_qrcode(self):
         qr_code = FirebaseAdmin.get_qrcode("foo")
-        self.assertIn(
-            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"29mm\"", qr_code
-        )
+        self.assertIn(b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ", qr_code)
         self.assertIn(b'height="29mm"', qr_code)
 
     def test_provision_page_superuser(self):

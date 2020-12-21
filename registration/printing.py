@@ -60,6 +60,7 @@ class Printer:
         args = []
         if len(piece) == 0:
             return []  # No options in section
+        args.append("--enable-local-file-access")  # Needed for wkhtmltopdf >= 0.12.6
         for arg in list(piece.keys()):
             if arg.lower() == "zoom":
                 args.append("--zoom")
