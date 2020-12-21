@@ -1,4 +1,4 @@
-FROM apis:apis-base-905a7da
+FROM rechner/apis:apis-base-ca726c5
 
 EXPOSE 80
 EXPOSE 443

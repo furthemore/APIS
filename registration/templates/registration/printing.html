@@ -17,9 +17,7 @@
                         w.print();
                     };
 
-                }
-
-                window.setTimeout(function(){
+                    window.setTimeout(function() {
                     {% if next %}
                         window.location.href = "{{ next }}";
                     {% else %}
@@ -27,6 +25,7 @@
                     {% endif %}
                 }, 1000);
 
+                }
         </script>
         <!-- redirect after close -->
     </body>

@@ -1,7 +1,7 @@
 import logging
 import os
 
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
@@ -21,12 +21,11 @@ def servePDF(request):
         return JsonResponse({"success": False, "reason": "Bad request"}, status=400)
     filename = filename.replace("..", "/")
     try:
-        fsock = open("/tmp/%s" % filename)
+        fsock = open(f"/tmp/{filename}", "rb")
     except IOError as e:
         return JsonResponse({"success": False, "reason": "file not found"}, status=404)
-    response = HttpResponse(fsock, content_type="application/pdf")
+    response = FileResponse(fsock, content_type="application/pdf")
     # response['Content-Disposition'] = 'attachment; filename=download.pdf'
     response["Access-Control-Allow-Origin"] = "*"
-    fsock.close()
     # os.unlink("/tmp/%s" % filename)
     return response
