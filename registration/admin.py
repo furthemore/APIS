@@ -1,5 +1,6 @@
 import cgi
 import copy
+import html
 import json
 import logging
 from datetime import date
@@ -709,9 +710,9 @@ def assign_numbers_and_print(modeladmin, request, queryset):
             badgeNumber = "{:04}".format(badge.badgeNumber)
         tags.append(
             {
-                "name": cgi.escape(badge.badgeName),
+                "name": html.escape(badge.badgeName),
                 "number": badgeNumber,
-                "level": cgi.escape(str(badge.effectiveLevel())),
+                "level": html.escape(str(badge.effectiveLevel())),
                 "title": "",
                 "age": get_attendee_age(badge.attendee),
             }
@@ -759,9 +760,9 @@ def print_badges(modeladmin, request, queryset):
         except Staff.DoesNotExist:
             tags.append(
                 {
-                    "name": cgi.escape(badge.badgeName),
+                    "name": html.escape(badge.badgeName),
                     "number": badgeNumber,
-                    "level": cgi.escape(str(badge.effectiveLevel())),
+                    "level": html.escape(str(badge.effectiveLevel())),
                     "title": "",
                     "age": get_attendee_age(badge.attendee),
                 }
@@ -791,7 +792,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
             badgeNumber = "{:03}".format(badge.badgeNumber)
         tags.append(
             {
-                "name": cgi.escape(badge.badgeName),
+                "name": html.escape(badge.badgeName),
                 "number": badgeNumber,
                 "level": "Dealer",
                 "title": "",
@@ -834,7 +835,7 @@ def print_dealer_badges(modeladmin, request, queryset):
 
         tags.append(
             {
-                "name": cgi.escape(badge.badgeName),
+                "name": html.escape(badge.badgeName),
                 "number": badgeNumber,
                 "level": "Dealer",
                 "title": "",
@@ -904,10 +905,10 @@ def print_staff_badges(modeladmin, request, queryset):
 
         tags.append(
             {
-                "name": cgi.escape(badge.badgeName),
+                "name": html.escape(badge.badgeName),
                 "number": badgeNumber,
                 "level": "Staff",
-                "title": cgi.escape(staff.title),
+                "title": html.escape(staff.title),
                 "age": get_attendee_age(badge.attendee),
             }
         )
