@@ -1,10 +1,11 @@
 language: python
-dist: xenial
+dist: focal
 before_install:
-- sudo apt-get -y install xfonts-75dpi xfonts-base
-- wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.xenial_amd64.deb
-- sudo dpkg -i wkhtmltox_0.12.5-1.xenial_amd64.deb
+- sudo apt-get -y install xfonts-75dpi xfonts-base python3-psycopg2
+- wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+- sudo dpkg -i wkhtmltox_0.12.6-1.focal_amd64.deb
 - sudo apt-get -y -f install
+#- sudo ln  -s /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 addons:
   apt:
     packages:
@@ -14,6 +15,7 @@ cache:
   - "$HOME/.cache/pip"
 python:
 - 3.7
+- 3.8
 env:
 - DJANGO_PACKAGE="Django>=1.11,<1.12"
 install:

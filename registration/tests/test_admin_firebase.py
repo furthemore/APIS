@@ -50,9 +50,8 @@ class TestFirebaseAdmin(TestCase):
 
     def test_get_qrcode(self):
         qr_code = FirebaseAdmin.get_qrcode("foo")
-        self.assertIn(
-            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"29mm\"", qr_code
-        )
+        self.assertIn(b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ", qr_code)
+        self.assertIn(b'height="29mm"', qr_code)
 
     def test_provision_page_superuser(self):
         self.assertTrue(self.client.login(username="admin", password="admin"))
@@ -63,9 +62,9 @@ class TestFirebaseAdmin(TestCase):
             b"You must be a superuser to access this URL", response.content
         )
         self.assertIn(
-            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg height=\"77mm\"",
-            response.content,
+            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ", response.content,
         )
+        self.assertIn(b'height="77mm"', response.content)
 
     def test_provision_page_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))

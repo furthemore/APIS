@@ -1,20 +1,3 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# vim: set ts=4 sts=4
-
-# For now the internal nametag templates will be hardcoded.  At least a [default]
-# section is required; if a named section is missing the HTML will be ignored,
-# otherwise the following sections and files are allowed:
-#   - [parent]
-#   - [report]
-#   - [volunteer]
-
-# TODO: respect locale's date/time format when doing substitution. Hard coded for now.
-# TODO: abstract barcode generation in themes. Hard coded for now.
-# TODO: a bunch of caching and restructuring.
-# TODO: code for multiple copies, if needed.
-# TODO: speed up batch printing with multi-page patched wkhtmltopdf?
-
 """Handles generation of HTML for nametags, saving/reading printer config, etc"""
 
 import datetime
@@ -28,23 +11,17 @@ import tempfile
 
 from configobj import ConfigObj
 
-# from codebar import codebar
 PRINT_MODE = "pdf"
 
 # Platforms using the CUPS printing system (UNIX):
 unix = ["Linux", "linux2", "Darwin"]
-wkhtmltopdf = "/usr/local/bin/wkhtmltopdf"  # path to wkhtmltopdf binary
-# TODO: Option to select native or builtin wkhtmltopdf
+WKHTMLTOPDF = "/usr/local/bin/wkhtmltopdf"  # path to wkhtmltopdf binary
 
-# TODO: Determine whether to use ~/.taxidi/resources/ (config.ini in ~/.taxidi/)
-#      or $PWD/resources/ (config.ini in pwd).
-script_path = os.path.dirname(os.path.realpath(__file__))
-nametags = os.path.join(
-    script_path, "resources", "nametag"
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+NAMETAGS = os.path.join(
+    SCRIPT_PATH, "resources", "nametag"
 )  # path where html can be found.
-# For distribution this may be moved to /usr/share/taxidi/ in UNIX, but should be
-# copied to user's ~/.taxidi/ as write access is needed.
-lpr = "/usr/bin/lpr"  # path to LPR program (CUPS/Unix only).
+LPR = "/usr/bin/lpr"  # path to LPR program (CUPS/Unix only).
 
 
 class Printer:
@@ -83,6 +60,7 @@ class Printer:
         args = []
         if len(piece) == 0:
             return []  # No options in section
+        args.append("--enable-local-file-access")  # Needed for wkhtmltopdf >= 0.12.6
         for arg in list(piece.keys()):
             if arg.lower() == "zoom":
                 args.append("--zoom")
@@ -145,11 +123,11 @@ class Printer:
         out.close()
         args.append(out.name)  # append output file name
 
-        self.log.debug("Calling {0} with arguments <".format(wkhtmltopdf))
+        self.log.debug("Calling {0} with arguments <".format(WKHTMLTOPDF))
         self.log.debug("{0} >".format(" ".join(args)))
 
-        if args[0] != wkhtmltopdf:
-            args.insert(0, wkhtmltopdf)  # prepend program name
+        if args[0] != WKHTMLTOPDF:
+            args.insert(0, WKHTMLTOPDF)  # prepend program name
 
         ret = subprocess.check_call(args)
         if ret != 0:
@@ -208,7 +186,7 @@ class Printer:
             self.log.debug(
                 "Attempting to preview file {0} via win32.startfile".format(fileName)
             )
-            os.startfile(filepath)
+            os.startfile(fileName)
             return 0
 
     def printout(self, filename, printer=None, orientation=None):
@@ -261,7 +239,7 @@ class Nametag:
             r"window\.onload\s=\shide\('volunteer'\)\;", re.IGNORECASE
         )
 
-    def listTemplates(self, directory=nametags):
+    def list_templates(self, directory=NAMETAGS):
         """Returns a list of the installed nametag themes"""
         # TODO: add more stringent validation against config and html.
         directory = os.path.abspath(directory)
@@ -281,7 +259,7 @@ class Nametag:
         valid = []
         # Check that each folder has the corresponding .conf file:
         for i in themes:
-            if os.path.isfile(self._getTemplateFile(i)):
+            if os.path.isfile(self._get_template_file(i)):
                 valid.append(i)
 
         valid.sort()
@@ -289,7 +267,7 @@ class Nametag:
         self.log.debug("Found templates {0}".format(valid))
         return valid
 
-    def _getTemplateFile(self, theme, directory=nametags):
+    def _get_template_file(self, theme, directory=NAMETAGS):
         """
         Returns full path to .conf file for an installed template pack and
         check it exists.
@@ -302,16 +280,16 @@ class Nametag:
         else:
             self.log.warning("{0} does not exist or is not file.".format(path))
 
-    def _getTemplatePath(self, theme, directory=nametags):
+    def _get_template_path(self, theme, directory=NAMETAGS):
         """Returns absolute path only of template pack"""
         return os.path.join(directory, theme)
 
-    def readConfig(self, theme):
+    def read_config(self, theme):
         """
         Reads the configuration for a specified template pack. Returns
         dictionary.
         """
-        inifile = self._getTemplateFile(theme)
+        inifile = self._get_template_file(theme)
         self.log.info("Reading template configuration from '{0}'".format(inifile))
         config = ConfigObj(inifile)
         try:  # check for default section
@@ -342,13 +320,13 @@ class Nametag:
 
         # Check that theme specified is valid:
         if template != "default":
-            themes = self.listTemplates()
+            themes = self.list_templates()
             if template not in themes:
                 self.log.error("Bad theme specified.  Using default instead.")
                 template = "default"
         # Read in the HTML from template.
         try:
-            directory = self._getTemplatePath(template)
+            directory = self._get_template_path(template)
         except KeyError:
             self.log.error(
                 "Unable to process template '{0}'. Aborting.".format(template)
@@ -371,17 +349,10 @@ class Nametag:
 
         # generate barcode of secure code, code128:
         if barcode:
-            try:
-                codebar.gen(
-                    "code128", os.path.join(directory, "default-secure.png"), barcode
-                )
-            except NotImplementedError as e:
-                self.log.error("Unable to generate barcode: {0}".format(e))
-                html = html.replace("default-secure.png", "white.gif")
-        else:
-            # replace barcode image with white.gif
-            html = html.decode("utf-8").replace("default-secure.png", "white.gif")
-            self.log.debug("Disabled barcode.")
+            raise NotImplementedError()
+        # replace barcode image with white.gif
+        html = html.replace("default-secure.png", "white.gif")
+        self.log.debug("Disabled barcode.")
 
         # get the current date/time
         now = datetime.datetime.now()
@@ -390,7 +361,7 @@ class Nametag:
         html = self.date_re.sub(now.strftime("%a %d %b, %Y"), html)
         html = self.time_re.sub(now.strftime("%H:%M:%S"), html)
         # Fix for if database returns None instead of empty string:
-        html = self.name_re.sub(name.encode("utf-8"), html.encode("utf-8"))
+        html = self.name_re.sub(name, html)
         html = self.level_re.sub(str(level), html)
         html = self.title_re.sub(str(title), html)
         html = self.number_re.sub(str(number), html)
@@ -479,10 +450,10 @@ class _CUPS:
             f.close()
         printArgs.append(filename)  # append file to print.
 
-        ret = subprocess.check_call([lpr,] + printArgs)
+        ret = subprocess.check_call([LPR,] + printArgs)
         if ret != 0:
             raise PrinterError(
-                "{0} exited non-zero ({1}).  Error spooling.".format(lpr, ret)
+                "{0} exited non-zero ({1}).  Error spooling.".format(LPR, ret)
             )
 
 
@@ -518,13 +489,13 @@ class Main:
         #            code='', secure='', barcode=True, section='default'):
         """Note: section= not fully implemented in Nametag.nametag method"""
         self.section = section
-        self.conf = self.tag.readConfig(theme)  # theme
+        self.conf = self.tag.read_config(theme)  # theme
         self.args = self.con.buildArguments(self.conf, section)  # section
 
         stuff = self.tag.nametag(
             name=name, number=number, title=title, template=theme, level=level
         )
-        temp_path = self.tag._getTemplatePath(theme)
+        temp_path = self.tag._get_template_path(theme)
         html = tempfile.NamedTemporaryFile(delete=False, dir=temp_path, suffix=".html")
         html.write(stuff.encode("utf-8"))
         html.close()
@@ -535,7 +506,7 @@ class Main:
 
     def nametags(self, tags, theme="apis", section="default"):
         self.section = section
-        self.conf = self.tag.readConfig(theme)  # theme
+        self.conf = self.tag.read_config(theme)  # theme
         self.args = self.con.buildArguments(self.conf, section)  # section
 
         html_files = []
@@ -548,11 +519,11 @@ class Main:
                 level=data["level"],
                 age=data["age"],
             )
-            temp_path = self.tag._getTemplatePath(theme)
+            temp_path = self.tag._get_template_path(theme)
             html = tempfile.NamedTemporaryFile(
                 delete=False, dir=temp_path, suffix=".html"
             )
-            html.write(stuff)
+            html.write(stuff.encode("utf-8"))
             html.close()
             html_files.append(html.name)
 
@@ -607,9 +578,6 @@ if __name__ == "__main__":
 
     con = Main(False)
     con.nametags(tags, theme="apis")
-    # con.nametag(theme='apis', name="Some Kind Of Horse", number="S-0000", title="Staff", level="Player")
-
-    print((con.pdf))
     con.preview()
     # con.printout(printer="LabelWriter-450-Turbo")
 
