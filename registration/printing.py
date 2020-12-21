@@ -15,7 +15,7 @@ PRINT_MODE = "pdf"
 
 # Platforms using the CUPS printing system (UNIX):
 unix = ["Linux", "linux2", "Darwin"]
-WKHTMLTOPDF = "/usr/bin/wkhtmltopdf"  # path to wkhtmltopdf binary
+WKHTMLTOPDF = "/usr/local/bin/wkhtmltopdf"  # path to wkhtmltopdf binary
 
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 NAMETAGS = os.path.join(
