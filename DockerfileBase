@@ -4,7 +4,10 @@ COPY ./requirements.txt /app
 
 WORKDIR /app
 
-RUN apt-get update && apt-get -y install wkhtmltopdf python3-psycopg2
+RUN apt-get update && apt-get -y install python3-psycopg2 ca-certificates xfonts-75dpi xfonts-base
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN dpkg -i wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN apt-get -y -f install
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

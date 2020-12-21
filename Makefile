@@ -1,5 +1,5 @@
 
-IMAGE	?= apis
+IMAGE	?= rechner/apis
 TAG	?= $(shell git describe --tag --always)
 
 all: help
@@ -10,6 +10,7 @@ Commands:
 
 	make build-base-docker-image	: Build the base docker image
 	make build-docker-image		: Make a local docker build of APIS
+	make push-docker-image		: Push final image stage to docker hub
 
 	make dev			: Develop locally with Docker
 	make dev-setup			: Sets up a venv for local development
@@ -27,6 +28,8 @@ build-base-docker-image:
 		--file DockerfileBase \
 		--tag $(IMAGE):apis-base-$(shell git rev-parse --short HEAD) \
 		.
+
+	-docker push $(IMAGE):apis-base-$(shell git rev-parse --short HEAD)
 
 	@echo -e "\n\n***************\nACTION REQUIRED: Update line 1 of Dockerfile to this: FROM $(IMAGE):apis-base-$(shell git rev-parse --short HEAD)\n****************"
 
