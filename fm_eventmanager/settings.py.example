@@ -24,7 +24,7 @@ SECRET_KEY = '#4jb6($!lns7dm@0$%80q&sk2_d7(qy*f^$ky!4z@1c-gonv8_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ADMINS = [('Da Root', 'root@example.com'),]
+ADMINS = [('Super Adminton', 'admin@example.com'),]
 SERVER_EMAIL = "no-reply@example.com"
 
 ALLOWED_HOSTS = ['locahost', '127.0.0.1', 'apis.example.com']
@@ -188,7 +188,7 @@ REGISTER_KEY = 'df14e4d5469e801dbc8e1df4eebd97b3'
 # Print handler for cash drawer and receipts
 REGISTER_ENDPOINT = None # Use default site
 REGISTER_PRINTER_URI = 'https://print.example.com:5000'
-REGISTER_DEFAULT_WEBVIEW = "https://www.furthemore.org/code-of-conduct-embed/"
+REGISTER_DEFAULT_WEBVIEW = "https://www.example.com/code-of-conduct-embed/"
 REGISTER_SQUARE_LOCATION = SQUARE_LOCATION_ID
 REGISTER_FORCE_LOCATION = True
 

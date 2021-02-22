@@ -47,8 +47,8 @@ LOGGING = {
 # Get loglevel from env
 LOGLEVEL = os.getenv('DJANGO_LOGLEVEL', 'info').upper()
 
-ADMINS = [('Carissa Brittain', 'carissa.brittain@gmail.com'),]
-SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "it_errors@furthemore.org")
+ADMINS = [(os.getenv("ADMIN_NAME", "Super Adminton"), os.getenv("ADMIN_EMAIL", "admin@example.com")),]
+SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "no-reply@example.com")
 
 ALLOWED_HOSTS = ['*']
 
@@ -212,7 +212,7 @@ REGISTER_KEY = os.environ['REGISTER_KEY']
 # Print handler for cash drawer and receipts
 REGISTER_ENDPOINT = os.getenv('REGISTER_ENDPOINT') # Use default site
 REGISTER_PRINTER_URI = os.environ['REGISTER_PRINTER_URI'] # 'https://print.example.com:5000'
-REGISTER_DEFAULT_WEBVIEW = os.getenv('REGISTER_DEFAULT_WEBVIEW', "https://www.furthemore.org/code-of-conduct-embed/")
+REGISTER_DEFAULT_WEBVIEW = os.getenv('REGISTER_DEFAULT_WEBVIEW', "https://www.example.com/code-of-conduct-embed/")
 REGISTER_SQUARE_LOCATION = os.getenv('REGISTER_SQUARE_LOCATION', SQUARE_LOCATION_ID)
 REGISTER_FORCE_LOCATION = eval_bool(os.getenv('REGISTER_FORCE_LOCATION', 'True'))
 
