@@ -1,4 +1,4 @@
-FROM rechner/apis:apis-base-ca726c5
+FROM rechner/apis:apis-base-CHANGEME
 
 EXPOSE 80
 EXPOSE 443
