@@ -30,29 +30,54 @@ Stack:
 
 ## Quick start
 ### Running using Docker
-To see a demo, or set up the project for development locally:
+The following was tested on a fresh installation of Ubuntu 20.04.
 
-    # Edit .env with appropriate settings (API keys, etc)
+    # Get the software from Github
+    git clone https://github.com/furthemore/APIS.git
+    cd APIS
+
+    # Create .env from template and edit relevant settings (API keys, etc)
     cp example.env .env
+
+    # You’ll need a Square developer account to take payments: https://squareup.com/signup?country_code=us&v=developers
+    # If your hosting provider is not configured for a mail relay, you’ll want to populate these lines with SMTP account credentials with e.g. gmail or mailgun.
+
+    # Install make and other necessary utilities
+    apt install build-essential
+
+    # Install docker using the instructions at either:
+    # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 or
+    # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository.
 
     # Build base docker image:
     make build-base-docker-image
 
-    # Edit Dockerfile and replace the first line with output from last command...
+    # Edit Dockerfile and replace the first line with output from last command. (The console will remind you.)
 
-    # Build final image:
+    # Give yourself permission to run Docker commands
+    sudo usermod -aG docker ${USER}
+    # Log out and back in to make it take effect
+
+    # Build final image
     make build-docker-image
 
-    # Run in docker
+    # Run in Docker
     docker-compose up -d
 
-    # Follow the prompts
-    docker exec -it docker_apis_1 /app/manage.py createsuperuser
+    # Docker-compose
+    docker-compose exec app /app/manage.py createsuperuser
+    # Respond to prompts as needed
+
+    # OPTIONAL: If you intend to run APIS in production, configure your webserver to act as a reverse proxy.
+    # Example docs: https://www.digitalocean.com/community/tutorials/how-to-use-apache-as-a-reverse-proxy-with-mod_proxy-on-ubuntu-16-04
 
     # Run the development server
     make dev
 
+    # Go to http://localhost:8000/registration/ in a web browser and follow the directions.
+
 ### Locally without docker (recommended for developers)
+Note: These instructions currently fail on a clean installation of Ubuntu 20.04. We're working on it.
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
