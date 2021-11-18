@@ -1,0 +1,43 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ production, stage ]
+  pull_request:
+    branches: [ production, stage ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        sudo apt-get -y install xfonts-75dpi xfonts-base python3-psycopg2
+        wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+        sudo dpkg -i wkhtmltox_0.12.6-1.focal_amd64.deb
+        sudo apt-get -y -f install
+        python -m pip install --upgrade pip wheel
+        python -m pip install coveralls
+        pip install -r requirements.txt
+    - name: Run Tests
+      run: |
+        cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+        python manage.py test
+      env:
+        SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+        SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+        SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+        
