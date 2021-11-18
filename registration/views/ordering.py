@@ -82,6 +82,8 @@ def doCheckout(
 
 
 def doZeroCheckout(discount, cartItems, orderItems):
+    billingName = ""
+    billingEmail = ""
     if cartItems:
         attendee = json.loads(cartItems[0].formData)["attendee"]
         billingName = "{firstName} {lastName}".format(**attendee)
@@ -95,7 +97,6 @@ def doZeroCheckout(discount, cartItems, orderItems):
     while Order.objects.filter(reference=reference).count() > 0:
         reference = common.getConfirmationToken()
 
-    logger.debug(attendee)
     order = Order(
         total=0,
         reference=reference,
