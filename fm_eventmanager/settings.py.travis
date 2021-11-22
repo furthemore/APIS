@@ -90,17 +90,16 @@ INSTALLED_APPS = [
     'debug_toolbar',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'maintenance_mode.middleware.MaintenanceModeMiddleware'
+    'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
 ROOT_URLCONF = 'fm_eventmanager.urls'
@@ -224,7 +223,6 @@ REGISTER_PRINTER_URI = 'https://print.example.com:5000'
 REGISTER_DEFAULT_WEBVIEW = "https://www.example.com/code-of-conduct-embed/"
 REGISTER_SQUARE_LOCATION = SQUARE_LOCATION_ID
 REGISTER_FORCE_LOCATION = True
-
 
 # Firebase/Pushy.me cloud-push API key
 CLOUD_MESSAGING_KEY = "AAA..."
