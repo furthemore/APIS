@@ -15,3 +15,4 @@ localhost.crt
 localhost.key
 venv3/
 .env
+htmlcov/

@@ -525,7 +525,7 @@ def addNewDealer(request):
         return JsonResponse({"success": True})
 
     except Exception as e:
-        logger.exception("Error in dealer addition." + request.body)
+        logger.exception(f"Error in dealer addition. {request.body}")
         return HttpResponseServerError(str(e))
 
 
