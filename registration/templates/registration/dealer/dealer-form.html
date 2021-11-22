@@ -67,7 +67,7 @@
                 <label for="businessName" class="col-sm-3 control-label">Business Name</label>
                 <div class="col-sm-9">
                     <input type="text" id="businessName" name="businessName" placeholder="Business Name"
-                           class="form-control form-control-text" required>
+                           class="form-control form-control-text" required maxlength="200">
                 </div>
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
@@ -75,7 +75,7 @@
                 <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
                 <div class="col-sm-9">
                     <input type="text" id="license" name="license" placeholder="VA Tax License"
-                           class="form-control form-control-text" required>
+                           class="form-control form-control-text" required maxlength="50">
 
                     <label>
                         <input type="checkbox" id="tempLicense"/> I need a temporary tax license for VA.
@@ -87,7 +87,7 @@
                 <label for="website" class="col-sm-3 control-label">Website</label>
                 <div class="col-sm-9">
                     <input type="url" id="website" name="website" placeholder="http://www.mysite.org"
-                           class="form-control form-control-text" required
+                           class="form-control form-control-text" required maxlength="500"
                            data-error="Please enter a full URL here. Ex: http://www.google.com"/>
                 </div>
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
@@ -96,7 +96,7 @@
                 <label for="website" class="col-sm-3 control-label">Logo</label>
                 <div class="col-sm-9">
                     <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png"
-                           class="form-control form-control-text"
+                           class="form-control form-control-text" maxlength="500"
                            data-error="Please enter a full URL here. Ex: http://www.google.com/image.png"/>
                 </div>
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
@@ -197,14 +197,14 @@
                 <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
                 <div class="col-sm-9">
                     <input type="text" id="near" name="near" placeholder="Business or Person"
-                           class="form-control form-control-text"/>
+                           class="form-control form-control-text" maxlength="200" />
                 </div>
             </div>
             <div class="form-group">
                 <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
                 <div class="col-sm-9">
                     <input type="text" id="far" name="far" placeholder="Business or Person"
-                           class="form-control form-control-text"/>
+                           class="form-control form-control-text" maxlength="200" />
                 </div>
             </div>
             <hr/>
