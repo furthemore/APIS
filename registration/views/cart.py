@@ -210,7 +210,7 @@ def add_to_cart(request):
 
     cart = Cart(
         form=Cart.ATTENDEE,
-        formData=request.body,
+        formData=request.body.decode("utf-8"),
         formHeaders=common.get_request_meta(request),
     )
     cart.save()

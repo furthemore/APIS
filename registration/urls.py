@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.conf.urls import include, url
-from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LogoutView
 
 import registration.views.attendee
 import registration.views.cart
@@ -18,7 +18,7 @@ app_name = "registration"
 
 urlpatterns = [
     url(r"^$", registration.views.common.index, name="index"),
-    url(r"^logout/$", auth_views.logout, name="logout"),
+    url(r"^logout/$", LogoutView.as_view(), name="logout"),
     url(
         r"^upgrade/lookup/?$",
         registration.views.upgrade.findUpgrade,
