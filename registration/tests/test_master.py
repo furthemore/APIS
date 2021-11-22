@@ -4,9 +4,9 @@ import urllib.parse
 import urllib.request
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
 from django.test.utils import override_settings
+from django.urls import reverse
 from mock import patch
 
 from registration.models import *

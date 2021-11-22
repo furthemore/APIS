@@ -9,14 +9,13 @@ import qrcode
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin, auth, messages
-from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.forms import NumberInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.html import escape, format_html, urlencode
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
@@ -116,9 +115,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         except PushyError as e:
             messages.warning(
                 request,
-                "We tried to update the terminal's settings, but there was a problem: {0}".format(
-                    e
-                ),
+                f"We tried to update the terminal's settings, but there was a problem: {e}",
             )
 
     @staticmethod
@@ -156,7 +153,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         provisioning = self.get_provisioning(obj)
 
         context = {
-            "qr_svg": self.get_qrcode(provisioning),
+            "qr_svg": self.get_qrcode(provisioning).decode("utf-8"),
         }
 
         return render(request, "admin/firebase_qr.html", context)
