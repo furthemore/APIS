@@ -1,14 +1,11 @@
 # APIS EventManager
-[![Build Status](https://travis-ci.com/furthemore/APIS.svg?branch=production)](https://travis-ci.com/furthemore/APIS) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg?branch=production)](https://coveralls.io/github/furthemore/APIS?branch=production)
-
-Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
+![Build Status](https://github.com/furthemore/apis/actions/workflows/django.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg?branch=production)](https://coveralls.io/github/furthemore/APIS?branch=production)
 
 Stack:
   + Ubuntu 20.04 (LTS)
-  + Apache2
-  + Postgres 11
-  + Python 3.7
-  + Django 1.11
+  + Postgres
+  + Python 3.7 - 3.9
+  + Django 2.2
   + Bootstrap 3
   + jQuery 1.9
 
@@ -77,7 +74,6 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     # Go to http://localhost:8000/registration/ in a web browser and follow the directions.
 
 ### Locally without docker (recommended for developers)
-Note: These instructions currently fail on a clean installation of Ubuntu 20.04. We're working on it.
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
@@ -102,14 +98,9 @@ Note: These instructions currently fail on a clean installation of Ubuntu 20.04.
 [android]: https://github.com/furthemore/APIS-register
 
 ## Development
-Note: Commit hook utilities require Python 3 to run.
 
 ### Using [pre-commit](https://pre-commit.com/)
 1. Install: `pip install pre-commit` or `brew install pre-commit`.
 2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to evey commit
 
-If you get errors about Python 2.7 when running pre-commit command, try deleting your pre-commit cache:
-
-```sh
-rm -rf ~/.cache/pre-commit
 ```

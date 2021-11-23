@@ -1,5 +1,5 @@
 
-IMAGE	?= rechner/apis
+IMAGE	?= ghcr.io/furthemore/apis
 TAG	?= $(shell git describe --tag --always)
 
 all: help
@@ -7,14 +7,16 @@ all: help
 define HELP
 
 Commands:
+	make docker-login               : Login to Github container repository
+	make build-base-docker-image    : Build the base docker image
+	make build-docker-image         : Make a local docker build of APIS
+	make push-docker-image          : Push latest image to Github container repository
+        make tag-stage                  : Tag image for deployment to stage server
+        make tag-production             : Tag image for deployment to production
 
-	make build-base-docker-image	: Build the base docker image
-	make build-docker-image		: Make a local docker build of APIS
-	make push-docker-image		: Push final image stage to docker hub
-
-	make dev			: Develop locally with Docker
-	make dev-setup			: Sets up a venv for local development
-	make pre-commit-setup		: Installs (or updates) pre-commit hooks
+	make dev                        : Develop locally with Docker
+	make dev-setup                  : Sets up a venv for local development
+	make pre-commit-setup           : Installs (or updates) pre-commit hooks
 
 endef
 export HELP
@@ -22,17 +24,21 @@ export HELP
 help:
 	@echo "$${HELP}"
 
+docker-login:
+	@[ "${GITHUB_USER}" ] || ( echo ">> GITHUB_USER is not set, check out envrc.example"; exit 1 )
+	@[ "${GITHUB_CR_PAT}" ] || ( echo ">> GITHUB_CR_PAT is not set, check out envrc.example"; exit 1 )
+	@echo $(GITHUB_CR_PAT) | docker login ghcr.io -u $(GITHUB_USER) --password-stdin
+
+
 build-base-docker-image:
-        # Build the base docker iamge for all external dependancies
+        # Build the base docker image for all external dependancies
 	docker build \
 		--file DockerfileBase \
 		--tag $(IMAGE):apis-base-$(shell git rev-parse --short HEAD) \
 		.
 
 	-docker push $(IMAGE):apis-base-$(shell git rev-parse --short HEAD)
-
-	@echo -e "\n\n***************\nACTION REQUIRED: Update line 1 of Dockerfile to this: FROM $(IMAGE):apis-base-$(shell git rev-parse --short HEAD)\n****************"
-
+	sed -i 's/apis-base-.*$$/apis-base-$(shell git rev-parse --short HEAD)/' Dockerfile
 
 build-docker-image:
 	# tag the current latest as previous, and replace it
@@ -46,6 +52,13 @@ build-docker-image:
 
 	docker tag $(IMAGE):$(TAG) $(IMAGE):latest
 
+tag-stage:
+	docker tag $(IMAGE):$(TAG) $(IMAGE):stage
+	docker push $(IMAGE):stage
+
+tag-production:
+	docker tag $(IMAGE):$(TAG) $(IMAGE):production
+	docker push $(IMAGE):production
 
 push-docker-image:
 	docker push $(IMAGE):$(TAG)

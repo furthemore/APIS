@@ -1,4 +1,4 @@
-FROM rechner/apis:apis-base-CHANGEME
+FROM ghcr.io/furthemore/apis:apis-base-aedcf2a
 
 EXPOSE 80
 EXPOSE 443

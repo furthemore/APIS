@@ -1,0 +1,3 @@
+source venv/bin/activate
+export GITHUB_USER=
+export GITHUB_CR_PAT=
