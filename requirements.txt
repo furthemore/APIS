@@ -11,7 +11,7 @@ django-flat-responsive==2.0
 django-widget-tweaks==1.4.9
 squareup==4.1.0.20200122
 pyOpenSSL==18.0.0
-django-u2f==0.3.0
+git+git://github.com/gavinwahl/django-u2f@master
 django-maintenance-mode==0.14.0
 Pillow>=5.3
 influxdb==5.2.3
