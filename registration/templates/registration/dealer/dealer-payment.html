@@ -8,7 +8,7 @@
 {% if dealer and not dealer.approved%}
 
 <h1>Dealer Registration - {{event}}</h1>
-<p>Your dealer application was not approved. Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you feel this is in error or have any questions.</p>
+<p>Your dealer application was not approved. Please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a> if you feel this is in error or have any questions.</p>
 
 {% elif dealer and dealer.approved %}
 
@@ -35,7 +35,7 @@
       </div>
       <div class="modal-body">
         <p>Due to state and federal laws, minors may not sell merchandice in our Marketplace. You must be 18 years of age or older before the start of the convention to be a dealer. </p>
-	<p>Please contact <a href="mailto:exhibitions@furthemore.org">exhibitions@furthemore.org</a> if you have any questions.</p>
+	<p>Please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a> if you have any questions.</p>
       </div>
     </div>
   </div>
@@ -45,7 +45,7 @@
 	<div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Dealer Registration - {{event}}</h1>
 
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href='mailto:exhibitions@furthemore.org'>exhibitions@furthemore.org</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
 
         {% show_attendee_form attendee=badge.attendee emailOptions=True event=event %}
 
@@ -345,7 +345,7 @@
 			if (result.responseText == "") {
 				alert("Your session has expired.");
 			} else {
-                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.")
+                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.")
 			}
 			$("#checkout").removeAttr("disabled");
 		    },
@@ -355,7 +355,7 @@
                             window.location = "{% url 'registration:invoiceDealer' %}";
                         } else {
 			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact exhibitions@furthemore.org for assistence.");
+                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.");
 			}
                     }
 		});
