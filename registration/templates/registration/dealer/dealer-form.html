@@ -36,7 +36,7 @@
             <div class="modal-body">
                 <p>Due to state and federal laws, minors may not sell merchandise in our Marketplace. You must be 18
                     years of age or older before the start of the convention to be a dealer. </p>
-                <p>Please contact <a href="mailto:marketplacehead@furthemore.org">marketplacehead@furthemore.org</a> if
+                <p>Please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a> if
                     you have any questions.</p>
             </div>
         </div>
@@ -380,7 +380,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18){
-            alert("You must be 18 by the first day of Furthemore to be a dealer.");
+            alert("You must be 18 by the first day of {{event.name}} to be a dealer.");
             return;
         }
 
@@ -416,7 +416,7 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. Please contact marketplacehead@furthemore.org and we will correct the problem.")
+                        alert("An error has occurred. Please contact {{event.dealerEmail}} and we will correct the problem.")
             },
                     "success": function () {
                         window.location = "{% url 'registration:thanksDealer' %}";
