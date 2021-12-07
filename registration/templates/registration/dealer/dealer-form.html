@@ -19,7 +19,7 @@
                     cause.</p>
                 <p>Suggestions for incentives: a percentage or amount off of a purchase or a free gift to attendees
                     possessing the button. If you are interested, please let us know what incentive you would like to
-                    offer and we will list your business and incentive on the Fur The 'More website along with signs at
+                    offer and we will list your business and incentive on the {{event.name}} website along with signs at
                     the charity donation table.</p>
             </div>
         </div>
@@ -36,7 +36,7 @@
             <div class="modal-body">
                 <p>Due to state and federal laws, minors may not sell merchandise in our Marketplace. You must be 18
                     years of age or older before the start of the convention to be a dealer. </p>
-                <p>Please contact <a href="mailto:marketplacehead@furthemore.org">marketplacehead@furthemore.org</a> if
+                <p>Please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a> if
                     you have any questions.</p>
             </div>
         </div>
@@ -64,7 +64,7 @@
             <p>Fill out the information related to your business below.</p>
             <hr>
             <div class="form-group">
-                <label for="businessName" class="col-sm-3 control-label">Business Name</label>
+                <label for="businessName" class="col-sm-3 control-label">Business Name <span style="color:red;">*</span></label>
                 <div class="col-sm-9">
                     <input type="text" id="businessName" name="businessName" placeholder="Business Name"
                            class="form-control form-control-text" required maxlength="200">
@@ -72,7 +72,7 @@
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
             <div class="form-group">
-                <label for="license" class="col-sm-3 control-label">Virginia Tax License</label>
+                <label for="license" class="col-sm-3 control-label">Virginia Tax License <span style="color:red;">*</span></label>
                 <div class="col-sm-9">
                     <input type="text" id="license" name="license" placeholder="VA Tax License"
                            class="form-control form-control-text" required maxlength="50">
@@ -84,7 +84,7 @@
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
             <div class="form-group">
-                <label for="website" class="col-sm-3 control-label">Website</label>
+                <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
                 <div class="col-sm-9">
                     <input type="url" id="website" name="website" placeholder="http://www.mysite.org"
                            class="form-control form-control-text" required maxlength="500"
@@ -105,7 +105,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="description" class="col-sm-3 control-label">Description of Wares</label>
+                <label for="description" class="col-sm-3 control-label">Description of Wares <span style="color:red;">*</span></label>
                 <div class="col-sm-9">
                     <textarea id="description" name="description" class="form-control form-control-textarea"
                               required></textarea>
@@ -213,9 +213,9 @@
                     <label>
                         <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox"
                                required>
-                        I have read and understand the rules pertaining to both Fur the 'More and the Markeplace. I agree
-                        to abide by these rules and by Fur the 'More's Code of Conduct. By registering for Mid-Atlantic
-                        Anthropomorphic Association’s {{event}} you attest that you are not listed on any sexual
+                        I have read and understand the rules pertaining to both {{event.name}} and the Markeplace. I agree
+                        to abide by these rules and by the {{event.name}} Code of Conduct. By registering for Mid-Atlantic
+                        Anthropomorphic Association’s {{event.name}} you attest that you are not listed on any sexual
                         offender registry.
                     </label>
                 </div>
@@ -380,7 +380,7 @@
         }
         var age = getAge(birthdate);
         if (age < 18){
-            alert("You must be 18 by the first day of Furthemore to be a dealer.");
+            alert("You must be 18 by the first day of {{event.name}} to be a dealer.");
             return;
         }
 
@@ -416,7 +416,7 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. Please contact marketplacehead@furthemore.org and we will correct the problem.")
+                        alert("An error has occurred. Please contact {{event.dealerEmail}} and we will correct the problem.")
             },
                     "success": function () {
                         window.location = "{% url 'registration:thanksDealer' %}";
