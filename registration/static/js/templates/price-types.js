@@ -4,12 +4,12 @@ var shirtSizes = [];
 
 
 $( "body" ).ready(function() {
-        // var url = "/apis/registration/pricelevels";
-        // if(adult){
-        //     url = "/apis/registration/adultpricelevels";
-        // }
+        var url = "/registration/pricelevels";
+        if(adult){
+            url = "/registration/adultpricelevels";
+        }
 
-        $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
+        $.getJSON(url, function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
                 var price = val.base_price;
@@ -26,7 +26,7 @@ $( "body" ).ready(function() {
 
         });
 
-        $.getJSON("{% url 'registration:shirtsizes' %}", function(data) {
+        $.getJSON("/registration/shirts", function(data) {
             shirtSizes = data;
         });
 
