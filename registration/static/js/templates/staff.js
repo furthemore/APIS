@@ -9,7 +9,7 @@ var shirtSizes = [];
                 changeYear: true
             });
         }
-        $.getJSON("/apis/registration/shirts", function(data) {
+        $.getJSON("{% url 'registration:shirtsizes' %}", function(data) {
             $.each(data, function(key, val) {
                 $("#shirt").append("<option value='" + val.id + "'>" + val.name + "</option>");
             });

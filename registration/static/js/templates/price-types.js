@@ -4,10 +4,10 @@ var shirtSizes = [];
 
 
 $( "body" ).ready(function() {
-        var url = "/apis/registration/pricelevels";
-        if(adult){
-            url = "/apis/registration/adultpricelevels";
-        }
+        // var url = "/apis/registration/pricelevels";
+        // if(adult){
+        //     url = "/apis/registration/adultpricelevels";
+        // }
 
         $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
             levelData = data;
