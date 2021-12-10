@@ -925,10 +925,12 @@ print_staff_badges.short_description = "Print Staff Badges"
 
 class AttendeeOptionInline(NestedTabularInline):
     model = AttendeeOptions
+    fk_name = "option"
     extra = 0
 
 
 class OrderItemInline(NestedTabularInline):
+    fk_name = "order"
     model = OrderItem
     raw_id_fields = ("badge", "order")
     extra = 0
@@ -936,10 +938,15 @@ class OrderItemInline(NestedTabularInline):
     list_display = ["priceLevel", "enteredBy"]
 
 
+class OrderItemInlineBadge(OrderItemInline):
+    fk_name = "badge"
+
+
 class BadgeInline(NestedTabularInline):
     model = Badge
+    fk_name = "attendee"
     extra = 0
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInlineBadge]
     list_display = [
         "event",
         "badgeName",
@@ -1034,7 +1041,7 @@ class PriceLevelFilter(admin.SimpleListFilter):
 
 class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_per_page = 30
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInlineBadge]
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
