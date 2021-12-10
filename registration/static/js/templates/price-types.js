@@ -4,9 +4,9 @@ var shirtSizes = [];
 
 
 $( "body" ).ready(function() {
-        var url = "/apis/registration/pricelevels";
+        var url = "/registration/pricelevels";
         if(adult){
-            url = "/apis/registration/adultpricelevels";
+            url = "/registration/adultpricelevels";
         }
 
         $.getJSON(url, function(data) {
@@ -23,10 +23,10 @@ $( "body" ).ready(function() {
             });
             $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
             $(".changeLevel").hide();
-            
+
         });
 
-        $.getJSON("/apis/registration/shirts", function(data) {
+        $.getJSON("/registration/shirts", function(data) {
             shirtSizes = data;
         });
 
@@ -48,7 +48,7 @@ $( "body" ).ready(function() {
         });
     });
     $("#levelContainer").on('click', 'a.changeLevel', function() {
-        $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);      
+        $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
         $("#regLevel").val("");
         $(".changeLevel").hide();
     });
@@ -85,7 +85,7 @@ $( "body" ).ready(function() {
                     $("#optionsContainer").loadTemplate(template, {
                         'content': val.description
                     }, {append: true});
-                    break;  
+                    break;
                 case "bool":
                     var template = $("#optionBoolTemplate");
                     if (val.required) {template = $("#optionBoolReqTemplate");}
@@ -142,9 +142,8 @@ $( "body" ).ready(function() {
             } else {
                 if ($(option).val() != "") {
                     data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-                }            
+                }
             }
         });
         return data;
     };
-
