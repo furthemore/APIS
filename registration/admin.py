@@ -112,7 +112,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         }
 
         try:
-            PushyAPI.sendPushNotification(data, [obj.token,], None)
+            PushyAPI.sendPushNotification(data, [obj.token], None)
         except PushyError as e:
             messages.warning(
                 request,
@@ -627,7 +627,7 @@ admin.site.register(Staff, StaffAdmin)
 
 
 def make_staff(modeladmin, request, queryset):
-    event = Event.objects.last()
+    event = Event.objects.get(default=True)
     for att in queryset:
         staff = Staff(attendee=att, event=event)
         staff.save()
@@ -1375,7 +1375,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total,})
+            form = self.RefundForm(initial={"amount": order.total, })
 
         context = {
             "form": form,
