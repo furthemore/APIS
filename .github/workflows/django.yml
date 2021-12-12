@@ -33,11 +33,14 @@ jobs:
     - name: Run Tests
       run: |
         cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
-        python manage.py test
+        coverage run ./manage.py test
       env:
         SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
         SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
         SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
         EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
         EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        
+    - name: Submit coverage
+      run: coveralls --service=github
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
