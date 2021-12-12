@@ -627,7 +627,7 @@ admin.site.register(Staff, StaffAdmin)
 
 
 def make_staff(modeladmin, request, queryset):
-    event = Event.objects.last()
+    event = Event.objects.get(default=True)
     for att in queryset:
         staff = Staff(attendee=att, event=event)
         staff.save()
