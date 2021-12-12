@@ -112,7 +112,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         }
 
         try:
-            PushyAPI.sendPushNotification(data, [obj.token,], None)
+            PushyAPI.sendPushNotification(data, [obj.token], None)
         except PushyError as e:
             messages.warning(
                 request,
@@ -1375,7 +1375,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total,})
+            form = self.RefundForm(initial={"amount": order.total, })
 
         context = {
             "form": form,
