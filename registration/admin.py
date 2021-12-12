@@ -111,7 +111,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         }
 
         try:
-            PushyAPI.sendPushNotification(data, [obj.token,], None)
+            PushyAPI.sendPushNotification(data, [obj.token], None)
         except PushyError as e:
             messages.warning(
                 request,
