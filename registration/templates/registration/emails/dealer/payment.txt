@@ -1,4 +1,5 @@
 {% load mathfilters %}
+{% autoescape off %}
 Salutations Vendor,
 
 Thank you for participating in {{event}}'s Dealers Den!
@@ -47,3 +48,4 @@ Total:  ${{order.total}}
 ------------------------------------------------------------------
 
 If you have listed any partners, they will receive an email with instructions about how to register.
+{% endautoescape %}

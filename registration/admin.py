@@ -188,7 +188,7 @@ admin.site.register(TempToken, TempTokenAdmin)
 
 
 def send_approval_email(modeladmin, request, queryset):
-    registration.emails.send_approval_email(queryset)
+    registration.emails.send_dealer_approval_email(queryset)
     queryset.update(emailed=True)
 
 
@@ -217,7 +217,7 @@ send_payment_email.short_description = "Resend payment confirmation email"
 
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
-        registration.emails.send_dealer_asst_form_email(dealer)
+        registration.emails.send_dealer_assistant_form_email(dealer)
 
 
 send_assistant_form_email.short_description = "Send assistant addition form email"

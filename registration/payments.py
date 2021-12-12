@@ -111,14 +111,14 @@ def refresh_payment(order, store_api_data=None):
         try:
             api_data = json.loads(order.apiData)
         except ValueError:
-            logger.warn("No order data yet for {0}".format(order.reference))
+            logger.warning("No order data yet for {0}".format(order.reference))
             return False, "No order data yet for {0}".format(order.reference)
     order_total = 0
 
     try:
         payment_id = api_data["payment"]["id"]
     except KeyError:
-        logger.warn("Refresh payment: MISSING_PAYMENT_ID")
+        logger.warning("Refresh payment: MISSING_PAYMENT_ID")
         return False, "MISSING_PAYMENT_ID"
     payments_response = payments_api.get_payment(payment_id)
 

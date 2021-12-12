@@ -1,0 +1,13 @@
+{% autoescape off %}
+Thank you for your application to be a dealer at {{ event }}.
+
+The cut off date for primary applicants will be {{ event.dealerRegEnd|date:'l, F jS, Y H:i' }}, and selections will be
+made at that time.
+
+If you have any questions, please feel free to contact us: {{ event.dealerEmail }}
+
+If you have listed any assistants, they will receive an email with instructions about how to register after your
+payment has been received.
+
+Thank you!
+{% endautoescape %}

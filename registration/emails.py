@@ -6,9 +6,7 @@ from django.template.loader import render_to_string
 import registration.views.common
 import registration.views.dealers
 import registration.views.staff
-
-from . import views
-from .models import *
+from registration.models import *
 
 logger = logging.getLogger("registration.emails")
 
@@ -44,7 +42,7 @@ def send_registration_email(order, email, send_vip=True):
             msg_html = render_to_string(
                 "registration/emails/registrationPayment.html", data
             )
-            sendEmail(
+            send_email(
                 registration_email,
                 [email],
                 "{0} Registration Payment".format(oi.badge.event.name),
@@ -60,7 +58,7 @@ def send_registration_email(order, email, send_vip=True):
             }
             msg_txt = render_to_string("registration/emails/registration.txt", data)
             msg_html = render_to_string("registration/emails/registration.html", data)
-            sendEmail(
+            send_email(
                 registration_email,
                 [oi.badge.attendee.email],
                 "{0} Registration Confirmation".format(oi.badge.event.name),
@@ -75,7 +73,7 @@ def send_registration_email(order, email, send_vip=True):
             msg_html = render_to_string(
                 "registration/emails/vipNotification.html", data
             )
-            sendEmail(
+            send_email(
                 registration_email,
                 [email for email in oi.priceLevel.emailVIPEmails.split(",")],
                 "{0} VIP Registration".format(oi.badge.event.name),
@@ -95,7 +93,7 @@ def send_upgrade_instructions(badge):
 
     msg_txt = render_to_string("registration/emails/upgrade-instructions.txt", data)
     msg_html = render_to_string("registration/emails/upgrade-instructions.html", data)
-    sendEmail(
+    send_email(
         registration_email,
         [badge.attendee.email],
         "Upgrade Your Registration for {0}".format(event.name),
@@ -104,7 +102,7 @@ def send_upgrade_instructions(badge):
     )
 
 
-def sendUpgradePaymentEmail(attendee, order):
+def send_upgrade_payment_email(attendee, order):
     event = Event.objects.get(default=True)
     order_items = OrderItem.objects.filter(order=order)
     data = {
@@ -115,7 +113,7 @@ def sendUpgradePaymentEmail(attendee, order):
     msg_html = render_to_string("registration/emails/upgrade.html", data)
     registration_email = registration.views.common.getRegistrationEmail(event)
 
-    sendEmail(
+    send_email(
         registration_email,
         [attendee.email],
         "{0} Upgrade Payment".format(event.name),
@@ -130,7 +128,7 @@ def sendUpgradePaymentEmail(attendee, order):
             msg_html = render_to_string(
                 "registration/emails/vipNotification.html", data
             )
-            sendEmail(
+            send_email(
                 registration_email,
                 [email for email in oi.priceLevel.emailVIPEmails.split(",")],
                 "{0} VIP Registration".format(event.name),
@@ -139,7 +137,7 @@ def sendUpgradePaymentEmail(attendee, order):
             )
 
 
-def sendStaffRegistrationEmail(orderId):
+def send_staff_registration_email(orderId):
     order = Order.objects.get(id=orderId)
     email = order.billingEmail
     event = Event.objects.get(default=True)
@@ -148,7 +146,7 @@ def sendStaffRegistrationEmail(orderId):
     msg_html = render_to_string("registration/emails/staffRegistration.html", data)
     event = Event.objects.get(default=True)
     staff_email = registration.views.staff.getStaffEmail(event)
-    sendEmail(
+    send_email(
         staff_email,
         [email],
         "{0} Staff Registration".format(event.name),
@@ -162,7 +160,7 @@ def send_staff_promotion_email(staff):
     msg_txt = render_to_string("registration/emails/staffPromotion.txt", data)
     msg_html = render_to_string("registration/emails/staffPromotion.html", data)
     staff_email = registration.views.staff.getStaffEmail(staff.event)
-    sendEmail(
+    send_email(
         staff_email,
         [staff.attendee.email],
         "Welcome to {0} Staff!".format(staff.event.name),
@@ -177,7 +175,7 @@ def send_new_staff_email(token):
     msg_txt = render_to_string("registration/emails/newStaff.txt", data)
     msg_html = render_to_string("registration/emails/newStaff.html", data)
     staff_email = registration.views.staff.getStaffEmail(event)
-    sendEmail(
+    send_email(
         staff_email,
         [token.email],
         "Welcome to {0} Staff!".format(event.name),
@@ -186,13 +184,13 @@ def send_new_staff_email(token):
     )
 
 
-def sendDealerApplicationEmail(dealerId):
+def send_dealer_application_email(dealerId):
     dealer = Dealer.objects.get(id=dealerId)
     data = {"event": dealer.event, "dealer": dealer}
-    msg_txt = render_to_string("registration/emails/dealer.txt", data)
-    msg_html = render_to_string("registration/emails/dealer.html", data)
+    msg_txt = render_to_string("registration/emails/dealer/dealer.txt", data)
+    msg_html = render_to_string("registration/emails/dealer/dealer.html", data)
     dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
-    sendEmail(
+    send_email(
         dealer_email,
         [dealer.attendee.email],
         "{0} Dealer Application".format(dealer.event.name),
@@ -200,9 +198,9 @@ def sendDealerApplicationEmail(dealerId):
         msg_html,
     )
 
-    msg_txt = render_to_string("registration/emails/dealerNotice.txt", data)
-    msg_html = render_to_string("registration/emails/dealerNotice.html", data)
-    sendEmail(
+    msg_txt = render_to_string("registration/emails/dealer/dealer-notice.txt", data)
+    msg_html = render_to_string("registration/emails/dealer/dealer-notice.html", data)
+    send_email(
         dealer_email,
         [dealer_email,],
         "{0} Dealer Application Received".format(dealer.event.name),
@@ -211,12 +209,12 @@ def sendDealerApplicationEmail(dealerId):
     )
 
 
-def send_dealer_asst_form_email(dealer):
+def send_dealer_assistant_form_email(dealer):
     data = {"dealer": dealer, "event": dealer.event}
-    msg_txt = render_to_string("registration/emails/dealerAsstForm.txt", data)
-    msg_html = render_to_string("registration/emails/dealerAsstForm.html", data)
+    msg_txt = render_to_string("registration/emails/dealer/assistant-form.txt", data)
+    msg_html = render_to_string("registration/emails/dealer/assistant-form.html", data)
     dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
-    sendEmail(
+    send_email(
         dealer_email,
         [dealer.attendee.email],
         "{0} Dealer Assistant Addition".format(dealer.event.name),
@@ -225,13 +223,13 @@ def send_dealer_asst_form_email(dealer):
     )
 
 
-def sendDealerAsstEmail(dealerId):
-    dealer = Dealer.objects.get(id=dealerId)
+def send_dealer_assistant_email(dealer_id):
+    dealer = Dealer.objects.get(id=dealer_id)
     data = {"dealer": dealer, "event": dealer.event}
-    msg_txt = render_to_string("registration/emails/dealerAsst.txt", data)
-    msg_html = render_to_string("registration/emails/dealerAsst.html", data)
+    msg_txt = render_to_string("registration/emails/dealer/assistant.txt", data)
+    msg_html = render_to_string("registration/emails/dealer/assistant.html", data)
     dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
-    sendEmail(
+    send_email(
         dealer_email,
         [dealer.attendee.email],
         "{0} Dealer Assistant Addition".format(dealer.event.name),
@@ -250,11 +248,11 @@ def send_dealer_payment_email(dealer, order):
         "options": options,
         "event": dealer.event,
     }
-    msg_txt = render_to_string("registration/emails/dealerPayment.txt", data)
-    msg_html = render_to_string("registration/emails/dealerPayment.html", data)
+    msg_txt = render_to_string("registration/emails/dealer/payment.txt", data)
+    msg_html = render_to_string("registration/emails/dealer/payment.html", data)
     dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
 
-    sendEmail(
+    send_email(
         dealer_email,
         [dealer.attendee.email],
         "{0} Dealer Payment".format(dealer.event.name),
@@ -263,14 +261,17 @@ def send_dealer_payment_email(dealer, order):
     )
 
 
-def sendDealerUpdateEmail(dealerId):
+def send_dealer_update_email(dealerId):
+    """
+    Dead function?
+    """
     dealer = Dealer.objects.get(id=dealerId)
     data = {"dealer": dealer, "event": dealer.event}
     msg_txt = render_to_string("registration/emails/dealerUpdate.txt", data)
     msg_html = render_to_string("registration/emails/dealerUpdate.html", data)
     dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
 
-    sendEmail(
+    send_email(
         dealer_email,
         [dealer.attendee.email],
         "{0} Dealer Information Update".format(dealer.event.name),
@@ -279,13 +280,17 @@ def sendDealerUpdateEmail(dealerId):
     )
 
 
-def send_approval_email(dealerQueryset):
+def send_dealer_approval_email(dealerQueryset):
     for dealer in dealerQueryset:
         data = {"dealer": dealer, "event": dealer.event}
-        msg_txt = render_to_string("registration/emails/dealerApproval.txt", data)
-        msg_html = render_to_string("registration/emails/dealerApproval.html", data)
+        msg_txt = render_to_string(
+            "registration/emails/dealer/dealer-approval.txt", data
+        )
+        msg_html = render_to_string(
+            "registration/emails/dealer/dealer-approval.html", data
+        )
         dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
-        sendEmail(
+        send_email(
             dealer_email,
             [dealer.attendee.email],
             "{0} Dealer Application".format(dealer.event.name),
@@ -294,8 +299,8 @@ def send_approval_email(dealerQueryset):
         )
 
 
-def sendEmail(reply_address, to_address_list, subject, message, html_message):
-    logger.debug("Enter sendEmail...")
+def send_email(reply_address, to_address_list, subject, message, html_message):
+    logger.debug("Enter send_email...")
     mail_message = EmailMultiAlternatives(
         subject,
         message,

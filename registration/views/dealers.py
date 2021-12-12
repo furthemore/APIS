@@ -95,7 +95,7 @@ def infoDealer(request):
 
 
 def findDealer(request):
-    if request.method == request.POST:
+    try:
         postData = json.loads(request.body)
         email = postData["email"]
         token = postData["token"]
@@ -108,11 +108,9 @@ def findDealer(request):
 
         request.session["dealer_id"] = dealer.id
         return JsonResponse({"success": True, "message": "DEALER"})
-
-    context = {
-        "token": request.GET.get("token", ""),
-    }
-    return render(request, "registration/dealer/dealer-locate.html", context)
+    except Exception as e:
+        logger.exception("Error finding dealer. " + email)
+        return HttpResponseServerError(str(e))
 
 
 def findAsstDealer(request):
