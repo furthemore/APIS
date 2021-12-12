@@ -1,5 +1,5 @@
 # APIS EventManager
-![Django CI](https://github.com/github/docs/actions/workflows/django.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg)](https://coveralls.io/github/furthemore/APIS) 
+![Django CI](https://github.com/furthemore/APIS/actions/workflows/django.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg)](https://coveralls.io/github/furthemore/APIS) 
 
 Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 
