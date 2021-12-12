@@ -2,7 +2,6 @@
 ![Build](https://github.com/furthemore/APIS/actions/workflows/django.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/furthemore/APIS/badge.svg)](https://coveralls.io/github/furthemore/APIS)
 
 Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
->>>>>>> ef9ac8ab597212061a985b648882e43c3cd4863a
 
 Stack:
   + Ubuntu 20.04 (LTS)
