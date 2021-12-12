@@ -700,7 +700,7 @@ class OrderItem(models.Model):
     badge = models.ForeignKey(Badge, null=True, on_delete=models.CASCADE)
     priceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
     enteredBy = models.CharField(max_length=100)
-    enteredDate = models.DateTimeField(auto_now_add=True, null=True)
+    enteredDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
         db_table = "registration_order_item"

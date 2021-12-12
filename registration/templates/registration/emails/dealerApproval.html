@@ -1,6 +1,6 @@
 {% load site %}
 <h3>Your dealer application for {{ dealer.event }} has been approved!</h3>
 <p>Please go to the url below and enter the email address you used to register.</p>
-<p><a href='https://{% current_domain %}{% url 'registration:dealers' guid=dealer.registrationToken %}'>https://{% current_domain %}{% url 'dealers' guid=dealer.registrationToken %}</a></p>
+<p><a href="https://{% current_domain %}{% url 'registration:dealers' guid=dealer.registrationToken %}">https://{% current_domain %}{% url 'registration:dealers' guid=dealer.registrationToken %}</a></p>
 <p>You will receive an email with a confirmation number after submitting your payment. If you have any further questions, please feel free to contact us: <a href='mailto:{{ dealer.event.dealerEmail }}'>{{ dealer.event.dealerEmail }}</a></p>
 <p>Thank you and welcome to the {{ dealer.event }} Dealer's Den!</p>

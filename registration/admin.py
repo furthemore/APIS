@@ -624,7 +624,7 @@ admin.site.register(Staff, StaffAdmin)
 
 
 def make_staff(modeladmin, request, queryset):
-    event = Event.objects.last()
+    event = Event.objects.get(default=True)
     for att in queryset:
         staff = Staff(attendee=att, event=event)
         staff.save()
@@ -925,7 +925,6 @@ print_staff_badges.short_description = "Print Staff Badges"
 
 class AttendeeOptionInline(NestedTabularInline):
     model = AttendeeOptions
-    fk_name = "option"
     extra = 0
 
 
@@ -936,10 +935,19 @@ class OrderItemInline(NestedTabularInline):
     extra = 0
     inlines = [AttendeeOptionInline]
     list_display = ["priceLevel", "enteredBy"]
+    readonly_fields = ("enteredBy",)
+
+    def save_model(self, request, obj, form, change):
+        raise TypeError
+        logger.error(request, obj, form, change)
 
 
 class OrderItemInlineBadge(OrderItemInline):
     fk_name = "badge"
+
+    def save_model(self, request, obj, form, change):
+        raise TypeError
+        logger.error(request, obj, form, change)
 
 
 class BadgeInline(NestedTabularInline):
@@ -1177,6 +1185,11 @@ admin.site.register(AttendeeOptions)
 
 class OrderItemAdmin(ImportExportModelAdmin):
     raw_id_fields = ("order", "badge")
+    readonly_fields = ("enteredBy",)
+
+    def save_model(self, request, obj, form, change):
+        obj.enteredBy = request.user.username
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(OrderItem, OrderItemAdmin)
