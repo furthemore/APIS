@@ -482,7 +482,9 @@ class Staff(models.Model):
         verbose_name_plural = "Staff"
 
     def __str__(self):
-        return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        if self.attendee:
+            return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        return f"<Staff(registrationToken={self.registrationToken})>"
 
     def getBadge(self):
         badge = Badge.objects.filter(attendee=self.attendee, event=self.event).last()

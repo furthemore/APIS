@@ -589,6 +589,9 @@ class StaffAdmin(ImportExportModelAdmin):
                 count = 0
 
                 for staff in queryset:
+                    if staff.event == event:
+                        continue  # Don't copy staff to the same destination event
+
                     staff_copy = copy.copy(staff)
                     staff_copy.id = None
                     staff_copy.attendee = staff.attendee
@@ -1384,7 +1387,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total, })
+            form = self.RefundForm(initial={"amount": order.total,})
 
         context = {
             "form": form,

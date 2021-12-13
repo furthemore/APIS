@@ -261,25 +261,6 @@ def send_dealer_payment_email(dealer, order):
     )
 
 
-def send_dealer_update_email(dealerId):
-    """
-    Dead function?
-    """
-    dealer = Dealer.objects.get(id=dealerId)
-    data = {"dealer": dealer, "event": dealer.event}
-    msg_txt = render_to_string("registration/emails/dealerUpdate.txt", data)
-    msg_html = render_to_string("registration/emails/dealerUpdate.html", data)
-    dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
-
-    send_email(
-        dealer_email,
-        [dealer.attendee.email],
-        "{0} Dealer Information Update".format(dealer.event.name),
-        msg_txt,
-        msg_html,
-    )
-
-
 def send_dealer_approval_email(dealerQueryset):
     for dealer in dealerQueryset:
         data = {"dealer": dealer, "event": dealer.event}

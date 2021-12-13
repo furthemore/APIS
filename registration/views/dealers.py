@@ -27,12 +27,6 @@ def thanksDealer(request):
     return render(request, "registration/dealer/dealer-thanks.html", context)
 
 
-def updateDealer(request):
-    event = Event.objects.get(default=True)
-    context = {"event": event}
-    return render(request, "registration/dealer/dealer-update.html", context)
-
-
 def doneDealer(request):
     event = Event.objects.get(default=True)
     context = {"event": event}

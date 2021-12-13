@@ -32,6 +32,19 @@ DEFAULT_EVENT_ARGS = dict(
     eventEnd=now + ten_days,
 )
 
+TEST_ATTENDEE_ARGS = dict(
+    firstName="Test",
+    lastName="Testerson",
+    address1="123 Somewhere St",
+    city="Place",
+    state="PA",
+    country="US",
+    postalCode=12345,
+    phone="1112223333",
+    email="apis@mailinator.org",
+    birthdate="1990-01-01",
+)
+
 
 class OrdersTestCase(TestCase):
     def setUp(self):

@@ -76,11 +76,6 @@ urlpatterns = [
         registration.views.dealers.thanksDealer,
         name="thanksDealer",
     ),
-    url(
-        r"^dealer/update/?$",
-        registration.views.dealers.updateDealer,
-        name="updateDealer",
-    ),
     url(r"^dealer/lookup/?$", registration.views.dealers.findDealer, name="findDealer"),
     url(r"^dealer/add/?$", registration.views.dealers.addDealer, name="addDealer"),
     url(r"^dealer/info/?$", registration.views.dealers.infoDealer, name="infoDealer"),
