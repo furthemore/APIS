@@ -1,13 +1,16 @@
 import json
 
 from django.conf import settings
+from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.test import TestCase
 from django.urls import reverse
+from mock import patch
 
 from registration.admin import FirebaseAdmin
 from registration.models import Firebase
+from registration.pushy import PushyError
 
 
 class TestFirebaseAdmin(TestCase):
@@ -21,7 +24,7 @@ class TestFirebaseAdmin(TestCase):
         self.normal_user.staff_member = False
         self.normal_user.save()
 
-        self.terminal_blue = Firebase(token="terminal_blue_token", name="Blue",)
+        self.terminal_blue = Firebase(token="terminal_blue_token", name="Blue")
         self.terminal_blue.save()
 
     def test_get_provisioning(self):
@@ -47,6 +50,56 @@ class TestFirebaseAdmin(TestCase):
         }
 
         self.assertEqual(provision_dict, expected_result)
+
+    @patch("registration.pushy.PushyAPI.send_push_notification")
+    def test_save_model(self, mock_send_push_notification):
+        self.client.logout()
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        terminal_red = Firebase(token="terminal_red_token", name="Not Red Yet")
+        terminal_red.save()
+
+        form_data = {
+            "token": terminal_red.token,
+            "name": "Red",
+            "background_color": "#ff0000",
+            "foreground_color": "#ffffff",
+        }
+
+        response = self.client.post(
+            reverse("admin:registration_firebase_change", args=(terminal_red.id,)),
+            form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"there was a problem", response.content)
+        terminal_red.refresh_from_db()
+        self.assertEqual(terminal_red.name, "Red")
+        mock_send_push_notification.assert_called_once()
+
+    @patch("registration.pushy.PushyAPI.send_push_notification")
+    def test_save_model_pushy_exception(self, mock_send_push_notification):
+        self.client.logout()
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        terminal_red = Firebase(token="terminal_red_token", name="Not Red Yet")
+        terminal_red.save()
+
+        form_data = {
+            "token": terminal_red.token,
+            "name": "Red",
+            "background_color": "#ff0000",
+            "foreground_color": "#ffffff",
+        }
+
+        mock_send_push_notification.side_effect = PushyError()
+
+        response = self.client.post(
+            reverse("admin:registration_firebase_change", args=(terminal_red.id,)),
+            form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"there was a problem", response.content)
+        mock_send_push_notification.assert_called_once()
 
     def test_get_qrcode(self):
         qr_code = FirebaseAdmin.get_qrcode("foo")

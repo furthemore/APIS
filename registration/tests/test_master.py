@@ -755,13 +755,13 @@ class LookupTestCases(TestCase):
 
 class TestPushyAPI(TestCase):
     @patch("urllib.request.urlopen")
-    def test_sendPushNotification(self, mock_urlopen):
+    def test_send_push_notification(self, mock_urlopen):
         data = {"data": "some cool message here"}
-        PushyAPI.sendPushNotification(data, "to", None)
+        PushyAPI.send_push_notification(data, "to", None)
         mock_urlopen.assert_called_once()
 
     @patch("urllib.request.urlopen")
-    def test_sendPushNotification_sad_path(self, mock_urlopen):
+    def test_send_push_notification_sad_path(self, mock_urlopen):
         data = {"data": "some cool message here"}
         mock_urlopen.side_effect = urllib.error.HTTPError(
             "https://api.pushy.me/push",
@@ -771,5 +771,5 @@ class TestPushyAPI(TestCase):
             io.StringIO(),
         )
         with self.assertRaises(PushyError):
-            PushyAPI.sendPushNotification(data, "to", None)
+            PushyAPI.send_push_notification(data, "to", None)
         mock_urlopen.assert_called_once()

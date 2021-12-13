@@ -111,7 +111,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         }
 
         try:
-            PushyAPI.sendPushNotification(data, [obj.token], None)
+            PushyAPI.send_push_notification(data, [obj.token], None)
         except PushyError as e:
             messages.warning(
                 request,
@@ -937,17 +937,9 @@ class OrderItemInline(NestedTabularInline):
     list_display = ["priceLevel", "enteredBy"]
     readonly_fields = ("enteredBy",)
 
-    def save_model(self, request, obj, form, change):
-        raise TypeError
-        logger.error(request, obj, form, change)
-
 
 class OrderItemInlineBadge(OrderItemInline):
     fk_name = "badge"
-
-    def save_model(self, request, obj, form, change):
-        raise TypeError
-        logger.error(request, obj, form, change)
 
 
 class BadgeInline(NestedTabularInline):

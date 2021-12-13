@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class PushyAPI:
     @staticmethod
-    def sendPushNotification(data, to, options):
+    def send_push_notification(data, to, options):
         # Insert your Pushy Secret API Key here
         apiKey = settings.CLOUD_MESSAGING_KEY
 

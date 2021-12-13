@@ -3,11 +3,11 @@ import time
 import uuid
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client, TestCase, tag
 from django.urls import reverse
 
 from registration import admin, payments
-from registration.admin import OrderAdmin
+from registration.admin import OrderAdmin, OrderItemAdmin
 from registration.models import *
 from registration.tests.common import *
 
@@ -360,6 +360,7 @@ class TestOrderAdmin(TestCase):
         )
         self.assertContains(response, "Unpaid orders cannot be refunded")
 
+    @tag("square")
     def create_square_order(self, nonce="cnon:card-nonce-ok", autocomplete=True):
         order = Order(
             total=100,
@@ -385,6 +386,7 @@ class TestOrderAdmin(TestCase):
         time.sleep(2)
         return order
 
+    @tag("square")
     def test_square_refund(self):
         order = self.create_square_order()
 
@@ -405,6 +407,7 @@ class TestOrderAdmin(TestCase):
         self.assertEqual(order.total, 0)
         self.assertEqual(order.status, Order.REFUND_PENDING)
 
+    @tag("square")
     def test_partial_refund(self):
         order = self.create_square_order()
         order.orgDonation = 20
@@ -449,6 +452,7 @@ class TestOrderAdmin(TestCase):
         self.assertEqual(order.orgDonation, 0)
         self.assertEqual(order.status, Order.REFUND_PENDING)
 
+    @tag("square")
     def test_refresh_view(self):
         self.client.logout()
         self.assertTrue(self.client.login(username="admin", password="admin"))
@@ -562,3 +566,37 @@ class TestTwoFactorAdmin(TestCase):
     def test_disable_two_factor(self):
         query_set = [self.user_1, self.user_2]
         admin.disable_two_factor(None, None, query_set)
+
+
+class TestOrderItemAdmin(OrdersTestCase):
+    def setUp(self):
+        super().setUp()
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user.save()
+        self.order = Order(total="90.00", reference="FOOBAR")
+        self.order.save()
+        self.badge = Badge(event=self.event)
+        self.badge.save()
+        self.order_item = OrderItem(
+            order=self.order, badge=self.badge, priceLevel=self.price_90
+        )
+        self.order_item.save()
+
+    def test_save_model(self):
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        self.assertNotEqual(self.order_item.enteredBy, "admin")
+
+        form_data = {
+            "order": self.order.pk,
+            "badge": self.badge.pk,
+            "priceLevel": self.price_90.pk,
+        }
+
+        response = self.client.post(
+            reverse("admin:registration_orderitem_change", args=(self.order_item.pk,)),
+            form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.order_item.refresh_from_db()
+        self.assertEqual(self.order_item.enteredBy, "admin")

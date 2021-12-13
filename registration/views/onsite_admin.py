@@ -198,7 +198,7 @@ def sendMessageToTerminal(request, data):
     ]
 
     try:
-        PushyAPI.sendPushNotification(data, to, None)
+        PushyAPI.send_push_notification(data, to, None)
     except PushyError as e:
         return JsonResponse({"success": False, "message": e.message})
     return JsonResponse({"success": True})
@@ -280,7 +280,7 @@ def notifyTerminal(request, data):
     ]
 
     try:
-        PushyAPI.sendPushNotification(display, to, None)
+        PushyAPI.send_push_notification(display, to, None)
     except PushyError as e:
         logger.error("Problem while sending push notification:")
         logger.error(e)

@@ -187,7 +187,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertContains(response, "are not authorized to access this page")
         self.client.logout()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_admin(self, mock_sendPushNotification):
         self.client.logout()
         self.assertTrue(self.client.login(username="admin", password="admin"))
@@ -225,7 +225,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         self.client.logout()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_admin_cart_not_initialized(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:onsiteAdminCart"))
@@ -254,7 +254,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(response.context["errors"], expected_errors)
         self.assertEqual(response.status_code, 200)
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_admin_cart_no_donations(self, mock_sendPushNotification):
         # Stage registration
         options = [
@@ -301,18 +301,18 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             float(self.price_45.basePrice + self.option_shirt.optionPrice),
         )
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_admin_cart_with_donations(self, mock_sendPushNotification):
         pass
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_close_terminal_no_terminal(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:closeTerminal"))
         self.assertEqual(response.status_code, 400)
         mock_sendPushNotification.assert_not_called()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_close_terminal_happy_path(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
@@ -321,7 +321,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         mock_sendPushNotification.assert_called_once()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_open_terminal(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
@@ -331,7 +331,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         mock_sendPushNotification.assert_called_once()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_invalid_terminal(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
@@ -344,7 +344,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(message["message"], "Invalid terminal specified")
         mock_sendPushNotification.assert_not_called()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_terminal_dne(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
@@ -360,7 +360,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
         mock_sendPushNotification.assert_not_called()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_terminal_bad_request(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:openTerminal"),)
@@ -373,7 +373,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
         mock_sendPushNotification.assert_not_called()
 
-    @patch("registration.pushy.PushyAPI.sendPushNotification")
+    @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_enabled_terminal(self, mock_sendPushNotification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
