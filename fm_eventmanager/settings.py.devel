@@ -247,6 +247,6 @@ MQTT_LOGIN = {
     "password": "secret",
 }
 
-ENVIRONMENT_NAME = "Development server"
-ENVIRONMENT_COLOR = "#00FF00"
+ENVIRONMENT_NAME = "Production Server"
+ENVIRONMENT_COLOR = "#FF0000"
 ENVIRONMENT_FLOAT = True
