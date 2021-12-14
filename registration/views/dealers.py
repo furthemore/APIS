@@ -60,7 +60,7 @@ def infoDealer(request):
     context = {"dealer": None, "event": event}
     try:
         dealerId = request.session["dealer_id"]
-    except Exception as e:
+    except (ValueError, KeyError):
         return render(request, "registration/dealer/dealer-payment.html", context)
 
     dealer = Dealer.objects.get(id=dealerId)
@@ -103,7 +103,8 @@ def findDealer(request):
         request.session["dealer_id"] = dealer.id
         return JsonResponse({"success": True, "message": "DEALER"})
     except Exception as e:
-        logger.exception("Error finding dealer. " + email)
+        logger.error("Error finding dealer. " + email)
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
 
@@ -122,7 +123,8 @@ def findAsstDealer(request):
         request.session["dealer_id"] = dealer.id
         return JsonResponse({"success": True, "message": "DEALER"})
     except Exception as e:
-        logger.exception("Error finding assistant dealer.")
+        logger.error("Error finding assistant dealer.")
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
 
@@ -157,7 +159,7 @@ def addAsstDealer(request):
     context = {"attendee": None, "dealer": None}
     try:
         dealerId = request.session["dealer_id"]
-    except Exception as e:
+    except (KeyError, ValueError):
         return render(request, "registration/dealer/dealerasst-add.html", context)
 
     dealer = Dealer.objects.get(id=dealerId)
@@ -231,7 +233,8 @@ def checkoutAsstDealer(request):
         try:
             registration.emails.sendDealerAsstEmail(dealer.id)
         except Exception as e:
-            logger.exception("Error emailing DealerAsstEmail.")
+            logger.error("Error emailing DealerAsstEmail.")
+            logger.exception(e)
             dealerEmail = getDealerEmail()
             return JsonResponse(
                 {
@@ -254,6 +257,7 @@ def addDealer(request):
         postData = json.loads(request.body)
     except ValueError as e:
         logger.error("Unable to decode JSON for addStaff()")
+        logger.exception(e)
         return JsonResponse({"success": False})
 
     pda = postData["attendee"]
@@ -293,7 +297,8 @@ def addDealer(request):
     try:
         dealer.save()
     except Exception as e:
-        logger.exception("Error saving dealer record.")
+        logger.error("Error saving dealer record.")
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
     # Update Attendee info
@@ -314,7 +319,8 @@ def addDealer(request):
     try:
         attendee.save()
     except Exception as e:
-        logger.exception("Error saving dealer attendee record.")
+        logger.error("Error saving dealer attendee record.")
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
     badge = Badge.objects.get(attendee=attendee, event=event)
@@ -323,7 +329,8 @@ def addDealer(request):
     try:
         badge.save()
     except Exception as e:
-        logger.exception("Error saving dealer badge record.")
+        logger.error("Error saving dealer badge record.")
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
     priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
@@ -375,7 +382,8 @@ def checkoutDealer(request):
             try:
                 registration.emails.send_dealer_payment_email(dealer, order)
             except Exception as e:
-                logger.exception("Error sending DealerPaymentEmail - zero sum.")
+                logger.error("Error sending DealerPaymentEmail - zero sum.")
+                logger.exception(e)
                 dealerEmail = getDealerEmail()
                 return JsonResponse(
                     {
@@ -408,7 +416,8 @@ def checkoutDealer(request):
                 dealer.resetToken()
                 registration.emails.send_dealer_payment_email(dealer, order)
             except Exception as e:
-                logger.exception("Error sending DealerPaymentEmail. " + request.body)
+                logger.error("Error sending DealerPaymentEmail. " + request.body)
+                logger.exception(e)
                 dealerEmail = getDealerEmail()
                 return JsonResponse(
                     {
@@ -423,7 +432,8 @@ def checkoutDealer(request):
             order.delete()
             return JsonResponse({"success": False, "message": message})
     except Exception as e:
-        logger.exception("Error in dealer checkout.")
+        logger.error("Error in dealer checkout.")
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
 
@@ -506,7 +516,8 @@ def addNewDealer(request):
         try:
             registration.emails.sendDealerApplicationEmail(dealer.id)
         except Exception as e:
-            logger.exception("Error sending DealerApplicationEmail.")
+            logger.error("Error sending DealerApplicationEmail.")
+            logger.exception(e)
             dealerEmail = getDealerEmail()
             return JsonResponse(
                 {
@@ -519,7 +530,8 @@ def addNewDealer(request):
         return JsonResponse({"success": True})
 
     except Exception as e:
-        logger.exception(f"Error in dealer addition. {request.body}")
+        logger.error(f"Error in dealer addition. {request.body}")
+        logger.exception(e)
         return HttpResponseServerError(str(e))
 
 
