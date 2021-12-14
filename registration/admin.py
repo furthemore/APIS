@@ -523,7 +523,7 @@ class StaffAdmin(ImportExportModelAdmin):
     list_filter = ("event", "department")
     search_fields = ["attendee__email", "attendee__lastName", "attendee__firstName"]
     resource_class = StaffResource
-    readonly_fields = ["get_email", "get_badge", "get_badge_id"]
+    readonly_fields = ["get_email", "get_badge", "get_badge_id", "registrationToken"]
     fieldsets = (
         (
             None,
@@ -952,6 +952,7 @@ class BadgeInline(NestedTabularInline):
     ]
     readonly_fields = [
         "get_age_range",
+        "registrationToken",
     ]
 
     def get_age_range(self, obj):
