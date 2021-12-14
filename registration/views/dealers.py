@@ -225,7 +225,7 @@ def checkoutAsstDealer(request):
 
     # FIXME: remove hardcoded costs
     partners = partnerCount - originalPartnerCount
-    total = Decimal(45 * partners)
+    total = Decimal(55 * partners)
     if pbill["breakfast"]:
         total = total + Decimal(60 * partners)
     ip = get_client_ip(request)
