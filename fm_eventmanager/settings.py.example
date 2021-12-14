@@ -39,6 +39,7 @@ if os.environ.get('DJANGO_DEBUG'):
 
 INSTALLED_APPS = [
     'flat_responsive',
+    'django_admin_env_notice',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -87,6 +88,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'maintenance_mode.context_processors.maintenance_mode',
                 'registration.context_processors.square_environment',
+                'django_admin_env_notice.context_processors.from_settings',
             ],
         },
     },
@@ -211,3 +213,7 @@ MQTT_LOGIN = {
     "username": "printing",
     "password": "secret",
 }
+
+ENVIRONMENT_NAME = "Development server"
+ENVIRONMENT_COLOR = "#00FF00"
+ENVIRONMENT_FLOAT = True
