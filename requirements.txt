@@ -17,7 +17,7 @@ Pillow>=5.3
 influxdb==5.2.3
 Werkzeug==0.15.3
 django-debug-toolbar==1.11.1
-django-admin-env-notice
+django-admin-env-notice~=0.4
 mock==3.0.5
 paho-mqtt==1.5.0
 sentry-sdk
