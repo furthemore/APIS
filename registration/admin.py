@@ -375,7 +375,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         send_assistant_form_email,
         send_payment_email,
     ]
-    readonly_fields = ["get_email"]
+    readonly_fields = ["get_email", "registrationToken"]
     fieldsets = (
         (
             None,
@@ -1060,7 +1060,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "badgeName",
         "badgeNumber",
     ]
-    readonly_fields = ["get_age_range"]
+    readonly_fields = ["get_age_range", "registrationToken"]
     actions = [
         assign_badge_numbers,
         print_badges,
@@ -1080,7 +1080,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
                 "fields": (
                     "printed",
                     ("badgeName", "badgeNumber", "get_age_range"),
-                    ("registeredDate", "event"),
+                    ("registeredDate", "event", "registrationToken"),
                     "attendee",
                 )
             },
