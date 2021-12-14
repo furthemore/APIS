@@ -181,7 +181,7 @@ STATIC_ROOT = '/app/apis/static/'
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 60*60  # 1hr
+SESSION_COOKIE_AGE = 60*60*24  # 24hr
 
 # Default email to display as part of error messages
 APIS_DEFAULT_EMAIL = os.getenv('APIS_DEFAULT_EMAIL', "registration@example.com")
