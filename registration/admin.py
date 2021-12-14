@@ -657,8 +657,8 @@ resend_confirmation_email.short_description = "Resend confirmation email"
 
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
-    firstBadge = queryset[0]
-    event = firstBadge.event or Event.objects.get(default=True)
+    first_badge = queryset[0]
+    event = first_badge.event or Event.objects.get(default=True)
     badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
     assigned_badge_numbers = [
         badge.badgeNumber for badge in badges if badge.badgeNumber is not None

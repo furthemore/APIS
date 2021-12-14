@@ -773,6 +773,9 @@ class Firebase(models.Model):
         max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Cashdrawer(models.Model):
     OPEN = "Open"

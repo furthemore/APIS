@@ -6,6 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
+from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -156,6 +157,11 @@ def handler(obj):
         return obj.isoformat()
     elif isinstance(obj, Decimal):
         return str(obj)
+    elif isinstance(obj, FieldFile):
+        try:
+            return obj.url
+        except ValueError:
+            return None
     else:
         raise TypeError(
             "Object of type %s with value of %s is not JSON serializable"
