@@ -372,7 +372,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         send_assistant_form_email,
         send_payment_email,
     ]
-    readonly_fields = ["get_email"]
+    readonly_fields = ["get_email", "registrationToken"]
     fieldsets = (
         (
             None,
@@ -520,7 +520,7 @@ class StaffAdmin(ImportExportModelAdmin):
     list_filter = ("event", "department")
     search_fields = ["attendee__email", "attendee__lastName", "attendee__firstName"]
     resource_class = StaffResource
-    readonly_fields = ["get_email", "get_badge", "get_badge_id"]
+    readonly_fields = ["get_email", "get_badge", "get_badge_id", "registrationToken"]
     fieldsets = (
         (
             None,
@@ -949,6 +949,7 @@ class BadgeInline(NestedTabularInline):
     ]
     readonly_fields = [
         "get_age_range",
+        "registrationToken",
     ]
 
     def get_age_range(self, obj):
@@ -1057,7 +1058,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "badgeName",
         "badgeNumber",
     ]
-    readonly_fields = ["get_age_range"]
+    readonly_fields = ["get_age_range", "registrationToken"]
     actions = [
         assign_badge_numbers,
         print_badges,
@@ -1077,7 +1078,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
                 "fields": (
                     "printed",
                     ("badgeName", "badgeNumber", "get_age_range"),
-                    ("registeredDate", "event"),
+                    ("registeredDate", "event", "registrationToken"),
                     "attendee",
                 )
             },
