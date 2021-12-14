@@ -231,7 +231,7 @@ def checkoutAsstDealer(request):
     if status:
         clear_session(request)
         try:
-            registration.emails.sendDealerAsstEmail(dealer.id)
+            registration.emails.send_dealer_assistant_email(dealer.id)
         except Exception as e:
             logger.error("Error emailing DealerAsstEmail.")
             logger.exception(e)
@@ -514,7 +514,7 @@ def addNewDealer(request):
             dealerPartner.save()
 
         try:
-            registration.emails.sendDealerApplicationEmail(dealer.id)
+            registration.emails.send_dealer_application_email(dealer.id)
         except Exception as e:
             logger.error("Error sending DealerApplicationEmail.")
             logger.exception(e)
