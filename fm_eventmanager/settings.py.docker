@@ -57,6 +57,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # Application definition
 
 INSTALLED_APPS = [
+    'django_admin_env_notice',
     'flat_responsive',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -107,6 +108,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'maintenance_mode.context_processors.maintenance_mode',
                 'registration.context_processors.square_environment',
+                'django_admin_env_notice.context_processors.from_settings',
             ],
         },
     },
@@ -238,3 +240,7 @@ MQTT_LOGIN = {
     "username": "printing",
     "password": "secret",
 }
+
+ENVIRONMENT_NAME = os.getenv('ENVIRONMENT_NAME', "Production Server")
+ENVIRONMENT_COLOR = os.getenv('ENVIRONMENT_COLOR', "#FF0000")
+ENVIRONMENT_FLOAT = os.getenv('ENVIRONMENT_FLOAT', False)
