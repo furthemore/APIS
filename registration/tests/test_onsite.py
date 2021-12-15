@@ -90,7 +90,7 @@ class OnsiteBaseTestCase(TestCase):
                 "volDepts": "",
             },
             "event": self.event.name,
-            "priceLevel": {"id": str(level.id), "options": options,},
+            "priceLevel": {"id": str(level.id), "options": options},
         }
 
         response = self.client.post(
@@ -213,13 +213,13 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         response = self.client.get(
             reverse("registration:onsiteAdmin"),
-            {"search": "Christian", "terminal": "1000",},
+            {"search": "Christian", "terminal": "1000"},
         )
         self.assertEqual(response.status_code, 200)
 
         response = self.client.get(
             reverse("registration:onsiteAdmin"),
-            {"search": "Christian", "terminal": "notastring",},
+            {"search": "Christian", "terminal": "notastring"},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -243,7 +243,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.post(
             reverse("registration:onsiteAdminSearch"),
-            {"search": "Somethingthatcantpossiblyexistyet",},
+            {"search": "Somethingthatcantpossiblyexistyet"},
         )
         expected_errors = [
             {
@@ -268,7 +268,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         # Do search
         response = self.client.post(
-            reverse("registration:onsiteAdminSearch"), {"search": "Christian",},
+            reverse("registration:onsiteAdminSearch"), {"search": "Christian"},
         )
         self.assertEqual(response.status_code, 200)
         attendee = response.context["results"][0].attendee
@@ -277,7 +277,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         response = self.client.get(
             reverse("registration:onsiteAdmin"),
-            {"search": "Christian", "terminal": self.terminal.id,},
+            {"search": "Christian", "terminal": self.terminal.id},
         )
         self.assertEqual(response.status_code, 200)
 
@@ -288,7 +288,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             reverse("registration:onsiteAddToCart"), {"id": badge_id},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.session["cart"], [str(badge_id),])
+        self.assertEqual(self.client.session["cart"], [str(badge_id)])
 
         response = self.client.get(reverse("registration:onsiteAdminCart"))
         message = response.json()
@@ -399,7 +399,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
     def test_firebase_register_bad_request(self):
         response = self.client.get(
-            reverse("registration:firebaseRegister"), {"key": settings.REGISTER_KEY,},
+            reverse("registration:firebaseRegister"), {"key": settings.REGISTER_KEY},
         )
         message = response.json()
 
