@@ -338,7 +338,7 @@ def checkoutStaff(request):
 
         clear_session(request)
         try:
-            registration.emails.sendStaffRegistrationEmail(order.id)
+            registration.emails.send_staff_registration_email(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
             staffEmail = getStaffEmail()
@@ -370,7 +370,7 @@ def checkoutStaff(request):
     if status:
         clear_session(request)
         try:
-            registration.emails.sendStaffRegistrationEmail(order.id)
+            registration.emails.send_staff_registration_email(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
             staffEmail = getStaffEmail()

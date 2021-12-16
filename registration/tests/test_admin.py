@@ -2,9 +2,13 @@ import json
 import time
 import uuid
 
+from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.core import mail
+from django.http import HttpRequest
+from django.test import Client, TestCase, tag
 from django.urls import reverse
+from mock import patch
 
 from registration import admin, payments
 from registration.admin import OrderAdmin
@@ -360,6 +364,7 @@ class TestOrderAdmin(TestCase):
         )
         self.assertContains(response, "Unpaid orders cannot be refunded")
 
+    @tag("square")
     def create_square_order(self, nonce="cnon:card-nonce-ok", autocomplete=True):
         order = Order(
             total=100,
@@ -385,6 +390,7 @@ class TestOrderAdmin(TestCase):
         time.sleep(2)
         return order
 
+    @tag("square")
     def test_square_refund(self):
         order = self.create_square_order()
 
@@ -405,6 +411,7 @@ class TestOrderAdmin(TestCase):
         self.assertEqual(order.total, 0)
         self.assertEqual(order.status, Order.REFUND_PENDING)
 
+    @tag("square")
     def test_partial_refund(self):
         order = self.create_square_order()
         order.orgDonation = 20
@@ -449,6 +456,7 @@ class TestOrderAdmin(TestCase):
         self.assertEqual(order.orgDonation, 0)
         self.assertEqual(order.status, Order.REFUND_PENDING)
 
+    @tag("square")
     def test_refresh_view(self):
         self.client.logout()
         self.assertTrue(self.client.login(username="admin", password="admin"))
@@ -553,12 +561,193 @@ class TestCashDrawerAdmin(TestCase):
 
 class TestTwoFactorAdmin(TestCase):
     def setUp(self):
+        self.user_profile_admin = admin.UserProfileAdmin(
+            model=User, admin_site=AdminSite()
+        )
         self.user_1 = User.objects.create_user("john", "lennon@thebeatles.com", "john")
         self.user_2 = User.objects.create_superuser("admin", "admin@host", "admin")
         self.user_1.staff_member = True
         self.user_1.save()
         self.user_2.save()
 
+    def test_two_factor_disabled(self):
+        self.assertFalse(self.user_profile_admin.two_factor_enabled(self.user_1))
+
+    def test_two_factor_enabled(self):
+        self.user_2.u2f_keys.create(
+            key_handle="bbavVvfXPz2w8S3IwIS0LkE1SkC3MQuXSYjAYHVPFqUJIRQTIEyM3D34Lv2G4a_PuAZkZIQ6XV3ocwp47cPYjg",
+            public_key="BFp3EHDcpm5HxA4XYuCKlnNPZ3tphVzRvXsX2_J33REPU0bgFgWsUoyZHz6RGxdA84VgxDNI4lvUudr7JGmFdDk",
+            app_id="http://localhost:8000",
+        )
+        self.assertTrue(self.user_profile_admin.two_factor_enabled(self.user_2))
+
     def test_disable_two_factor(self):
         query_set = [self.user_1, self.user_2]
         admin.disable_two_factor(None, None, query_set)
+
+
+class TestOrderItemAdmin(OrdersTestCase):
+    def setUp(self):
+        super().setUp()
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user.save()
+        self.order = Order(total="90.00", reference="FOOBAR")
+        self.order.save()
+        self.badge = Badge(event=self.event)
+        self.badge.save()
+        self.order_item = OrderItem(
+            order=self.order, badge=self.badge, priceLevel=self.price_90
+        )
+        self.order_item.save()
+
+    def test_save_model(self):
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        self.assertNotEqual(self.order_item.enteredBy, "admin")
+
+        form_data = {
+            "order": self.order.pk,
+            "badge": self.badge.pk,
+            "priceLevel": self.price_90.pk,
+        }
+
+        response = self.client.post(
+            reverse("admin:registration_orderitem_change", args=(self.order_item.pk,)),
+            form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.order_item.refresh_from_db()
+        self.assertEqual(self.order_item.enteredBy, "admin")
+
+
+class AdminTestCase(TestCase):
+    def setUp(self):
+        self.admin_site = AdminSite()
+        self.event = Event(**DEFAULT_EVENT_ARGS)
+        self.event.save()
+
+
+class TestDealerAdmin(AdminTestCase):
+    def setUp(self):
+        super().setUp()
+        self.dealer_admin = admin.DealerAdmin(model=Dealer, admin_site=self.admin_site)
+        self.attendee = Attendee(**TEST_ATTENDEE_ARGS)
+        self.attendee.save()
+        self.dealer = Dealer(
+            attendee=self.attendee, businessName="Test business", approved=True
+        )
+        self.dealer.save()
+
+    def test_get_email(self):
+        self.assertEqual(self.dealer_admin.get_email(self.dealer), self.attendee.email)
+
+    def test_get_email_no_attendee(self):
+        dealer = Dealer(businessName="Whatever")
+        self.assertEqual(self.dealer_admin.get_email(dealer), "--")
+
+
+class TestDealerAsstAdmin(TestDealerAdmin):
+    def setUp(self):
+        super().setUp()
+        self.asst_admin = admin.DealerAsstAdmin(
+            model=DealerAsst, admin_site=AdminSite()
+        )
+        self.assistant = DealerAsst(
+            dealer=self.dealer,
+            name="Lovely Assistant",
+            email="foo@bar.com",
+            license="n/a",
+        )
+
+    def test_dealer_businessname(self):
+        self.assertEqual(
+            self.asst_admin.dealer_businessname(self.assistant),
+            self.dealer.businessName,
+        )
+
+    def test_dealer_approved(self):
+        self.assertEqual(
+            self.asst_admin.dealer_approved(self.assistant), self.dealer.approved
+        )
+
+
+class TestStaffAdmin(AdminTestCase):
+    def setUp(self):
+        super().setUp()
+        event_args = dict(DEFAULT_EVENT_ARGS)
+        event_args["name"] = "New Test Event"
+        event_args["default"] = False
+        self.new_event = Event(**event_args)
+        self.new_event.save()
+        self.staff_admin = admin.StaffAdmin(model=Staff, admin_site=self.admin_site)
+        self.attendee = Attendee(**TEST_ATTENDEE_ARGS)
+        self.attendee.save()
+        self.badge = Badge(
+            attendee=self.attendee, event=self.event, badgeName="DisStaff"
+        )
+        self.badge.save()
+        self.staff = Staff(attendee=self.attendee, event=self.event)
+
+    def test_checkin_staff(self):
+        self.assertFalse(self.staff.checkedIn)
+        admin.checkin_staff(None, None, [self.staff])
+        self.assertTrue(self.staff.checkedIn)
+
+    def test_send_staff_registration_email(self):
+        admin.send_staff_registration_email(None, None, [self.staff])
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_get_email(self):
+        self.assertEqual(self.staff_admin.get_email(self.staff), self.attendee.email)
+
+    def test_get_email_no_attendee(self):
+        self.assertEqual(self.staff_admin.get_email(Staff()), "--")
+
+    def test_get_badge(self):
+        self.assertEqual(self.staff_admin.get_badge(self.staff), self.badge.badgeName)
+
+    def test_get_badge_none(self):
+        self.assertEqual(self.staff_admin.get_badge(Staff()), "--")
+
+    def test_copy_to_event_form(self):
+        request = HttpRequest()
+        response = self.staff_admin.copy_to_event(request, [self.staff])
+        self.assertEqual(response.status_code, 200)
+
+    @patch("registration.admin.StaffAdmin.message_user")
+    def test_copy_to_event(self, mock_message_user):
+        form_data = {
+            "event": self.new_event.pk,
+            "action": "copy_to_event",
+            "_selected_action": "3",
+        }
+        request = HttpRequest()
+        request.POST.update(form_data)
+
+        response = self.staff_admin.copy_to_event(request, [self.staff])
+        mock_message_user.assert_called_once()
+        self.assertEqual(
+            mock_message_user.call_args[0][1],
+            f"Successfully copied 1 staff to {self.new_event.name}.",
+        )
+        self.assertEqual(Staff.objects.filter(event=self.new_event).count(), 1)
+        Staff.objects.filter(event=self.new_event).delete()
+
+    @patch("registration.admin.StaffAdmin.message_user")
+    def test_copy_to_same_event(self, mock_message_user):
+        form_data = {
+            "event": self.event.pk,
+            "action": "copy_to_event",
+            "_selected_action": "3",
+        }
+        request = HttpRequest()
+        request.POST.update(form_data)
+
+        response = self.staff_admin.copy_to_event(request, [self.staff])
+        mock_message_user.assert_called_once()
+        self.assertEqual(
+            mock_message_user.call_args[0][1],
+            f"Successfully copied 0 staff to {self.event.name}.",
+        )
+        self.assertEqual(Staff.objects.filter(event=self.new_event).count(), 0)

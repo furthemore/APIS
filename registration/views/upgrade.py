@@ -167,7 +167,7 @@ def send_upgrade_email(request, attendee, order):
     event = Event.objects.get(default=True)
     clear_session(request)
     try:
-        registration.emails.sendUpgradePaymentEmail(attendee, order)
+        registration.emails.send_upgrade_payment_email(attendee, order)
     except Exception as e:
         logger.exception("Error sending UpgradePaymentEmail")
         registration_email = getRegistrationEmail(event)

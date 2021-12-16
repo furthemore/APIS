@@ -1,4 +1,6 @@
-FROM rechner/apis:apis-base-CHANGEME
+FROM ghcr.io/furthemore/apis:apis-base-ee774cb
+
+LABEL org.opencontainers.image.source https://github.com/furthemore/APIS
 
 EXPOSE 80
 EXPOSE 443

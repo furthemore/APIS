@@ -1,23 +1,25 @@
-django~=1.11.28
+django~=2.2
 django-mathfilters~=0.4.0
-django-nested-inline~=0.3.7
-django-nested-admin~=3.2.4
+# There is a bug that affects the Django 2 update, a fix has been accepted
+# and we are waiting for it to be merged and released by the maintainer
+#django-nested-inline~=0.4.4
+git+git://github.com/grebble-team/django-nested-inline.git@3ac625f
 django-import-export~=1.1.0
 psycopg2-binary==2.8.6
 configobj==5.0.6
-django-extensions==2.1.4
-django-guardian==1.4.9
+django-extensions~=3.1.5
+django-guardian==2.4.0
 django-flat-responsive==2.0
-django-widget-tweaks==1.4.3
+django-widget-tweaks==1.4.9
 squareup==4.1.0.20200122
 pyOpenSSL==18.0.0
-django-u2f==0.3.0
+git+git://github.com/gavinwahl/django-u2f@master
 django-maintenance-mode==0.14.0
 Pillow>=5.3
 influxdb==5.2.3
 Werkzeug==0.15.3
-django-debug-toolbar==1.11.1
 django-admin-env-notice~=0.4
+django-debug-toolbar~=3.2.2
 mock==3.0.5
 paho-mqtt==1.5.0
 sentry-sdk

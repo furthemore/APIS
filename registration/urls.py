@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.conf.urls import include, url
-from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LogoutView
 
 import registration.views.attendee
 import registration.views.cart
@@ -18,7 +18,7 @@ app_name = "registration"
 
 urlpatterns = [
     url(r"^$", registration.views.common.index, name="index"),
-    url(r"^logout/$", auth_views.logout, name="logout"),
+    url(r"^logout/$", LogoutView.as_view(), name="logout"),
     url(
         r"^upgrade/lookup/?$",
         registration.views.upgrade.findUpgrade,
@@ -75,11 +75,6 @@ urlpatterns = [
         r"^dealer/thanks/?$",
         registration.views.dealers.thanksDealer,
         name="thanksDealer",
-    ),
-    url(
-        r"^dealer/update/?$",
-        registration.views.dealers.updateDealer,
-        name="updateDealer",
     ),
     url(r"^dealer/lookup/?$", registration.views.dealers.findDealer, name="findDealer"),
     url(r"^dealer/add/?$", registration.views.dealers.addDealer, name="addDealer"),

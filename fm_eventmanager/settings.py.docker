@@ -78,17 +78,17 @@ INSTALLED_APPS = [
     'debug_toolbar',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'maintenance_mode.middleware.MaintenanceModeMiddleware'
+    'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
 ROOT_URLCONF = 'fm_eventmanager.urls'
@@ -183,7 +183,7 @@ STATIC_ROOT = '/app/apis/static/'
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 60*60  # 1hr
+SESSION_COOKIE_AGE = 60*60*24  # 24hr
 
 # Default email to display as part of error messages
 APIS_DEFAULT_EMAIL = os.getenv('APIS_DEFAULT_EMAIL', "registration@example.com")

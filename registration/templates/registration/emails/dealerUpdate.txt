@@ -1,3 +1,0 @@
-Your information has been updated in our database
-
-If you did not do this, please contact {{ event.dealerEmail }} ASAP to correct your information.

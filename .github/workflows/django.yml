@@ -33,7 +33,7 @@ jobs:
     - name: Run Tests
       run: |
         cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
-        coverage run ./manage.py test
+        coverage run ./manage.py test registration
       env:
         SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
         SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}

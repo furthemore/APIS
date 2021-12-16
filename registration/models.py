@@ -482,7 +482,9 @@ class Staff(models.Model):
         verbose_name_plural = "Staff"
 
     def __str__(self):
-        return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        if self.attendee:
+            return "%s %s" % (self.attendee.firstName, self.attendee.lastName)
+        return f"<Staff(registrationToken={self.registrationToken})>"
 
     def getBadge(self):
         badge = Badge.objects.filter(attendee=self.attendee, event=self.event).last()
@@ -700,7 +702,7 @@ class OrderItem(models.Model):
     badge = models.ForeignKey(Badge, null=True, on_delete=models.CASCADE)
     priceLevel = models.ForeignKey(PriceLevel, null=True, on_delete=models.SET_NULL)
     enteredBy = models.CharField(max_length=100)
-    enteredDate = models.DateTimeField(auto_now_add=True, null=True)
+    enteredDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
         db_table = "registration_order_item"
@@ -770,6 +772,9 @@ class Firebase(models.Model):
     webview = models.CharField(
         max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
     )
+
+    def __str__(self):
+        return self.name
 
 
 class Cashdrawer(models.Model):

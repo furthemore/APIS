@@ -9,14 +9,13 @@ import qrcode
 from django import forms
 from django.conf.urls import url
 from django.contrib import admin, auth, messages
-from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
 from django.db.models import Max
 from django.forms import NumberInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.html import escape, format_html, urlencode
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
@@ -112,13 +111,11 @@ class FirebaseAdmin(admin.ModelAdmin):
         }
 
         try:
-            PushyAPI.sendPushNotification(data, [obj.token], None)
+            PushyAPI.send_push_notification(data, [obj.token], None)
         except PushyError as e:
             messages.warning(
                 request,
-                "We tried to update the terminal's settings, but there was a problem: {0}".format(
-                    e
-                ),
+                f"We tried to update the terminal's settings, but there was a problem: {e}",
             )
 
     @staticmethod
@@ -156,7 +153,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         provisioning = self.get_provisioning(obj)
 
         context = {
-            "qr_svg": self.get_qrcode(provisioning),
+            "qr_svg": self.get_qrcode(provisioning).decode("utf-8"),
         }
 
         return render(request, "admin/firebase_qr.html", context)
@@ -191,7 +188,7 @@ admin.site.register(TempToken, TempTokenAdmin)
 
 
 def send_approval_email(modeladmin, request, queryset):
-    registration.emails.send_approval_email(queryset)
+    registration.emails.send_dealer_approval_email(queryset)
     queryset.update(emailed=True)
 
 
@@ -220,7 +217,7 @@ send_payment_email.short_description = "Resend payment confirmation email"
 
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
-        registration.emails.send_dealer_asst_form_email(dealer)
+        registration.emails.send_dealer_assistant_form_email(dealer)
 
 
 send_assistant_form_email.short_description = "Send assistant addition form email"
@@ -259,7 +256,7 @@ class DealerAsstAdmin(ImportExportModelAdmin):
     )
     list_filter = ("event", "dealer__approved")
     search_fields = ["name", "email"]
-    readonly_fields = ["dealer_businessname", "dealer_approved"]
+    readonly_fields = ["dealer_businessname", "dealer_approved", "registrationToken"]
     resource_class = DealerAsstResource
 
     def dealer_businessname(self, obj):
@@ -592,6 +589,9 @@ class StaffAdmin(ImportExportModelAdmin):
                 count = 0
 
                 for staff in queryset:
+                    if staff.event == event:
+                        continue  # Don't copy staff to the same destination event
+
                     staff_copy = copy.copy(staff)
                     staff_copy.id = None
                     staff_copy.attendee = staff.attendee
@@ -657,8 +657,8 @@ resend_confirmation_email.short_description = "Resend confirmation email"
 
 def assign_badge_numbers(modeladmin, request, queryset):
     nonstaff = Attendee.objects.filter(staff=None)
-    firstBadge = queryset[0]
-    event = firstBadge.event or Event.objects.get(default=True)
+    first_badge = queryset[0]
+    event = first_badge.event or Event.objects.get(default=True)
     badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
     assigned_badge_numbers = [
         badge.badgeNumber for badge in badges if badge.badgeNumber is not None
@@ -932,17 +932,24 @@ class AttendeeOptionInline(NestedTabularInline):
 
 
 class OrderItemInline(NestedTabularInline):
+    fk_name = "order"
     model = OrderItem
     raw_id_fields = ("badge", "order")
     extra = 0
     inlines = [AttendeeOptionInline]
     list_display = ["priceLevel", "enteredBy"]
+    readonly_fields = ("enteredBy",)
+
+
+class OrderItemInlineBadge(OrderItemInline):
+    fk_name = "badge"
 
 
 class BadgeInline(NestedTabularInline):
     model = Badge
+    fk_name = "attendee"
     extra = 0
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInlineBadge]
     list_display = [
         "event",
         "badgeName",
@@ -1038,7 +1045,7 @@ class PriceLevelFilter(admin.SimpleListFilter):
 
 class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_per_page = 30
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInlineBadge]
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
@@ -1174,6 +1181,11 @@ admin.site.register(AttendeeOptions)
 
 class OrderItemAdmin(ImportExportModelAdmin):
     raw_id_fields = ("order", "badge")
+    readonly_fields = ("enteredBy",)
+
+    def save_model(self, request, obj, form, change):
+        obj.enteredBy = request.user.username
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(OrderItem, OrderItemAdmin)
