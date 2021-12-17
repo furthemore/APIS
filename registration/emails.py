@@ -238,6 +238,10 @@ def send_dealer_assistant_email(dealer_id):
     )
 
 
+def send_dealer_assistant_registration_invite(assistant):
+    data = {"assistant": assistant, "event": assistant.event}
+
+
 def send_dealer_payment_email(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
     options = AttendeeOptions.objects.filter(orderItem=orderItem)

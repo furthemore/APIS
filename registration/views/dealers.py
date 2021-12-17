@@ -5,6 +5,7 @@ from datetime import datetime
 from django.forms import model_to_dict
 from django.http import HttpResponse, HttpResponseServerError, JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 
 import registration.emails
 from registration.models import *
@@ -94,10 +95,11 @@ def findDealer(request):
         email = postData["email"]
         token = postData["token"]
 
-        dealer = Dealer.objects.get(
-            attendee__email__iexact=email, registrationToken=token
-        )
-        if not dealer:
+        try:
+            dealer = Dealer.objects.get(
+                attendee__email__iexact=email, registrationToken=token
+            )
+        except Dealer.DoesNotExist:
             return HttpResponseServerError("No Dealer Found " + email)
 
         request.session["dealer_id"] = dealer.id
@@ -114,14 +116,35 @@ def findAsstDealer(request):
         email = postData["email"]
         token = postData["token"]
 
-        dealer = Dealer.objects.get(
-            attendee__email__iexact=email, registrationToken=token
-        )
-        if not dealer:
-            return HttpResponseServerError("No Dealer Found")
+        try:
+            dealer_assistant = DealerAsst.objects.get(
+                email__iexact=email, registrationToken=token
+            )
+        except DealerAsst.DoesNotExist:
+            return HttpResponseServerError("No assistant dealer found")
 
-        request.session["dealer_id"] = dealer.id
-        return JsonResponse({"success": True, "message": "DEALER"})
+        # Check if they've already registered:
+        if dealer_assistant.attendee is not None:
+            # Send them to the upgrade path instead
+            request.session["attendee_id"] = dealer_assistant.attendee.pk
+            request.session["badge_id"] = dealer_assistant.attendee.badge_set.first().pk
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "ASSISTANT",
+                    "location": reverse("registration:findUpgrade"),
+                }
+            )
+
+        request.session["assistant_id"] = dealer_assistant.id
+        request.session["discount"] = dealer_assistant.event.assistantDiscount.codeName
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "ASSISTANT",
+                "location": reverse("registration:index"),
+            }
+        )
     except Exception as e:
         logger.error("Error finding assistant dealer.")
         logger.exception(e)

@@ -1,0 +1,7 @@
+Hello, {{assistant.name}}!
+
+Your sponsoring dealer, {{ dealer.name }}, is inviting you to register for {{event}}.
+
+Use this link to register: <insert link here>
+
+Thanks!

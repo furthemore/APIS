@@ -258,6 +258,7 @@ class DealerAsstAdmin(ImportExportModelAdmin):
     search_fields = ["name", "email"]
     readonly_fields = ["dealer_businessname", "dealer_approved", "registrationToken"]
     resource_class = DealerAsstResource
+    raw_id_fields = ("dealer", "attendee")
 
     def dealer_businessname(self, obj):
         return obj.dealer.businessName
@@ -1388,7 +1389,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total, })
+            form = self.RefundForm(initial={"amount": order.total,})
 
         context = {
             "form": form,

@@ -13,8 +13,7 @@ from django.shortcuts import get_object_or_404, render
 import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
-
-from .cart import saveCart
+from registration.views.cart import saveCart
 
 logger = logging.getLogger("django.request")
 
@@ -177,7 +176,13 @@ def index(request):
 
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"event": event}
+    discount = request.session.get("discount")
+    if discount:
+        discount = Discount.objects.filter(codeName=discount)
+        if discount.count() > 0:
+            discount = discount.first()
+
+    context = {"event": event, "discount": discount}
     if event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, "registration/registration-form.html", context)
     return render(request, "registration/closed.html", context)
@@ -471,6 +476,7 @@ def doZeroCheckout(discount, cartItems, orderItems):
     if discount:
         discount.used = discount.used + 1
         discount.save()
+
     return True, "", order
 
 
@@ -613,6 +619,8 @@ def checkout(request):
         if not status:
             return abort(400, message)
 
+        # Attach attendee to dealer assistant:
+        add_attendee_to_assistant(request, order.badge.attendee)
         clear_session(request)
         try:
             registration.emails.send_registration_email(order, order.billingEmail)
@@ -674,6 +682,7 @@ def checkout(request):
         )
 
     if status:
+        add_attendee_to_assistant(request, order.badge.attendee)
         # Delete cart when done
         cartItems = Cart.objects.filter(id__in=sessionItems)
         cartItems.delete()

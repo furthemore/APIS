@@ -234,6 +234,18 @@ def apply_discount(request):
     return JsonResponse({"success": True})
 
 
+def add_attendee_to_assistant(request, attendee):
+    assistant_id = request.session.get("assistant_id")
+    logger.info(f"Add attendee {attendee} to assistant id: {assistant_id}")
+    if assistant_id:
+        try:
+            assistant = DealerAsst.objects.get(pk=assistant_id)
+            assistant.attendee = attendee
+            assistant.save()
+        except DealerAsst.DoesNotExist:
+            pass
+
+
 def checkout(request):
     event = Event.objects.get(default=True)
     sessionItems = request.session.get("cart_items", [])
@@ -267,6 +279,7 @@ def checkout(request):
         if not status:
             return common.abort(400, message)
 
+        add_attendee_to_assistant(request, order.orderitem_set.first().badge.attendee)
         common.clear_session(request)
         try:
             registration.emails.send_registration_email(order, order.billingEmail)
@@ -328,6 +341,7 @@ def checkout(request):
         )
 
     if status:
+        add_attendee_to_assistant(request, order.orderitem_set.first().badge.attendee)
         # Delete cart when done
         cartItems = Cart.objects.filter(id__in=sessionItems)
         cartItems.delete()

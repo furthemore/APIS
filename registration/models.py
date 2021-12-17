@@ -191,6 +191,15 @@ class Event(LookupTable):
         verbose_name="Dealer Discount",
         help_text="Apply a discount for any dealer registrations",
     )
+    assistantDiscount = models.ForeignKey(
+        Discount,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="assistantEvent",
+        verbose_name="Dealer Assistant Discount",
+        help_text="Apply a discount for any dealer assistant registrations",
+    )
     allowOnlineMinorReg = models.BooleanField(
         default=False,
         verbose_name="Allow online minor registration",

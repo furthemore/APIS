@@ -89,8 +89,8 @@
 				$("#errorModal").modal('show');
 			}
 		    },
-                    "success": function () {
-                        window.location = "{% url 'registration:addAsstDealer' %}";
+                    "success": function (data) {
+                        window.location = data.location;
                     }
 		});
 	}
