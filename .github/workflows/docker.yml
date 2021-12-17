@@ -32,7 +32,7 @@ jobs:
     - name: Build image
       run: |
         make build-docker-image
-        make tag-${BRANCH_NAME}
+        make tag-${{ github.event.inputs.environment }}
 
     - name: Deploy to server
       uses: appleboy/ssh-action@master
