@@ -5,7 +5,16 @@ from django.test import TestCase
 from mock import patch
 
 from registration import emails
-from registration.models import Attendee, Badge, Dealer, Event, Order, Staff, TempToken
+from registration.models import (
+    Attendee,
+    Badge,
+    Dealer,
+    DealerAsst,
+    Event,
+    Order,
+    Staff,
+    TempToken,
+)
 from registration.tests.common import DEFAULT_EVENT_ARGS
 
 
@@ -107,6 +116,14 @@ class TestDealerEmails(EmailTestCase):
             event=self.event,
         )
         self.dealer.save()
+        self.assistant = DealerAsst(
+            dealer=self.dealer,
+            name="Taschenrechner",
+            email="someone@mailinator.com",
+            license="Gratuitous",
+            event=self.event,
+        )
+        self.assistant.save()
 
     @patch("registration.emails.send_email")
     def test_send_dealer_application_email(self, mock_send_email):
@@ -157,3 +174,14 @@ class TestDealerEmails(EmailTestCase):
         self.assertEqual(recipients, [self.attendee.email])
         self.assertIn(self.order.reference, plain_text)
         self.assertIn(self.order.reference, html_text)
+
+    @patch("registration.emails.send_email")
+    def test_send_dealer_assistant_registration_invite(self, mock_send_email):
+        emails.send_dealer_assistant_registration_invite(self.assistant)
+        mock_send_email.assert_called_once()
+        recipients = mock_send_email.call_args[0][1]
+        plain_text = mock_send_email.call_args[0][3]
+        html_text = mock_send_email.call_args[0][4]
+        self.assertEqual(recipients, [self.assistant.email])
+        self.assertIn(self.assistant.registrationToken, plain_text)
+        self.assertIn(self.assistant.registrationToken, html_text)

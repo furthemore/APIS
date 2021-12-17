@@ -244,6 +244,14 @@ class DealerAsstResource(resources.ModelResource):
         )
 
 
+def send_assistant_registration_email(modeladmin, request, queryset):
+    for assistant in queryset:
+        registration.emails.send_dealer_assistant_registration_invite(assistant)
+
+
+send_assistant_registration_email.short_description = "Send registration instructions"
+
+
 class DealerAsstAdmin(ImportExportModelAdmin):
     save_on_top = True
     list_display = (
@@ -259,6 +267,9 @@ class DealerAsstAdmin(ImportExportModelAdmin):
     readonly_fields = ["dealer_businessname", "dealer_approved", "registrationToken"]
     resource_class = DealerAsstResource
     raw_id_fields = ("dealer", "attendee")
+    actions = [
+        send_assistant_registration_email,
+    ]
 
     def dealer_businessname(self, obj):
         return obj.dealer.businessName

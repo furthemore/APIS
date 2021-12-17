@@ -1,4 +1,4 @@
-name: Build docker image and push to repo
+name: Build & Deploy
 
 on:
   # Manually triggered from the UI

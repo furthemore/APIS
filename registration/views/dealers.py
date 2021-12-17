@@ -255,6 +255,8 @@ def checkoutAsstDealer(request):
         clear_session(request)
         try:
             registration.emails.send_dealer_assistant_email(dealer.id)
+            for assistant in dealer.assistant_set.all():
+                registration.emails.send_dealer_assistant_registration_invite(assistant)
         except Exception as e:
             logger.error("Error emailing DealerAsstEmail.")
             logger.exception(e)
@@ -262,8 +264,10 @@ def checkoutAsstDealer(request):
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                        dealerEmail
+                    "message": (
+                        f"Your payment succeeded but we may have been unable to send you a confirmation email. "
+                        "If you do not receive one within the next hour, please contact {dealerEmail} to get your "
+                        "confirmation number."
                     ),
                 }
             )

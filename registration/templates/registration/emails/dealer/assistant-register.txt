@@ -1,7 +1,8 @@
+{% load site %}
 Hello, {{assistant.name}}!
 
-Your sponsoring dealer, {{ dealer.name }}, is inviting you to register for {{event}}.
+Your sponsoring dealer, {{ assistant.dealer.name }}, has paid for your registration at {{event}}.
 
-Use this link to register: <insert link here>
+Please use this link to register: https://{% current_domain %}{% url 'registration:dealerAsst' guid=assistant.registrationToken %}
 
 Thanks!
