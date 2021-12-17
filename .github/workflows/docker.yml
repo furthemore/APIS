@@ -4,19 +4,21 @@ on:
   # Manually triggered from the UI
   workflow_dispatch:
     inputs:
-      message:
-        description: "Build & Deploy"
+      environment:
+        description: "Environment"
+        required: true
+        type: environment        
 
   # Dependency to a forking workflow
-  workflow_run:
-    workflows: ["Django CI"]
-    types: [completed]
+  #workflow_run:
+  #  workflows: ["Django CI"]
+  #  types: [completed]
 
 jobs:
   build_docker:
     runs-on: ubuntu-latest
-    environment: stage
-    concurrency: stage
+    environment: ${{ github.event.inputs.environment }}
+    concurrency: ${{ github.event.inputs.environment }}
     steps:
     - uses: actions/checkout@v2
     - name: Login to packages container registry
@@ -45,5 +47,4 @@ jobs:
           cd /opt/docker
           docker-compose pull
           docker-compose up -d
-          docker-compose exec -T apis-stage ./manage.py migrate
-          #docker-compose exec -T apis-prod./manage.py migrate
+          docker-compose exec -T apis-${{ github.event.inputs.environment }} ./manage.py migrate
