@@ -254,6 +254,8 @@ def send_dealer_assistant_registration_invite(assistant):
         msg_txt,
         msg_html,
     )
+    assistant.sent = True
+    assistant.save()
 
 
 def send_dealer_payment_email(dealer, order):

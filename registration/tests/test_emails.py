@@ -177,6 +177,7 @@ class TestDealerEmails(EmailTestCase):
 
     @patch("registration.emails.send_email")
     def test_send_dealer_assistant_registration_invite(self, mock_send_email):
+        self.assertFalse(self.assistant.sent)
         emails.send_dealer_assistant_registration_invite(self.assistant)
         mock_send_email.assert_called_once()
         recipients = mock_send_email.call_args[0][1]
@@ -185,3 +186,5 @@ class TestDealerEmails(EmailTestCase):
         self.assertEqual(recipients, [self.assistant.email])
         self.assertIn(self.assistant.registrationToken, plain_text)
         self.assertIn(self.assistant.registrationToken, html_text)
+        self.assistant.refresh_from_db()
+        self.assertTrue(self.assistant.sent)
