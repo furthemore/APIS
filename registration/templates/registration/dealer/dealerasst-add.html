@@ -225,7 +225,8 @@ var paymentForm = new SqPaymentForm({
 {% else %}
 
 	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
+	<!--suppress XmlDuplicatedId -->
+        <div role="tabpanel" class="tab-pane fade in active" id="personal">
 		<h1>Checkout</h1>
 		<div>Your session has expired. Please check your email link and try again, or contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> for help.</div>
 	</div>
@@ -307,7 +308,7 @@ var paymentForm = new SqPaymentForm({
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
-		    "url": "{% url 'registration:checkoutAsstDealer' %}",
+		    "url": "{% url 'registration:add_assistants_checkout' %}",
 		    "data": JSON.stringify(data),
 		    "beforeSend": function(xhr, settings) {
 		        console.log("Before Send");

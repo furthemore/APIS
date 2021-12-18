@@ -34,9 +34,23 @@ def doneDealer(request):
     return render(request, "registration/dealer/dealer-done.html", context)
 
 
+def find_dealer_to_add_assistant(request, guid):
+    event = Event.objects.get(default=True)
+    context = {
+        "token": guid,
+        "event": event,
+        "next": reverse("registration:find_dealer_to_add_assistant_post"),
+    }
+    return render(request, "registration/dealer/dealerasst-locate.html", context)
+
+
 def dealerAsst(request, guid):
     event = Event.objects.get(default=True)
-    context = {"token": guid, "event": event}
+    context = {
+        "token": guid,
+        "event": event,
+        "next": reverse("registration:findAsstDealer"),
+    }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
 
@@ -110,6 +124,34 @@ def findDealer(request):
         return HttpResponseServerError(str(e))
 
 
+def find_dealer_to_add_assistant_post(request):
+    post_data = json.loads(request.body)
+    email = post_data.get("email")
+    token = post_data.get("token")
+
+    if email is None or token is None:
+        return JsonResponse(
+            {"success": False, "message": "Email or token missing from form data"},
+            status=400,
+        )
+
+    try:
+        dealer = Dealer.objects.get(
+            attendee__email__iexact=email, registrationToken=token
+        )
+    except Dealer.DoesNotExist:
+        return HttpResponseServerError("No dealer found")
+
+    request.session["dealer_id"] = dealer.pk
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "DEALER",
+            "location": reverse("registration:add_assistants"),
+        }
+    )
+
+
 def findAsstDealer(request):
     try:
         postData = json.loads(request.body)
@@ -178,7 +220,7 @@ def invoiceDealer(request):
     return render(request, "registration/dealer/dealer-checkout.html", context)
 
 
-def addAsstDealer(request):
+def add_assistants(request):
     context = {"attendee": None, "dealer": None}
     try:
         dealerId = request.session["dealer_id"]
@@ -202,16 +244,16 @@ def addAsstDealer(request):
     return render(request, "registration/dealer/dealerasst-add.html", context)
 
 
-def checkoutAsstDealer(request):
+def add_assistants_checkout(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for checkoutAsstDealer()")
+        logger.error("Unable to decode JSON for add_assistants_checkout()")
         return JsonResponse({"success": False})
     pbill = postData["billingData"]
     assts = postData["assistants"]
-    dealerId = request.session["dealer_id"]
-    dealer = Dealer.objects.get(id=dealerId)
+    dealer_id = request.session["dealer_id"]
+    dealer = Dealer.objects.get(id=dealer_id)
     event = Event.objects.get(default=True)
 
     badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
@@ -221,16 +263,15 @@ def checkoutAsstDealer(request):
         return JsonResponse(
             {
                 "success": False,
-                "message": "Dealer acocunt has not been paid. Please pay for your table before adding assistants.",
+                "message": "Dealer account has not been paid. Please pay for your table before adding assistants.",
             }
         )
 
-    originalPartnerCount = dealer.getPartnerCount()
+    original_partner_count = dealer.getPartnerCount()
 
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
+    order_item = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
+    order_item.save()
 
-    # dealer.partners = assts
     for assistant in assts:
         dasst = DealerAsst(
             dealer=dealer,
@@ -240,40 +281,39 @@ def checkoutAsstDealer(request):
             license=assistant["license"],
         )
         dasst.save()
-    partnerCount = dealer.getPartnerCount()
+    partner_count = dealer.getPartnerCount()
 
     # FIXME: remove hardcoded costs
-    partners = partnerCount - originalPartnerCount
+    partners = partner_count - original_partner_count
     total = Decimal(55 * partners)
     if pbill["breakfast"]:
         total = total + Decimal(60 * partners)
-    ip = get_client_ip(request)
 
-    status, message, order = doCheckout(pbill, total, None, [], [orderItem], 0, 0)
+    status, message, order = doCheckout(pbill, total, None, [], [order_item], 0, 0)
 
     if status:
         clear_session(request)
         try:
             registration.emails.send_dealer_assistant_email(dealer.id)
-            for assistant in dealer.assistant_set.all():
+            for assistant in dealer.dealerasst_set.all():
                 registration.emails.send_dealer_assistant_registration_invite(assistant)
         except Exception as e:
             logger.error("Error emailing DealerAsstEmail.")
             logger.exception(e)
-            dealerEmail = getDealerEmail()
+            dealer_email = getDealerEmail()
             return JsonResponse(
                 {
                     "success": False,
                     "message": (
                         f"Your payment succeeded but we may have been unable to send you a confirmation email. "
-                        "If you do not receive one within the next hour, please contact {dealerEmail} to get your "
-                        "confirmation number."
+                        f"If you do not receive one within the next hour, please contact {dealer_email} to get your "
+                        f"confirmation number."
                     ),
                 }
             )
         return JsonResponse({"success": True})
     else:
-        orderItem.delete()
+        order_item.delete()
         for assistant in assts:
             assistant.delete()
         return JsonResponse({"success": False, "message": message})
@@ -423,7 +463,7 @@ def checkoutDealer(request):
             return JsonResponse({"success": True})
 
         porg = Decimal(postData["orgDonation"].strip() or "0.00")
-        pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
+        pcharity = Decimal(postData.get("charityDonation", "0.00").strip() or "0.00")
         if porg < 0:
             porg = 0
         if pcharity < 0:

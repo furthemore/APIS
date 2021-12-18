@@ -670,6 +670,9 @@ class TestDealerAsstAdmin(TestDealerAdmin):
             self.asst_admin.dealer_approved(self.assistant), self.dealer.approved
         )
 
+    def test_send_assistant_registration_email(self):
+        pass
+
 
 class TestStaffAdmin(AdminTestCase):
     def setUp(self):

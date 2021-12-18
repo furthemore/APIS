@@ -1,7 +1,7 @@
 {% load site %}
 <p>Hello, {{assistant.name}}!</p>
 
-<p>Your sponsoring dealer, {{ assistant.dealer.name }}, has paid for your registration at <b>{{event}}.</b></p>
+<p>Your sponsoring dealer, {{ assistant.dealer.businessName }}, has paid for your registration at <b>{{event}}.</b></p>
 
 <p>Please use this link to register: <a href="https://{% current_domain %}{% url 'registration:dealerAsst' guid=assistant.registrationToken %}">https://{% current_domain %}{% url 'registration:dealerAsst' guid=assistant.registrationToken %}</a></p>
 
