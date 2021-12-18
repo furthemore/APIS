@@ -266,11 +266,16 @@ class DealerAsstAdmin(ImportExportModelAdmin):
     def dealer_approved(self, obj):
         return obj.dealer.approved
 
+    dealer_approved.boolean = True
+
     def asst_registered(self, obj):
         if obj.attendee is not None:
             return True
         else:
             return False
+
+    asst_registered.boolean = True
+    asst_registered.short_description = "Assistant Registered"
 
 
 admin.site.register(DealerAsst, DealerAsstAdmin)
