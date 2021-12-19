@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from django.core import mail
 from django.test import TestCase
 from mock import patch
