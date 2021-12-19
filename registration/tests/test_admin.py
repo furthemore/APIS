@@ -670,6 +670,17 @@ class TestDealerAsstAdmin(TestDealerAdmin):
             self.asst_admin.dealer_approved(self.assistant), self.dealer.approved
         )
 
+    def test_asst_registered(self):
+        # Assign an attendee to our assistant to make this case work
+        attendee = Attendee(**TEST_ATTENDEE_ARGS)
+        attendee.save()
+        self.assistant.attendee = attendee
+        self.assertTrue(self.asst_admin.asst_registered(self.assistant))
+
+    def test_asst_registered_no_attendee(self):
+        # The assistant we set up doesn't have an attendee assigned yet:
+        self.assertFalse(self.asst_admin.asst_registered(self.assistant))
+
 
 class TestStaffAdmin(AdminTestCase):
     def setUp(self):
