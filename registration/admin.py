@@ -1460,7 +1460,7 @@ admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
 
 
 class VenueAdmin(admin.ModelAdmin):
-    list_display = ("name", "address", "website")
+    list_display = ("name", "address", "city", "state", "country", "postalCode", "website")
 
 
 admin.site.register(Venue, VenueAdmin)

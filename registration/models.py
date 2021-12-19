@@ -143,6 +143,10 @@ class Charity(LookupTable):
 class Venue(models.Model):
     name = models.CharField(max_length=200, blank=True)
     address = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=200, blank=True)
+    country = models.CharField(max_length=200, blank=True)
+    postalCode = models.CharField(max_length=20, blank=True)
     website = models.CharField(max_length=500, blank=True)
 
     def __str__(self):
