@@ -10,4 +10,4 @@ class TestVenue(TestCase):
         self.venue.save()
 
     def test_venue_fields(self):
-        self.assertEquals(self.venue, self.venue.name)
+        self.assertEquals(str(self.venue), self.venue.name)
