@@ -253,6 +253,7 @@ class DealerAsstAdmin(ImportExportModelAdmin):
         "event",
         "dealer_businessname",
         "dealer_approved",
+        "asst_registered",
     )
     list_filter = ("event", "dealer__approved")
     search_fields = ["name", "email"]
@@ -264,6 +265,17 @@ class DealerAsstAdmin(ImportExportModelAdmin):
 
     def dealer_approved(self, obj):
         return obj.dealer.approved
+
+    dealer_approved.boolean = True
+
+    def asst_registered(self, obj):
+        if obj.attendee is not None:
+            return True
+        else:
+            return False
+
+    asst_registered.boolean = True
+    asst_registered.short_description = "Assistant Registered"
 
 
 admin.site.register(DealerAsst, DealerAsstAdmin)
