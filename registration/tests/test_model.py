@@ -7,7 +7,7 @@ from registration.tests.common import DEFAULT_VENUE_ARGS
 class TestVenue(TestCase):
     def setUp(self):
         self.venue = Venue(**DEFAULT_VENUE_ARGS)
-        self.save()
+        self.venue.save()
 
     def test_venue_fields(self):
         self.assertEquals(self.venue, self.venue.name)
