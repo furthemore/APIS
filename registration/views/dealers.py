@@ -448,7 +448,6 @@ def checkoutDealer(request):
         sessionItems = request.session.get("order_items", [])
         pdisc = request.session.get("discount", "")
         orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        orderItem = orderItems[0]
         if "dealer_id" not in request.session:
             return HttpResponseServerError("Session expired")
 
@@ -496,12 +495,15 @@ def checkoutDealer(request):
         total = subtotal + porg + pcharity
 
         pbill = postData["billingData"]
-        ip = get_client_ip(request)
         status, message, order = doCheckout(
             pbill, total, discount, None, orderItems, porg, pcharity
         )
 
         if status:
+            for assistant in dealer.dealerasst_set.all():
+                assistant.paid = True
+                assistant.paid.save()
+
             clear_session(request)
             try:
                 dealer.resetToken()
