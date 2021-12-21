@@ -54,6 +54,42 @@ DEFAULT_VENUE_ARGS = dict(
     postalCode=12345,
 )
 
+TEST_TABLE_ARGS = dict(
+    name="Booth",
+    description="description here",
+    chairMin=0,
+    chairMax=1,
+    tableMin=0,
+    tableMax=1,
+    partnerMin=0,
+    partnerMax=1,
+    basePrice=Decimal(130),
+)
+
+TEST_DEALER_ARGS = {
+    "businessName": "Something Creative",
+    "website": "http://www.something.com",
+    "license": "jkah9435kd",
+    "nearTo": "Someone",
+    "farFrom": "Someone Else",
+    "description": "Stuff for sale",
+    "chairs": 1,
+    "tables": 0,
+    "reception": True,
+    "artShow": False,
+    "charityRaffle": "Some stuff",
+    "agreeToRules": True,
+    "breakfast": True,
+    "buttonOffer": "Buttons",
+    "asstBreakfast": False,
+}
+
+TEST_DEALER_ASST_ARGS = {
+    "name": "Foobian the First",
+    "email": "dealer-assistant@mailinator.org",
+    "license": "N/A",
+}
+
 
 class OrdersTestCase(TestCase):
     def setUp(self):

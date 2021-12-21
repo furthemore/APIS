@@ -174,6 +174,17 @@
     var levelData = [];
     var deptData = [];
     var shirtSizes = [];
+    {% if discount %}
+    var discount = {
+        amountOff: {{ discount.amountOff }},
+        percentOff: {{ discount.percentOff }}
+    };
+    {% else %}
+    var discount = {
+        amountOff: 0,
+        percentOff: 0
+    };
+    {% endif %}
 
     var select_level = function (levelId) {
         $.each( levelTemplateData, function( key, val ) {
@@ -202,9 +213,10 @@
         $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
+                var percentOff = val.base_price * discount.percentOff;
                 levelTemplateData.push({
                     name: val.name,
-                    price: "$" + val.base_price,
+                    price: "$" + (parseFloat(val.base_price) - percentOff - discount.amountOff),
                     levelId: "level_" + val.id,
                     selectText: "Select " + val.name
                 });

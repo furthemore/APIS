@@ -2,4 +2,4 @@
 
 Please use the link below to add additional assistants to your paid dealer registration.
 
-https://{% current_domain %}{% url 'registration:dealerAsst' guid=dealer.registrationToken %}
+https://{% current_domain %}{% url 'registration:find_dealer_to_add_assistant' guid=dealer.registrationToken %}

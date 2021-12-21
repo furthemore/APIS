@@ -345,7 +345,6 @@ var paymentForm = new SqPaymentForm({
 		}
 
 		$.each(addresses, function (key, item) {
-			if (item.id != userId) { return; }
 			$("#fname").val(item.fname);
 			$("#lname").val(item.lname);
 			$("#email").val(item.email);

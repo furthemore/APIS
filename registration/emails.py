@@ -238,6 +238,26 @@ def send_dealer_assistant_email(dealer_id):
     )
 
 
+def send_dealer_assistant_registration_invite(assistant):
+    data = {"assistant": assistant, "event": assistant.event}
+    msg_txt = render_to_string(
+        "registration/emails/dealer/assistant-register.txt", data
+    )
+    msg_html = render_to_string(
+        "registration/emails/dealer/assistant-register.html", data
+    )
+    dealer_email = registration.views.dealers.getDealerEmail(assistant.event)
+    send_email(
+        dealer_email,
+        [assistant.email],
+        "{0} Dealer Assistant Addition".format(assistant.event.name),
+        msg_txt,
+        msg_html,
+    )
+    assistant.sent = True
+    assistant.save()
+
+
 def send_dealer_payment_email(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
     options = AttendeeOptions.objects.filter(orderItem=orderItem)

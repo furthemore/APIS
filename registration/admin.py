@@ -244,6 +244,14 @@ class DealerAsstResource(resources.ModelResource):
         )
 
 
+def send_assistant_registration_email(modeladmin, request, queryset):
+    for assistant in queryset:
+        registration.emails.send_dealer_assistant_registration_invite(assistant)
+
+
+send_assistant_registration_email.short_description = "Send registration instructions"
+
+
 class DealerAsstAdmin(ImportExportModelAdmin):
     save_on_top = True
     list_display = (
@@ -253,12 +261,17 @@ class DealerAsstAdmin(ImportExportModelAdmin):
         "event",
         "dealer_businessname",
         "dealer_approved",
+        "paid",
         "asst_registered",
     )
-    list_filter = ("event", "dealer__approved")
+    list_filter = ("event", "dealer__approved", "paid")
     search_fields = ["name", "email"]
     readonly_fields = ["dealer_businessname", "dealer_approved", "registrationToken"]
     resource_class = DealerAsstResource
+    raw_id_fields = ("dealer", "attendee")
+    actions = [
+        send_assistant_registration_email,
+    ]
 
     def dealer_businessname(self, obj):
         return obj.dealer.businessName
@@ -1400,7 +1413,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total, })
+            form = self.RefundForm(initial={"amount": order.total,})
 
         context = {
             "form": form,
@@ -1472,7 +1485,15 @@ admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
 
 
 class VenueAdmin(admin.ModelAdmin):
-    list_display = ("name", "address", "city", "state", "country", "postalCode", "website")
+    list_display = (
+        "name",
+        "address",
+        "city",
+        "state",
+        "country",
+        "postalCode",
+        "website",
+    )
 
 
 admin.site.register(Venue, VenueAdmin)
