@@ -6,8 +6,6 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [('registration', '0092_auto_20211219_0409'), ('registration', '0093_auto_20211219_0436')]
-
     dependencies = [
         ('registration', '0091_alter_firebase_webview'),
     ]
