@@ -502,7 +502,7 @@ def checkoutDealer(request):
         if status:
             for assistant in dealer.dealerasst_set.all():
                 assistant.paid = True
-                assistant.paid.save()
+                assistant.save()
 
             clear_session(request)
             try:
