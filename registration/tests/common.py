@@ -45,6 +45,15 @@ TEST_ATTENDEE_ARGS = dict(
     birthdate="1990-01-01",
 )
 
+DEFAULT_VENUE_ARGS = dict(
+    name="MegaCenter Conference Hotel",
+    address="123 Somewhere St",
+    city="Place",
+    state="VA",
+    country="US",
+    postalCode=12345,
+)
+
 
 class OrdersTestCase(TestCase):
     def setUp(self):
