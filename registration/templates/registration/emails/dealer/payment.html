@@ -13,8 +13,6 @@
 {% if dealer.needWifi %}
 <tr><td>Wi-Fi Access</td><td>$50.00</td></tr>
 {% endif %}
-<tr><td>Continental Breakfast</td><td>{{dealer.breakfast|yesno:"Yes,No"}}</td></tr>
-<tr><td>Friday Reception</td><td>{{dealer.reception|yesno:"Yes,No"}}</td></tr>
 {% if dealer.getPartnerCount > 0%}
 <tr><td>Partners x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:45}}.00</td></tr>
 {% endif %}
