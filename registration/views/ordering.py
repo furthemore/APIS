@@ -16,9 +16,7 @@ def doCheckout(
     billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
 ):
     event = Event.objects.get(default=True)
-    reference = common.getConfirmationToken()
-    while Order.objects.filter(reference=reference).exists():
-        reference = common.getConfirmationToken()
+    reference = common.get_unique_confirmation_token(Order)
 
     order = Order(
         total=Decimal(total),
@@ -93,9 +91,7 @@ def doZeroCheckout(discount, cartItems, orderItems):
         billingName = "{0} {1}".format(attendee.firstName, attendee.lastName)
         billingEmail = attendee.email
 
-    reference = common.getConfirmationToken()
-    while Order.objects.filter(reference=reference).count() > 0:
-        reference = common.getConfirmationToken()
+    reference = common.get_unique_confirmation_token(Order)
 
     order = Order(
         total=0,
@@ -305,11 +301,10 @@ def checkout(request):
         pcharity = 0
 
     total = subtotal + porg + pcharity
-    ip = common.get_client_ip(request)
 
     onsite = postData["onsite"]
     if onsite:
-        reference = common.getConfirmationToken()
+        reference = common.get_unique_confirmation_token(Order)
         order = Order(
             total=Decimal(total),
             reference=reference,
@@ -326,8 +321,6 @@ def checkout(request):
                 orderItem = cart.saveCart(item)
                 orderItem.order = order
                 orderItem.save()
-        while Order.objects.filter(reference=reference).count() > 0:
-            reference = common.getConfirmationToken()
 
         if discount:
             discount.used = discount.used + 1
@@ -356,7 +349,8 @@ def checkout(request):
             logger.exception(e)
             return common.abort(
                 500,
-                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
+                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
+                "receive one within the next hour, please contact {0} to get your confirmation number.".format(
                     registrationEmail
                 ),
             )

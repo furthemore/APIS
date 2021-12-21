@@ -233,11 +233,14 @@ def add_assistants(request):
         assistants = []
         for dasst in assts:
             assistants.append(model_to_dict(dasst))
+        asst_count_registered = len([ass for ass in assts if ass.attendee is not None])
         context = {
             "attendee": dealer.attendee,
             "dealer": dealer,
-            "asstCount": len(assts),
-            "jsonAssts": json.dumps(assistants, default=handler),
+            "assistants": assts,
+            "extra_assistants_range": range(len(assts), dealer.tableSize.partnerMax),
+            "asst_count_registered": asst_count_registered,
+            "json_assistants": json.dumps(assistants, default=handler),
         }
     event = Event.objects.get(default=True)
     context["event"] = event
@@ -246,12 +249,12 @@ def add_assistants(request):
 
 def add_assistants_checkout(request):
     try:
-        postData = json.loads(request.body)
+        form_data = json.loads(request.body)
     except ValueError as e:
         logger.error("Unable to decode JSON for add_assistants_checkout()")
         return JsonResponse({"success": False})
-    pbill = postData["billingData"]
-    assts = postData["assistants"]
+    billing_data = form_data["billingData"]
+    assistants_form = form_data["assistants"]
     dealer_id = request.session["dealer_id"]
     dealer = Dealer.objects.get(id=dealer_id)
     event = Event.objects.get(default=True)
@@ -267,35 +270,58 @@ def add_assistants_checkout(request):
             }
         )
 
-    original_partner_count = dealer.getPartnerCount()
-
     order_item = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    order_item.save()
 
-    for assistant in assts:
-        dasst = DealerAsst(
-            dealer=dealer,
-            event=event,
-            name=assistant["name"],
-            email=assistant["email"],
-            license=assistant["license"],
-        )
-        dasst.save()
+    for assistant in assistants_form:
+        if assistant.get("id"):
+            # Update an existing dealer assistant by ID
+            dealer_asst = DealerAsst.objects.get(dealer=dealer, id=assistant.get("id"))
+        else:
+            # Otherwise, create a new one:
+            dealer_asst = DealerAsst(
+                dealer=dealer,
+                event=event,
+                name=assistant["name"],
+                email=assistant["email"],
+                license=assistant["license"],
+            )
+        try:
+            dealer_asst.name = assistant["name"]
+            dealer_asst.email = assistant["email"]
+            dealer_asst.license = assistant["license"]
+            dealer_asst.save()
+        except KeyError:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": f"Bad request: name, email, and license fields are required to update assistant",
+                }
+            )
+
     partner_count = dealer.getPartnerCount()
+    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False)
 
     # FIXME: remove hardcoded costs
-    partners = partner_count - original_partner_count
-    total = Decimal(55 * partners)
-    if pbill["breakfast"]:
-        total = total + Decimal(60 * partners)
+    partner_count -= unpaid_partner_count
+    total = Decimal(55 * partner_count)
+    if billing_data["breakfast"]:
+        total = total + Decimal(60 * partner_count)
 
-    status, message, order = doCheckout(pbill, total, None, [], [order_item], 0, 0)
+    status, message, order = doCheckout(
+        billing_data, total, None, [], [order_item], 0, 0
+    )
 
     if status:
+        # Payment succeeded - Mark assistants as paid
+        for assistant in dealer.dealerasst_set.all():
+            assistant.paid = True
+            assistant.paid.save()
+
         clear_session(request)
         try:
             registration.emails.send_dealer_assistant_email(dealer.id)
-            for assistant in dealer.dealerasst_set.all():
+            # Send registration instruction emails to assistants that haven't registered yet:
+            for assistant in dealer.dealerasst_set.all().filter(attendee__isnull=True):
                 registration.emails.send_dealer_assistant_registration_invite(assistant)
         except Exception as e:
             logger.error("Error emailing DealerAsstEmail.")
@@ -313,9 +339,7 @@ def add_assistants_checkout(request):
             )
         return JsonResponse({"success": True})
     else:
-        order_item.delete()
-        for assistant in assts:
-            assistant.delete()
+        # Payment failed
         return JsonResponse({"success": False, "message": message})
 
 

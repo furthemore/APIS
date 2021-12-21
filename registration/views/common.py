@@ -14,6 +14,7 @@ import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
 from registration.views.cart import saveCart
+from registration.views.ordering import add_attendee_to_assistant
 
 logger = logging.getLogger("django.request")
 
@@ -144,11 +145,15 @@ def success(status=200, reason=None):
         )
 
 
-def getConfirmationToken():
-    return "".join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
-        for _ in range(6)
-    )
+def get_confirmation_token():
+    return get_token(6)
+
+
+def get_unique_confirmation_token(model):
+    reference = get_confirmation_token()
+    while model.objects.filter(reference=reference).exists():
+        reference = get_confirmation_token()
+    return reference
 
 
 def handler(obj):
@@ -373,9 +378,9 @@ def doCheckout(
     billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
 ):
     event = Event.objects.get(default=True)
-    reference = getConfirmationToken()
+    reference = get_confirmation_token()
     while Order.objects.filter(reference=reference).exists():
-        reference = getConfirmationToken()
+        reference = get_confirmation_token()
 
     order = Order(
         total=Decimal(total),
@@ -445,9 +450,9 @@ def doZeroCheckout(discount, cartItems, orderItems):
         billingName = "{0} {1}".format(attendee.firstName, attendee.lastName)
         billingEmail = attendee.email
 
-    reference = getConfirmationToken()
+    reference = get_confirmation_token()
     while Order.objects.filter(reference=reference).count() > 0:
-        reference = getConfirmationToken()
+        reference = get_confirmation_token()
 
     logger.debug(attendee)
     order = Order(
@@ -646,11 +651,10 @@ def checkout(request):
         pcharity = 0
 
     total = subtotal + porg + pcharity
-    ip = get_client_ip(request)
 
     onsite = postData["onsite"]
     if onsite:
-        reference = getConfirmationToken()
+        reference = get_confirmation_token()
         order = Order(
             total=Decimal(total),
             reference=reference,
@@ -668,7 +672,7 @@ def checkout(request):
                 orderItem.order = order
                 orderItem.save()
         while Order.objects.filter(reference=reference).count() > 0:
-            reference = getConfirmationToken()
+            reference = get_confirmation_token()
 
         if discount:
             discount.used = discount.used + 1

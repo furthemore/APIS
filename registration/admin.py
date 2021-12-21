@@ -261,9 +261,10 @@ class DealerAsstAdmin(ImportExportModelAdmin):
         "event",
         "dealer_businessname",
         "dealer_approved",
+        "paid",
         "asst_registered",
     )
-    list_filter = ("event", "dealer__approved")
+    list_filter = ("event", "dealer__approved", "paid")
     search_fields = ["name", "email"]
     readonly_fields = ["dealer_businessname", "dealer_approved", "registrationToken"]
     resource_class = DealerAsstResource
@@ -1484,7 +1485,15 @@ admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
 
 
 class VenueAdmin(admin.ModelAdmin):
-    list_display = ("name", "address", "city", "state", "country", "postalCode", "website")
+    list_display = (
+        "name",
+        "address",
+        "city",
+        "state",
+        "country",
+        "postalCode",
+        "website",
+    )
 
 
 admin.site.register(Venue, VenueAdmin)
