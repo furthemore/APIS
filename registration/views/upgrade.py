@@ -61,7 +61,7 @@ def findUpgrade(request):
     try:
         attendee_id = request.session["attendee_id"]
         badge_id = request.session["badge_id"]
-    except Exception as e:
+    except KeyError:
         return render(
             request, "registration/attendee-upgrade.html", context, status=400
         )

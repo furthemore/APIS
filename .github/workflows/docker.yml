@@ -1,4 +1,4 @@
-name: Build docker image and push to repo
+name: Build & Deploy
 
 on:
   # Manually triggered from the UI
@@ -7,7 +7,7 @@ on:
       environment:
         description: "Environment"
         required: true
-        type: environment        
+        type: environment
 
   # Dependency to a forking workflow
   #workflow_run:
@@ -47,4 +47,3 @@ jobs:
           cd /opt/docker
           docker-compose pull
           docker-compose up -d
-          docker-compose exec -T apis-${{ github.event.inputs.environment }} ./manage.py migrate

@@ -670,6 +670,9 @@ class TestDealerAsstAdmin(TestDealerAdmin):
             self.asst_admin.dealer_approved(self.assistant), self.dealer.approved
         )
 
+    def test_send_assistant_registration_email(self):
+        pass
+
     def test_asst_registered(self):
         # Assign an attendee to our assistant to make this case work
         attendee = Attendee(**TEST_ATTENDEE_ARGS)

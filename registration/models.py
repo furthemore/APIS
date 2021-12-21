@@ -177,12 +177,7 @@ class Event(LookupTable):
         verbose_name="Default",
         help_text="The first default event will be used as the basis for all current event configuration",
     )
-    venue = models.ForeignKey(
-        Venue,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
+    venue = models.ForeignKey(Venue, null=True, blank=True, on_delete=models.SET_NULL,)
     newStaffDiscount = models.ForeignKey(
         Discount,
         null=True,
@@ -209,6 +204,15 @@ class Event(LookupTable):
         related_name="dealerEvent",
         verbose_name="Dealer Discount",
         help_text="Apply a discount for any dealer registrations",
+    )
+    assistantDiscount = models.ForeignKey(
+        Discount,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="assistantEvent",
+        verbose_name="Dealer Assistant Discount",
+        help_text="Apply a discount for any dealer assistant registrations",
     )
     allowOnlineMinorReg = models.BooleanField(
         default=False,
@@ -305,11 +309,15 @@ class Department(models.Model):
 # End lookup and supporting tables
 
 
-def getRegistrationToken():
+def get_token(length):
     return "".join(
         random.SystemRandom().choice(string.ascii_uppercase + string.digits)
-        for _ in range(15)
+        for _ in range(length)
     )
+
+
+def getRegistrationToken():
+    return get_token(15)
 
 
 class TempToken(models.Model):
@@ -588,6 +596,7 @@ class DealerAsst(models.Model):
     email = models.CharField(max_length=200)
     license = models.CharField(max_length=50)
     sent = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
     event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
