@@ -140,6 +140,19 @@ class Charity(LookupTable):
         verbose_name_plural = "Charities"
 
 
+class Venue(models.Model):
+    name = models.CharField(max_length=200, blank=True)
+    address = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=200, blank=True)
+    country = models.CharField(max_length=200, blank=True)
+    postalCode = models.CharField(max_length=20, blank=True)
+    website = models.CharField(max_length=500, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Event(LookupTable):
     dealerRegStart = models.DateTimeField(
         verbose_name="Dealer Registration Start",
@@ -163,6 +176,12 @@ class Event(LookupTable):
         default=False,
         verbose_name="Default",
         help_text="The first default event will be used as the basis for all current event configuration",
+    )
+    venue = models.ForeignKey(
+        Venue,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
     )
     newStaffDiscount = models.ForeignKey(
         Discount,

@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from django.core import mail
 from django.test import TestCase
 from mock import patch
@@ -188,3 +186,4 @@ class TestDealerEmails(EmailTestCase):
         self.assertIn(self.assistant.registrationToken, html_text)
         self.assistant.refresh_from_db()
         self.assertTrue(self.assistant.sent)
+        
