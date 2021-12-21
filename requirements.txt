@@ -11,6 +11,7 @@ django-extensions~=3.1.5
 django-guardian==2.4.0
 django-flat-responsive==2.0
 django-widget-tweaks==1.4.9
+freezegun==1.1.0
 squareup==4.1.0.20200122
 pyOpenSSL==18.0.0
 git+git://github.com/gavinwahl/django-u2f@master
