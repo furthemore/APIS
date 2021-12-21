@@ -717,6 +717,45 @@ class TestAttendeeCheckout(OrdersTestCase):
         self.assertEqual(len(cart), 1)
         total = response.context["total"]
 
+        checkout_post_data = {
+            "orgDonation": "10",
+            "charityDonation": "20",
+            "billingData": {
+                "address1": "Qui qui quasi amet",
+                "address2": "Sunt voluptas dolori",
+                "card_data": {
+                    "billing_postal_code": "94044",
+                    "card_brand": "VISA",
+                    "digital_wallet_type": "NONE",
+                    "exp_month": 12,
+                    "exp_year": 2021,
+                    "last_4": "1111",
+                },
+                "cc_firstname": "Whitney",
+                "cc_lastname": "Thompson",
+                "city": "Quam earum Nam dolor",
+                "country": "FK",
+                "email": "apis@mailinator.net",
+                "nonce": "cnon:card-nonce-ok",
+                "postal": "13271",
+                "state": "",
+            },
+        }
+
+        assistant = DealerAsst(name="Foobian the First", dealer=dealer, license="N/A")
+        assistant.save()
+
+        response = self.client.post(
+            reverse("registration:checkoutDealer"),
+            json.dumps(checkout_post_data),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'{"success": true}')
+        dealer.refresh_from_db()
+        assistant.refresh_from_db()
+        self.assertTrue(assistant.paid)
+
 
 class LookupTestCases(TestCase):
     def setUp(self):
