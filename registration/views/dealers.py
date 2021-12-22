@@ -104,24 +104,19 @@ def infoDealer(request):
 
 
 def findDealer(request):
+    postData = json.loads(request.body)
+    email = postData["email"]
+    token = postData["token"]
+
     try:
-        postData = json.loads(request.body)
-        email = postData["email"]
-        token = postData["token"]
+        dealer = Dealer.objects.get(
+            attendee__email__iexact=email, registrationToken=token
+        )
+    except Dealer.DoesNotExist:
+        return HttpResponseServerError("No Dealer Found " + email)
 
-        try:
-            dealer = Dealer.objects.get(
-                attendee__email__iexact=email, registrationToken=token
-            )
-        except Dealer.DoesNotExist:
-            return HttpResponseServerError("No Dealer Found " + email)
-
-        request.session["dealer_id"] = dealer.id
-        return JsonResponse({"success": True, "message": "DEALER"})
-    except Exception as e:
-        logger.error("Error finding dealer. " + email)
-        logger.exception(e)
-        return HttpResponseServerError(str(e))
+    request.session["dealer_id"] = dealer.id
+    return JsonResponse({"success": True, "message": "DEALER"})
 
 
 def find_dealer_to_add_assistant_post(request):
@@ -153,44 +148,39 @@ def find_dealer_to_add_assistant_post(request):
 
 
 def findAsstDealer(request):
+    postData = json.loads(request.body)
+    email = postData["email"]
+    token = postData["token"]
+
     try:
-        postData = json.loads(request.body)
-        email = postData["email"]
-        token = postData["token"]
+        dealer_assistant = DealerAsst.objects.get(
+            email__iexact=email, registrationToken=token
+        )
+    except DealerAsst.DoesNotExist:
+        return HttpResponseServerError("No assistant dealer found")
 
-        try:
-            dealer_assistant = DealerAsst.objects.get(
-                email__iexact=email, registrationToken=token
-            )
-        except DealerAsst.DoesNotExist:
-            return HttpResponseServerError("No assistant dealer found")
-
-        # Check if they've already registered:
-        if dealer_assistant.attendee is not None:
-            # Send them to the upgrade path instead
-            request.session["attendee_id"] = dealer_assistant.attendee.pk
-            request.session["badge_id"] = dealer_assistant.attendee.badge_set.first().pk
-            return JsonResponse(
-                {
-                    "success": True,
-                    "message": "ASSISTANT",
-                    "location": reverse("registration:findUpgrade"),
-                }
-            )
-
-        request.session["assistant_id"] = dealer_assistant.id
-        request.session["discount"] = dealer_assistant.event.assistantDiscount.codeName
+    # Check if they've already registered:
+    if dealer_assistant.attendee is not None:
+        # Send them to the upgrade path instead
+        request.session["attendee_id"] = dealer_assistant.attendee.pk
+        request.session["badge_id"] = dealer_assistant.attendee.badge_set.first().pk
         return JsonResponse(
             {
                 "success": True,
                 "message": "ASSISTANT",
-                "location": reverse("registration:index"),
+                "location": reverse("registration:findUpgrade"),
             }
         )
-    except Exception as e:
-        logger.error("Error finding assistant dealer.")
-        logger.exception(e)
-        return HttpResponseServerError(str(e))
+
+    request.session["assistant_id"] = dealer_assistant.id
+    request.session["discount"] = dealer_assistant.event.assistantDiscount.codeName
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "ASSISTANT",
+            "location": reverse("registration:index"),
+        }
+    )
 
 
 def invoiceDealer(request):
@@ -299,7 +289,7 @@ def add_assistants_checkout(request):
             )
 
     partner_count = dealer.getPartnerCount()
-    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False)
+    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False).count()
 
     # FIXME: remove hardcoded costs
     partner_count -= unpaid_partner_count
@@ -315,7 +305,7 @@ def add_assistants_checkout(request):
         # Payment succeeded - Mark assistants as paid
         for assistant in dealer.dealerasst_set.all():
             assistant.paid = True
-            assistant.paid.save()
+            assistant.save()
 
         clear_session(request)
         try:
@@ -360,10 +350,10 @@ def addDealer(request):
     if "dealer_id" not in request.session:
         return HttpResponseServerError("Session expired")
 
-    dealer = Dealer.objects.get(id=pdd["id"])
-
     # Update Dealer info
-    if not dealer:
+    try:
+        dealer = Dealer.objects.get(id=pdd["id"])
+    except dealer.DoesNotExist:
         return HttpResponseServerError("Dealer id not found")
 
     dealer.businessName = pdd["businessName"]
@@ -385,16 +375,12 @@ def addDealer(request):
     dealer.asstBreakfast = pdd["asstbreakfast"]
     dealer.event = event
 
-    try:
-        dealer.save()
-    except Exception as e:
-        logger.error("Error saving dealer record.")
-        logger.exception(e)
-        return HttpResponseServerError(str(e))
+    dealer.save()
 
     # Update Attendee info
-    attendee = Attendee.objects.get(id=pda["id"])
-    if not attendee:
+    try:
+        attendee = Attendee.objects.get(id=pda["id"])
+    except attendee.DoesNotExist:
         return HttpResponseServerError("Attendee id not found")
 
     attendee.firstName = pda["firstName"]
@@ -407,22 +393,12 @@ def addDealer(request):
     attendee.postalCode = pda["postal"]
     attendee.phone = pda["phone"]
 
-    try:
-        attendee.save()
-    except Exception as e:
-        logger.error("Error saving dealer attendee record.")
-        logger.exception(e)
-        return HttpResponseServerError(str(e))
+    attendee.save()
 
     badge = Badge.objects.get(attendee=attendee, event=event)
     badge.badgeName = pda["badgeName"]
 
-    try:
-        badge.save()
-    except Exception as e:
-        logger.error("Error saving dealer badge record.")
-        logger.exception(e)
-        return HttpResponseServerError(str(e))
+    badge.save()
 
     priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
 
@@ -444,88 +420,84 @@ def addDealer(request):
 
 
 def checkoutDealer(request):
+    sessionItems = request.session.get("order_items", [])
+    pdisc = request.session.get("discount", "")
+    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    if "dealer_id" not in request.session:
+        return HttpResponseServerError("Session expired")
+
+    dealer = Dealer.objects.get(id=request.session.get("dealer_id"))
     try:
-        sessionItems = request.session.get("order_items", [])
-        pdisc = request.session.get("discount", "")
-        orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-        orderItem = orderItems[0]
-        if "dealer_id" not in request.session:
-            return HttpResponseServerError("Session expired")
+        postData = json.loads(request.body)
+    except ValueError as e:
+        logger.error("Unable to decode JSON for checkoutDealer()")
+        return JsonResponse({"success": False})
 
-        dealer = Dealer.objects.get(id=request.session.get("dealer_id"))
-        try:
-            postData = json.loads(request.body)
-        except ValueError as e:
-            logger.error("Unable to decode JSON for checkoutDealer()")
-            return JsonResponse({"success": False})
+    discount = Discount.objects.filter(codeName=pdisc).first()
+    subtotal = getDealerTotal(orderItems, discount, dealer)
 
-        discount = Discount.objects.filter(codeName=pdisc).first()
-        subtotal = getDealerTotal(orderItems, discount, dealer)
+    if subtotal == 0:
 
-        if subtotal == 0:
-
-            status, message, order = doZeroCheckout(discount, None, orderItems)
-            if not status:
-                return JsonResponse({"success": False, "message": message})
-
-            clear_session(request)
-
-            try:
-                registration.emails.send_dealer_payment_email(dealer, order)
-            except Exception as e:
-                logger.error("Error sending DealerPaymentEmail - zero sum.")
-                logger.exception(e)
-                dealerEmail = getDealerEmail()
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}".format(
-                            dealerEmail
-                        ),
-                    }
-                )
-            return JsonResponse({"success": True})
-
-        porg = Decimal(postData["orgDonation"].strip() or "0.00")
-        pcharity = Decimal(postData.get("charityDonation", "0.00").strip() or "0.00")
-        if porg < 0:
-            porg = 0
-        if pcharity < 0:
-            pcharity = 0
-
-        total = subtotal + porg + pcharity
-
-        pbill = postData["billingData"]
-        ip = get_client_ip(request)
-        status, message, order = doCheckout(
-            pbill, total, discount, None, orderItems, porg, pcharity
-        )
-
-        if status:
-            clear_session(request)
-            try:
-                dealer.resetToken()
-                registration.emails.send_dealer_payment_email(dealer, order)
-            except Exception as e:
-                logger.error("Error sending DealerPaymentEmail. " + request.body)
-                logger.exception(e)
-                dealerEmail = getDealerEmail()
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}".format(
-                            dealerEmail
-                        ),
-                    }
-                )
-            return JsonResponse({"success": True})
-        else:
-            order.delete()
+        status, message, order = doZeroCheckout(discount, None, orderItems)
+        if not status:
             return JsonResponse({"success": False, "message": message})
-    except Exception as e:
-        logger.error("Error in dealer checkout.")
-        logger.exception(e)
-        return HttpResponseServerError(str(e))
+
+        clear_session(request)
+
+        try:
+            registration.emails.send_dealer_payment_email(dealer, order)
+        except Exception as e:
+            logger.error("Error sending DealerPaymentEmail - zero sum.")
+            logger.exception(e)
+            dealerEmail = getDealerEmail()
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}".format(
+                        dealerEmail
+                    ),
+                }
+            )
+        return JsonResponse({"success": True})
+
+    porg = Decimal(postData["orgDonation"].strip() or "0.00")
+    pcharity = Decimal(postData.get("charityDonation", "0.00").strip() or "0.00")
+    if porg < 0:
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
+
+    total = subtotal + porg + pcharity
+
+    pbill = postData["billingData"]
+    status, message, order = doCheckout(
+        pbill, total, discount, None, orderItems, porg, pcharity
+    )
+
+    if status:
+        for assistant in dealer.dealerasst_set.all():
+            assistant.paid = True
+            assistant.save()
+
+        clear_session(request)
+        try:
+            dealer.resetToken()
+            registration.emails.send_dealer_payment_email(dealer, order)
+        except Exception as e:
+            logger.error("Error sending DealerPaymentEmail. " + request.body)
+            logger.exception(e)
+            dealerEmail = getDealerEmail()
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Your registration succeeded but we may have been unable to send you a confirmation "
+                    f"email. If you have any questions, please contact {dealerEmail}",
+                }
+            )
+        return JsonResponse({"success": True})
+    else:
+        order.delete()
+        return JsonResponse({"success": False, "message": message})
 
 
 def addNewDealer(request):
@@ -535,95 +507,89 @@ def addNewDealer(request):
         logger.error("Unable to decode JSON for addNewDealer()")
         return JsonResponse({"success": False})
 
-    try:
-        # create attendee from request post
-        pda = postData["attendee"]
-        pdd = postData["dealer"]
-        evt = postData["event"]
+    # create attendee from request post
+    pda = postData["attendee"]
+    pdd = postData["dealer"]
+    evt = postData["event"]
 
-        tz = timezone.get_current_timezone()
-        birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
-        event = Event.objects.get(name=evt)
+    tz = timezone.get_current_timezone()
+    birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    event = Event.objects.get(name=evt)
 
-        attendee = Attendee(
-            firstName=pda["firstName"],
-            lastName=pda["lastName"],
-            address1=pda["address1"],
-            address2=pda["address2"],
-            city=pda["city"],
-            state=pda["state"],
-            country=pda["country"],
-            postalCode=pda["postal"],
-            phone=pda["phone"],
-            email=pda["email"],
-            birthdate=birthdate,
-            emailsOk=bool(pda["emailsOk"]),
-            surveyOk=bool(pda["surveyOk"]),
-        )
-        attendee.save()
+    attendee = Attendee(
+        firstName=pda["firstName"],
+        lastName=pda["lastName"],
+        address1=pda["address1"],
+        address2=pda["address2"],
+        city=pda["city"],
+        state=pda["state"],
+        country=pda["country"],
+        postalCode=pda["postal"],
+        phone=pda["phone"],
+        email=pda["email"],
+        birthdate=birthdate,
+        emailsOk=bool(pda["emailsOk"]),
+        surveyOk=bool(pda["surveyOk"]),
+    )
+    attendee.save()
 
-        badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
-        badge.save()
+    badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
+    badge.save()
 
-        tablesize = TableSize.objects.get(id=pdd["tableSize"])
-        dealer = Dealer(
-            attendee=attendee,
+    tablesize = TableSize.objects.get(id=pdd["tableSize"])
+    dealer = Dealer(
+        attendee=attendee,
+        event=event,
+        businessName=pdd["businessName"],
+        logo=pdd["logo"],
+        website=pdd["website"],
+        description=pdd["description"],
+        license=pdd["license"],
+        needPower=pdd["power"],
+        needWifi=pdd["wifi"],
+        wallSpace=pdd["wall"],
+        nearTo=pdd["near"],
+        farFrom=pdd["far"],
+        tableSize=tablesize,
+        chairs=pdd["chairs"],
+        reception=pdd["reception"],
+        artShow=pdd["artShow"],
+        charityRaffle=pdd["charityRaffle"],
+        breakfast=pdd["breakfast"],
+        willSwitch=pdd["switch"],
+        tables=pdd["tables"],
+        agreeToRules=pdd["agreeToRules"],
+        buttonOffer=pdd["buttonOffer"],
+        asstBreakfast=pdd["asstbreakfast"],
+    )
+    dealer.save()
+
+    partners = pdd["partners"]
+    for partner in partners:
+        dealerPartner = DealerAsst(
+            dealer=dealer,
             event=event,
-            businessName=pdd["businessName"],
-            logo=pdd["logo"],
-            website=pdd["website"],
-            description=pdd["description"],
-            license=pdd["license"],
-            needPower=pdd["power"],
-            needWifi=pdd["wifi"],
-            wallSpace=pdd["wall"],
-            nearTo=pdd["near"],
-            farFrom=pdd["far"],
-            tableSize=tablesize,
-            chairs=pdd["chairs"],
-            reception=pdd["reception"],
-            artShow=pdd["artShow"],
-            charityRaffle=pdd["charityRaffle"],
-            breakfast=pdd["breakfast"],
-            willSwitch=pdd["switch"],
-            tables=pdd["tables"],
-            agreeToRules=pdd["agreeToRules"],
-            buttonOffer=pdd["buttonOffer"],
-            asstBreakfast=pdd["asstbreakfast"],
+            name=partner["name"],
+            email=partner["email"],
+            license=partner["license"],
         )
-        dealer.save()
+        dealerPartner.save()
 
-        partners = pdd["partners"]
-        for partner in partners:
-            dealerPartner = DealerAsst(
-                dealer=dealer,
-                event=event,
-                name=partner["name"],
-                email=partner["email"],
-                license=partner["license"],
-            )
-            dealerPartner.save()
-
-        try:
-            registration.emails.send_dealer_application_email(dealer.id)
-        except Exception as e:
-            logger.error("Error sending DealerApplicationEmail.")
-            logger.exception(e)
-            dealerEmail = getDealerEmail()
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}.".format(
-                        dealerEmail
-                    ),
-                }
-            )
-        return JsonResponse({"success": True})
-
+    try:
+        registration.emails.send_dealer_application_email(dealer.id)
     except Exception as e:
-        logger.error(f"Error in dealer addition. {request.body}")
+        logger.error("Error sending DealerApplicationEmail.")
         logger.exception(e)
-        return HttpResponseServerError(str(e))
+        dealerEmail = getDealerEmail()
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}.".format(
+                    dealerEmail
+                ),
+            }
+        )
+    return JsonResponse({"success": True})
 
 
 def getTableSizes(request):
