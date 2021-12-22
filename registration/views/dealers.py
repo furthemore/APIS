@@ -289,7 +289,7 @@ def add_assistants_checkout(request):
             )
 
     partner_count = dealer.getPartnerCount()
-    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False)
+    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False).count()
 
     # FIXME: remove hardcoded costs
     partner_count -= unpaid_partner_count
@@ -305,7 +305,7 @@ def add_assistants_checkout(request):
         # Payment succeeded - Mark assistants as paid
         for assistant in dealer.dealerasst_set.all():
             assistant.paid = True
-            assistant.paid.save()
+            assistant.save()
 
         clear_session(request)
         try:
