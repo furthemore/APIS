@@ -262,6 +262,7 @@ class DealerAsstAdmin(ImportExportModelAdmin):
         "dealer_businessname",
         "dealer_approved",
         "paid",
+        "sent",
         "asst_registered",
     )
     list_filter = ("event", "dealer__approved", "paid")
@@ -1413,7 +1414,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total,})
+            form = self.RefundForm(initial={"amount": order.total, })
 
         context = {
             "form": form,
