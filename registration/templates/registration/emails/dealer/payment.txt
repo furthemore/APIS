@@ -13,11 +13,9 @@ Table Type - {{dealer.tableSize}}:  ${{dealer.tableSize.basePrice}}
 {% if dealer.needWifi %}
 Wi-Fi Access:  $50.00
 {% endif %}
-Continental Breakfast:  {{dealer.breakfast|yesno:"Yes,No"}}
-Friday Reception:  {{dealer.reception|yesno:"Yes,No"}}
 {% if dealer.getPartnerCount > 0%}
 
-Partners x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:45}}.00
+Partners x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:55}}.00
 {% endif %}
 {% if dealer.asstBreakfast%}
 Partner Breakfast x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:60}}.00
