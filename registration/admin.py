@@ -1414,7 +1414,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 messages.error(request, "Invalid form data.")
 
         if not form:
-            form = self.RefundForm(initial={"amount": order.total, })
+            form = self.RefundForm(initial={"amount": order.total})
 
         context = {
             "form": form,
