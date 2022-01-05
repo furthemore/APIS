@@ -2,6 +2,9 @@ FROM ghcr.io/furthemore/apis:apis-base-0ab2257
 
 LABEL org.opencontainers.image.source https://github.com/furthemore/APIS
 
+ARG SENTRY_RELEASE=local
+ENV SENTRY_RELEASE ${SENTRY_RELEASE}
+
 EXPOSE 80
 EXPOSE 443
 
