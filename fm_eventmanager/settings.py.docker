@@ -15,7 +15,7 @@ import logging
 
 eval_bool = lambda x: x.lower() in ('true', '1', 't', 'y', 'yes')
 
-if eval_bool(os.environ.get("ENABLE_SENTRY")):
+if eval_bool(os.environ.get("SENTRY_ENABLED")):
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
