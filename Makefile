@@ -47,6 +47,7 @@ build-docker-image:
 	# build and tag new container
 	docker build \
 		--file Dockerfile \
+		--build-arg SENTRY_RELEASE=$(TAG) \
 		--tag $(IMAGE):$(TAG) \
 		.
 
