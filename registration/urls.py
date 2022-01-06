@@ -16,7 +16,11 @@ from registration import views
 
 app_name = "registration"
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
+    url(r"^sentry-debug/", trigger_error),
     url(r"^$", registration.views.common.index, name="index"),
     url(r"^logout/$", LogoutView.as_view(), name="logout"),
     url(
