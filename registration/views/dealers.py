@@ -288,15 +288,12 @@ def add_assistants_checkout(request):
                 }
             )
 
-    dealer.refresh_from_db()
-    partner_count = dealer.getPartnerCount()
     unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False).count()
 
     # FIXME: remove hardcoded costs
-    partner_count -= unpaid_partner_count
-    total = Decimal(55 * partner_count)
+    total = Decimal(55 * unpaid_partner_count)
     if billing_data["breakfast"]:
-        total = total + Decimal(60 * partner_count)
+        total = total + Decimal(60 * unpaid_partner_count)
 
     if total <= 0:
         logger.error(f"Error checking out dealer while adding assistants: total too low: {total} <= 0")
