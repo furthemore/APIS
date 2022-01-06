@@ -288,6 +288,7 @@ def add_assistants_checkout(request):
                 }
             )
 
+    dealer.refresh_from_db()
     partner_count = dealer.getPartnerCount()
     unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False).count()
 
@@ -296,6 +297,16 @@ def add_assistants_checkout(request):
     total = Decimal(55 * partner_count)
     if billing_data["breakfast"]:
         total = total + Decimal(60 * partner_count)
+
+    if total <= 0:
+        logger.error(f"Error checking out dealer while adding assistants: total too low: {total} <= 0")
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "An error occurred while adding your assistants.",
+            },
+            status=500,
+        )
 
     status, message, order = doCheckout(
         billing_data, total, None, [], [order_item], 0, 0

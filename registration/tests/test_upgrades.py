@@ -1,6 +1,7 @@
 import json
 
 from django.urls import reverse
+from django.test import tag
 
 from registration.models import *
 from registration.tests.common import OrdersTestCase
@@ -81,6 +82,7 @@ class TestUpgrades(OrdersTestCase):
         badge.delete()
         attendee.delete()
 
+    @tag("square")
     def test_findUpgrade_happy_path(self):
         options = [
             {"id": self.option_conbook.id, "value": "true"},
@@ -118,6 +120,7 @@ class TestUpgrades(OrdersTestCase):
         badge.delete()
         attendee.delete()
 
+    @tag("square")
     def setup_upgrade(self):
         # set up existing registration
         options = [
@@ -177,6 +180,7 @@ class TestUpgrades(OrdersTestCase):
         )
         return cart_response, checkout_response
 
+    @tag("square")
     def test_upgrade(self):
         badge, attendee = self.setup_upgrade()
         cart, checkout = self.upgrade_add_and_checkout(
@@ -190,6 +194,7 @@ class TestUpgrades(OrdersTestCase):
         badge.delete()
         attendee.delete()
 
+    @tag("square")
     def test_upgrade_zero(self):
         badge, attendee = self.setup_upgrade()
         cart, checkout = self.upgrade_add_and_checkout(
@@ -200,6 +205,7 @@ class TestUpgrades(OrdersTestCase):
         badge.delete()
         attendee.delete()
 
+    @tag("square")
     def test_upgrade_card_declined(self):
         form = self.attendee_form_upgrade_checkout
         form["nonce"] = "cnon:card-nonce-declined"

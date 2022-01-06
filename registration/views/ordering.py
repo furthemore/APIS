@@ -232,8 +232,8 @@ def apply_discount(request):
 
 def add_attendee_to_assistant(request, attendee):
     assistant_id = request.session.get("assistant_id")
-    logger.info(f"Add attendee {attendee} to assistant id: {assistant_id}")
     if assistant_id:
+        logger.info(f"Add attendee {attendee} to assistant id: {assistant_id}")
         try:
             assistant = DealerAsst.objects.get(pk=assistant_id)
             assistant.attendee = attendee

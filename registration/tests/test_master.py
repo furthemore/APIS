@@ -5,7 +5,7 @@ import urllib.request
 
 from django.conf import settings
 from django.test import Client, TestCase
-from django.test.utils import override_settings
+from django.test.utils import override_settings, tag
 from django.urls import reverse
 from mock import patch
 
@@ -72,6 +72,7 @@ class TestAttendeeCheckout(OrdersTestCase):
     # Single transaction tests
     # =======================================================================
 
+    @tag("square")
     def test_checkout(self):
         options = [
             {"id": self.option_conbook.id, "value": "true"},
@@ -130,19 +131,23 @@ class TestAttendeeCheckout(OrdersTestCase):
         # Ensure a badge wasn't created
         self.assertEqual(Attendee.objects.filter(firstName="Bea").count(), 0)
 
+    @tag("square")
     def test_bad_cvv(self):
         self.assert_square_error("cnon:card-nonce-rejected-cvv", "CVV_FAILURE")
 
+    @tag("square")
     def test_bad_postalcode(self):
         self.assert_square_error(
             "cnon:card-nonce-rejected-postalcode", "ADDRESS_VERIFICATION_FAILURE"
         )
 
+    @tag("square")
     def test_bad_expiration(self):
         self.assert_square_error(
             "cnon:card-nonce-rejected-expiration", "INVALID_EXPIRATION"
         )
 
+    @tag("square")
     def test_card_declined(self):
         self.assert_square_error("cnon:card-nonce-declined", "GENERIC_DECLINE")
 
@@ -171,6 +176,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         self.assertEqual(Badge.objects.filter(badgeName="FluffyButz").count(), 0)
         self.assertEqual(PriceLevel.objects.filter(id=self.price_45.id).count(), 1)
 
+    @tag("square")
     def test_vip_checkout(self):
         self.add_to_cart(self.attendee_form_2, self.price_675, [])
 
@@ -197,6 +203,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         self.assertEqual(order.orgDonation, 1.00)
         self.assertEqual(order.charityDonation, 10.00)
 
+    @tag("square")
     def test_discount(self):
         options = [
             {"id": self.option_conbook.id, "value": "true"},
@@ -289,6 +296,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         discount = Discount.objects.get(codeName="StaffDiscount")
         self.assertEqual(discount.used, discountUsed + 1)
 
+    @tag("square")
     def test_staff(self):
         attendee = Attendee(
             firstName="Staffer",
@@ -504,6 +512,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         response = self.client.get(reverse("registration:flush"))
         self.assertEqual(response.status_code, 200)
 
+    @tag("square")
     def test_dealer(self):
         dealer_pay = {
             "attendee": {

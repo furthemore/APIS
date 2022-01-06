@@ -1,4 +1,5 @@
-from unittest import TestCase
+from django.test import TestCase
+from django.test import tag
 
 from mock import patch
 
@@ -104,6 +105,7 @@ class TestSquareOrders(TestCase):
         )
         self.assertIsNone(result)
 
+    @tag("square")
     def test_get_payments_from_order_id_invalid(self):
         result = payments.get_payments_from_order_id("doesntexist")
         self.assertEqual(len(result), 0)
