@@ -333,7 +333,8 @@ class TempToken(models.Model):
 
 
 class Attendee(models.Model):
-    firstName = models.CharField(max_length=200)
+    firstName = models.CharField("Legal First Name", max_length=200)
+    preferredName = models.CharField("Preferred First Name", max_length=200, blank=True)
     lastName = models.CharField(max_length=200)
     address1 = models.CharField(max_length=200, blank=True)
     address2 = models.CharField(max_length=200, blank=True)
@@ -359,10 +360,20 @@ class Attendee(models.Model):
     parentEmail = models.CharField(max_length=200, blank=True)
     aslRequest = models.BooleanField(default=False)
 
+    def getFirst(self):
+        if not self.preferredName:
+            return self.firstName
+        else:
+            return self.preferredName
+
     def __str__(self):
         if self is None:
             return "--"
-        return f"{self.firstName} {self.lastName}"
+        if not self.preferredName:
+            return f"{self.firstName} {self.lastName}"
+        else:
+            return f"{self.preferredName} {self.lastName}"
+        # return f"{self.firstName} {self.lastName}"
 
 
 def badge_signature_svg_path(instance, filename):
