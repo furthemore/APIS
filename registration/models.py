@@ -335,7 +335,7 @@ class TempToken(models.Model):
 class Attendee(models.Model):
     firstName = models.CharField("Legal First Name", max_length=200)
     preferredName = models.CharField("Preferred First Name", max_length=200, blank=True)
-    lastName = models.CharField(max_length=200)
+    lastName = models.CharField("Legal Last Name", max_length=200)
     address1 = models.CharField(max_length=200, blank=True)
     address2 = models.CharField(max_length=200, blank=True)
     city = models.CharField(max_length=200, blank=True)
