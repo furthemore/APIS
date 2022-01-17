@@ -399,6 +399,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         send_payment_email,
     ]
     readonly_fields = ["get_email", "registrationToken"]
+    raw_id_fields = ("attendee",)
     fieldsets = (
         (
             None,
