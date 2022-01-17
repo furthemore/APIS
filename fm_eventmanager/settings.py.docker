@@ -102,19 +102,21 @@ INSTALLED_APPS = [
     'maintenance_mode',
     'registration',
     'debug_toolbar',
+    'django_prometheus',
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'fm_eventmanager.urls'
@@ -148,7 +150,7 @@ WSGI_APPLICATION = 'fm_eventmanager.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_prometheus.db.backends.postgresql',
         'NAME': os.getenv('DATABASE_NAME', 'apis'),
         'USER': os.getenv('DATABASE_USER', 'apis'),
         'PASSWORD': os.getenv('DATABASE_PASS', 'secret'),
@@ -156,6 +158,11 @@ DATABASES = {
         'PORT': os.getenv('DATABASE_PORT', ''),
     }
 }
+
+
+# Prometheus metrics
+PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(81, 90)
+PROMETHEUS_METRICS_EXPORT_ADDRESS = ""
 
 
 # Password validation
