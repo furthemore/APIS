@@ -680,6 +680,8 @@ admin.site.register(Staff, StaffAdmin)
 def make_staff(modeladmin, request, queryset):
     event = Event.objects.get(default=True)
     for att in queryset:
+        if Staff.objects.filter(attendee=att, event=event).exists():
+            continue
         staff = Staff(attendee=att, event=event)
         staff.save()
     if queryset.count() > 1:
