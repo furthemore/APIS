@@ -1,8 +1,8 @@
 from django.test import TestCase
 from decimal import Decimal
 
-from registration.models import Charity, Venue
-from registration.tests.common import DEFAULT_VENUE_ARGS
+from registration.models import Attendee, Charity, Venue
+from registration.tests.common import DEFAULT_VENUE_ARGS, TEST_ATTENDEE_ARGS
 
 
 class TestCharity(TestCase):
@@ -30,3 +30,13 @@ class TestVenue(TestCase):
         self.assertIsInstance(self.venue.state, str)
         self.assertIsInstance(self.venue.country, str)
         self.assertEquals(str(self.venue), self.venue.name)
+
+
+class TestAttendee(TestCase):
+    def setUp(self):
+        self.attendee = Attendee(*TEST_ATTENDEE_ARGS)
+
+    def test_preferredName(self):
+        preferredName = "Someone else"
+        self.attendee.preferredName = preferredName
+        self.assertEqual(self.attendee.getFirst(), preferredName)
