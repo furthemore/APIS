@@ -366,6 +366,8 @@ class Attendee(models.Model):
         else:
             return self.preferredName
 
+    getFirst.short_description = "First Name"
+
     def __str__(self):
         if self is None:
             return "--"
