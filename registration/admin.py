@@ -491,10 +491,6 @@ checkin_staff.short_description = "Check in staff"
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
         registration.emails.send_staff_promotion_email(staff)
-    if queryset.count() > 1:
-        messages.success(request, "Successfully emailed %d staff" % queryset.count())
-    else:
-        messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
 send_staff_registration_email.short_description = "Send registration instructions"
