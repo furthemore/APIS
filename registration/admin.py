@@ -1157,7 +1157,7 @@ class AttendeeAdmin(NestedModelAdmin):
     save_on_top = True
     actions = [make_staff]
     search_fields = ["email", "lastName", "firstName"]
-    list_display = ("preferredName", "lastName", "email", "get_age_range")
+    list_display = ("getFirst", "lastName", "email", "get_age_range")
     fieldsets = (
         (
             None,

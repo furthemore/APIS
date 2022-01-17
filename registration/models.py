@@ -369,11 +369,7 @@ class Attendee(models.Model):
     def __str__(self):
         if self is None:
             return "--"
-        if not self.preferredName:
-            return f"{self.firstName} {self.lastName}"
-        else:
-            return f"{self.preferredName} {self.lastName}"
-        # return f"{self.firstName} {self.lastName}"
+        return f"{self.getFirst()} {self.lastName}"
 
 
 def badge_signature_svg_path(instance, filename):
