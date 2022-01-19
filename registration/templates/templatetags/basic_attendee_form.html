@@ -2,10 +2,18 @@
 <div class="form-group">
     <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
     <div class="col-sm-4">
-        <input type="text" id="firstName" value="{{attendee.firstName}}" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
+        <input type="text" id="firstName" value="{{attendee.firstName}}" placeholder="Legal First Name" class="form-control" autofocus required data-error="First name is required. ">
     </div>
     <div class="col-sm-5">
         <input type="text" id="lastName" value="{{attendee.lastName}}" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+    </div>
+    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+</div>
+
+<div class="form-group">
+    <label for="preferredName" class="col-sm-3 control-label">Preferred First Name</label>
+    <div class="col-sm-4">
+        <input type="text" id="preferredName" value="{{attendee.preferredName}}" placeholder="Preferred First Name" class="form-control">
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
@@ -23,10 +31,10 @@
    <label class="col-sm-3">&nbsp;</label>
    <div class="col-sm-9">
        <label>
-           <input type="checkbox" id="contact" checked="true"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+           <input type="checkbox" id="contact"> <span class="control-label" >Please keep me up to date with convention related information.</span>
        </label>
        <label>
-           <input type="checkbox" id="survey" checked="true"> <span class="control-label" >Please send me the post-con survey.</span>
+           <input type="checkbox" id="survey"> <span class="control-label" >Please send me the post-con survey.</span>
        </label>
    </div>
 </div>
