@@ -174,6 +174,10 @@ def send_staff_token_email(modeladmin, request, queryset):
         registration.emails.send_new_staff_email(token)
         token.sent = True
         token.save()
+    if queryset.count() > 1:
+        messages.success(request, "Successfully sent emails to %d staff members" % queryset.count())
+    else:
+        messages.success(request, "Successfully sent email to %s" % queryset[0])
 
 
 send_staff_token_email.short_description = "Send New Staff registration email"
@@ -190,6 +194,10 @@ admin.site.register(TempToken, TempTokenAdmin)
 def send_approval_email(modeladmin, request, queryset):
     registration.emails.send_dealer_approval_email(queryset)
     queryset.update(emailed=True)
+    if queryset.count() > 1:
+        messages.success(request, "Successfully emailed %d dealers" % queryset.count())
+    else:
+        messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
 send_approval_email.short_description = "Send approval email and payment instructions"
@@ -199,6 +207,10 @@ def mark_as_approved(modeladmin, request, queryset):
     for dealer in queryset:
         dealer.approved = True
         dealer.save()
+    if queryset.count() > 1:
+        messages.success(request, "Successfully approved %d dealers" % queryset.count())
+    else:
+        messages.success(request, "Successfully approved %s" % queryset[0].attendee)
 
 
 mark_as_approved.short_description = "Approve selected dealers"
@@ -210,6 +222,10 @@ def send_payment_email(modeladmin, request, queryset):
         oi = OrderItem.objects.filter(badge=badge).first()
         if oi and oi.order:
             registration.emails.send_dealer_payment_email(dealer, oi.order)
+    if queryset.count() > 1:
+        messages.success(request, "Successfully emailed %d dealers" % queryset.count())
+    else:
+        messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
 send_payment_email.short_description = "Resend payment confirmation email"
@@ -218,6 +234,10 @@ send_payment_email.short_description = "Resend payment confirmation email"
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
         registration.emails.send_dealer_assistant_form_email(dealer)
+    if queryset.count() > 1:
+        messages.success(request, "Successfully emailed %d dealers" % queryset.count())
+    else:
+        messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
 send_assistant_form_email.short_description = "Send assistant addition form email"
@@ -247,6 +267,10 @@ class DealerAsstResource(resources.ModelResource):
 def send_assistant_registration_email(modeladmin, request, queryset):
     for assistant in queryset:
         registration.emails.send_dealer_assistant_registration_invite(assistant)
+    if queryset.count() > 1:
+        messages.success(request, "Successfully sent emails to %d dealer assistants" % queryset.count())
+    else:
+        messages.success(request, "Successfully sent email to %s" % queryset[0].attendee)
 
 
 send_assistant_registration_email.short_description = "Send registration instructions"
@@ -399,6 +423,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         send_payment_email,
     ]
     readonly_fields = ["get_email", "registrationToken"]
+    raw_id_fields = ("attendee",)
     fieldsets = (
         (
             None,
@@ -654,9 +679,20 @@ admin.site.register(Staff, StaffAdmin)
 
 def make_staff(modeladmin, request, queryset):
     event = Event.objects.get(default=True)
+    skipped = 0
     for att in queryset:
+        if Staff.objects.filter(attendee=att, event=event).exists():
+            skipped += 1
+            continue
         staff = Staff(attendee=att, event=event)
         staff.save()
+    if queryset.count() > 1:
+        if skipped > 0:
+            messages.success(request, f"{queryset.count() - skipped} attendees added to staff ({skipped} ommited that were already on staff for {event})")
+        else:
+            messages.success(request, f"{queryset.count()} attendees added to staff for {event}")
+    else:
+        messages.success(request, f"Successfully added {queryset[0]} to staff for {event}")
 
 
 make_staff.short_description = "Add to Staff"
@@ -665,6 +701,10 @@ make_staff.short_description = "Add to Staff"
 def send_upgrade_form_email(modeladmin, request, queryset):
     for badge in queryset:
         registration.emails.send_upgrade_instructions(badge)
+    if queryset.count() > 1:
+        messages.success(request, "Successfully sent emails to %d attendees" % queryset.count())
+    else:
+        messages.success(request, "Successfully sent email to %s" % queryset[0])
 
 
 send_upgrade_form_email.short_description = "Send upgrade info email"
@@ -676,6 +716,10 @@ def resend_confirmation_email(modeladmin, request, queryset):
         registration.emails.send_registration_email(
             order, badge.attendee.email, send_vip=False
         )
+    if queryset.count() > 1:
+        messages.success(request, "Successfully sent emails to %d attendees" % queryset.count())
+    else:
+        messages.success(request, "Successfully sent email to %s" % queryset[0])
 
 
 resend_confirmation_email.short_description = "Resend confirmation email"
