@@ -219,6 +219,7 @@ def addStaff(request):
     tz = timezone.get_current_timezone()
     birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
 
+    attendee.preferredName = pda.get("preferredName", "")
     attendee.firstName = pda["firstName"]
     attendee.lastName = pda["lastName"]
     attendee.address1 = pda["address1"]
