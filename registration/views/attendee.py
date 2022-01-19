@@ -4,8 +4,9 @@ from datetime import date
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
+from django.utils import timezone
 
-from registration.models import *
+from registration.models import Attendee, Badge, BanList, Dealer, PriceLevel, Staff
 
 logger = logging.getLogger(__name__)
 
