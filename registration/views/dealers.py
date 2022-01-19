@@ -391,6 +391,7 @@ def addDealer(request):
     except attendee.DoesNotExist:
         return HttpResponseServerError("Attendee id not found")
 
+    attendee.preferredName = pda.get("preferredName", "")
     attendee.firstName = pda["firstName"]
     attendee.lastName = pda["lastName"]
     attendee.address1 = pda["address1"]
@@ -525,6 +526,7 @@ def addNewDealer(request):
     event = Event.objects.get(name=evt)
 
     attendee = Attendee(
+        preferredName=pda.get("preferredName", ""),
         firstName=pda["firstName"],
         lastName=pda["lastName"],
         address1=pda["address1"],
