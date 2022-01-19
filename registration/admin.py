@@ -679,15 +679,20 @@ admin.site.register(Staff, StaffAdmin)
 
 def make_staff(modeladmin, request, queryset):
     event = Event.objects.get(default=True)
+    skipped = 0
     for att in queryset:
         if Staff.objects.filter(attendee=att, event=event).exists():
+            skipped += 1
             continue
         staff = Staff(attendee=att, event=event)
         staff.save()
     if queryset.count() > 1:
-        messages.success(request, "Successfully added %d attendees to staff" % queryset.count())
+        if skipped > 0:
+            messages.success(request, f"{queryset.count() - skipped} attendees added to staff ({skipped} ommited that were already on staff for {event})")
+        else:
+            messages.success(request, f"{queryset.count()} attendees added to staff for {event}")
     else:
-        messages.success(request, "Successfully added %s to staff" % queryset[0])
+        messages.success(request, f"Successfully added {queryset[0]} to staff for {event}")
 
 
 make_staff.short_description = "Add to Staff"
