@@ -1201,13 +1201,13 @@ class AttendeeAdmin(NestedModelAdmin):
     save_on_top = True
     actions = [make_staff]
     search_fields = ["email", "lastName", "firstName"]
-    list_display = ("firstName", "lastName", "email", "get_age_range")
+    list_display = ("getFirst", "lastName", "email", "get_age_range")
     fieldsets = (
         (
             None,
             {
                 "fields": (
-                    ("firstName", "lastName"),
+                    ("preferredName", "firstName", "lastName"),
                     ("address1", "address2"),
                     ("city", "state", "postalCode", "country"),
                     ("email", "phone", "emailsOk", "surveyOk"),
