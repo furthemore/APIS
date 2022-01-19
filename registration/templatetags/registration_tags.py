@@ -16,3 +16,13 @@ def show_price_types(*args, **kwargs):
 @register.inclusion_tag("templatetags/basic_staff_form.html")
 def show_staff_form(*args, **kwargs):
     return kwargs
+
+
+@register.simple_tag
+def attendee_get_first(attendee):
+    firstName = attendee.get("firstName", "")
+    preferredName = attendee.get("preferredName")
+
+    if preferredName:
+        return preferredName
+    return firstName

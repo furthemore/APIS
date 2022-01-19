@@ -121,6 +121,7 @@ def saveCart(cart):
     event = Event.objects.get(name=evt)
 
     attendee = Attendee(
+        preferredName=pda["preferredName"],
         firstName=pda["firstName"],
         lastName=pda["lastName"],
         phone=pda["phone"],

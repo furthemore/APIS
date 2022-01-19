@@ -1,5 +1,5 @@
 {% extends "registration/master.html" %}
-{% load settings mathfilters %}
+{% load settings mathfilters registration_tags %}
 
 {% block title %}| Checkout{% endblock %}
 {% block head %}
@@ -25,7 +25,7 @@
 		{% for item in orderItems %}
 			<div class="row">
                 {% if item.attendee %}
-				  <div class="col-sm-5 col-sm-offset-1">{{item.attendee.firstName}} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
+				  <div class="col-sm-5 col-sm-offset-1">{% attendee_get_first item.attendee %} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
                 {% else %}
 				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
                 {% endif %}
@@ -157,7 +157,7 @@
                 <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
 			    {% for oi in orderItems %}
                     {% if oi.attendee %}
-			          <option value="{{forloop.counter0}}">{{oi.attendee.firstName}} {{oi.attendee.lastName}}</option>
+			          <option value="{{forloop.counter0}}">{% attendee_get_first oi.attendee %} {{oi.attendee.lastName}}</option>
                     {% else %}
 			          <option value="{{forloop.counter0}}">{{oi.badge.attendee}}</option>
                     {% endif %}
@@ -168,7 +168,7 @@
         {% endif %}
 
 		<div class="form-group">
-                    <label for="billingName" class="col-sm-3 control-label">Billing Name<span style="color:red;">*</span></label>
+                    <label for="billingName" class="col-sm-3 control-label">Legal Billing Name<span style="color:red;">*</span></label>
                     <div class="col-sm-4">
                         <input type="text" id="fname" placeholder="Billing First Name" class="form-control validate" required data-error="Billing name is required. " />
                     </div>
@@ -477,9 +477,9 @@
 		}
 
 		var userName = $("#useFrom option[value='" + userId + "']").text();
-		$("#fname").val(userName.split(' ')[0]);
-		$("#lname").val(userName.split(' ')[1]);
         var address = addresses[userId];
+				$("#fname").val(address.fname);
+				$("#lname").val(address.lname);
     	$("#email").val(address.email);
 		$("#add1").val(address.address1);
 		$("#add2").val(address.address2);
