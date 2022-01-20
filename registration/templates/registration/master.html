@@ -38,6 +38,7 @@
 	{% if event %}
 	  var event_start_date = new {% event_start_date event %};
 	{% endif %}
+	var IDEMPOTENCY_KEY = "{% idempotency_key %}";
 </script>
 
 <script src="{% static 'js/modernizr-custom.js' %}"></script>

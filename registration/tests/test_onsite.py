@@ -113,6 +113,7 @@ class OnsiteBaseTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(post_data),
             content_type="application/json",
+            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
         )
 
         return response

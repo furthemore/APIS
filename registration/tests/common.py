@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from datetime import timedelta
 
 from django.test import Client, TestCase
@@ -373,6 +374,7 @@ class OrdersTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(postData),
             content_type="application/json",
+            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
         )
         return response
 
@@ -410,6 +412,7 @@ class OrdersTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(postData),
             content_type="application/json",
+            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
         )
 
         return response
