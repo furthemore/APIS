@@ -66,7 +66,6 @@ SERVER_EMAIL = "no-reply@example.com"
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -101,6 +100,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
+    'idempotency_key.middleware.ExemptIdempotencyKeyMiddleware',
 ]
 
 ROOT_URLCONF = 'fm_eventmanager.urls'
@@ -130,7 +130,7 @@ WSGI_APPLICATION = 'fm_eventmanager.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/1.9/ref/settings/#databases
+# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -200,10 +200,6 @@ APIS_DEFAULT_EMAIL = "registration@example.com"
 APIS_DEALER_HEAD = "marketplace@example.com"
 APIS_STAFF_HEAD = "staff@example.com"
 
-# Sandbox values - DO NOT check in production ids
-AUTHNET_NAME = '426rwVfr3G47'
-AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
-
 # Sandbox values = DO NOT check in production ids
 SQUARE_APPLICATION_ID = os.environ['SQUARE_APPLICATION_ID']
 SQUARE_ACCESS_TOKEN = os.environ['SQUARE_ACCESS_TOKEN']
@@ -232,7 +228,7 @@ CLOUD_MESSAGING_KEY = "AAA..."
 # Cron metrics recording provider and settings
 METRICS_BACKEND = "InfluxDBReporter"
 METRICS_SETTINGS = {
-    "database" : "apis",
+    "database": "apis",
 }
 
 # MQTT for cash-drawer worker

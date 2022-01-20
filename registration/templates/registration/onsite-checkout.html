@@ -171,11 +171,14 @@
                 });
     });
 
-    $("#checkout").click(function (e) {
+    function checkout_click(e) {
         e.preventDefault();
         $("form").validator('validate');
         var errorCount = $(".has-error").length;
-        if (errorCount > 0) {return;}
+        if (errorCount > 0) {
+            $("#checkout").one('click', checkout_click);
+            return;
+        }
 
         $("#checkout").attr("disabled", "disabled");
 
@@ -196,46 +199,23 @@
                 $.ajaxSettings.beforeSend(xhr, settings);
             },
             "error": function(result, status, error) {
-                        alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
-            $("#checkout").removeAttr("disabled");
+                alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                $("#checkout").one('click', checkout_click).removeAttr("disabled");
             },
-                    "success": function (result, status) {
-                        if (result.success) {
-                window.location = "{% url 'registration:onsite_done' %}";
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
-                $("#checkout").removeAttr("disabled");
+            "success": function (result, status) {
+                if (result.success) {
+                    window.location = "{% url 'registration:onsite_done' %}";
+                } else {
+                    alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                    $("#checkout").one('click', checkout_click).removeAttr("disabled");
+                }
             }
-                    }
         });
 
 
-    });
-
-
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
     }
-    return cookieValue;
-}
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    }
-});
+
+    $("#checkout").one('click', checkout_click);
 
 </script>
 {% endblock %}
