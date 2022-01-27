@@ -12,12 +12,13 @@ import registration.views.ordering
 import registration.views.printing
 import registration.views.staff
 import registration.views.upgrade
-from registration import views
 
 app_name = "registration"
 
+
 def trigger_error(request):
     division_by_zero = 1 / 0
+
 
 urlpatterns = [
     url(r"^sentry-debug/", trigger_error),

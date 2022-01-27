@@ -13,7 +13,7 @@ django-flat-responsive==2.0
 django-widget-tweaks==1.4.9
 freezegun==1.1.0
 squareup==4.1.0.20200122
-git+git://github.com/gavinwahl/django-u2f@master
+django-u2f~=1.0.0
 django-maintenance-mode==0.14.0
 Pillow>=5.3
 influxdb==5.2.3
@@ -21,6 +21,8 @@ Werkzeug==0.15.3
 django-admin-env-notice~=0.4
 django-debug-toolbar~=3.2.2
 django-prometheus~=2.2.0
+django_idempotency_key~=1.1.1
+django-redis~=5.2.0
 mock==3.0.5
 paho-mqtt==1.5.0
 sentry-sdk

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import uuid
 
 from django import template
 from django.contrib.sites.models import Site
@@ -59,3 +60,8 @@ def event_start_date(event, freeze_time=None):
         if today > event.eventEnd:
             return js_date(event.eventEnd)
         return js_date(today)
+
+
+@register.simple_tag
+def idempotency_key():
+    return str(uuid.uuid4())

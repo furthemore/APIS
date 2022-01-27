@@ -17,14 +17,22 @@ orders_api = client.orders
 logger = logging.getLogger("registration.payments")
 
 
-def charge_payment(order, cc_data):
+def get_idempotency_key(request=None):
+    if request:
+        header_key = request.META.get("IDEMPOTENCY_KEY")
+        if header_key:
+            return header_key
+    return str(uuid.uuid4())
+
+
+def charge_payment(order, cc_data, request=None):
     """
     Returns two variabies:
         success - general success flag
         message - type of failure.
     """
 
-    idempotency_key = str(uuid.uuid4())
+    idempotency_key = get_idempotency_key(request)
     converted_total = int(order.total * 100)
 
     amount = {"amount": converted_total, "currency": settings.SQUARE_CURRENCY}

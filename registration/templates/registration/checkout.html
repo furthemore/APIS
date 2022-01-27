@@ -489,13 +489,16 @@
 		$("#country").val(address.country);
 	});
 
-	$("#checkout").click(function (e) {
+    function checkout_click(e) {
+		$(this).prop('disabled', true);
 		e.preventDefault();
         $("form").validator('validate');
    		var errorCount = $(".has-error").length;
-		if (errorCount > 0) {return;}
-
-		$("#checkout").attr("disabled", "disabled");
+		if (errorCount > 0) {
+		    $(this).prop("disabled", false);
+		    $("#checkout").one('click', checkout_click);
+		    return;
+		}
 
 		{% if total > 0 %}
             paymentForm.requestCardNonce();
@@ -503,7 +506,9 @@
             doCheckout();
 		{% endif %}
 
-	});
+	}
+
+	$("#checkout").one('click', checkout_click);
 
 function doCheckout(card_data) {
     {% if total > 0 %}
@@ -523,6 +528,47 @@ function doCheckout(card_data) {
         var data = {};
     {% endif %}
 
+        var success_callback = function (result, status) {
+            if (result.success) {
+                window.location = "{% url 'registration:done' %}";
+            } else {
+                $("#checkout").removeAttr("disabled");
+                if (result.message.indexOf("email") > -1) {
+                    alert(result.message);
+                    window.location = "{% url 'registration:done' %}";
+                } else {
+                    alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                    $("#checkout").one('click', checkout_click);
+                }
+            }
+        };
+
+        var error_callback = function(result, status, error) {
+            if (result.status == 409) {
+                // Probably actually an idempotent success
+                success_callback(result, status);
+                return;
+            }
+
+            var redirect = false;
+            var error_message = "An error occurred while attempting to process your order:\n";
+            try {
+                var message = JSON.parse(result.responseText);
+                if (('reason' in message) && ('errors' in message.reason)) {
+                    message.reason.errors.forEach(function (element) {
+                        error_message += element.detail + " (" + element.code + ")\n";
+                    });
+                }
+            } catch (e) {
+                redirect = true;
+                error_message = "An unspecified error occurred while attempting to process your order.\n"
+            }
+            error_message += "If this error continues, please contact {{event.registrationEmail}} for assistance.";
+            alert(error_message);
+            $("#checkout").removeAttr("disabled");
+            window.location = "{% url 'registration:cart' %}";
+        };
+
 		$.ajax({
 		    "type": "POST",
 		    "dataType": "json",
@@ -532,68 +578,11 @@ function doCheckout(card_data) {
 		        console.log("Before Send");
 		        $.ajaxSettings.beforeSend(xhr, settings);
 		    },
-		    "error": function(result, status, error) {
-                var redirect = false;
-                var error_message = "An error occurred while attempting to process your order:\n";
-                try {
-                    var message = JSON.parse(result.responseText);
-                    if (('reason' in message) && ('errors' in message.reason)) {
-                        message.reason.errors.forEach(function (element) {
-                            error_message += element.detail + " (" + element.code + ")\n";
-                        });
-                    }
-                } catch (e) {
-                    redirect = true;
-                    error_message = "An unspecified error occurred while attempting to process your order.\n"
-                }
-                error_message += "If this error continues, please contact {{event.registrationEmail}} for assistance.";
-                alert(error_message);
-    			$("#checkout").removeAttr("disabled");
-                window.location = "{% url 'registration:cart' %}";
-    		},
-            "success": function (result, status) {
-                if (result.success) {
-	    			window.location = "{% url 'registration:done' %}";
-                } else {
-			        $("#checkout").removeAttr("disabled");
-                    if (result.message.indexOf("email") > -1) {
-                        alert(result.message);
-                        window.location = "{% url 'registration:done' %}";
-                    } else {
-                        alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.")
-                    }
-                }
-            }
+		    "error": error_callback,
+            "success": success_callback
 		});
 
-
-
 }
-
-
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    }
-});
 
 </script>
 {% endblock %}

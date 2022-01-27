@@ -2,10 +2,10 @@
 <div class="form-group">
     <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
     <div class="col-sm-4">
-        <input type="text" id="firstName" value="{{attendee.firstName}}" placeholder="Legal First Name" class="form-control" autofocus required data-error="First name is required. ">
+        <input type="text" id="firstName" value="{{attendee.firstName}}" placeholder="Legal First Name" class="form-control" autofocus required="required" data-error="First name is required. ">
     </div>
     <div class="col-sm-5">
-        <input type="text" id="lastName" value="{{attendee.lastName}}" placeholder="Last Name" class="form-control" autofocus required data-error="Last name is required.">
+        <input type="text" id="lastName" value="{{attendee.lastName}}" placeholder="Last Name" class="form-control" autofocus required="required" data-error="Last name is required.">
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
@@ -21,7 +21,7 @@
 <div class="form-group">
     <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
     <div class="col-sm-9">
-        <input type="email" id="email" value="{{attendee.email}}" class="form-control" />
+        <input type="email" id="email" value="{{attendee.email}}" class="form-control" required="required" data-error="Email is required." />
     </div>
     <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 </div>

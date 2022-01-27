@@ -1,7 +1,9 @@
 import json
 import logging
+import time
 
 from django.http import JsonResponse
+from idempotency_key.decorators import idempotency_key
 
 import registration.emails
 from registration.models import *
@@ -13,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def doCheckout(
-    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
+    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity, request=None
 ):
     event = Event.objects.get(default=True)
     reference = common.get_unique_confirmation_token(Order)
@@ -56,7 +58,7 @@ def doCheckout(
             400, "A required field was missing from billingData: {0}".format(e)
         )
 
-    status, response = charge_payment(order, billingData)
+    status, response = charge_payment(order, billingData, request)
 
     if status:
         order.save()
@@ -242,6 +244,7 @@ def add_attendee_to_assistant(request, attendee):
             pass
 
 
+@idempotency_key(optional=False)
 def checkout(request):
     event = Event.objects.get(default=True)
     sessionItems = request.session.get("cart_items", [])
@@ -256,6 +259,7 @@ def checkout(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
+        logger.exception(e)
         logger.error("Unable to decode JSON for checkout()")
         return common.abort(400, "Unable to parse input options")
 
@@ -285,7 +289,8 @@ def checkout(request):
             registrationEmail = common.getRegistrationEmail(event)
             return common.abort(
                 400,
-                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not receive one within the next hour, please contact {0} to get your confirmation number.".format(
+                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
+                "receive one within the next hour, please contact {0} to get your confirmation number.".format(
                     registrationEmail
                 ),
             )
@@ -330,7 +335,7 @@ def checkout(request):
         message = "Onsite success"
     else:
         status, message, order = doCheckout(
-            pbill, total, discount, cartItems, orderItems, porg, pcharity
+            pbill, total, discount, cartItems, orderItems, porg, pcharity, request
         )
 
     if status:

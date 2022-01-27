@@ -73,18 +73,19 @@
 <script type="text/javascript" src="/static/js/templates/staff.js"></script>
  <script type="text/javascript">
 
-	$("#register").click(doRegister);
-
-
 	function doRegister(e) {
 		e.preventDefault();
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
-		if (errorCount > 0) {return;}
+		if (errorCount > 0) {
+            $(this).one(doRegister)
+            return;
+        }
 
         // Validate birthdate input
         if ($("#birthDate").val() == "") {
             alert("You must enter your birthdate to submit your registration.");
+            $(this).one(doRegister)
             return;
         }
         if (Modernizr.inputtypes.date) {
@@ -96,7 +97,8 @@
         }
         var age = getAge(birthdate);
         if (age < 18) {
-            alert("You must be 18 by the first day of the event to register online.")
+            alert("You must be 18 by the first day of the event to register online.");
+            $(this).one(doRegister)
             return;
         }
 
@@ -137,7 +139,7 @@
 			    } else {
                     alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.staffEmail }} for assistance.")
 			    }
-			    $("#register").removeAttr("disabled");
+			    $("#register").removeAttr("disabled").one(doRegister);
 		    },
             "success": function (result, status) {
                 if (result.success)
@@ -146,40 +148,13 @@
 			    } else {
                     alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.staffEmail }} for assistance.")
 			    }
-			    $("#register").removeAttr("disabled");
+			    $("#register").removeAttr("disabled").one(doRegister);
             }
 		});
 	}
 
 
-
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    }
-});
-
-
-
+    $("#register").one(doRegister);
 
  </script>
 

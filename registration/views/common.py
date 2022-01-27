@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from idempotency_key.decorators import idempotency_key
 
 import registration.emails
 from registration.models import *
@@ -375,7 +376,7 @@ def getRegistrationEmail(event=None):
 
 
 def doCheckout(
-    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity,
+    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity, request=None
 ):
     event = Event.objects.get(default=True)
     reference = get_confirmation_token()
@@ -418,7 +419,7 @@ def doCheckout(
     except KeyError as e:
         abort(400, "A required field was missing from billingData: {0}".format(e))
 
-    status, response = charge_payment(order, billingData)
+    status, response = charge_payment(order, billingData, request)
 
     if status:
         if cartItems:
@@ -682,7 +683,7 @@ def checkout(request):
         message = "Onsite success"
     else:
         status, message, order = doCheckout(
-            pbill, total, discount, cartItems, orderItems, porg, pcharity
+            pbill, total, discount, cartItems, orderItems, porg, pcharity, request
         )
 
     if status:

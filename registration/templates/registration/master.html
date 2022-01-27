@@ -38,16 +38,17 @@
 	{% if event %}
 	  var event_start_date = new {% event_start_date event %};
 	{% endif %}
+	var IDEMPOTENCY_KEY = "{% idempotency_key %}";
 </script>
 
 <script src="{% static 'js/modernizr-custom.js' %}"></script>
-<script src="{% static 'js/main.js' %}"></script>
 <script src="{% static 'js/jquery.js' %}"></script>
 <script src="{% static 'js/jquery.loadTemplate.min.js' %}"></script>
 <script src="{% static 'js/bs.min.js' %}"></script>
 <script src="{% static 'js/bootstrap-formhelpers.js' %}"></script>
 <script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.5/validator.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
 
 {% block javascript  %}
 {% endblock %}
