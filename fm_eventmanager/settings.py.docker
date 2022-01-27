@@ -263,10 +263,10 @@ IDEMPOTENCY_KEY = {
 
         # Location of the Redis server if MultiProcessRedisLock is used otherwise this is ignored.
         # The host name can be specified or both the host name and the port separated by a colon ':'
-        'LOCATION': 'redis://redis:6379',
+        'LOCATION': os.getenv('IDEMPOTENCY_KEY_LOCK_LOCATION', 'redis://redis:6379'),
 
         # The unique name to be used across processes for the lock. Only used by the MultiProcessRedisLock class
-        'NAME': 'APISLock',
+        'NAME': os.getenv('IDEMPOTENCY_KEY_LOCK_NAME', 'APISLock'),
 
         # The maximum time to live for the lock. If a lock is given and is never released this timeout forces the release
         # The lock time is in seconds and the default is None which means lock until it is manually released
