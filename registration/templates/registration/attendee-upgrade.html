@@ -321,7 +321,7 @@
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {
-			$("#checkout").one(doRegister);
+			$("#checkout").one('click', doRegister);
 			return;
 		}
 
@@ -348,23 +348,25 @@
 				if (result.responseText == "") {
 					alert("Your session has expired.");
 				} else {
-					alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistence.")
+					alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
 				}
-				$("#checkout").removeAttr("disabled").one(doRegister);
+				$("#checkout").removeAttr("disabled").one('click', doRegister);
 			},
 			"success": function (result, status) {
 				if (result.success)
 				{
 					window.location = "{% url 'registration:invoiceUpgrade' %}";
 				} else {
-					$("#checkout").removeAttr("disabled").one(doRegister);
-					alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistence.");
+					$("#checkout").removeAttr("disabled").one('click', doRegister);
+					alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.");
 				}
 			}
 		});
 	}
 
-	$("#checkout").one(doRegister);
+    $(document).ready(function (e) {
+	    $("#checkout").one('click', doRegister);
+	});
 
  </script>
 

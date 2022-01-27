@@ -543,13 +543,13 @@
         $("form").validator('validate');
         var errorCount = $(".has-error").length;
         if (errorCount > 0) {
-            $("#register").click(register_click);
+            $("#register").one('click', register_click);
             return;
         }
 
         if (($("#birthDate").val() == "")) {
             alert("You must enter your birthdate to submit your registration.");
-            $("#register").click(register_click);
+            $("#register").one('click', register_click);
             return;
         }
         if (Modernizr.inputtypes.date) {
@@ -586,12 +586,12 @@
             },
             "error": function(result, status) {
                 alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.")
-                $("#register").click(register_click);
+                $("#register").one('click', register_click);
             }
         });
     }
 
-    $("#register").click(register_click);
+    $("#register").one('click', register_click);
 </script>
 
 

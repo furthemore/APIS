@@ -368,7 +368,7 @@ var paymentForm = new SqPaymentForm({
 		$("form").validator('validate');
 		var errorCount = $(".has-error").length;
 		if (errorCount > 0) {
-            $("#checkout").one(checkout_click);
+            $("#checkout").one('click', checkout_click);
             return;
         }
 
@@ -381,7 +381,7 @@ var paymentForm = new SqPaymentForm({
         {% endif %}
     }
 
-	$("#checkout").one(checkout_click);
+	$("#checkout").one('click', checkout_click);
 
     function doCheckout(card_data) {
 		{% if total > 0 %}
@@ -424,7 +424,7 @@ var paymentForm = new SqPaymentForm({
                             window.location = "{% url 'registration:doneUpgrade' %}";
                     } else {
                         alert("An error has occurred: " + result.message + " If this error continues, please contact {{ event.registrationEmail }} for assistence.");
-			            $("#checkout").removeAttr("disabled").one(checkout_click);
+			            $("#checkout").removeAttr("disabled").one('click', checkout_click);
                     }
 			    }
             }

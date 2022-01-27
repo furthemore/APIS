@@ -88,7 +88,7 @@
         // Validate birthdate input
         if ($("#birthDate").val() == "") {
             alert("You must enter your birthdate to submit your registration.");
-            $(this).one(doRegister);
+            $(this).one('click', doRegister);
             return;
         }
         if (Modernizr.inputtypes.date) {
@@ -101,7 +101,7 @@
         var age = getAge(birthdate);
         if (age < 18) {
             alert("You must be 18 by the first day of {{ event }} to register online.")
-            $(this).one(doRegister)
+            $(this).one('click', doRegister);
             return;
         }
 
@@ -144,7 +144,7 @@
 			    } else {
                     alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{event.registrationEmail}} for assistance.")
 			    }
-			    $("#register").removeAttr("disabled").one(doRegister);
+			    $("#register").removeAttr("disabled").one('click', doRegister);
 		    },
             "success": function (result, status) {
                 if (result.success)
@@ -153,12 +153,12 @@
 			    } else {
                     alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
 			    }
-			    $("#register").removeAttr("disabled").one(doRegister);
+			    $("#register").removeAttr("disabled").one('click', doRegister);
             }
 		});
 	}
 
-    $("#register").one(doRegister);
+    $("#register").one('click', doRegister);
 
  </script>
 
