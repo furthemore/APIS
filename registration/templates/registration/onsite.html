@@ -1,8 +1,8 @@
 {% extends "registration/master.html" %}
 
-{% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.6/css/bootstrap-modal.min.css" />
+{% load registration_tags %}
 
+{% block content %}
 <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -43,86 +43,9 @@
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
+          {% show_attendee_form event=event emailOptions=True %}
 
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
-                    <div class="col-sm-4">
-                        <input type="text" id="firstName" placeholder="First Name" class="form-control" autofocus required data-error="First name is required. ">
-                    </div>
-		    <div class="col-sm-5">
-                        <input type="text" id="lastName" placeholder="Last Name" class="form-control" required data-error="Last name is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-3">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <label>
-                            <input type="checkbox" id="contact"> <span class="control-label">Please keep me up to date with convention related information.</span>
-                        </label>
-                        <label>
-                            <input type="checkbox" id="survey"> <span class="control-label">Please send me the post-con survey.</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="tel" id="phone" placeholder="Phone Number" class="form-control" required pattern="^[0-9\-+\(\)\./ ]+$" data-error="A phone number is required. Please enter only numbers.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP <span style="color:red;">*</span></label>
-            <div class="col-sm-4">
-            <input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required. ">
-            </div>
-                    <div class="col-sm-2">
-            <select class="form-control bfh-states" id="state" data-country="country" data-state="VA" name="state"></select>
-                    </div>
-            <div class="col-sm-3">
-            <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="1" data-error="Zip code is required.">
-            </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-            <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-                </div>
 
-        <hr>
-
-                <div class="form-group">
-                    <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="date" id="birthDate" class="form-control" placeholder="Select birthdate (YYYY-MM-DD)" required data-error="Date of birth is required.">
-            <p><small><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></small></p>
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
                 <div class="form-group">
                     <div class="col-sm-9 col-sm-offset-3">
 			<a href="#registration" class="btn btn-primary col-sm-6 col-sm-offset-6 pull-right" aria-controls="registration" role="tab" data-toggle="tab" id="next-personal">Next >></a>
@@ -561,7 +484,7 @@
         }
         var data = {
             'attendee': {
-                'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(),
+                'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 'preferredName': $("#preferredName").val(),
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                 'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
                 'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': $("#birthDate").val(),

@@ -1,5 +1,5 @@
 {% extends "registration/master.html" %}
-
+{% load settings registration_tags %}
 {% block content %}
 
 {% if orderItems %}
@@ -22,7 +22,7 @@
 		{% for item in orderItems %}
 			<div class="row">
                 {% if item.attendee %}
-				  <div class="col-sm-5 col-sm-offset-1">{{item.attendee.firstName}} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
+				  <div class="col-sm-5 col-sm-offset-1">{% attendee_get_first item.attendee %} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
                 {% else %}
 				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
                 {% endif %}
