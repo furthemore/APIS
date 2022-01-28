@@ -569,7 +569,7 @@ class StaffAdmin(ImportExportModelAdmin):
         "event",
     )
     list_filter = ("event", "department")
-    search_fields = ["attendee__email", "attendee__lastName", "attendee__firstName"]
+    search_fields = ["attendee__email", "attendee__lastName", "attendee__firstName", "attendee__preferredName"]
     resource_class = StaffResource
     readonly_fields = ["get_email", "get_badge", "get_badge_id", "registrationToken"]
     fieldsets = (
@@ -1135,6 +1135,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "attendee__email",
         "attendee__lastName",
         "attendee__firstName",
+        "attendee__preferredName",
         "badgeName",
         "badgeNumber",
     ]
@@ -1200,7 +1201,7 @@ class AttendeeAdmin(NestedModelAdmin):
     inlines = [BadgeInline]
     save_on_top = True
     actions = [make_staff]
-    search_fields = ["email", "lastName", "firstName"]
+    search_fields = ["email", "lastName", "firstName", "preferredName"]
     list_display = ("getFirst", "lastName", "email", "get_age_range")
     fieldsets = (
         (
