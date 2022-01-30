@@ -1278,6 +1278,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         "orgDonation",
         "charityDonation",
         "discount",
+        "billingType",
         "status",
     )
     readonly_fields = ("createdDate",)
