@@ -26,3 +26,10 @@ def attendee_get_first(attendee):
     if preferredName:
         return preferredName
     return firstName
+
+
+@register.simple_tag
+def selected_if_month(date, value):
+    if hasattr(date, "month") and date.month == value:
+        return "selected"
+    return ""

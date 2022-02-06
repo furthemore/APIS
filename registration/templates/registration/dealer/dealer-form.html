@@ -1,5 +1,5 @@
 {% extends "registration/master.html" %}
-{% load registration_tags %}
+{% load registration_tags static %}
 
 {% block content %}
 
@@ -457,5 +457,7 @@ $.ajaxSetup({
 
 
 </script>
+
+<script src="{% static 'js/date-entry.js' %}"></script>
 
 {% endblock %}
