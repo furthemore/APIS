@@ -210,6 +210,11 @@ urlpatterns = [
         registration.views.onsite_admin.onsiteSignaturePrompt,
         name="onsiteSignaturePrompt",
     ),
+    url(
+        r"^onsite/admin/discount/create/?$",
+        registration.views.onsite_admin.create_discount,
+        name="onsite_create_discount",
+    ),
     url(r"^cart/?$", registration.views.cart.get_cart, name="cart"),
     url(r"^cart/add/?$", registration.views.cart.add_to_cart, name="add_to_cart"),
     url(
