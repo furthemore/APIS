@@ -101,32 +101,37 @@
     <div class="col-sm-9">
         <!-- <input type="date" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required."/> -->
         <div class="col-sm-3">
-          <input type="text" name="byear" id="byear" class="form-control" placeholder="Year" maxlength="4">
+          <input type="text" name="byear" id="byear" class="form-control" placeholder="Year" value="{{attendee.birthdate|date:"Y"}}" maxlength="4" required>
         </div>
 
         <div class="col-sm-5">
-          <select id="bmonth" name="bmonth" class="form-control" required>
+          <select id="bmonth" name="bmonth" class="form-control" value="{{attendee.birthdate|date:"m"}}" required>
             <option value="">Month</option>
-            <option value="1">January</option>
-            <option value="2">February</option>
-            <option value="3">March</option>
-            <option value="4">April</option>
-            <option value="5">May</option>
-            <option value="6">June</option>
-            <option value="7">July</option>
-            <option value="8">August</option>
-            <option value="9">September</option>
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06">June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
             <option value="10">October</option>
-            <option value="11">Novermber</option>
+            <option value="11">November</option>
             <option value="12">December</option>
           </select>
         </div>
 
         <div class="col-sm-3">
           <select id="bday" name="bday" class="form-control" required disabled>
-            <option value="">Day</option>
+              <option value="">Day</option>
+            {% if attendee.birthdate %}
+              <option value="{{attendee.birthdate|date:"d"}}" selected>{{attendee.birthdate|date:"d"}}</option>
+            {% endif %}
           </select>
         </div>
+
+        <input type="hidden" name="birthDate" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}">
 
         <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
     </div>
