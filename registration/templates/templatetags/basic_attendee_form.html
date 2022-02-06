@@ -1,3 +1,4 @@
+{% load registration_tags %}
 
 <div class="form-group">
     <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
@@ -105,20 +106,20 @@
         </div>
 
         <div class="col-sm-5">
-          <select id="bmonth" name="bmonth" class="form-control" value="{{attendee.birthdate|date:"m"}}" required>
+          <select id="bmonth" name="bmonth" class="form-control" required>
             <option value="">Month</option>
-            <option value="01">January</option>
-            <option value="02">February</option>
-            <option value="03">March</option>
-            <option value="04">April</option>
-            <option value="05">May</option>
-            <option value="06">June</option>
-            <option value="07">July</option>
-            <option value="08">August</option>
-            <option value="09">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
+            <option value="01" {% selected_if_month attendee.birthdate 1 %}>January</option>
+            <option value="02" {% selected_if_month attendee.birthdate 2 %}>February</option>
+            <option value="03" {% selected_if_month attendee.birthdate 3 %}>March</option>
+            <option value="04" {% selected_if_month attendee.birthdate 4 %}>April</option>
+            <option value="05" {% selected_if_month attendee.birthdate 5 %}>May</option>
+            <option value="06" {% selected_if_month attendee.birthdate 6 %}>June</option>
+            <option value="07" {% selected_if_month attendee.birthdate 7 %}>July</option>
+            <option value="08" {% selected_if_month attendee.birthdate 8 %}>August</option>
+            <option value="09" {% selected_if_month attendee.birthdate 9 %}>September</option>
+            <option value="10" {% selected_if_month attendee.birthdate 10 %}>October</option>
+            <option value="11" {% selected_if_month attendee.birthdate 11 %}>November</option>
+            <option value="12" {% selected_if_month attendee.birthdate 12 %}>December</option>
           </select>
         </div>
 

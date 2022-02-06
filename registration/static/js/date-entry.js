@@ -30,4 +30,8 @@ $(document).ready(function (e) {
     var bday = $('#byear').val() + "-" + $('#bmonth').val() + "-" + $('#bday').val();
     $('#birthDate').val(bday);
   });
+
+  var day = $('#bday').val();
+  $('#bmonth').change();
+  $('#bday').val(day);
 });
