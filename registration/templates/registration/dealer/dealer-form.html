@@ -458,4 +458,27 @@ $.ajaxSetup({
 
 </script>
 
+<script type="text/javascript">
+function daysInMonth(month, year) {
+  return new Date(year, month, 0).getDate();
+}
+
+$('#byear, #bmonth').change(function() {
+
+  if ($('#byear').val().length > 0 && $('#bmonth').val().length > 0) {
+    $('#bday').prop('disabled', false);
+    $('#bday').find('option').remove();
+
+    var daysInSelectedMonth = daysInMonth($('#bmonth').val(), $('#byear').val());
+
+    for (var i = 1; i <= daysInSelectedMonth; i++) {
+      $('#bday').append($("<option></option>").attr("value", i).text(i));
+    }
+
+  } else {
+    $('#bday').prop('disabled', true);
+  }
+
+});</script>
+
 {% endblock %}

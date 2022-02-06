@@ -99,7 +99,35 @@
 <div class="form-group">
     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
     <div class="col-sm-9">
-        <input type="date" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required."/>
+        <!-- <input type="date" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}" class="form-control" placeholder="Select birthdate (yyyy-mm-dd)" required data-error="Date of birth is required."/> -->
+        <div class="col-sm-3">
+          <input type="text" name="byear" id="byear" class="form-control" placeholder="Year" maxlength="4">
+        </div>
+
+        <div class="col-sm-5">
+          <select id="bmonth" name="bmonth" class="form-control" required>
+            <option value="">Month</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">Novermber</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+
+        <div class="col-sm-3">
+          <select id="bday" name="bday" class="form-control" required disabled>
+            <option value="">Day</option>
+          </select>
+        </div>
+
         <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
