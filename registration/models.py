@@ -830,7 +830,7 @@ class Cashdrawer(models.Model):
         (PICKUP, "Pickup")
     )
     timestamp = models.DateTimeField(auto_now_add=True)
-    # Action: one of - ['OPEN', 'CLOSE', 'TRANSACTION', 'DEPOSIT', 'DROP']
+    # Action: one of - ['OPEN', 'CLOSE', 'TRANSACTION', 'DEPOSIT', 'DROP', 'PICKUP']
     action = models.CharField(max_length=20, choices=ACTION_CHOICES, default=OPEN)
     total = models.DecimalField(max_digits=8, decimal_places=2)
     tendered = models.DecimalField(
