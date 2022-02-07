@@ -820,12 +820,14 @@ class Cashdrawer(models.Model):
     TRANSACTION = "Transaction"  # normal cash transaction
     DEPOSIT = "Deposit"  # additional cash (eg, change) added to drawer
     DROP = "Drop"  # removed excess cash from drawer and added to safe
+    PICKUP = "Pickup"  # cash removed from drawer custody by cash office
     ACTION_CHOICES = (
         (OPEN, "Open"),
         (CLOSE, "Close"),
         (TRANSACTION, "Transaction"),
         (DEPOSIT, "Deposit"),
-        (DROP, "Drop")
+        (DROP, "Drop"),
+        (PICKUP, "Pickup")
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     # Action: one of - ['OPEN', 'CLOSE', 'TRANSACTION', 'DEPOSIT', 'DROP']
