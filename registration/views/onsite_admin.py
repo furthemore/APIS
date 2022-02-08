@@ -3,10 +3,11 @@ import logging
 import subprocess
 import time
 from datetime import datetime
+from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Max, Q
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -15,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from registration import admin, payments, printing
 from registration.admin import TWOPLACES
-from registration.models import *
+from registration.models import Badge, Cashdrawer, Event, Firebase, Order, OrderItem, ReservedBadgeNumbers
 from registration.pushy import PushyAPI, PushyError
 from registration.views.ordering import getDiscountTotal, getOrderItemOptionTotal
 
@@ -495,7 +496,7 @@ def completeSquareTransaction(request):
     status, errors = payments.refresh_payment(order, store_api_data)
 
     if not status:
-        return JsonResponse({"success": False, "error": errors,}, status=210)
+        return JsonResponse({"success": False, "error": errors, }, status=210)
 
     return JsonResponse({"success": True})
 
@@ -508,6 +509,55 @@ class JSONDecimalEncoder(json.JSONEncoder):
 
 
 # json.dumps(the_thing, cls=JSONDecimalEncoder)
+
+
+def drawerStatus(request):  # TODO: make this do anything
+    return JsonResponse({"success": True})
+
+
+def openDrawer(request):
+    amount = Decimal(request.GET.get("amount", None))
+    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.OPEN, total=amount, user=request.user, position=position)
+    cash_ledger.save()
+    return JsonResponse({"success": True})
+
+
+def cashDeposit(request):
+    amount = Decimal(request.GET.get("amount", None))
+    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.DEPOSIT, total=amount, user=request.user, position=position)
+    cash_ledger.save()
+    return JsonResponse({"success": True})
+
+
+def safeDrop(request):  # TODO: add drop receipt printout
+    amount = Decimal(request.GET.get("amount", None))
+    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.DROP, total=-abs(amount), user=request.user, position=position)
+    cash_ledger.save()
+    return JsonResponse({"success": True})
+
+
+def cashPickup(request):
+    amount = Decimal(request.GET.get("amount", None))
+    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.PICKUP, total=-abs(amount), user=request.user, position=position)
+    cash_ledger.save()
+    return JsonResponse({"success": True})
+
+
+def closeDrawer(request):
+    amount = Decimal(request.GET.get("amount", None))
+    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.CLOSE, total=-abs(amount), user=request.user, position=position)
+    cash_ledger.save()
+    return JsonResponse({"success": True})
 
 
 def completeCashTransaction(request):
@@ -567,7 +617,7 @@ def completeCashTransaction(request):
         "v": 1,
         "event": event.name,
         "line_items": attendee_options,
-        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)},},
+        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)}, },
         "total": order.total,
         "payment": {
             "type": order.billingType,

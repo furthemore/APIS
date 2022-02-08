@@ -201,6 +201,36 @@ urlpatterns = [
         name="completeCashTransaction",
     ),
     url(
+        r"^onsite/cashdrawer/status/?$",
+        registration.views.onsite_admin.drawerStatus,
+        name="drawerStatus",
+    ),
+    url(
+        r"^onsite/cashdrawer/open/?$",
+        registration.views.onsite_admin.openDrawer,
+        name="openDrawer",
+    ),
+    url(
+        r"^onsite/cashdrawer/deposit/?$",
+        registration.views.onsite_admin.cashDeposit,
+        name="cashDeposit",
+    ),
+    url(
+        r"^onsite/cashdrawer/safedrop/?$",
+        registration.views.onsite_admin.safeDrop,
+        name="safeDrop",
+    ),
+    url(
+        r"^onsite/cashdrawer/pickup/?$",
+        registration.views.onsite_admin.cashPickup,
+        name="cashPickup",
+    ),
+    url(
+        r"^onsite/cashdrawer/close/?$",
+        registration.views.onsite_admin.closeDrawer,
+        name="closeDrawer",
+    ),
+    url(
         r"^onsite/signature/?$",
         registration.views.onsite_admin.onsiteSignature,
         name="onsiteSignature",

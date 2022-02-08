@@ -30,6 +30,14 @@
                 <ul class="dropdown-menu" aria-labelledby="user">
                     <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
                     <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+                    {% if perms.registration.cash_admin %}
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
+                    <li><a href="#" id="cash-deposit">Cash Deposit <i class="fas fa-plus right"></i></a></li>
+                    <li><a href="#" id="safe-drop">Safe Drop <i class="bi-safe-fill right"></i></a></li>
+                    <li><a href="#" id="cash-pickup">Cash Pickup <i class="fas fa-minus right"></i></a></li>
+                    <li><a href="#" id="close-drawer">Close Drawer <i class="fas fa-store-alt-slash right"></i></a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -594,6 +602,91 @@ $(document).ready(function () {
         $.getJSON("{% url 'registration:closeTerminal' %}", {}, function (data) {
             if (!data.success) {
                 alert("Error while closing terminal: " + data.message);
+            }
+        });
+    });
+
+    $("#open-drawer").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter initial amount in drawer");
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        data = {
+            'amount' : parsed,
+            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        }
+        $.getJSON("{% url 'registration:openDrawer' %}", data, function (data) {
+            if (!data.success) {
+                alert("Error while opening drawer: " + data.message);
+            } else {
+                alert("Successfully opened drawer!")
+            }
+        });
+    });
+
+    $("#cash-deposit").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter amount added to drawer");
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        data = {
+            'amount' : parsed,
+            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        }
+        $.getJSON("{% url 'registration:cashDeposit' %}", data, function (data) {
+            if (!data.success) {
+                alert("Error recording cash deposit: " + data.message);
+            } else {
+                alert("Successfully recorded cash deposit!")
+            }
+        });
+    });
+
+    $("#safe-drop").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter amount dropped into safe");
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        data = {
+            'amount' : parsed,
+            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        }
+        $.getJSON("{% url 'registration:safeDrop' %}", data, function (data) {
+            if (!data.success) {
+                alert("Error while recording safe drop: " + data.message);
+            } else {
+                alert("Successfully recorded safe drop!")
+            }
+        });
+    });
+
+    $("#cash-pickup").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter amount picked up from drawer");
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        data = {
+            'amount' : parsed,
+            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        }
+        $.getJSON("{% url 'registration:cashPickup' %}", data, function (data) {
+            if (!data.success) {
+                alert("Error recording cash pickup: " + data.message);
+            } else {
+                alert("Successfully recorded cash pickup!")
+            }
+        });
+    });
+
+    $("#close-drawer").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter final amount in drawer");
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        data = {
+            'amount' : parsed,
+            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        }
+        $.getJSON("{% url 'registration:closeDrawer' %}", data, function (data) {
+            if (!data.success) {
+                alert("Error while closing drawer: " + data.message);
+            } else {
+                alert("Successfully closed drawer!")
             }
         });
     });
