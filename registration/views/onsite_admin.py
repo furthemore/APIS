@@ -8,6 +8,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
+from django.db.models.aggregates import Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -511,8 +512,16 @@ class JSONDecimalEncoder(json.JSONEncoder):
 # json.dumps(the_thing, cls=JSONDecimalEncoder)
 
 
-def drawerStatus(request):  # TODO: make this do anything
-    return JsonResponse({"success": True})
+def drawerStatus(request):
+    total = Cashdrawer.objects.all().aggregate(Sum('total'))
+    drawer_total = Decimal(total['total__sum'])
+    if drawer_total == 0:
+        status = "CLOSED"
+    elif drawer_total < 0:
+        status = "SHORT"
+    elif drawer_total > 0:
+        status = "OPEN"
+    return JsonResponse({"success": True, "total": drawer_total, "status": status})
 
 
 def openDrawer(request):
