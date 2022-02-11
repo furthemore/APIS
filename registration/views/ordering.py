@@ -274,12 +274,17 @@ def checkout(request):
 
     subtotal, _ = getTotal(cartItems, orderItems, discount)
 
+    if not cartItems and not orderItems:
+        return common.abort(400, "There is nothing in your cart!")
+
     if subtotal == 0:
         status, message, order = doZeroCheckout(discount, cartItems, orderItems)
         if not status:
             return common.abort(400, message)
 
-        add_attendee_to_assistant(request, order.orderitem_set.first().badge.attendee)
+        existing_order_item = order.orderitem_set.first()
+        if existing_order_item:
+            add_attendee_to_assistant(request, existing_order_item.badge.attendee)
         common.clear_session(request)
         try:
             registration.emails.send_registration_email(order, order.billingEmail)
@@ -339,7 +344,9 @@ def checkout(request):
         )
 
     if status:
-        add_attendee_to_assistant(request, order.orderitem_set.first().badge.attendee)
+        existing_order_item = order.orderitem_set.first()
+        if existing_order_item:
+            add_attendee_to_assistant(request, existing_order_item.badge.attendee)
         # Delete cart when done
         cartItems = Cart.objects.filter(id__in=sessionItems)
         cartItems.delete()
