@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.cache import cache_page
 from idempotency_key.decorators import idempotency_key
 
 import registration.emails
@@ -75,6 +76,7 @@ def getOptionsDict(orderItems):
                 orderDict.append(
                     {
                         "name": ao.option.optionName,
+                        "type": ao.option.OptionExtraType,
                         "value": ao.optionValue,
                         "id": ao.option.id,
                         "image": ao.option.optionImage.url,
@@ -84,6 +86,7 @@ def getOptionsDict(orderItems):
                 orderDict.append(
                     {
                         "name": ao.option.optionName,
+                        "type": ao.option.optionExtraType,
                         "value": ao.optionValue,
                         "id": ao.option.id,
                         "image": None,
@@ -93,6 +96,7 @@ def getOptionsDict(orderItems):
     return orderDict
 
 
+cache_page(60)
 def get_events(request):
     events = Event.objects.all()
     data = [
@@ -173,7 +177,7 @@ def handler(obj):
             % (type(obj), repr(obj),)
         )
 
-
+@cache_page(60)
 def index(request):
     try:
         event = Event.objects.get(default=True)
@@ -201,6 +205,7 @@ def manualDiscount(request):
     raise NotImplementedError
 
 
+@cache_page(60 * 5)
 @staff_member_required
 def basicBadges(request):
     event = Event.objects.get(default=True)
@@ -243,7 +248,7 @@ def basicBadges(request):
             staff["assoc"] = sbadge.abandoned
             staff["orderItems"] = getOptionsDict(sbadge.orderitem_set.all())
 
-    sdata = sorted(bdata, key=lambda x: (x["level"], x["lastName"]))
+    sdata = sorted(bdata, key=lambda x: (str(x["level"]), x["lastName"]))
     ssdata = sorted(staffdata, key=lambda x: x["lastName"])
 
     dealers = [att for att in sdata if att["assoc"] == "Dealer"]
@@ -256,6 +261,7 @@ def basicBadges(request):
     )
 
 
+#@cache_page(60 * 5)
 @staff_member_required
 def vipBadges(request):
     default_event = Event.objects.get(default=True)
@@ -264,6 +270,7 @@ def vipBadges(request):
 
     # Assumes VIP levels based on being marked as "vip" group, or EmailVIP set
     price_levels = PriceLevel.objects.filter(Q(emailVIP=True) | Q(group__iexact="vip"))
+    shirt_sizes = { str(shirt.pk) : shirt.name for shirt in ShirtSizes.objects.all() }
 
     vip_order_items = OrderItem.objects.filter(
         priceLevel__in=price_levels, badge__event=event
@@ -280,25 +287,34 @@ def vipBadges(request):
         if oi.badge.abandoned != "Staff"
     ]
 
+    context = {
+        "badges": badges,
+        "event": event,
+        "shirt_sizes": shirt_sizes,
+    }
+
     return render(
         request,
-        "registration/utility/holidaylist.html",
-        {"badges": badges, "event": event},
+        "registration/utility/viplist.html",
+        context,
     )
 
 
+cache_page(60)
 def get_departments(request):
     depts = Department.objects.filter(volunteerListOk=True).order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+cache_page(60)
 def get_all_departments(request):
     depts = Department.objects.order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+cache_page(60)
 def getShirtSizes(request):
     sizes = ShirtSizes.objects.all()
     data = [{"name": size.name, "id": size.id} for size in sizes]
@@ -358,6 +374,7 @@ def getSessionAddresses(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
+cache_page(60)
 def getRegistrationEmail(event=None):
     """
     Retrieves the email address to show on error messages in the attendee

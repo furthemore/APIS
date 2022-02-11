@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import payments, printing
+from registration import payments, printing, mqtt
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
@@ -23,6 +23,14 @@ from ..mqtt import send_mqtt_message
 
 flatten = lambda l: [item for sublist in l for item in sublist]
 logger = logging.getLogger(__name__)
+
+
+def get_active_terminal(request):
+    term_id = request.session.get("terminal")
+    try:
+        return Firebase.objects.get(pk=int(term_id))
+    except Firebase.DoesNotExist:
+        return None
 
 
 @staff_member_required
@@ -84,11 +92,17 @@ def onsiteAdmin(request):
                 {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
             )
 
+    terminal = get_active_terminal(request)
+    mqtt_auth = None
+    if terminal:
+        mqtt_auth = mqtt.get_onsite_admin_token(terminal)
+
     context = {
         "terminals": terminals,
         "errors": errors,
         "results": results,
         "printer_uri": settings.REGISTER_PRINTER_URI,
+        "mqtt_auth": mqtt_auth,
     }
 
     return render(request, "registration/onsite-admin.html", context)
@@ -547,7 +561,7 @@ def completeCashTransaction(request):
 
     term = request.session.get("terminal", None)
     active = Firebase.objects.get(id=term)
-    topic = "apis/receipts/{0}/print_cash".format(active.name)
+    topic = f"{mqtt.get_topic('receipts', active.name)}/print_cash"
 
     send_mqtt_message(topic, payload)
 

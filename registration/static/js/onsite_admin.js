@@ -343,4 +343,6 @@ $(document).ready(function () {
 
     $("#print_button").click(print_badges);
 
+
+
 });

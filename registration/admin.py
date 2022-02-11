@@ -25,7 +25,7 @@ from six import BytesIO
 
 import registration.emails
 import registration.views.printing
-from registration import payments
+from registration import payments, mqtt
 from registration.forms import FirebaseForm
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
@@ -151,9 +151,11 @@ class FirebaseAdmin(admin.ModelAdmin):
     def provision_view(self, request, pk):
         obj = Firebase.objects.get(id=pk)
         provisioning = self.get_provisioning(obj)
+        token = mqtt.get_client_token(obj)
 
         context = {
             "qr_svg": self.get_qrcode(provisioning).decode("utf-8"),
+            "token": token,
         }
 
         return render(request, "admin/firebase_qr.html", context)

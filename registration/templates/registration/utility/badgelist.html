@@ -1,51 +1,59 @@
+{% extends "registration/master_admin.html" %}
 
-<h3>Attendees</h3>
-<table border="1">
-<tr>
-  <td>First Name</td>
-  <td>Last Name</td>
-  <td>Badge Name</td>
-  <td>##</td>
-  <td>P</td>
-  <td>Level</td>
-  <td>Discount</td>
-  <td>Assoc</td>
-  <td>Conbook</td>
-  <td>Tshirt</td>
-  <td>GOH</td>
-</tr>
-{% for att in attendees %}
-  <tr>
-    <td>{{att.firstName}}</td>
-    <td>{{att.lastName}}</td>
-    <td>{{att.badgeName}}</td>
-    <td>{{att.badgeNumber|stringformat:"04d"}}</td>
-    <td>{{att.printed}}</td>
-    <td>{{att.level}}</td>
-    <td>{{att.discount}}</td>
-    <td>{{att.assoc}}</td>
-    <td>{{att.orderItems.ConBook}}</td>
-    <td>{{att.orderItems.Tshirt}}</td>
-    <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
-  </tr>
-{% endfor %}
+{% block content %}
 
+<h2>Attendees</h2>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Badge Name</th>
+      <th scope="col">##</th>
+      <th scope="col">P</th>
+      <th scope="col">Level</th>
+      <th scope="col">Discount</th>
+      <th scope="col">Assoc</th>
+      <th scope="col">Conbook</th>
+      <th scope="col">Tshirt</th>
+      <th scope="col">GOH</th>
+    </tr>
+  </thead>
+  <tbody>
+	{% for att in attendees %}
+		<tr>
+			<td>{{att.firstName}}</td>
+			<td>{{att.lastName}}</td>
+			<td>{{att.badgeName}}</td>
+			<td>{{att.badgeNumber|stringformat:"04d"}}</td>
+			<td>{{att.printed}}</td>
+			<td>{{att.level}}</td>
+			<td>{{att.discount}}</td>
+			<td>{{att.assoc}}</td>
+			<td>{{att.orderItems.ConBook}}</td>
+			<td>{{att.orderItems.Tshirt}}</td>
+			<td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
+		</tr>
+	{% endfor %}
+  </tbody>
 </table>
 
-<h3>Dealers</h3>
+<h2>Dealers</h2>
 
-<table border="1">
-
-<tr>
-  <td>First Name</td>
-  <td>Last Name</td>
-  <td>Badge Name</td>
-  <td>Level</td>
-  <td>Assoc</td>
-  <td>Conbook</td>
-  <td>Tshirt</td>
-  <td>GOH</td>
-</tr>
+<table class="table">
+  <thead>
+		<tr>
+			<th>First Name</th>
+			<th>Last Name</th>
+			<th>Badge Name</th>
+			<th>Level</th>
+			<th>Assoc</th>
+			<th>Conbook</th>
+			<th>Tshirt</th>
+			<th>GOH</th>
+		</tr>
+  </thead>
+  <tbody>
 {% for att in dealers %}
   <tr>
     <td>{{att.firstName}}</td>
@@ -58,22 +66,25 @@
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
 {% endfor %}
-
+  </tbody>
 </table>
 
-<h3>Dealer Assistants</h3>
-<table border="1">
-<tr>
-  <td>First Name</td>
-  <td>Last Name</td>
-  <td>Badge Name</td>
-  <td>Level</td>
-  <td>Discount</td>
-  <td>Assoc</td>
-  <td>Conbook</td>
-  <td>Tshirt</td>
-  <td>GOH</td>
-</tr>
+<h2>Dealer Assistants</h2>
+<table class="table">
+  <thead>
+		<tr>
+			<th>First Name</th>
+			<th>Last Name</th>
+			<th>Badge Name</th>
+			<th>Level</th>
+			<th>Discount</th>
+			<th>Assoc</th>
+			<th>Conbook</th>
+			<th>Tshirt</th>
+			<th>GOH</th>
+		</tr>
+  </thead>
+  <tbody>
 {% for att in attendees %}
   {% if att.discount == "FMDealerPartner18" %}
   <tr>
@@ -89,25 +100,28 @@
   </tr>
   {% endif %}
 {% endfor %}
-
+  </tbody>
 </table>
 
 
-<h3>Staff</h3>
+<h2>Staff</h2>
 
-<table border="1">
+<table class="table">
+  <thead>
 <tr>
-  <td>First Name</td>
-  <td>Last Name</td>
-  <td>Badge Name</td>
-  <td>##</td>
-  <td>Title</td>
-  <td>Level</td>
-  <td>Assoc</td>
-  <td>Conbook</td>
-  <td>Tshirt</td>
-  <td>GOH</td>
+  <th>First Name</th>
+  <th>Last Name</th>
+  <th>Badge Name</th>
+  <th>##</th>
+  <th>Title</th>
+  <th>Level</th>
+  <th>Assoc</th>
+  <th>Conbook</th>
+  <th>Tshirt</th>
+  <th>GOH</th>
 </tr>
+</thead>
+<tbody>
 {% for att in staff %}
   <tr>
     <td>{{att.firstName}}</td>
@@ -122,6 +136,8 @@
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
 {% endfor %}
-
+</tbody>
 
 </table>
+
+{% endblock %}

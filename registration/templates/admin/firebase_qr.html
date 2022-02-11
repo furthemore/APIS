@@ -7,9 +7,21 @@
   {{ qr_svg | safe }}<br><br>
 
   <h2>Setup payment terminal</h2>
-  <p>Press the clock on the payment terminal you wish to provision, and press "Provision Settings"</p>
+  <p>Press the clock on the payment terminal you wish to provision, and press "Provision Settings".</p>
 
+  <h2>Client worker (APIS-Receipts)</h2>
+  <p>Use this credential in the <code>settings.py</code> file to configure access to receipt printers and barcode scanners:</p>
+  <pre style="overflow: hidden">
+MQTT_LOGIN = {
+    "username": "{{token.user}}",
+    "password": "{{token.token}}",
+}
+  </pre>
   <input type="button" onclick="javascript:window.history.back();" class="cancel" value="Go Back"/>
+
+<script>
+
+</script>
 
 {% else %}
   <h1>Sorry</h1>

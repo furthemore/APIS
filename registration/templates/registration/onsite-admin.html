@@ -1,14 +1,14 @@
 {% extends "registration/master_admin.html" %}
-{% load admin_urls static %}
+{% load admin_urls static settings %}
 
 {% block content %}
 
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-sm-6">
             <h2><a href="{% url 'registration:onsiteAdmin' %}">APIS Register</a></h2>
         </div>
-        <div class="col-md-2 col-md-offset-2 col-top">
+        <div class="col-sm-2 col-sm-offset-2 col-top">
             <form class="form-inline" id="terminal_form" method="get">
                 <label for="pos" class="sr-only">Register Position</label>
                 <select class="form-control" id="pos" name="terminal">
@@ -22,26 +22,31 @@
                 </select>
             </form>
         </div>
-        <div class="col-md-1 col-top">
-            <div class="dropdown">
-                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="user">
-                    <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
-                    <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
-                </ul>
+        <div class="col-sm-2 col-top">
+          <div class="row">
+            <div class="col-sm-4">
+                <div class="dropdown">
+                    <button id="options" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="user">
+                        <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
+                        <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+                    </ul>
+                </div>
             </div>
-        </div>
-        <div class="col-md-1 col-top">
-            <div class="dropdown">
-                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-user"></i><span class="sr-only">User options</span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="user">
-                    <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
-                </ul>
+            <div class="col-sm-4">
+                <div class="dropdown">
+                    <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user"></i><span class="sr-only">User options</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="user">
+                        <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
+                    </ul>
+                </div>
             </div>
+
+          </div>
         </div>
     </div>
 
@@ -176,6 +181,27 @@
             </div>
           {% endif %}
 
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            ...
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
         </div>
       </div>
     </div>
@@ -337,19 +363,32 @@
 
 {% block javascript %}
 <script>
-var URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assignBadgeNumber' %}";
-var URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsitePrintBadges' %}";
-var URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsiteAdminClearCart' %}";
-var URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsiteAdminCart' %}";
-var URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsiteAddToCart' %}";
-var URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsiteRemoveFromCart' %}";
-var URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:openTerminal' %}";
-var URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:closeTerminal' %}";
-var URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enablePayment' %}";
-var URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:completeCashTransaction' %}";
-var URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
-var URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
+const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assignBadgeNumber' %}";
+const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsitePrintBadges' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsiteAdminClearCart' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsiteAdminCart' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsiteAddToCart' %}";
+const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsiteRemoveFromCart' %}";
+const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:openTerminal' %}";
+const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:closeTerminal' %}";
+const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enablePayment' %}";
+const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:completeCashTransaction' %}";
+const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
+
+// MQTT credentials for in-browser push notifications
+const MQTT_ENABLED = {% if mqtt_auth %}true{% else %}false{% endif %};
+const MQTT_OPTIONS = {
+    username: "{{ mqtt_auth.user }}",
+    password: "{{ mqtt_auth.token }}",
+    clientId: "{{ mqtt_auth.user}}-" + Math.random().toString(16).substr(2, 8),
+    clean: true,
+};
+const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
+const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
 </script>
 
+<script src="{% static 'js/mqtt.min.js' %}"></script>
+<script src="{% static 'js/onsite_push.js' %}"></script>
 <script src="{% static 'js/onsite_admin.js' %}"></script>
 {% endblock %}

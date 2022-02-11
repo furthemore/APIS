@@ -26,3 +26,8 @@ def attendee_get_first(attendee):
     if preferredName:
         return preferredName
     return firstName
+
+
+@register.filter
+def get_value(dictionary, key):
+    return dictionary.get(key)
