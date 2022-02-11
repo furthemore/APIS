@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from decimal import Decimal
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
@@ -9,10 +10,11 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from idempotency_key.decorators import idempotency_key
+from django.utils import timezone
+from django.conf import settings
 
 import registration.emails
-from registration.models import *
+from registration.models import Cart, Department, Discount, Event, get_token, Order, OrderItem, PriceLevel, PriceLevelOption, ShirtSizes, Staff
 from registration.payments import charge_payment
 from registration.views.cart import saveCart
 from registration.views.ordering import add_attendee_to_assistant
@@ -68,7 +70,7 @@ def getOptionsDict(orderItems):
                 ao.optionValue == 0
                 or ao.optionValue is None
                 or ao.optionValue == ""
-                or ao.optionValue == False
+                or ao.optionValue is False
             ):
                 pass
             try:

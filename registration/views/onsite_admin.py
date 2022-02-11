@@ -15,7 +15,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import admin, payments, printing
+from registration import payments, printing
 from registration.admin import TWOPLACES
 from registration.models import Badge, Cashdrawer, Event, Firebase, Order, OrderItem, ReservedBadgeNumbers
 from registration.pushy import PushyAPI, PushyError
@@ -25,7 +25,10 @@ from .attendee import get_attendee_age
 from .common import logger
 from .printing import printNametag
 
-flatten = lambda l: [item for sublist in l for item in sublist]
+
+def flatten(l): return [item for sublist in l for item in sublist]
+
+
 logger = logging.getLogger(__name__)
 
 

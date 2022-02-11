@@ -1,5 +1,4 @@
-from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.contrib.auth.views import LogoutView
 
 import registration.views.attendee
@@ -18,6 +17,7 @@ app_name = "registration"
 
 def trigger_error(request):
     division_by_zero = 1 / 0
+    return division_by_zero
 
 
 urlpatterns = [
