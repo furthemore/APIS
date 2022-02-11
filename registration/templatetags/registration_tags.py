@@ -31,3 +31,10 @@ def attendee_get_first(attendee):
 @register.filter
 def get_value(dictionary, key):
     return dictionary.get(key)
+
+
+@register.simple_tag
+def selected_if_month(date, value):
+    if hasattr(date, "month") and date.month == value:
+        return "selected"
+    return ""

@@ -1,6 +1,6 @@
 {% extends "registration/master.html" %}
 
-{% load registration_tags %}
+{% load registration_tags static %}
 
 {% block content %}
 
@@ -157,5 +157,7 @@
     $("#register").one(doRegister);
 
  </script>
+
+<script src="{% static 'js/date-entry.js' %}"></script>
 
 {% endblock %}
