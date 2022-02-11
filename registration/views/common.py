@@ -177,7 +177,7 @@ def handler(obj):
             % (type(obj), repr(obj),)
         )
 
-@cache_page(60)
+
 def index(request):
     try:
         event = Event.objects.get(default=True)
@@ -261,7 +261,7 @@ def basicBadges(request):
     )
 
 
-#@cache_page(60 * 5)
+@cache_page(60 * 5)
 @staff_member_required
 def vipBadges(request):
     default_event = Event.objects.get(default=True)
