@@ -5,36 +5,36 @@
 <h2>Attendees</h2>
 <table class="table table-striped">
   <thead>
-    <tr>
-      <th scope="col">First Name</th>
-      <th scope="col">Last Name</th>
-      <th scope="col">Badge Name</th>
-      <th scope="col">##</th>
-      <th scope="col">P</th>
-      <th scope="col">Level</th>
-      <th scope="col">Discount</th>
-      <th scope="col">Assoc</th>
-      <th scope="col">Conbook</th>
-      <th scope="col">Tshirt</th>
-      <th scope="col">GOH</th>
-    </tr>
+  <tr>
+    <th scope="col">First Name</th>
+    <th scope="col">Last Name</th>
+    <th scope="col">Badge Name</th>
+    <th scope="col">##</th>
+    <th scope="col">P</th>
+    <th scope="col">Level</th>
+    <th scope="col">Discount</th>
+    <th scope="col">Assoc</th>
+    <th scope="col">Conbook</th>
+    <th scope="col">Tshirt</th>
+    <th scope="col">GOH</th>
+  </tr>
   </thead>
   <tbody>
-	{% for att in attendees %}
-		<tr>
-			<td>{{att.firstName}}</td>
-			<td>{{att.lastName}}</td>
-			<td>{{att.badgeName}}</td>
-			<td>{{att.badgeNumber|stringformat:"04d"}}</td>
-			<td>{{att.printed}}</td>
-			<td>{{att.level}}</td>
-			<td>{{att.discount}}</td>
-			<td>{{att.assoc}}</td>
-			<td>{{att.orderItems.ConBook}}</td>
-			<td>{{att.orderItems.Tshirt}}</td>
-			<td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
-		</tr>
-	{% endfor %}
+  {% for att in attendees %}
+  <tr>
+    <td>{{att.firstName}}</td>
+    <td>{{att.lastName}}</td>
+    <td>{{att.badgeName}}</td>
+    <td>{{att.badgeNumber|stringformat:"04d"}}</td>
+    <td>{{att.printed}}</td>
+    <td>{{att.level}}</td>
+    <td>{{att.discount}}</td>
+    <td>{{att.assoc}}</td>
+    <td>{{att.orderItems.ConBook}}</td>
+    <td>{{att.orderItems.Tshirt}}</td>
+    <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
+  </tr>
+  {% endfor %}
   </tbody>
 </table>
 
@@ -42,19 +42,19 @@
 
 <table class="table">
   <thead>
-		<tr>
-			<th>First Name</th>
-			<th>Last Name</th>
-			<th>Badge Name</th>
-			<th>Level</th>
-			<th>Assoc</th>
-			<th>Conbook</th>
-			<th>Tshirt</th>
-			<th>GOH</th>
-		</tr>
+  <tr>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>Badge Name</th>
+    <th>Level</th>
+    <th>Assoc</th>
+    <th>Conbook</th>
+    <th>Tshirt</th>
+    <th>GOH</th>
+  </tr>
   </thead>
   <tbody>
-{% for att in dealers %}
+  {% for att in dealers %}
   <tr>
     <td>{{att.firstName}}</td>
     <td>{{att.lastName}}</td>
@@ -65,27 +65,27 @@
     <td>{{att.orderItems.Tshirt}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
-{% endfor %}
+  {% endfor %}
   </tbody>
 </table>
 
 <h2>Dealer Assistants</h2>
 <table class="table">
   <thead>
-		<tr>
-			<th>First Name</th>
-			<th>Last Name</th>
-			<th>Badge Name</th>
-			<th>Level</th>
-			<th>Discount</th>
-			<th>Assoc</th>
-			<th>Conbook</th>
-			<th>Tshirt</th>
-			<th>GOH</th>
-		</tr>
+  <tr>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>Badge Name</th>
+    <th>Level</th>
+    <th>Discount</th>
+    <th>Assoc</th>
+    <th>Conbook</th>
+    <th>Tshirt</th>
+    <th>GOH</th>
+  </tr>
   </thead>
   <tbody>
-{% for att in attendees %}
+  {% for att in attendees %}
   {% if att.discount == "FMDealerPartner18" %}
   <tr>
     <td>{{att.firstName}}</td>
@@ -99,7 +99,7 @@
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
   {% endif %}
-{% endfor %}
+  {% endfor %}
   </tbody>
 </table>
 
@@ -108,21 +108,21 @@
 
 <table class="table">
   <thead>
-<tr>
-  <th>First Name</th>
-  <th>Last Name</th>
-  <th>Badge Name</th>
-  <th>##</th>
-  <th>Title</th>
-  <th>Level</th>
-  <th>Assoc</th>
-  <th>Conbook</th>
-  <th>Tshirt</th>
-  <th>GOH</th>
-</tr>
-</thead>
-<tbody>
-{% for att in staff %}
+  <tr>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>Badge Name</th>
+    <th>##</th>
+    <th>Title</th>
+    <th>Level</th>
+    <th>Assoc</th>
+    <th>Conbook</th>
+    <th>Tshirt</th>
+    <th>GOH</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for att in staff %}
   <tr>
     <td>{{att.firstName}}</td>
     <td>{{att.lastName}}</td>
@@ -135,8 +135,8 @@
     <td>{{att.orderItems.Tshirt}}</td>
     <td>{{att.orderItems.ExtraGuestofHonorDinnerTickets}}</td>
   </tr>
-{% endfor %}
-</tbody>
+  {% endfor %}
+  </tbody>
 
 </table>
 

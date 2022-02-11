@@ -7,40 +7,42 @@
 
 <table class="table table-striped">
   <thead>
-    <tr>
-      <th scope="col">Level</th>
-      <th scope="col">Status</th>
-      <th scope="col">Badge Name</th>
-      <th scope="col">Real Name</th>
-      <th scope="col">Address</th>
-      <th scope="col">Phone</th>
-      <th scope="col">Email</th>
-      <th scope="col">Options </th>
-    </tr>
+  <tr>
+    <th scope="col">Level</th>
+    <th scope="col">Status</th>
+    <th scope="col">Badge Name</th>
+    <th scope="col">Real Name</th>
+    <th scope="col">Address</th>
+    <th scope="col">Phone</th>
+    <th scope="col">Email</th>
+    <th scope="col">Options</th>
+  </tr>
   </thead>
   <tbody>
-{% for b in badges %}
-    <tr>
-      <td>{{b.level}}</td>
-      <td>{{b.assoc}}</td>
-      <td>{{b.badge.badgeName}}</td>
-      <td>{{b.badge.attendee.firstName}} {{b.badge.attendee.lastName}}</td>
-      <td>{{b.badge.attendee.address1}} {{b.badge.attendee.city}} {{b.badge.attendee.state}} {{b.badge.attendee.postal}} {{b.badge.attendee.country}}</td>
-      <td>{{b.badge.attendee.phone}}</td>
-      <td>{{b.badge.attendee.email}}</td>
-      <td>
-          {% for oi in b.orderItems %}
-              {% if oi.type == "ShirtSizes" %}
-                {{oi.name}} - {{ shirt_sizes|get_value:oi.value }}
-              {% else %}
-                {{oi.name}} - {{oi.value}}
-              {% endif %}
-              <br>
-          {% endfor %}
+  {% for b in badges %}
+  <tr>
+    <td>{{b.level}}</td>
+    <td>{{b.assoc}}</td>
+    <td>{{b.badge.badgeName}}</td>
+    <td>{{b.badge.attendee.firstName}} {{b.badge.attendee.lastName}}</td>
+    <td>{{b.badge.attendee.address1}} {{b.badge.attendee.city}} {{b.badge.attendee.state}} {{b.badge.attendee.postal}}
+      {{b.badge.attendee.country}}
+    </td>
+    <td>{{b.badge.attendee.phone}}</td>
+    <td>{{b.badge.attendee.email}}</td>
+    <td>
+      {% for oi in b.orderItems %}
+      {% if oi.type == "ShirtSizes" %}
+      {{oi.name}} - {{ shirt_sizes|get_value:oi.value }}
+      {% else %}
+      {{oi.name}} - {{oi.value}}
+      {% endif %}
+      <br>
+      {% endfor %}
 
-      </td>
-    </tr>
-{% endfor %}
+    </td>
+  </tr>
+  {% endfor %}
   </tbody>
 </table>
 
