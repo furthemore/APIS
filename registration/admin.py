@@ -732,6 +732,8 @@ def assign_badge_numbers(modeladmin, request, queryset):
     event = first_badge.event or Event.objects.get(default=True)
     badges = Badge.objects.filter(event=event)
     highest = Badge.objects.filter(event=event, badgeNumber__isnull=False).aggregate(Max('badgeNumber'))['badgeNumber__max']
+    if highest is None:
+        highest = 0
 
     for badge in queryset.order_by("registeredDate"):
         # skip assigning to badges not in current event
