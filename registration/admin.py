@@ -750,11 +750,10 @@ def assign_badge_numbers(modeladmin, request, queryset):
         if len(filter_list) == 0:
             highest = 1
         else:
-            highest = max(filter_list) + 1
+            highest = Badge.objects.filter(event=event, badgeNumber__isnull=False).aggregate(Max('badgeNumber'))['badgeNumber__max']
 
-        badge.badgeNumber = highest
+        badge.badgeNumber = highest + 1
         badge.save()
-        assigned_badge_numbers.append(highest)
 
 
 assign_badge_numbers.short_description = "Assign badge number"
