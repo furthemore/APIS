@@ -726,22 +726,18 @@ resend_confirmation_email.short_description = "Resend confirmation email"
 
 
 def assign_badge_numbers(modeladmin, request, queryset):
-    nonstaff = Attendee.objects.filter(staff=None)
     first_badge = queryset[0]
     event = first_badge.event or Event.objects.get(default=True)
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
+    badges = Badge.objects.filter(event=event)
     assigned_badge_numbers = [
         badge.badgeNumber for badge in badges if badge.badgeNumber is not None
     ]
-
-    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
-    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
 
     for badge in queryset.order_by("registeredDate"):
         if badge not in badges:
             continue
 
-        filter_list = set(assigned_badge_numbers) - set(reserved_badge_numbers)
+        filter_list = set(assigned_badge_numbers)
 
         # Skip badges which have already been assigned
         if badge.badgeNumber is not None:
@@ -755,9 +751,6 @@ def assign_badge_numbers(modeladmin, request, queryset):
             highest = 1
         else:
             highest = max(filter_list) + 1
-
-        while highest in reserved_badge_numbers:
-            highest += 1
 
         badge.badgeNumber = highest
         badge.save()
