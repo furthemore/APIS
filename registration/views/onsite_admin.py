@@ -6,6 +6,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.messages import get_messages
 from django.db.models import Max, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -17,14 +18,18 @@ from registration import admin, payments, printing
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
-from registration.views.ordering import getDiscountTotal, getOrderItemOptionTotal
+from registration.views.ordering import (
+    getDiscountTotal,
+    getOrderItemOptionTotal,
+)
 
 from .attendee import get_attendee_age
 from .common import logger
 from .printing import printNametag
 
 
-def flatten(l): return [item for sublist in l for item in sublist]
+def flatten(l):
+    return [item for sublist in l for item in sublist]
 
 
 logger = logging.getLogger(__name__)
@@ -299,8 +304,18 @@ def assignBadgeNumber(request):
     badge_set = Badge.objects.filter(id__in=list(badge_payload.keys()))
 
     admin.assign_badge_numbers(None, request, badge_set)
-
+    errors = get_messages_list(request)
+    if errors:
+        return JsonResponse(
+            {"success": False, "errors": errors, "message": "\n".join(errors)},
+            status=400,
+        )
     return JsonResponse({"success": True})
+
+
+def get_messages_list(request):
+    storage = get_messages(request)
+    return [message.message for message in storage]
 
 
 @staff_member_required
@@ -461,7 +476,7 @@ def completeSquareTransaction(request):
     status, errors = payments.refresh_payment(order, store_api_data)
 
     if not status:
-        return JsonResponse({"success": False, "error": errors, }, status=210)
+        return JsonResponse({"success": False, "error": errors,}, status=210)
 
     return JsonResponse({"success": True})
 
@@ -533,7 +548,7 @@ def completeCashTransaction(request):
         "v": 1,
         "event": event.name,
         "line_items": attendee_options,
-        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)}, },
+        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)},},
         "total": order.total,
         "payment": {
             "type": order.billingType,
