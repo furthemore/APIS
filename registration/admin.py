@@ -12,6 +12,7 @@ from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db.models import Max
+from django.db import transaction
 from django.forms import NumberInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -725,19 +726,17 @@ def resend_confirmation_email(modeladmin, request, queryset):
 resend_confirmation_email.short_description = "Resend confirmation email"
 
 
+@transaction.atomic
 def assign_badge_numbers(modeladmin, request, queryset):
     first_badge = queryset[0]
     event = first_badge.event or Event.objects.get(default=True)
     badges = Badge.objects.filter(event=event)
-    assigned_badge_numbers = [
-        badge.badgeNumber for badge in badges if badge.badgeNumber is not None
-    ]
+    highest = Badge.objects.filter(event=event, badgeNumber__isnull=False).aggregate(Max('badgeNumber'))['badgeNumber__max']
 
     for badge in queryset.order_by("registeredDate"):
+        # skip assigning to badges not in current event
         if badge not in badges:
             continue
-
-        filter_list = set(assigned_badge_numbers)
 
         # Skip badges which have already been assigned
         if badge.badgeNumber is not None:
@@ -746,13 +745,9 @@ def assign_badge_numbers(modeladmin, request, queryset):
         if badge.effectiveLevel() is None:
             continue
 
-        # Pick the next largest candidate assignment
-        if len(filter_list) == 0:
-            highest = 1
-        else:
-            highest = Badge.objects.filter(event=event, badgeNumber__isnull=False).aggregate(Max('badgeNumber'))['badgeNumber__max']
+        highest += 1
 
-        badge.badgeNumber = highest + 1
+        badge.badgeNumber = highest
         badge.save()
 
 
