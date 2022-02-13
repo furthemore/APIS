@@ -1,6 +1,11 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from registration.models import *
+from registration.models import (
+    AttendeeOptions,
+    Event,
+    PriceLevelOption,
+    ShirtSizes,
+)
 
 
 class Command(BaseCommand):
