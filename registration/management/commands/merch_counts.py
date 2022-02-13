@@ -26,7 +26,7 @@ class Command(BaseCommand):
             str(shirt.id): shirt.name for shirt in ShirtSizes.objects.filter()
         }
         for idx, event in enumerate(Event.objects.filter()):
-            print(("{0} - {1}".format(idx, event)))
+            print(("{0} - {1}".format(idx + 1, event)))
         selection = self.prompt_int(
             "Enter index of event to report on [{0}] > ".format(default_event.name),
             True,
