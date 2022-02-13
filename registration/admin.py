@@ -11,6 +11,7 @@ from django.conf.urls import url
 from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.db import transaction
 from django.db.models import Max
 from django.forms import NumberInput
 from django.http import HttpResponseRedirect
@@ -175,7 +176,9 @@ def send_staff_token_email(modeladmin, request, queryset):
         token.sent = True
         token.save()
     if queryset.count() > 1:
-        messages.success(request, "Successfully sent emails to %d staff members" % queryset.count())
+        messages.success(
+            request, "Successfully sent emails to %d staff members" % queryset.count()
+        )
     else:
         messages.success(request, "Successfully sent email to %s" % queryset[0])
 
@@ -268,9 +271,14 @@ def send_assistant_registration_email(modeladmin, request, queryset):
     for assistant in queryset:
         registration.emails.send_dealer_assistant_registration_invite(assistant)
     if queryset.count() > 1:
-        messages.success(request, "Successfully sent emails to %d dealer assistants" % queryset.count())
+        messages.success(
+            request,
+            "Successfully sent emails to %d dealer assistants" % queryset.count(),
+        )
     else:
-        messages.success(request, "Successfully sent email to %s" % queryset[0].attendee)
+        messages.success(
+            request, "Successfully sent email to %s" % queryset[0].attendee
+        )
 
 
 send_assistant_registration_email.short_description = "Send registration instructions"
@@ -569,7 +577,12 @@ class StaffAdmin(ImportExportModelAdmin):
         "event",
     )
     list_filter = ("event", "department")
-    search_fields = ["attendee__email", "attendee__lastName", "attendee__firstName", "attendee__preferredName"]
+    search_fields = [
+        "attendee__email",
+        "attendee__lastName",
+        "attendee__firstName",
+        "attendee__preferredName",
+    ]
     resource_class = StaffResource
     readonly_fields = ["get_email", "get_badge", "get_badge_id", "registrationToken"]
     fieldsets = (
@@ -688,11 +701,18 @@ def make_staff(modeladmin, request, queryset):
         staff.save()
     if queryset.count() > 1:
         if skipped > 0:
-            messages.success(request, f"{queryset.count() - skipped} attendees added to staff ({skipped} ommited that were already on staff for {event})")
+            messages.success(
+                request,
+                f"{queryset.count() - skipped} attendees added to staff ({skipped} ommited that were already on staff for {event})",
+            )
         else:
-            messages.success(request, f"{queryset.count()} attendees added to staff for {event}")
+            messages.success(
+                request, f"{queryset.count()} attendees added to staff for {event}"
+            )
     else:
-        messages.success(request, f"Successfully added {queryset[0]} to staff for {event}")
+        messages.success(
+            request, f"Successfully added {queryset[0]} to staff for {event}"
+        )
 
 
 make_staff.short_description = "Add to Staff"
@@ -702,7 +722,9 @@ def send_upgrade_form_email(modeladmin, request, queryset):
     for badge in queryset:
         registration.emails.send_upgrade_instructions(badge)
     if queryset.count() > 1:
-        messages.success(request, "Successfully sent emails to %d attendees" % queryset.count())
+        messages.success(
+            request, "Successfully sent emails to %d attendees" % queryset.count()
+        )
     else:
         messages.success(request, "Successfully sent email to %s" % queryset[0])
 
@@ -717,7 +739,9 @@ def resend_confirmation_email(modeladmin, request, queryset):
             order, badge.attendee.email, send_vip=False
         )
     if queryset.count() > 1:
-        messages.success(request, "Successfully sent emails to %d attendees" % queryset.count())
+        messages.success(
+            request, "Successfully sent emails to %d attendees" % queryset.count()
+        )
     else:
         messages.success(request, "Successfully sent email to %s" % queryset[0])
 
@@ -725,43 +749,42 @@ def resend_confirmation_email(modeladmin, request, queryset):
 resend_confirmation_email.short_description = "Resend confirmation email"
 
 
+@transaction.atomic
 def assign_badge_numbers(modeladmin, request, queryset):
-    nonstaff = Attendee.objects.filter(staff=None)
     first_badge = queryset[0]
     event = first_badge.event or Event.objects.get(default=True)
-    badges = Badge.objects.filter(attendee__in=nonstaff, event=event)
-    assigned_badge_numbers = [
-        badge.badgeNumber for badge in badges if badge.badgeNumber is not None
-    ]
-
-    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
-    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
+    badges = Badge.objects.filter(event=event)
+    highest = Badge.objects.filter(event=event, badgeNumber__isnull=False).aggregate(
+        Max("badgeNumber")
+    )["badgeNumber__max"]
+    if highest is None:
+        highest = 0
 
     for badge in queryset.order_by("registeredDate"):
+        # skip assigning to badges not in current event
         if badge not in badges:
+            messages.warning(
+                request,
+                f"skipped assinging {badge} a number beacuse it is outside of current event",
+            )
             continue
-
-        filter_list = set(assigned_badge_numbers) - set(reserved_badge_numbers)
 
         # Skip badges which have already been assigned
         if badge.badgeNumber is not None:
             continue
         # Skip badges that are not assigned a registration level
-        if badge.effectiveLevel() is None:
+        level = badge.effectiveLevel()
+        if level is None or level == Badge.UNPAID:
+            messages.warning(
+                request,
+                f"skipped assinging {badge} a number beacuse it's registration level is {level}",
+            )
             continue
 
-        # Pick the next largest candidate assignment
-        if len(filter_list) == 0:
-            highest = 1
-        else:
-            highest = max(filter_list) + 1
-
-        while highest in reserved_badge_numbers:
-            highest += 1
+        highest += 1
 
         badge.badgeNumber = highest
         badge.save()
-        assigned_badge_numbers.append(highest)
 
 
 assign_badge_numbers.short_description = "Assign badge number"
@@ -1521,14 +1544,6 @@ class CashdrawerAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(Cashdrawer, CashdrawerAdmin)
-
-
-class ReservedBadgeNumbersAdmin(admin.ModelAdmin):
-    list_display = ("event", "badgeNumber")
-    list_filter = ("event",)
-
-
-admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
 
 
 class VenueAdmin(admin.ModelAdmin):
