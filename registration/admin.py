@@ -773,10 +773,11 @@ def assign_badge_numbers(modeladmin, request, queryset):
         if badge.badgeNumber is not None:
             continue
         # Skip badges that are not assigned a registration level
-        if badge.effectiveLevel() is None:
+        level = badge.effectiveLevel()
+        if level is None or level == Badge.UNPAID:
             messages.warning(
                 request,
-                f"skipped assinging {badge} a number beacuse it has no registration level",
+                f"skipped assinging {badge} a number beacuse it's registration level is {level}",
             )
             continue
 
