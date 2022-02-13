@@ -35,13 +35,6 @@ repos:
     hooks:
       - id: black
 
-  - repo: https://github.com/gitguardian/ggshield
-    rev: main
-    hooks:
-      - id: ggshield
-        language_version: python3
-        stages: [commit]
-
 # Not supported with Django templates right now :(
 #  - repo: https://github.com/prettier/prettier
 #    rev: "1.19.1"

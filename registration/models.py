@@ -387,6 +387,12 @@ def badge_signature_bitmap_path(instance, filename):
 
 
 class Badge(models.Model):
+    ABANDONED = "Abandoned"
+    COMP = "Comp"
+    DEALER = "Dealer"
+    PAID = "Paid"
+    STAFF = "Staff"
+    UNPAID = "Unpaid"
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.CASCADE
     )
@@ -446,24 +452,24 @@ class Badge(models.Model):
     @property
     def abandoned(self):
         if Staff.objects.filter(attendee=self.attendee).exists():
-            return "Staff"
+            return Badge.STAFF
         if Dealer.objects.filter(attendee=self.attendee).exists():
-            return "Dealer"
+            return Badge.DEALER
         if self.paidTotal() > 0:
-            return "Paid"
+            return Badge.PAID
         level = self.effectiveLevel()
-        if level == "Unpaid":
-            return "Unpaid"
+        if level == Badge.UNPAID:
+            return Badge.UNPAID
         if level:
-            return "Comp"
-        return "Abandoned"
+            return Badge.COMP
+        return Badge.ABANDONED
 
     def effectiveLevel(self):
         level = None
         orderItems = OrderItem.objects.filter(badge=self, order__isnull=False)
         for oi in orderItems:
             if oi.order.billingType == Order.UNPAID:
-                return "Unpaid"
+                return Badge.UNPAID
             if not level:
                 level = oi.priceLevel
             elif oi.priceLevel.basePrice > level.basePrice:
@@ -829,7 +835,7 @@ class Cashdrawer(models.Model):
         (DEPOSIT, "Deposit"),
         (DROP, "Drop"),
         (PICKUP, "Pickup"),
-        (ADJUSTMENT, "Adjustment")
+        (ADJUSTMENT, "Adjustment"),
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     # Action: one of - ['OPEN', 'CLOSE', 'TRANSACTION', 'DEPOSIT', 'DROP', 'PICKUP']

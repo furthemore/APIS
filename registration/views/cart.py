@@ -166,12 +166,13 @@ def saveCart(cart):
             attendeeOption = AttendeeOptions(
                 option=plOption, orderItem=orderItem, optionValue="0"
             )
+            attendeeOption.save()
         else:
             if option["value"] != "":
                 attendeeOption = AttendeeOptions(
                     option=plOption, orderItem=orderItem, optionValue=option["value"]
                 )
-        attendeeOption.save()
+                attendeeOption.save()
 
     cart.transferedDate = timezone.now()
     cart.save()
