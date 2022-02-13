@@ -1546,14 +1546,6 @@ class CashdrawerAdmin(ImportExportModelAdmin):
 admin.site.register(Cashdrawer, CashdrawerAdmin)
 
 
-class ReservedBadgeNumbersAdmin(admin.ModelAdmin):
-    list_display = ("event", "badgeNumber")
-    list_filter = ("event",)
-
-
-admin.site.register(ReservedBadgeNumbers, ReservedBadgeNumbersAdmin)
-
-
 class VenueAdmin(admin.ModelAdmin):
     list_display = (
         "name",
