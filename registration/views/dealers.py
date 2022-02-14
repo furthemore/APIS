@@ -288,7 +288,7 @@ def add_assistants_checkout(request):
                 }
             )
 
-    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False).count()
+    unpaid_partner_count = dealer.getUnpaidPartnerCount()
 
     # FIXME: remove hardcoded costs
     total = Decimal(55 * unpaid_partner_count)
@@ -311,7 +311,7 @@ def add_assistants_checkout(request):
 
     if status:
         # Payment succeeded - Mark assistants as paid
-        for assistant in dealer.dealerasst_set.all():
+        for for assistant in dealer.dealerasst_set.all().filter(paid=False):
             assistant.paid = True
             assistant.save()
 
