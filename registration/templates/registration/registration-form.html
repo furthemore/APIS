@@ -12,12 +12,15 @@
       </div>
       <div class="modal-body">
         {% if event.allowOnlineMinorReg %}
-          <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the door to sign our consent form.</p>
+          <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the door
+            to sign our consent form.</p>
           <p>A parent or guardian must register and accompany anyone under the age of 13 (by the start of the convention).</p>
           <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
         {% else %}
           <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
-          <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event (born after April 20, 2000). A parent or guardian must also register for the convention to accompany anyone under the age of 13 at the time of the event (born after April 20, 2005).</p>
+          <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event
+            (born after {% subtract_years event.eventStart 18 %}). A parent or guardian must also register for the convention to accompany
+            anyone under the age of 13 at the time of the event (born after {% subtract_years event.eventStart 13 %}).</p>
           <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
         {% endif %}
       </div>
