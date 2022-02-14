@@ -1,4 +1,5 @@
 from django import template
+from django.utils.timezone import timedelta
 
 register = template.Library()
 
@@ -33,3 +34,8 @@ def selected_if_month(date, value):
     if hasattr(date, "month") and date.month == value:
         return "selected"
     return ""
+
+
+@register.simple_tag
+def subtract_years(date, years):
+    return date.replace(year=date.year - years).strftime("%B %e, %Y")
