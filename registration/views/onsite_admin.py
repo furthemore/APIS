@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import payments, printing, mqtt
+from registration import mqtt, payments, printing
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
@@ -21,9 +21,9 @@ from registration.views.ordering import (
     getOrderItemOptionTotal,
 )
 
+from ..mqtt import send_mqtt_message
 from .attendee import get_attendee_age
 from .common import logger
-from ..mqtt import send_mqtt_message
 
 
 def flatten(l):
@@ -130,7 +130,7 @@ def onsiteAdminSearch(request):
         | Q(attendee__preferredName__icontains=query)
         | Q(attendee__firstName__icontains=query),
         Q(event=event),
-    ).prefetch_related('attendee', 'event')
+    ).prefetch_related("attendee", "event")
     if len(results) == 0:
         errors = [
             {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
