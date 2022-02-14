@@ -311,7 +311,7 @@ def add_assistants_checkout(request):
 
     if status:
         # Payment succeeded - Mark assistants as paid
-        for for assistant in dealer.dealerasst_set.all().filter(paid=False):
+        for assistant in dealer.dealerasst_set.all().filter(paid=False):
             assistant.paid = True
             assistant.save()
 
