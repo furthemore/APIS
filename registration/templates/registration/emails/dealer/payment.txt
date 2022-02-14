@@ -13,9 +13,9 @@ Table Type - {{dealer.tableSize}}:  ${{dealer.tableSize.basePrice}}
 {% if dealer.needWifi %}
 Wi-Fi Access:  $50.00
 {% endif %}
-{% if dealer.getPartnerCount > 0%}
+{% if dealer.getUnpaidPartnerCount > 0%}
 
-Partners x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:55}}.00
+Partners x{{dealer.getUnpaidPartnerCount}}:  ${{dealer.getUnpaidPartnerCount|mul:55}}.00
 {% endif %}
 {% if dealer.asstBreakfast%}
 Partner Breakfast x{{dealer.getPartnerCount}}:  ${{dealer.getPartnerCount|mul:60}}.00
