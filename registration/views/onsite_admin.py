@@ -4,7 +4,8 @@ import time
 from datetime import datetime
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Q
+from django.contrib.messages import get_messages
+from django.db.models import Max, Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -15,13 +16,20 @@ from registration import payments, printing, mqtt
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
-from registration.views.ordering import getDiscountTotal, getOrderItemOptionTotal
+from registration.views.ordering import (
+    getDiscountTotal,
+    getOrderItemOptionTotal,
+)
 
 from .attendee import get_attendee_age
 from .common import logger
 from ..mqtt import send_mqtt_message
 
-flatten = lambda l: [item for sublist in l for item in sublist]
+
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -276,51 +284,25 @@ def notifyTerminal(request, data):
 
 
 def assignBadgeNumber(request):
-    event = Event.objects.get(default=True)
-
     request_badges = json.loads(request.body)
 
     badge_payload = {badge["id"]: badge for badge in request_badges}
 
     badge_set = Badge.objects.filter(id__in=list(badge_payload.keys()))
 
-    reserved_badges = ReservedBadgeNumbers.objects.filter(event=event)
-    reserved_badge_numbers = [badge.badgeNumber for badge in reserved_badges]
-
-    errors = []
-
-    for badge in badge_set.order_by("registeredDate"):
-        # Skip badges which have already been assigned
-        # if badge.badgeNumber is not None:
-        #    errors.append(
-        #        "{0} was already assigned badge number {1}.".format(
-        #            badge, badge.badgeNumber
-        #        )
-        #    )
-        #    continue
-        # Skip badges that are not assigned a registration level
-        if badge.effectiveLevel() is None:
-            errors.append("{0} is not assigned a registration level.".format(badge))
-            continue
-
-        # Check if proposed badge number is reserved:
-        if badge_payload[badge.id]["badgeNumber"] in reserved_badge_numbers:
-            errors.append(
-                "{0} is a reserved badge number. {1} was not assigned a badge number.".format(
-                    badge.request_badges["badgeNumber"], badge
-                )
-            )
-            continue
-
-        badge.badgeNumber = badge_payload[badge.id]["badgeNumber"]
-        badge.save()
-
+    admin.assign_badge_numbers(None, request, badge_set)
+    errors = get_messages_list(request)
     if errors:
         return JsonResponse(
             {"success": False, "errors": errors, "message": "\n".join(errors)},
             status=400,
         )
     return JsonResponse({"success": True})
+
+
+def get_messages_list(request):
+    storage = get_messages(request)
+    return [message.message for message in storage]
 
 
 @staff_member_required

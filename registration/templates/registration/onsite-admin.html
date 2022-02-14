@@ -384,6 +384,7 @@ const MQTT_OPTIONS = {
     clientId: "{{ mqtt_auth.user}}-" + Math.random().toString(16).substr(2, 8),
     clean: true,
 };
+
 const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
 const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
 </script>

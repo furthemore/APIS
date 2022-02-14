@@ -667,7 +667,7 @@ def getDealerTotal(orderItems, discount, dealer):
         itemSubTotal = getDiscountTotal(discount, itemSubTotal)
     total = (
         itemSubTotal
-        + 45 * partnerCount
+        + 55 * partnerCount
         + partnerBreakfast
         + dealer.tableSize.basePrice
         + wifi
