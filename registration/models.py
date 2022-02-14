@@ -583,7 +583,7 @@ class Dealer(models.Model):
         return partnercount
 
     def getUnpaidPartnerCount(self):
-        unpaidpartnercount = dealer.dealerasst_set.all().filter(paid=False).count()
+        unpaidpartnercount = self.dealerasst_set.all().filter(paid=False).count()
         return unpaidpartnercount
 		
     def paidTotal(self):
