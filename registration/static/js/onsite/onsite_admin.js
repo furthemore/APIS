@@ -34,7 +34,7 @@ var print_badges = function(e) {
     var stop = false;
 
     // assign badge numbers
-    $.ajax("{% url 'registration:assignBadgeNumber' %}", {
+    $.ajax(URL_REGISTRATION_ASSIGN_BADGE_NUMBER, {
       data : JSON.stringify(printQueue),
       contentType : 'application/json',
       type : 'POST'
@@ -48,7 +48,7 @@ var print_badges = function(e) {
        });
        // print badges
 
-      $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
+      $.getJSON(URL_REGISTRATION_ONSITE_PRINT_BADGES + "?id=" + printIDs.join("&id="), function (data) {
           if (!data.success) {
               alert("Error while printing badges");
           }
@@ -58,8 +58,7 @@ var print_badges = function(e) {
       });
 
       // clear cart
-
-      $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
+      $.getJSON(URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART);
       refresh_cart();
     });
 };
