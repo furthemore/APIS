@@ -1,0 +1,81 @@
+.well, .panel {
+    margin-top: 20px;
+}
+
+#refresh_button {
+    font-size: 50%;
+}
+
+#pos {
+    width: 100%;
+}
+
+.price-line {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.price-line::before {
+    content: '$';
+}
+
+.age {
+    float: right;
+}
+
+.right {
+    float: right;
+}
+
+.cart-table td {
+    font-size: 1.6em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.results {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+.total {
+    margin-bottom: 22px;
+}
+
+.button-group {
+    margin-bottom: 20px;
+}
+
+.total-table {
+    font-size: 22px;
+    width: 100%;
+}
+
+.total-table td {
+    padding-right: 10px;
+}
+
+.total-table tr td:nth-child(1) {
+    float: right;
+}
+
+.remove-badge {
+    color: darkred;
+    float: right;
+    padding-left: 10px;
+}
+
+.col-top {
+    margin-top: 20px;
+}
+
+#client-error {
+    display: none;
+}
+
+#cart-error {
+    display: none;
+}

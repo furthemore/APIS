@@ -1,10 +1,8 @@
 import json
 import logging
-import subprocess
 import time
 from datetime import datetime
 
-from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.messages import get_messages
 from django.db.models import Max, Q
@@ -14,7 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import admin, payments, printing
+from registration import mqtt, payments, printing
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
@@ -23,9 +21,9 @@ from registration.views.ordering import (
     getOrderItemOptionTotal,
 )
 
+from ..mqtt import send_mqtt_message
 from .attendee import get_attendee_age
 from .common import logger
-from .printing import printNametag
 
 
 def flatten(l):
@@ -35,31 +33,12 @@ def flatten(l):
 logger = logging.getLogger(__name__)
 
 
-def send_mqtt_message(topic, payload):
-    payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
-
-    mqtt_command = [
-        "mosquitto_pub",
-        "-h",
-        settings.MQTT_BROKER["host"],
-        "-p",
-        str(settings.MQTT_BROKER["port"]),
-        "-t",
-        topic,
-        "-u",
-        settings.MQTT_LOGIN["username"],
-        "-P",
-        settings.MQTT_LOGIN["password"],
-        "-m",
-        payload_json,
-    ]
-    logger.info("Sending MQTT message ({0})".format(payload_json))
+def get_active_terminal(request):
+    term_id = request.session.get("terminal")
     try:
-        subprocess.check_call(mqtt_command)
-    except subprocess.CalledProcessError as exc:
-        logger.info("Failed to send MQTT message: {0!s}".format(exc))
-    else:
-        logger.info("Sent MQTT message successfully.")
+        return Firebase.objects.get(pk=int(term_id))
+    except Firebase.DoesNotExist:
+        return None
 
 
 @staff_member_required
@@ -112,6 +91,7 @@ def onsiteAdmin(request):
     if query is not None:
         results = Badge.objects.filter(
             Q(attendee__lastName__icontains=query)
+            | Q(attendee__preferredName__icontains=query)
             | Q(attendee__firstName__icontains=query),
             Q(event=event),
         )
@@ -120,11 +100,17 @@ def onsiteAdmin(request):
                 {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
             )
 
+    terminal = get_active_terminal(request)
+    mqtt_auth = None
+    if terminal:
+        mqtt_auth = mqtt.get_onsite_admin_token(terminal)
+
     context = {
         "terminals": terminals,
         "errors": errors,
         "results": results,
         "printer_uri": settings.REGISTER_PRINTER_URI,
+        "mqtt_auth": mqtt_auth,
     }
 
     return render(request, "registration/onsite-admin.html", context)
@@ -141,9 +127,10 @@ def onsiteAdminSearch(request):
     errors = []
     results = Badge.objects.filter(
         Q(attendee__lastName__icontains=query)
+        | Q(attendee__preferredName__icontains=query)
         | Q(attendee__firstName__icontains=query),
         Q(event=event),
-    )
+    ).prefetch_related("attendee", "event")
     if len(results) == 0:
         errors = [
             {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
@@ -325,6 +312,8 @@ def onsitePrintBadges(request):
     tags = []
     theme = ""
 
+    logger.info(f"Printing badge ids: {badge_list}")
+
     for badge_id in badge_list:
         try:
             badge = Badge.objects.get(id=badge_id)
@@ -382,8 +371,6 @@ def onsiteSignature(request):
 @csrf_exempt
 def completeSquareTransaction(request):
     key = request.GET.get("key", "")
-    # FIXME: Need to work on a list of order references, so that every order gets
-    # FIXME: updated and no badge is left orphaned.
     reference = request.GET.get("reference", None)
     clientTransactionId = request.GET.get("clientTransactionId", None)
     serverTransactionId = request.GET.get("serverTransactionId", None)
@@ -433,7 +420,7 @@ def completeSquareTransaction(request):
         for order_item in order_items:
             old_order = order_item.order
             order_item.order = first_order
-            logger.warn("Deleting old order id={0}".format(old_order.id))
+            logger.warning("Deleting old order id={0}".format(old_order.id))
             old_order.delete()
             order_item.save()
 
@@ -479,16 +466,6 @@ def completeSquareTransaction(request):
         return JsonResponse({"success": False, "error": errors,}, status=210)
 
     return JsonResponse({"success": True})
-
-
-class JSONDecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Decimal):
-            return str(o.quantize(Decimal("1.00")))
-        return o
-
-
-# json.dumps(the_thing, cls=JSONDecimalEncoder)
 
 
 def completeCashTransaction(request):
@@ -548,7 +525,7 @@ def completeCashTransaction(request):
         "v": 1,
         "event": event.name,
         "line_items": attendee_options,
-        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)},},
+        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)}},
         "total": order.total,
         "payment": {
             "type": order.billingType,
@@ -566,7 +543,7 @@ def completeCashTransaction(request):
 
     term = request.session.get("terminal", None)
     active = Firebase.objects.get(id=term)
-    topic = "apis/receipts/{0}/print_cash".format(active.name)
+    topic = f"{mqtt.get_topic('receipts', active.name)}/print_cash"
 
     send_mqtt_message(topic, payload)
 
@@ -709,8 +686,8 @@ def onsiteAdminCart(request):
         attendee_options = []
         for item in oi:
             level = item.priceLevel
-            attendee_options.append(get_line_items(item.attendeeoptions_set.all()))
-            level_subtotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
+            attendee_options.append(get_line_items(item.getOptions()))
+            level_subtotal += getOrderItemOptionTotal(item.getOptions())
 
             if level is None:
                 effectiveLevel = None
@@ -747,6 +724,7 @@ def onsiteAdminCart(request):
             "level_discount": level_discount,
             "level_total": level_subtotal - level_discount,
             "attendee_options": attendee_options,
+            "printed": badge.printed,
         }
         result.append(item)
 
@@ -841,3 +819,8 @@ def onsiteAdminClearCart(request):
     request.session["cart"] = []
     sendMessageToTerminal(request, {"command": "clear"})
     return onsiteAdmin(request)
+
+
+@staff_member_required
+def create_discount(request):
+    JsonResponse({"success": True})

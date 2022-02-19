@@ -16,7 +16,9 @@ squareup==4.1.0.20200122
 django-u2f~=1.0.0
 django-maintenance-mode==0.14.0
 Pillow>=5.3
-influxdb==5.2.3
+PyJWT~=2.3.0
+influxdb~=5.2.3          # Influx < v1.7
+influxdb-client~=1.25.0  # Influxdb 1.8, 2.x
 Werkzeug==0.15.3
 django-admin-env-notice~=0.4
 django-debug-toolbar~=3.2.2

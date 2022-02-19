@@ -1,14 +1,16 @@
 {% extends "registration/master_admin.html" %}
-{% load admin_urls %}
-
+{% load admin_urls static settings %}
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/onsite-admin.css' %}" />
+{% endblock %}
 {% block content %}
 
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-sm-6">
             <h2><a href="{% url 'registration:onsiteAdmin' %}">APIS Register</a></h2>
         </div>
-        <div class="col-md-2 col-md-offset-2 col-top">
+        <div class="col-sm-2 col-sm-offset-2 col-top">
             <form class="form-inline" id="terminal_form" method="get">
                 <label for="pos" class="sr-only">Register Position</label>
                 <select class="form-control" id="pos" name="terminal">
@@ -22,26 +24,31 @@
                 </select>
             </form>
         </div>
-        <div class="col-md-1 col-top">
-            <div class="dropdown">
-                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="user">
-                    <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
-                    <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
-                </ul>
+        <div class="col-sm-2 col-top">
+          <div class="row">
+            <div class="col-sm-4">
+                <div class="dropdown">
+                    <button id="options" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="user">
+                        <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
+                        <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+                    </ul>
+                </div>
             </div>
-        </div>
-        <div class="col-md-1 col-top">
-            <div class="dropdown">
-                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-user"></i><span class="sr-only">User options</span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="user">
-                    <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
-                </ul>
+            <div class="col-sm-4">
+                <div class="dropdown">
+                    <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user"></i><span class="sr-only">User options</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="user">
+                        <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
+                    </ul>
+                </div>
             </div>
+
+          </div>
         </div>
     </div>
 
@@ -82,7 +89,8 @@
             <table class="table table-striped">
               <thead>
                 <tr>
-                  <th>Attendee Name</th>
+                  <th>Legal Name</th>
+                  <th>Preferred Name</th>
                   <th>Badge Name</th>
                   <th>Status</th>
                   <th><span class="sr-only">Action</span></th>
@@ -92,6 +100,7 @@
               {% for badge in results %}
                 <tr>
                   <td class="results">{{ badge.attendee.firstName }} {{ badge.attendee.lastName }}</td>
+                  <td class="results">{{ badge.attendee.preferredName }}</td>
                   <td class="results">{{ badge.badgeName }}</td>
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
@@ -178,94 +187,31 @@
       </div>
     </div>
 
-    <style>
-        .well, .panel {
-            margin-top: 20px;
-        }
-
-        #refresh_button {
-            font-size: 50%;
-        }
-
-        #pos {
-            width: 100%;
-        }
-
-        .price-line {
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        .price-line::before {
-            content: '$';
-        }
-
-        .age {
-            float: right;
-        }
-
-        .right {
-            float: right;
-        }
-
-        .cart-table td {
-            font-size: 1.6em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .results {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100px;
-        }
-
-        .total {
-            margin-bottom: 22px;
-        }
-
-        .button-group {
-            margin-bottom: 20px;
-        }
-
-        .total-table {
-            font-size: 22px;
-            width: 100%;
-        }
-
-        .total-table td {
-            padding-right: 10px;
-        }
-
-        .total-table tr td:nth-child(1) {
-            float: right;
-        }
-
-        .remove-badge {
-            color: darkred;
-            float: right;
-            padding-left: 10px;
-        }
-
-        .col-top {
-            margin-top: 20px;
-        }
-
-        #client-error {
-            display: none;
-        }
-
-        #cart-error {
-            display: none;
-        }
-    </style>
+    <!-- Modal -->
+    <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            ...
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <script type="text/html" id="itemRowTemplate">
     <tr>
       <td><span data-content="quantity"></span> &times; <span data-content="item"></span> (@<span data-content="price"></span>)</td>
-      <td>$<span data-content="total"></span></td>
+      <td><span data-content="total"></span></td>
     </tr>
   </script>
 
@@ -274,7 +220,8 @@
       <div class="panel-heading">
         <span data-content="abandoned" data-format="PaidBadgeFormatter"></span>
         <span data-content="holdType" data-format="HoldTypeFormatter"></span>
-        <span data-content="name"></span>
+        <span data-content="printed" data-format="PrintedBadgeFormatter"></span>
+        <a class="link-badge" href="#" data-id="delete_id"><span data-content="name"></span></a>
         <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-minus-circle"></i></a>
         <span data-content="age" data-format="MinorFormFormatter" class="age"></span>
       </div>
@@ -334,308 +281,33 @@
 
 {% block javascript %}
 <script>
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assignBadgeNumber' %}";
+const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsitePrintBadges' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsiteAdminClearCart' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsiteAdminCart' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsiteAddToCart' %}";
+const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsiteRemoveFromCart' %}";
+const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:openTerminal' %}";
+const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:closeTerminal' %}";
+const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enablePayment' %}";
+const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:completeCashTransaction' %}";
+const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
 
-var refresh_cart;
-var cartData = [];
-var cartTemplateData = [];
-
-var get_printable = function () {
-    // Anything in the cart marked as paid is eligable for printing
-    var printQueue = [];
-    $.each(cartData.result, function(key, value) {
-      if ((value.abandoned.toUpperCase() == "PAID") && (value.holdType === null)) {
-          printQueue.push(value);
-      }
-    });
-
-    if (printQueue.length > 0) {
-        $("#print_button").removeAttr("disabled");
-    } else {
-        $("#print_button").attr("disabled", "disabled");
-    }
-
-    return printQueue;
+// MQTT credentials for in-browser push notifications
+const MQTT_ENABLED = {% if mqtt_auth %}true{% else %}false{% endif %};
+const MQTT_OPTIONS = {
+    username: "{{ mqtt_auth.user }}",
+    password: "{{ mqtt_auth.token }}",
+    clientId: "{{ mqtt_auth.user}}-" + Math.random().toString(16).substr(2, 8),
+    clean: true,
 };
 
-var print_badges = function(e) {
-    var printQueue = get_printable();
-    var badge_preview = "";
-    var stop = false;
-
-    // assign badge numbers
-    $.ajax("{% url 'registration:assignBadgeNumber' %}", {
-      data : JSON.stringify(printQueue),
-      contentType : 'application/json',
-      type : 'POST'
-    })
-    .done(function(data) {
-        console.log(data.success);
-    }).success(function (data) {
-       var printIDs = [];
-       $.each(printQueue, function(idx, badge) {
-          printIDs.push(badge.id);
-       });
-       // print badges
-
-      $.getJSON("{% url 'registration:onsitePrintBadges' %}?id=" + printIDs.join("&id="), function (data) {
-          if (!data.success) {
-              alert("Error while printing badges");
-          }
-          window.open(data.url);
-      }).fail(function (data) {
-        $("#cart-error").html("Server error while assigning badge numbers:<br>"+data.message).fadeIn();
-      });
-
-      // clear cart
-
-      $.getJSON("{% url 'registration:onsiteAdminClearCart' %}");
-      refresh_cart();
-    });
-
-
-
-};
-
-$(document).ready(function () {
-    $.addTemplateFormatter("MinorFormFormatter",
-        function(value, template) {
-          if (parseInt(value) < 18) {
-            return '<span style="color: red">MINOR FORM REQUIRED</span>';
-          }
-          return "18+";
-    });
-
-    $.addTemplateFormatter("PaidBadgeFormatter",
-        function(value, template) {
-            if (value == "Paid") {
-                return '<span class="label label-success">Paid</span>';
-            } else {
-                return '<span class="label label-warning">' + value + '</span>';
-            }
-    });
-
-
-    /* This should probably be a checkbox instead, so that we can still send to a terminal's associated printer
-    if (navigator.userAgent.match(/iPad|iPhone/)) {
-        $("#pos").append('<option value="ios">This device (iOS)</option>');
-    }
-    if (navigator.userAgent.match(/Android/)) {
-        $("#pos").append('<option value="android">This device (Android)</option>');
-    }
-    */
-
-    $.addTemplateFormatter("HoldTypeFormatter",
-        function(value, template) {
-            if (value === null) {
-                return '';
-            } else {
-                return '<span class="label label-danger">' + value + '</span>';
-            }
-    });
-
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                // Only send the token to relative URLs i.e. locally.
-                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-            }
-        }
-    });
-
-    refresh_cart = function() {
-      $("#cart-error").fadeOut();
-      $.getJSON("{% url 'registration:onsiteAdminCart' %}", function(data) {
-        cartData = data;
-        var enable_print = false;
-        var onHold = false;
-        if (data.success) {
-          cartTemplateData = [];
-          orderItemsData = {};
-          $.each( data.result, function( key, val ) {
-            var level = "?";
-            var price = "?";
-            var state = "danger";
-            if (val.effectiveLevel != null) {
-                    level = val.effectiveLevel.name;
-                    price = val.effectiveLevel.price;
-                    state = "";
-            }
-
-            cartTemplateData.push({
-                  name : val.firstName + ' ' + val.lastName,
-                  badgeName : val.badgeName,
-                  age : val.age,
-                  abandoned : val.abandoned,
-                  level : level,
-                  price : price,
-                  delete_id : "delete-" + val.id,
-                  items_id: "order-items-" + val.id,
-                  state : state,
-                  holdType : val.holdType,
-                  discount: val.discount,
-                  level_discount: val.level_discount,
-                  level_subtotal: val.level_subtotal,
-                  level_total: val.level_total
-            });
-            orderItemsData[val.id] = val.attendee_options;
-            if (val.discount) {
-                orderItemsData[val.id].push({
-                    quantity: 1,
-                    item: "Discount "+val.discount.name,
-                    price: "-"+val.discount.amount_off+" / "+val.discount.percent_off+"%",
-                    total: val.level_discount
-                });
-            }
-
-            if (!!val.holdType) {
-              onHold = true;
-              enable_print = false;
-            }
-          });
-          $("#total").html("");
-          $("#cart").html("");
-          $("#cart").loadTemplate($("#cartTemplate"), cartTemplateData);
-          $(".remove-badge").click(remove_badge);
-
-          $.each(orderItemsData, function(key, val) {
-              $("#order-items-"+key).loadTemplate($("#itemRowTemplate"), val);
-          });
-
-          var price = parseFloat(data.total);
-          if (((!isNaN(price)) && (price != 0)) && (!onHold)) {
-              $("#total").loadTemplate($("#totalTemplate"), data);
-              $("#cash_button").removeAttr("disabled");
-              $("#credit_button").removeAttr("disabled");
-          } else {
-              $("#cash_button").attr("disabled", "disabled");
-              $("#credit_button").attr("disabled", "disabled");
-          }
-
-          get_printable();
-        }
-
-      })
-      .fail(function (data) {
-          $("#cart-error").html("A server error occured while refreshing the cart<br>"+data.message).fadeIn();
-      });
-    };
-
-    refresh_cart();
-    $("#refresh_button").click(function (e) {
-        e.preventDefault();
-        $("#cart").fadeOut(function () {
-            refresh_cart();
-            $(this).fadeIn();
-        })
-    });
-
-    $(".add-badge").click(function (e) {
-        e.preventDefault();
-        var id = $(this).data("id");
-        $(this).attr("disabled", "disabled");
-        $.getJSON("{% url 'registration:onsiteAddToCart' %}", { id : id }, function (data) {
-            if (data.success) {
-                refresh_cart();
-            } else {
-                alert("Error while adding to cart");
-            }
-        });
-    });
-
-    $("#open-terminal").click(function (e) {
-        e.preventDefault();
-        $.getJSON("{% url 'registration:openTerminal' %}", {}, function (data) {
-            if (!data.success) {
-                alert("Error while opening terminal: " + data.message);
-            }
-        });
-    });
-
-    $("#close-terminal").click(function (e) {
-        e.preventDefault();
-        $.getJSON("{% url 'registration:closeTerminal' %}", {}, function (data) {
-            if (!data.success) {
-                alert("Error while closing terminal: " + data.message);
-            }
-        });
-    });
-
-
-    $("#credit_button").click(function (e) {
-        e.preventDefault();
-        $.getJSON("{% url 'registration:enablePayment' %}", {}, function (data) {
-            if (!data.success) {
-                alert("Error while closing terminal: " + data.message);
-            }
-        });
-    });
-
-    $("#cash_button").click(function (e) {
-        e.preventDefault();
-        tendered = prompt("Enter tendered amount");
-        parsed = parseFloat(tendered.match(/(\d+).?(\d{0,2})?/));
-        total = parseFloat(cartData.total);
-        if (parsed < total) {
-            alert("Insufficient payment. (Split tender unsupported)");
-            return;
-        }
-
-        change = parsed - total;
-
-        data = {
-            'reference' : cartData.reference,
-            'total' : total,
-            'tendered' : parsed
-        }
-        $.getJSON("{% url 'registration:completeCashTransaction' %}", data, function (data) {
-            if (data.success) {
-                refresh_cart();
-            } else {
-                alert("Error while posting transaction to server");
-            }
-        });
-
-        alert("Change: $" + change);
-
-    });
-
-
-    var remove_badge = function (e) {
-        e.preventDefault();
-        var id = $(this).attr("id").split("-")[1];
-        $.getJSON("{% url 'registration:onsiteRemoveFromCart' %}", { id : id }, function (data) {
-            if (data.success) {
-                refresh_cart();
-            } else {
-                alert("Error while removing from cart");
-            }
-        }).fail(function() {
-            window.reload();
-        });
-    };
-
-    $("#pos").change(function () {
-      $("#terminal_form").submit();
-    });
-
-    $("#print_button").click(print_badges);
-
-});
-
+const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
+const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
 </script>
+
+<script src="{% static 'js/mqtt.min.js' %}"></script>
+<script src="{% static 'js/onsite/onsite_push.js' %}"></script>
+<script src="{% static 'js/onsite/onsite_admin.js' %}"></script>
 {% endblock %}

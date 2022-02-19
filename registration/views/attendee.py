@@ -5,6 +5,7 @@ from datetime import date
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 from django.utils import timezone
+from django.views.decorators.cache import cache_page
 
 from registration.models import Attendee, Badge, BanList, Dealer, PriceLevel, Staff
 
@@ -54,6 +55,7 @@ def get_price_level_list(levels):
     return data
 
 
+@cache_page(60)
 def get_minor_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
@@ -65,6 +67,7 @@ def get_minor_price_levels(request):
     )
 
 
+@cache_page(60)
 def get_accompanied_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
@@ -79,6 +82,7 @@ def get_accompanied_price_levels(request):
     )
 
 
+@cache_page(60)
 def get_free_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
