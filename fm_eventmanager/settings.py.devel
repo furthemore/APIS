@@ -247,7 +247,10 @@ MQTT_LOGIN = {
     "password": "secret",
 }
 
-MQTT_JWT_SECRET = "<base64-encoded secret>"
+# This URL is passed to browsers to connect to MQTT over websockets for push messages
+MQTT_EXTERNAL_BROKER = "wss://mqtt.furthemore.org/mqtt"
+
+MQTT_JWT_SECRET = "secret=="
 MQTT_JWT_ALGORITHM = "HS256"
 
 ENVIRONMENT_NAME = "Production Server"
