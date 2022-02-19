@@ -127,7 +127,17 @@ $(document).ready(function () {
         }
     });
 
-    refresh_cart = function() {
+    const fadeout_cart = function(callback) {
+        $("#cart").fadeOut();
+        $("#total").fadeOut(400, callback);
+    }
+
+    const fadein_cart = function(callback) {
+        $("#cart").fadeIn();
+        $("#total").fadeIn(400, callback);
+    }
+
+    refresh_cart = function(callback) {
       $("#cart-error").fadeOut();
       $.getJSON(URL_REGISTRATION_ONSITE_ADMIN_CART, function(data) {
         cartData = data;
@@ -207,6 +217,10 @@ $(document).ready(function () {
           get_printable();
         }
 
+        if (typeof(callback) === 'function') {
+            callback();
+        }
+
       })
       .fail(function (data) {
           $("#cart-error").html("A server error occurred while refreshing the cart<br>"+data.message).fadeIn();
@@ -216,9 +230,11 @@ $(document).ready(function () {
     refresh_cart();
     $("#refresh_button").click(function (e) {
         e.preventDefault();
-        $("#cart").fadeOut(function () {
-            refresh_cart();
-            $(this).fadeIn();
+        fadeout_cart(function () {
+            refresh_cart(function () {
+                fadein_cart();
+            });
+
         })
     });
 
