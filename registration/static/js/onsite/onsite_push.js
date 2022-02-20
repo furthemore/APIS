@@ -3,8 +3,18 @@ function get_topic(topic) {
     return MQTT_BASE_TOPIC + "/" + topic;
 }
 
+function send_notification(message) {
+    if (!("Notification" in window)) {
+        alert(message);
+    } else if (Notification.permission === "granted") {
+        var notification = new Notification(message);
+
+    }
+}
 
 if (MQTT_ENABLED) {
+    let notification_promise = Notification.requestPermission();
+
     const client = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
 
     console.log(client);
@@ -34,6 +44,14 @@ if (MQTT_ENABLED) {
 
         if (topic === get_topic("refresh")) {
             refresh_cart();
+        }
+
+        if (topic == get_topic("navigate")) {
+            window.open(message.url);
+        }
+
+        if (topic == get_topic("notification")) {
+
         }
     });
 }
