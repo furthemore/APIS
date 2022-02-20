@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import mqtt, payments, printing
+from registration import mqtt, payments, printing, admin
 from registration.admin import TWOPLACES
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
@@ -345,6 +345,10 @@ def onsitePrintBadges(request):
         badge.printed = True
         badge.save()
 
+    # Async notify the frontend to refresh the cart
+    logger.info("Refreshing admin cart")
+    admin_push_cart_refresh(request)
+
     if theme == "":
         theme == "apis"
     con.nametags(tags, theme=theme)
@@ -360,6 +364,12 @@ def onsitePrintBadges(request):
             "url": file_url,
         }
     )
+
+
+def admin_push_cart_refresh(request):
+    terminal = get_active_terminal(request)
+    topic = f"{mqtt.get_topic('admin', terminal.name)}/refresh"
+    send_mqtt_message(topic, None)
 
 
 def onsiteSignature(request):
