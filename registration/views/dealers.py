@@ -288,7 +288,7 @@ def add_assistants_checkout(request):
                 }
             )
 
-    unpaid_partner_count = dealer.dealerasst_set.all().filter(paid=False).count()
+    unpaid_partner_count = dealer.getUnpaidPartnerCount()
 
     # FIXME: remove hardcoded costs
     total = Decimal(55 * unpaid_partner_count)
@@ -311,7 +311,7 @@ def add_assistants_checkout(request):
 
     if status:
         # Payment succeeded - Mark assistants as paid
-        for assistant in dealer.dealerasst_set.all():
+        for assistant in dealer.dealerasst_set.all().filter(paid=False):
             assistant.paid = True
             assistant.save()
 
@@ -652,6 +652,7 @@ def getDealerTotal(orderItems, discount, dealer):
                     )
             else:
                 itemSubTotal += option.option.optionPrice
+    unpaidPartnerCount = dealer.getUnpaidPartnerCount()
     partnerCount = dealer.getPartnerCount()
     partnerBreakfast = 0
     if partnerCount > 0 and dealer.asstBreakfast:
@@ -667,7 +668,7 @@ def getDealerTotal(orderItems, discount, dealer):
         itemSubTotal = getDiscountTotal(discount, itemSubTotal)
     total = (
         itemSubTotal
-        + 55 * partnerCount
+        + 55 * unpaidPartnerCount
         + partnerBreakfast
         + dealer.tableSize.basePrice
         + wifi

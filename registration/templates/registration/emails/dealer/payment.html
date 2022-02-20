@@ -13,8 +13,8 @@
 {% if dealer.needWifi %}
 <tr><td>Wi-Fi Access</td><td>$50.00</td></tr>
 {% endif %}
-{% if dealer.getPartnerCount > 0%}
-<tr><td>Partners x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:55}}.00</td></tr>
+{% if dealer.getUnpaidPartnerCount > 0%}
+<tr><td>Partners x{{dealer.getUnpaidPartnerCount}}</td><td>${{dealer.getUnpaidPartnerCount|mul:55}}.00</td></tr>
 {% endif %}
 {% if dealer.asstBreakfast%}
 <tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:60}}.00</td></tr>

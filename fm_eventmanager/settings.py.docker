@@ -366,6 +366,12 @@ MQTT_LOGIN = {
     "password": "secret",
 }
 
+# This URL is passed to browsers to connect to MQTT over websockets for push messages
+MQTT_EXTERNAL_BROKER = os.getenv('MQTT_EXTERNAL_BROKER', '/mqtt')
+
+MQTT_JWT_SECRET = os.getenv('MQTT_JWT_SECRET')
+MQTT_JWT_ALGORITHM = os.getenv('MQTT_JWT_ALGORITHM', 'HS256')
+
 ENVIRONMENT_NAME = os.getenv('ENVIRONMENT_NAME', "Production Server")
 ENVIRONMENT_COLOR = os.getenv('ENVIRONMENT_COLOR', "#FF0000")
 ENVIRONMENT_TEXT_COLOR = os.getenv('ENVIRONMENT_TEXT_COLOR', "#00FF00")

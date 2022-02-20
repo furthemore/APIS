@@ -582,6 +582,10 @@ class Dealer(models.Model):
         partnercount = self.dealerasst_set.count()
         return partnercount
 
+    def getUnpaidPartnerCount(self):
+        unpaidpartnercount = self.dealerasst_set.all().filter(paid=False).count()
+        return unpaidpartnercount
+		
     def paidTotal(self):
         total = 0
         badge = self.getBadge()

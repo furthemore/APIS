@@ -164,9 +164,10 @@ STATIC_ROOT = '/var/www/APIS/static/'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60*60  # 1hr
 
-# Authorize.net (deprecated)
-AUTHNET_NAME = '426rwVfr3G47'
-AUTHNET_TRANSACTIONKEY = '399UTfznCVrsa224'
+# Default email to display as part of error messages
+APIS_DEFAULT_EMAIL = "registration@example.com"
+APIS_DEALER_HEAD = "marketplace@example.com"
+APIS_STAFF_HEAD = "staff@example.com"
 
 # Square API keys
 SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_xxxxxxxxxxxxxxxxxxx'
@@ -175,10 +176,6 @@ SQUARE_LOCATION_ID = 'xxxxxxxxx...'
 SQUARE_CURRENCY = 'USD'
 SQUARE_ENVIRONMENT = 'production'  # Or "sandbox"
 
-# Default email to display as part of error messages
-APIS_DEFAULT_EMAIL = "registration@example.com"
-APIS_DEALER_HEAD = "marketplace@example.com"
-APIS_STAFF_HEAD = "staff@example.com"
 
 EMAIL_HOST = 'smtp.mailgun.org'
 EMAIL_HOST_USER = 'postmaster@apis.example.com'
@@ -214,6 +211,12 @@ MQTT_LOGIN = {
     "username": "printing",
     "password": "secret",
 }
+
+# This URL is passed to browsers to connect to MQTT over websockets for push messages
+MQTT_EXTERNAL_BROKER = "wss://mqtt.furthemore.org/mqtt"
+
+MQTT_JWT_SECRET = "secret=="
+MQTT_JWT_ALGORITHM = "HS256"
 
 ENVIRONMENT_NAME = "Production Server"
 ENVIRONMENT_COLOR = "#FF0000"
