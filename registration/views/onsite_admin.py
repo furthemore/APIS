@@ -4,9 +4,10 @@ import time
 from datetime import datetime
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.messages import get_messages
-from django.db.models import Max, Q
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -22,7 +23,6 @@ from registration.models import (
     Firebase,
     Order,
     OrderItem,
-    ReservedBadgeNumbers,
 )
 from registration.pushy import PushyAPI, PushyError
 from registration.views.ordering import (
