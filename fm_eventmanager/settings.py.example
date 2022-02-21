@@ -207,11 +207,6 @@ MQTT_BROKER = {
     "keepalive": 60,
 }
 
-MQTT_LOGIN = {
-    "username": "printing",
-    "password": "secret",
-}
-
 # This URL is passed to browsers to connect to MQTT over websockets for push messages
 MQTT_EXTERNAL_BROKER = "wss://mqtt.furthemore.org/mqtt"
 

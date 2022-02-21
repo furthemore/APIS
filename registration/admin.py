@@ -26,7 +26,7 @@ from six import BytesIO
 
 import registration.emails
 import registration.views.printing
-from registration import payments, mqtt
+from registration import mqtt, payments
 from registration.forms import FirebaseForm
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
@@ -1536,7 +1536,7 @@ admin.site.register(Department, DepartmentAdmin)
 
 
 class CashdrawerAdmin(ImportExportModelAdmin):
-    list_display = ("timestamp", "action", "total", "tendered", "user")
+    list_display = ("timestamp", "action", "total", "tendered", "user", "position")
 
     def save_model(self, request, obj, form, change):
         if form.data["tendered"] == "":

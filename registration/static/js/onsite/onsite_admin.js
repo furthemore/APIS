@@ -268,6 +268,117 @@ $(document).ready(function () {
             }
         });
     });
+    
+    
+    $("#open-drawer").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter initial amount in drawer");
+        if (raw_amount == null || raw_amount === "") {
+            return
+        }
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0 || isNaN(parsed)) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_OPEN_DRAWER, data, function (data) {
+            if (!data.success) {
+                alert("Error while opening drawer: " + data.message);
+            } else {
+                alert("Successfully opened drawer!")
+            }
+        },'json');
+    });
+
+    $("#cash-deposit").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter amount added to drawer");
+        if (raw_amount == null || raw_amount === "") {
+            return
+        }
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_CASH_DEPOSIT, data, function (data) {
+            if (!data.success) {
+                alert("Error recording cash deposit: " + data.message);
+            } else {
+                alert("Successfully recorded cash deposit!")
+            }
+        },'json');
+    });
+
+    $("#safe-drop").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter amount dropped into safe");
+        if (raw_amount == null || raw_amount === "") {
+            return
+        }
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed,
+        }
+        $.post(URL_REGISTRATION_SAFE_DROP, data, function (data) {
+            if (!data.success) {
+                alert("Error while recording safe drop: " + data.message);
+            } else {
+                alert("Successfully recorded safe drop!")
+            }
+        },'json');
+    });
+
+    $("#cash-pickup").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter amount picked up from drawer");
+        if (raw_amount == null || raw_amount === "") {
+            return
+        }
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_CASH_PICKUP, data, function (data) {
+            if (!data.success) {
+                alert("Error recording cash pickup: " + data.message);
+            } else {
+                alert("Successfully recorded cash pickup!")
+            }
+        },'json');
+    });
+
+    $("#close-drawer").click(function (e) {
+        e.preventDefault();
+        raw_amount = prompt("Enter final amount in drawer");
+        if (raw_amount == null || raw_amount === "") {
+            return
+        }
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_CLOSE_DRAWER, data, function (data) {
+            if (!data.success) {
+                alert("Error while closing drawer: " + data.message);
+            } else {
+                alert("Successfully closed drawer!")
+            }
+        },'json');
+    });
 
 
     $("#credit_button").click(function (e) {
