@@ -93,14 +93,12 @@ def format_topic(topic):
 
 def send_mqtt_message(topic, payload):
     payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
-    logger.info(f"Sending MQTT message {topic} ({payload_json})")
+
+    logger.info(f"Sending MQTT message: {topic} ({payload_json})")
+    auth = {
+        "username": "apis_server",
+        "password": get_token("apis_server", publ=topic)
+    }
     tls = settings.MQTT_BROKER.get("tls")
-    mqtt.single(
-        topic,
-        payload_json,
-        retain=False,
-        hostname=settings.MQTT_BROKER["host"],
-        port=settings.MQTT_BROKER["port"],
-        auth=settings.MQTT_LOGIN,
-        tls=tls,
-    )
+    mqtt.single(topic, payload_json, retain=False, hostname=settings.MQTT_BROKER["host"],
+                port=settings.MQTT_BROKER["port"], auth=auth, tls=tls)

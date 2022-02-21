@@ -230,7 +230,7 @@
         <span data-content="holdType" data-format="HoldTypeFormatter"></span>
         <span data-content="printed" data-format="PrintedBadgeFormatter"></span>
         <a class="link-badge" href="#" data-id="delete_id"><span data-content="name"></span></a>
-        <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-minus-circle"></i></a>
+        <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-trash-can"></i></a>
         <span data-content="age" data-format="MinorFormFormatter" class="age"></span>
       </div>
       <table class="table cart-table">
@@ -289,6 +289,8 @@
 
 {% block javascript %}
 <script>
+const DEBUG = {% settings_value_bool 'DEBUG' %};
+
 const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assignBadgeNumber' %}";
 const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsitePrintBadges' %}";
 const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsiteAdminClearCart' %}";

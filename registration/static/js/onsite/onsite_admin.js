@@ -76,6 +76,8 @@ $(document).ready(function () {
         function(value, template) {
             if (value == "Paid") {
                 return '<span class="label label-success">Paid</span>';
+            } else if (value == "Comp") {
+                return '<span class="label label-info">Comp</span>';
             } else {
                 return '<span class="label label-warning">' + value + '</span>';
             }
@@ -125,7 +127,17 @@ $(document).ready(function () {
         }
     });
 
-    refresh_cart = function() {
+    const fadeout_cart = function(callback) {
+        $("#cart").fadeOut();
+        $("#total").fadeOut(400, callback);
+    }
+
+    const fadein_cart = function(callback) {
+        $("#cart").fadeIn();
+        $("#total").fadeIn(400, callback);
+    }
+
+    refresh_cart = function(callback) {
       $("#cart-error").fadeOut();
       $.getJSON(URL_REGISTRATION_ONSITE_ADMIN_CART, function(data) {
         cartData = data;
@@ -188,7 +200,7 @@ $(document).ready(function () {
           });
 
           var price = parseFloat(data.total);
-          if (((!isNaN(price)) && (price != 0)) && (!onHold)) {
+          if (((!isNaN(price))) && (!onHold)) {
               $("#total").loadTemplate($("#totalTemplate"), data);
               $("#cash_button").removeAttr("disabled");
               $("#credit_button").removeAttr("disabled");
@@ -197,7 +209,16 @@ $(document).ready(function () {
               $("#credit_button").attr("disabled", "disabled");
           }
 
+          if (isNaN(price) || (price == 0)) {
+              $("#cash_button").attr("disabled", "disabled");
+              $("#credit_button").attr("disabled", "disabled");
+          }
+
           get_printable();
+        }
+
+        if (typeof(callback) === 'function') {
+            callback();
         }
 
       })
@@ -209,9 +230,11 @@ $(document).ready(function () {
     refresh_cart();
     $("#refresh_button").click(function (e) {
         e.preventDefault();
-        $("#cart").fadeOut(function () {
-            refresh_cart();
-            $(this).fadeIn();
+        fadeout_cart(function () {
+            refresh_cart(function () {
+                fadein_cart();
+            });
+
         })
     });
 
