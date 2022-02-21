@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from registration import admin, mqtt, payments, printing
@@ -464,7 +465,7 @@ def completeSquareTransaction(request):
         if payment_ids:
             store_api_data["payment"] = {"id": payment_ids[0]}
             order.status = Order.COMPLETED
-            order.settledDate = datetime.now()
+            order.settledDate = timezone.now()
             order.notes = json.dumps(store_api_data)
         else:
             order.status = Order.CAPTURED
@@ -474,7 +475,7 @@ def completeSquareTransaction(request):
         order.notes = "No serverTransactionId."
 
     order.status = Order.COMPLETED
-    order.settledDate = datetime.now()
+    order.settledDate = timezone.now()
     order.notes = json.dumps(store_api_data)
 
     order.apiData = json.dumps(store_api_data)
@@ -635,7 +636,7 @@ def completeCashTransaction(request):
 
     order.billingType = Order.CASH
     order.status = Order.COMPLETED
-    order.settledDate = datetime.now()
+    order.settledDate = timezone.now()
     order.notes = json.dumps({"type": "cash", "tendered": tendered})
     order.save()
 
