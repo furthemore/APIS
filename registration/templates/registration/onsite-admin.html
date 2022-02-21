@@ -24,23 +24,26 @@
                 </select>
             </form>
         </div>
-        <div class="col-md-1 col-top">
-            <div class="dropdown">
-                <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="user">
-                    <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
-                    <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
-                    {% if perms.registration.cash_admin %}
-                    <li role="separator" class="divider"></li>
-                    <li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
-                    <li><a href="#" id="cash-deposit">Cash Deposit <i class="fas fa-plus right"></i></a></li>
-                    <li><a href="#" id="safe-drop">Safe Drop <i class="bi-safe-fill right"></i></a></li>
-                    <li><a href="#" id="cash-pickup">Cash Pickup <i class="fas fa-minus right"></i></a></li>
-                    <li><a href="#" id="close-drawer">Close Drawer <i class="fas fa-store-alt-slash right"></i></a></li>
-                    {% endif %}
-                </ul>
+        <div class="col-sm-2 col-top">
+          <div class="row">
+            <div class="col-sm-4">
+                <div class="dropdown">
+                    <button id="options" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="user">
+                        <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
+                        <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+			{% if perms.registration.cash_admin %}
+			<li role="separator" class="divider"></li>
+                    	<li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
+                    	<li><a href="#" id="cash-deposit">Cash Deposit <i class="fas fa-plus right"></i></a></li>
+                    	<li><a href="#" id="safe-drop">Safe Drop <i class="bi-safe-fill right"></i></a></li>
+                    	<li><a href="#" id="cash-pickup">Cash Pickup <i class="fas fa-minus right"></i></a></li>
+                    	<li><a href="#" id="close-drawer">Close Drawer <i class="fas fa-store-alt-slash right"></i></a></li>
+			{% endif %}
+                    </ul>
+                </div>
             </div>
             <div class="col-sm-4">
                 <div class="dropdown">
@@ -48,7 +51,7 @@
                         <i class="fas fa-user"></i><span class="sr-only">User options</span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="user">
-                        <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
+                        <li><a href="/registration/logout/?next=/registration/onsite/admin">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
                     </ul>
                 </div>
             </div>
@@ -294,6 +297,11 @@ const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsiteAd
 const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsiteRemoveFromCart' %}";
 const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:openTerminal' %}";
 const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:closeTerminal' %}";
+const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:openDrawer' %}";
+const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cashDeposit' %}";
+const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safeDrop' %}";
+const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cashPickup' %}";
+const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:closeDrawer' %}";
 const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enablePayment' %}";
 const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:completeCashTransaction' %}";
 const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";

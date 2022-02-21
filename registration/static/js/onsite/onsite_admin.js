@@ -250,86 +250,111 @@ $(document).ready(function () {
     $("#open-drawer").click(function (e) {
         e.preventDefault();
         raw_amount = prompt("Enter initial amount in drawer");
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        data = {
-            'amount' : parsed,
-            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        if (raw_amount == null || raw_amount === "") {
+            return
         }
-        $.getJSON("{% url 'registration:openDrawer' %}", data, function (data) {
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0 || isNaN(parsed)) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_OPEN_DRAWER, data, function (data) {
             if (!data.success) {
                 alert("Error while opening drawer: " + data.message);
             } else {
                 alert("Successfully opened drawer!")
             }
-        });
+        },'json');
     });
 
     $("#cash-deposit").click(function (e) {
         e.preventDefault();
         raw_amount = prompt("Enter amount added to drawer");
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        data = {
-            'amount' : parsed,
-            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        if (raw_amount == null || raw_amount === "") {
+            return
         }
-        $.getJSON("{% url 'registration:cashDeposit' %}", data, function (data) {
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_CASH_DEPOSIT, data, function (data) {
             if (!data.success) {
                 alert("Error recording cash deposit: " + data.message);
             } else {
                 alert("Successfully recorded cash deposit!")
             }
-        });
+        },'json');
     });
 
     $("#safe-drop").click(function (e) {
         e.preventDefault();
         raw_amount = prompt("Enter amount dropped into safe");
+        if (raw_amount == null || raw_amount === "") {
+            return
+        }
         parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
         data = {
             'amount' : parsed,
-            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
         }
-        $.getJSON("{% url 'registration:safeDrop' %}", data, function (data) {
+        $.post(URL_REGISTRATION_SAFE_DROP, data, function (data) {
             if (!data.success) {
                 alert("Error while recording safe drop: " + data.message);
             } else {
                 alert("Successfully recorded safe drop!")
             }
-        });
+        },'json');
     });
 
     $("#cash-pickup").click(function (e) {
         e.preventDefault();
         raw_amount = prompt("Enter amount picked up from drawer");
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        data = {
-            'amount' : parsed,
-            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        if (raw_amount == null || raw_amount === "") {
+            return
         }
-        $.getJSON("{% url 'registration:cashPickup' %}", data, function (data) {
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_CASH_PICKUP, data, function (data) {
             if (!data.success) {
                 alert("Error recording cash pickup: " + data.message);
             } else {
                 alert("Successfully recorded cash pickup!")
             }
-        });
+        },'json');
     });
 
     $("#close-drawer").click(function (e) {
         e.preventDefault();
         raw_amount = prompt("Enter final amount in drawer");
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        data = {
-            'amount' : parsed,
-            {% for terminal in terminals %}{% if request.session.terminal == terminal.id %}'terminal' : "{{ terminal.name }}"{% endif %}{% endfor %}
+        if (raw_amount == null || raw_amount === "") {
+            return
         }
-        $.getJSON("{% url 'registration:closeDrawer' %}", data, function (data) {
+        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed == 0) {
+            return
+        }
+        data = {
+            'amount' : parsed
+        }
+        $.post(URL_REGISTRATION_CLOSE_DRAWER, data, function (data) {
             if (!data.success) {
                 alert("Error while closing drawer: " + data.message);
             } else {
                 alert("Successfully closed drawer!")
             }
-        });
+        },'json');
     });
 
 

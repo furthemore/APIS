@@ -499,39 +499,66 @@ def drawerStatus(request):
     return JsonResponse({"success": True, "total": drawer_total, "status": status})
 
 
+def print_audit_receipt(request, audit_type, cash_ledger):
+    position = get_active_terminal(request)
+    event = Event.objects.get(default=True)
+    payload = {
+        "v": 1,
+        "event": event.name,
+        "terminal": position.name,
+        "type": audit_type,
+        "amount": abs(cash_ledger.total),
+        "user": request.user.username,
+        "timestamp": cash_ledger.timestamp.isoformat(),
+    }
+
+    topic = f"{mqtt.get_topic('receipts', position.name)}/audit_slip"
+
+    send_mqtt_message(topic, payload)
+
+
 def openDrawer(request):
-    amount = Decimal(request.GET.get("amount", None))
-    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
     cash_ledger = Cashdrawer(
         action=Cashdrawer.OPEN, total=amount, user=request.user, position=position
     )
     cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.OPEN, cash_ledger)
+
     return JsonResponse({"success": True})
 
 
 def cashDeposit(request):
-    amount = Decimal(request.GET.get("amount", None))
-    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
     cash_ledger = Cashdrawer(
         action=Cashdrawer.DEPOSIT, total=amount, user=request.user, position=position
     )
     cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.DEPOSIT, cash_ledger)
+
     return JsonResponse({"success": True})
 
 
-def safeDrop(request):  # TODO: add drop receipt printout
-    amount = Decimal(request.GET.get("amount", None))
-    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+def safeDrop(request):
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
     cash_ledger = Cashdrawer(
         action=Cashdrawer.DROP, total=-abs(amount), user=request.user, position=position
     )
     cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.DROP, cash_ledger)
+
     return JsonResponse({"success": True})
 
 
 def cashPickup(request):
-    amount = Decimal(request.GET.get("amount", None))
-    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
     cash_ledger = Cashdrawer(
         action=Cashdrawer.PICKUP,
         total=-abs(amount),
@@ -539,12 +566,15 @@ def cashPickup(request):
         position=position,
     )
     cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.PICKUP, cash_ledger)
+
     return JsonResponse({"success": True})
 
 
 def closeDrawer(request):
-    amount = Decimal(request.GET.get("amount", None))
-    position = Firebase.objects.get(name=request.GET.get("terminal", None))
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
     cash_ledger = Cashdrawer(
         action=Cashdrawer.CLOSE,
         total=-abs(amount),
@@ -552,6 +582,9 @@ def closeDrawer(request):
         position=position,
     )
     cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.CLOSE, cash_ledger)
+
     return JsonResponse({"success": True})
 
 
