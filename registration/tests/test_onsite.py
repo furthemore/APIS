@@ -521,7 +521,7 @@ class TestDrawers(OnsiteBaseTestCase):
         self.assertEqual(message["status"], "OPEN")
         self.assertEqual(message["total"], "100")
 
-    def test_drawerStatusOpen(self):
+    def test_drawerStatusShort(self):
         Cashdrawer(total=100, action=Cashdrawer.OPEN).save()
         Cashdrawer(total=-120, action=Cashdrawer.CLOSE).save()
         response = self.client.get(reverse("registration:drawerStatus"))
