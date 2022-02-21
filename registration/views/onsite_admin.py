@@ -6,8 +6,9 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -490,7 +491,11 @@ def completeSquareTransaction(request):
 # json.dumps(the_thing, cls=JSONDecimalEncoder)
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def drawerStatus(request):
+    if Cashdrawer.objects.count() == 0:
+        return JsonResponse({"success": False})
     total = Cashdrawer.objects.all().aggregate(Sum("total"))
     drawer_total = Decimal(total["total__sum"])
     if drawer_total == 0:
@@ -502,6 +507,8 @@ def drawerStatus(request):
     return JsonResponse({"success": True, "total": drawer_total, "status": status})
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def print_audit_receipt(request, audit_type, cash_ledger):
     position = get_active_terminal(request)
     event = Event.objects.get(default=True)
@@ -520,6 +527,8 @@ def print_audit_receipt(request, audit_type, cash_ledger):
     send_mqtt_message(topic, payload)
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def openDrawer(request):
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
@@ -533,6 +542,8 @@ def openDrawer(request):
     return JsonResponse({"success": True})
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def cashDeposit(request):
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
@@ -546,6 +557,8 @@ def cashDeposit(request):
     return JsonResponse({"success": True})
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def safeDrop(request):
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
@@ -559,6 +572,8 @@ def safeDrop(request):
     return JsonResponse({"success": True})
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def cashPickup(request):
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
@@ -575,6 +590,8 @@ def cashPickup(request):
     return JsonResponse({"success": True})
 
 
+@staff_member_required
+@permission_required("order.cash_admin")
 def closeDrawer(request):
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)

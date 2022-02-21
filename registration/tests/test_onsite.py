@@ -440,3 +440,108 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(message["updated"], True)
         self.terminal = Firebase.objects.get(name=self.terminal.name)
         self.assertEqual(self.terminal.token, new_token)
+
+
+class TestDrawers(OnsiteBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.assertTrue(self.client.login(username="admin", password="admin"))
+        self.client.get(reverse("registration:onsiteAdmin"))
+
+    def test_drawerStatusClosed_no_transactions(self):
+        response = self.client.get(reverse("registration:drawerStatus"))
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], False)
+
+    def test_drawerStatusClosed(self):
+        Cashdrawer(total=100, action=Cashdrawer.OPEN).save()
+        Cashdrawer(total=-100, action=Cashdrawer.CLOSE).save()
+        response = self.client.get(reverse("registration:drawerStatus"))
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        self.assertEqual(message["status"], "CLOSED")
+        self.assertEqual(message["total"], "0")
+
+    def test_drawerStatusOpen(self):
+        Cashdrawer(total=100, action=Cashdrawer.OPEN).save()
+        response = self.client.get(reverse("registration:drawerStatus"))
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        self.assertEqual(message["status"], "OPEN")
+        self.assertEqual(message["total"], "100")
+
+    def test_drawerStatusOpen(self):
+        Cashdrawer(total=100, action=Cashdrawer.OPEN).save()
+        Cashdrawer(total=-120, action=Cashdrawer.CLOSE).save()
+        response = self.client.get(reverse("registration:drawerStatus"))
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        self.assertEqual(message["status"], "SHORT")
+        self.assertEqual(message["total"], "-20")
+
+    @patch("registration.views.onsite_admin.send_mqtt_message")
+    def test_open_drawer(self, mock_send_mqtt_message):
+        response = self.client.post(
+            reverse("registration:openDrawer"), {"amount": "200"}
+        )
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        drawer = Cashdrawer.objects.last()
+        self.assertEqual(drawer.action, Cashdrawer.OPEN)
+        self.assertEqual(drawer.total, 200)
+        mock_send_mqtt_message.assert_called_once()
+
+    @patch("registration.views.onsite_admin.send_mqtt_message")
+    def test_cash_deposit(self, mock_send_mqtt_message):
+        response = self.client.post(
+            reverse("registration:cashDeposit"), {"amount": "200"}
+        )
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        drawer = Cashdrawer.objects.last()
+        self.assertEqual(drawer.action, Cashdrawer.DEPOSIT)
+        self.assertEqual(drawer.total, 200)
+        mock_send_mqtt_message.assert_called_once()
+
+    @patch("registration.views.onsite_admin.send_mqtt_message")
+    def test_safe_drop(self, mock_send_mqtt_message):
+        response = self.client.post(reverse("registration:safeDrop"), {"amount": "200"})
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        drawer = Cashdrawer.objects.last()
+        self.assertEqual(drawer.action, Cashdrawer.DROP)
+        self.assertEqual(drawer.total, -200)
+        mock_send_mqtt_message.assert_called_once()
+
+    @patch("registration.views.onsite_admin.send_mqtt_message")
+    def test_cash_pickup(self, mock_send_mqtt_message):
+        response = self.client.post(
+            reverse("registration:cashPickup"), {"amount": "200"}
+        )
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        drawer = Cashdrawer.objects.last()
+        self.assertEqual(drawer.action, Cashdrawer.PICKUP)
+        self.assertEqual(drawer.total, -200)
+        mock_send_mqtt_message.assert_called_once()
+
+    @patch("registration.views.onsite_admin.send_mqtt_message")
+    def test_close_drawer(self, mock_send_mqtt_message):
+        response = self.client.post(
+            reverse("registration:closeDrawer"), {"amount": "200"}
+        )
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(message["success"], True)
+        drawer = Cashdrawer.objects.last()
+        self.assertEqual(drawer.action, Cashdrawer.CLOSE)
+        self.assertEqual(drawer.total, -200)
+        mock_send_mqtt_message.assert_called_once()
