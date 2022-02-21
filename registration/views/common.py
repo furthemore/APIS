@@ -3,7 +3,6 @@ import logging
 from datetime import datetime
 from decimal import Decimal
 
-from django.utils import timezone
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import user_passes_test
 from django.core.serializers.json import DjangoJSONEncoder
@@ -11,11 +10,24 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from idempotency_key.decorators import idempotency_key
 
 import registration.emails
-from registration.models import Cart, Department, Discount, Event, get_token, Order, OrderItem, PriceLevel, PriceLevelOption, ShirtSizes, Staff
+from registration.models import (
+    Cart,
+    Department,
+    Discount,
+    Event,
+    Order,
+    OrderItem,
+    PriceLevel,
+    PriceLevelOption,
+    ShirtSizes,
+    Staff,
+    get_token,
+)
 from registration.payments import charge_payment
 from registration.views.cart import saveCart
 from registration.views.ordering import add_attendee_to_assistant
@@ -99,6 +111,8 @@ def getOptionsDict(orderItems):
 
 
 cache_page(60)
+
+
 def get_events(request):
     events = Event.objects.all()
     data = [
@@ -272,7 +286,7 @@ def vipBadges(request):
 
     # Assumes VIP levels based on being marked as "vip" group, or EmailVIP set
     price_levels = PriceLevel.objects.filter(Q(emailVIP=True) | Q(group__iexact="vip"))
-    shirt_sizes = { str(shirt.pk) : shirt.name for shirt in ShirtSizes.objects.all() }
+    shirt_sizes = {str(shirt.pk): shirt.name for shirt in ShirtSizes.objects.all()}
 
     vip_order_items = OrderItem.objects.filter(
         priceLevel__in=price_levels, badge__event=event
@@ -295,14 +309,12 @@ def vipBadges(request):
         "shirt_sizes": shirt_sizes,
     }
 
-    return render(
-        request,
-        "registration/utility/viplist.html",
-        context,
-    )
+    return render(request, "registration/utility/viplist.html", context,)
 
 
 cache_page(60)
+
+
 def get_departments(request):
     depts = Department.objects.filter(volunteerListOk=True).order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
@@ -310,6 +322,8 @@ def get_departments(request):
 
 
 cache_page(60)
+
+
 def get_all_departments(request):
     depts = Department.objects.order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
@@ -317,6 +331,8 @@ def get_all_departments(request):
 
 
 cache_page(60)
+
+
 def getShirtSizes(request):
     sizes = ShirtSizes.objects.all()
     data = [{"name": size.name, "id": size.id} for size in sizes]
@@ -377,6 +393,8 @@ def getSessionAddresses(request):
 
 
 cache_page(60)
+
+
 def getRegistrationEmail(event=None):
     """
     Retrieves the email address to show on error messages in the attendee
@@ -395,7 +413,14 @@ def getRegistrationEmail(event=None):
 
 
 def doCheckout(
-    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity, request=None
+    billingData,
+    total,
+    discount,
+    cartItems,
+    orderItems,
+    donationOrg,
+    donationCharity,
+    request=None,
 ):
     event = Event.objects.get(default=True)
     reference = get_confirmation_token()

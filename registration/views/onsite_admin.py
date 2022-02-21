@@ -14,7 +14,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import mqtt, payments, printing, admin
+from registration import admin, mqtt, payments, printing
 from registration.admin import TWOPLACES
 from registration.models import (
     Badge,
@@ -485,13 +485,6 @@ def completeSquareTransaction(request):
         return JsonResponse({"success": False, "error": errors,}, status=210)
 
     return JsonResponse({"success": True})
-
-
-class JSONDecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Decimal):
-            return str(o.quantize(Decimal("1.00")))
-        return o
 
 
 # json.dumps(the_thing, cls=JSONDecimalEncoder)
