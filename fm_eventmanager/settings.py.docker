@@ -356,15 +356,15 @@ METRICS_SETTINGS = {
 
 # MQTT for cash-drawer worker
 MQTT_BROKER = {
-    "host": "localhost",
-    "port": 1883,
-    "keepalive": 60,
+    "host": os.getenv('MQTT_BROKER_HOST', "localhost"),
+    "port": int(os.getenv('MQTT_BROKER_PORT', 1883)),
+    "keepalive": int(os.getenv('MQTT_BROKER_KEEPALIVE', 60)),
 }
 
-MQTT_LOGIN = {
-    "username": "printing",
-    "password": "secret",
-}
+if eval_bool(os.getenv('MQTT_BROKER_TLS', "True")):
+    MQTT_BROKER["tls"] = {
+        "ca_certs": "/etc/ssl/certs/ca-certificates.crt"
+    }
 
 # This URL is passed to browsers to connect to MQTT over websockets for push messages
 MQTT_EXTERNAL_BROKER = os.getenv('MQTT_EXTERNAL_BROKER', '/mqtt')
