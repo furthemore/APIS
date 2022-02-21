@@ -361,7 +361,7 @@ MQTT_BROKER = {
     "keepalive": int(os.getenv('MQTT_BROKER_KEEPALIVE', 60)),
 }
 
-if eval_bool(os.getenv('MQTT_BROKER_TLS', "True")):
+if eval_bool(os.getenv('MQTT_BROKER_TLS', "False")):
     MQTT_BROKER["tls"] = {
         "ca_certs": "/etc/ssl/certs/ca-certificates.crt"
     }
