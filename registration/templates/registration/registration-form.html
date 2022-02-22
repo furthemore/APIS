@@ -372,36 +372,38 @@
         return data;
     };
 
+    function validate_date(date) {
+        const date_regex = /\d\d\d\d-\d\d-\d\d/;
+        return date.match(date_regex);
+    }
+
     function register_click(e) {
         e.preventDefault();
         $("form").validator('validate');
-        var errorCount = $(".has-error").length;
+        let errorCount = $(".has-error").length;
         if (errorCount > 0) {
             $("#register").one('click', register_click);
             return;
         }
-        if ($("#birthDate").val() == "") {
+        let birthDate = $("#birthDate").val();
+
+        if ($("#birthDate").val() == "" || !validate_date(birthDate)) {
             alert("You must enter your birthdate to submit your registration.");
             $("#register").one('click', register_click);
             return;
         }
-        if (Modernizr.inputtypes.date) {
-            // native datepicker - EXPECT iso date
-            var birthdate = parseDate($("#birthDate").val());
-        } else {
-            // American middle-endian format put out by datepicker javascript
-            var birthdate = new Date(Date.parse($("#birthDate").val()));
-        }
+
+        let birthdate = parseDate($("#birthDate").val());
 
         {% if not event.allowOnlineMinorReg %}
-        var age = getAge(birthdate);
+        let age = getAge(birthdate);
         if (age < 18) {
             alert("You must be 18 by the first day of {{event}} to register online.");
             $("#register").one('click', register_click);
             return;
         }
         {% endif %}
-        var data = {
+        let data = {
             'attendee': {
                 'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 'preferredName': $("#preferredName").val(),
                 'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
@@ -432,7 +434,8 @@
                 }
             },
             "error": function(result, status) {
-                alert("An error has occurred. Please contact {{ event.registrationEmail }} and we will correct the problem.");
+                alert("An error has occurred. (" + result.status + ": " + result.responseText + ").\n\nCheck your information and try again.  " +
+                "If the issue persists, please contact {{ event.registrationEmail }} for assistance.");
                 $("#register").one('click', register_click);
             }
         });
