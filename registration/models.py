@@ -1,6 +1,6 @@
 import random
 import string
-from decimal import *
+from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
@@ -825,18 +825,24 @@ class Firebase(models.Model):
 
 
 class Cashdrawer(models.Model):
-    OPEN = "Open"
-    CLOSE = "Close"
-    TRANSACTION = "Transaction"
-    DEPOSIT = "Deposit"
+    OPEN = "Open"  # drawer opens
+    CLOSE = "Close"  # drawer closes
+    TRANSACTION = "Transaction"  # normal cash transaction
+    DEPOSIT = "Deposit"  # additional cash (eg, change) added to drawer
+    DROP = "Drop"  # removed excess cash from drawer and added to safe
+    PICKUP = "Pickup"  # cash removed from drawer custody by cash office
+    ADJUSTMENT = "Adjustment"  # an adjustment made when the count is known to be off, to reset the counters
     ACTION_CHOICES = (
         (OPEN, "Open"),
         (CLOSE, "Close"),
         (TRANSACTION, "Transaction"),
         (DEPOSIT, "Deposit"),
+        (DROP, "Drop"),
+        (PICKUP, "Pickup"),
+        (ADJUSTMENT, "Adjustment"),
     )
     timestamp = models.DateTimeField(auto_now_add=True)
-    # Action: one of - ['OPEN', 'CLOSE', 'TXN', 'DEPOSIT']
+    # Action: one of - ['OPEN', 'CLOSE', 'TRANSACTION', 'DEPOSIT', 'DROP', 'PICKUP']
     action = models.CharField(max_length=20, choices=ACTION_CHOICES, default=OPEN)
     total = models.DecimalField(max_digits=8, decimal_places=2)
     tendered = models.DecimalField(
