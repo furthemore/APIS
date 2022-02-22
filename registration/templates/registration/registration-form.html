@@ -378,12 +378,13 @@
             return;
         }
 
-        let birthdate = parseDate($("#birthDate").val());
-        if (birthdate == "" || !validate_date(birthdate)) {
+        let birthdate_str = $("#birthDate").val();
+        if (birthdate_str == "" || !validate_date(birthdate_str)) {
             alert("You must enter your birthdate to submit your registration.");
             $("#register").one('click', register_click);
             return;
         }
+        let birthdate = parseDate(birthdate_str);
 
         {% if not event.allowOnlineMinorReg %}
         let age = getAge(birthdate);
