@@ -377,15 +377,13 @@
             $("#register").one('click', register_click);
             return;
         }
-        let birthDate = $("#birthDate").val();
 
-        if ($("#birthDate").val() == "" || !validate_date(birthDate)) {
+        let birthdate = parseDate($("#birthDate").val());
+        if (birthdate == "" || !validate_date(birthdate)) {
             alert("You must enter your birthdate to submit your registration.");
             $("#register").one('click', register_click);
             return;
         }
-
-        let birthdate = parseDate($("#birthDate").val());
 
         {% if not event.allowOnlineMinorReg %}
         let age = getAge(birthdate);
