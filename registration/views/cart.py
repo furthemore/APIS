@@ -65,7 +65,7 @@ def get_cart(request):
             except ValueError:
                 logger.warning(f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')")
                 logger.warning(f"Removing malformed cart from session: {cart}")
-                request.session.cart_items.pop(cart.pk)
+                request.session["cart_items"].pop(idx)
                 cart.delete()
                 del cartItems[idx]
                 continue
