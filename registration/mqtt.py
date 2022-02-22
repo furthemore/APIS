@@ -9,8 +9,8 @@ import jwt
 from django.conf import settings
 from paho.mqtt import publish as mqtt
 
-FORMAT_TOPIC_SYS_RE = re.compile(r'^\$')
-FORMAT_TOPIC_WILDCARD_RE = re.compile(r'[\#\+ /]')
+FORMAT_TOPIC_SYS_RE = re.compile(r"^\$")
+FORMAT_TOPIC_WILDCARD_RE = re.compile(r"[\#\+ /]")
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ def get_onsite_admin_token(firebase):
 def get_token(sub, exp=None, subs=None, publ=None):
     if exp is None:
         # Never expires
-        exp = 2**31 - 1
+        exp = 2 ** 31 - 1
 
     claims = {
         "sub": sub,
@@ -69,7 +69,11 @@ def get_token(sub, exp=None, subs=None, publ=None):
         "publ": publ,
     }
 
-    return jwt.encode(claims, base64.b64decode(settings.MQTT_JWT_SECRET), algorithm=settings.MQTT_JWT_ALGORITHM)
+    return jwt.encode(
+        claims,
+        base64.b64decode(settings.MQTT_JWT_SECRET),
+        algorithm=settings.MQTT_JWT_ALGORITHM,
+    )
 
 
 def format_topic(topic):
@@ -82,14 +86,26 @@ def format_topic(topic):
     - All-lowercase, remove spaces (recommended style)
     """
 
-    topic = FORMAT_TOPIC_SYS_RE.sub('', topic)
-    topic = FORMAT_TOPIC_WILDCARD_RE.sub('', topic)
+    topic = FORMAT_TOPIC_SYS_RE.sub("", topic)
+    topic = FORMAT_TOPIC_WILDCARD_RE.sub("", topic)
     return topic.lower()
 
 
 def send_mqtt_message(topic, payload):
     payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
-    logger.info("Sending MQTT message ({0})".format(payload_json))
+
+    logger.info(f"Sending MQTT message: {topic} ({payload_json})")
+    auth = {
+        "username": "apis_server",
+        "password": get_token("apis_server", publ=[topic]),
+    }
     tls = settings.MQTT_BROKER.get("tls")
-    mqtt.single(topic, payload_json, retain=False, hostname=settings.MQTT_BROKER["host"],
-                port=settings.MQTT_BROKER["port"], auth=settings.MQTT_LOGIN, tls=tls)
+    mqtt.single(
+        topic,
+        payload_json,
+        retain=False,
+        hostname=settings.MQTT_BROKER["host"],
+        port=settings.MQTT_BROKER["port"],
+        auth=auth,
+        tls=tls,
+    )

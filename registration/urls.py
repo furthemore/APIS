@@ -1,5 +1,4 @@
-from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.contrib.auth.views import LogoutView
 
 import registration.views.attendee
@@ -18,6 +17,7 @@ app_name = "registration"
 
 def trigger_error(request):
     division_by_zero = 1 / 0
+    return division_by_zero
 
 
 urlpatterns = [
@@ -199,6 +199,36 @@ urlpatterns = [
         r"^onsite/cash/complete/?$",
         registration.views.onsite_admin.completeCashTransaction,
         name="completeCashTransaction",
+    ),
+    url(
+        r"^onsite/cashdrawer/status/?$",
+        registration.views.onsite_admin.drawerStatus,
+        name="drawerStatus",
+    ),
+    url(
+        r"^onsite/cashdrawer/open/?$",
+        registration.views.onsite_admin.openDrawer,
+        name="openDrawer",
+    ),
+    url(
+        r"^onsite/cashdrawer/deposit/?$",
+        registration.views.onsite_admin.cashDeposit,
+        name="cashDeposit",
+    ),
+    url(
+        r"^onsite/cashdrawer/safedrop/?$",
+        registration.views.onsite_admin.safeDrop,
+        name="safeDrop",
+    ),
+    url(
+        r"^onsite/cashdrawer/pickup/?$",
+        registration.views.onsite_admin.cashPickup,
+        name="cashPickup",
+    ),
+    url(
+        r"^onsite/cashdrawer/close/?$",
+        registration.views.onsite_admin.closeDrawer,
+        name="closeDrawer",
     ),
     url(
         r"^onsite/signature/?$",

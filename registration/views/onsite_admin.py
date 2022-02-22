@@ -2,19 +2,30 @@ import json
 import logging
 import time
 from datetime import datetime
+from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
-from django.db.models import Max, Q
+from django.db.models import Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import mqtt, payments, printing
+from registration import admin, mqtt, payments, printing
 from registration.admin import TWOPLACES
-from registration.models import *
+from registration.models import (
+    Badge,
+    Cashdrawer,
+    Event,
+    Firebase,
+    Order,
+    OrderItem,
+)
 from registration.pushy import PushyAPI, PushyError
 from registration.views.ordering import (
     getDiscountTotal,
@@ -345,6 +356,10 @@ def onsitePrintBadges(request):
         badge.printed = True
         badge.save()
 
+    # Async notify the frontend to refresh the cart
+    logger.info("Refreshing admin cart")
+    admin_push_cart_refresh(request)
+
     if theme == "":
         theme == "apis"
     con.nametags(tags, theme=theme)
@@ -360,6 +375,12 @@ def onsitePrintBadges(request):
             "url": file_url,
         }
     )
+
+
+def admin_push_cart_refresh(request):
+    terminal = get_active_terminal(request)
+    topic = f"{mqtt.get_topic('admin', terminal.name)}/refresh"
+    send_mqtt_message(topic, None)
 
 
 def onsiteSignature(request):
@@ -444,7 +465,7 @@ def completeSquareTransaction(request):
         if payment_ids:
             store_api_data["payment"] = {"id": payment_ids[0]}
             order.status = Order.COMPLETED
-            order.settledDate = datetime.now()
+            order.settledDate = timezone.now()
             order.notes = json.dumps(store_api_data)
         else:
             order.status = Order.CAPTURED
@@ -454,7 +475,7 @@ def completeSquareTransaction(request):
         order.notes = "No serverTransactionId."
 
     order.status = Order.COMPLETED
-    order.settledDate = datetime.now()
+    order.settledDate = timezone.now()
     order.notes = json.dumps(store_api_data)
 
     order.apiData = json.dumps(store_api_data)
@@ -464,6 +485,126 @@ def completeSquareTransaction(request):
 
     if not status:
         return JsonResponse({"success": False, "error": errors,}, status=210)
+
+    return JsonResponse({"success": True})
+
+
+# json.dumps(the_thing, cls=JSONDecimalEncoder)
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def drawerStatus(request):
+    if Cashdrawer.objects.count() == 0:
+        return JsonResponse({"success": False})
+    total = Cashdrawer.objects.all().aggregate(Sum("total"))
+    drawer_total = Decimal(total["total__sum"])
+    if drawer_total == 0:
+        status = "CLOSED"
+    elif drawer_total < 0:
+        status = "SHORT"
+    elif drawer_total > 0:
+        status = "OPEN"
+    return JsonResponse({"success": True, "total": drawer_total, "status": status})
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def print_audit_receipt(request, audit_type, cash_ledger):
+    position = get_active_terminal(request)
+    event = Event.objects.get(default=True)
+    payload = {
+        "v": 1,
+        "event": event.name,
+        "terminal": position.name,
+        "type": audit_type,
+        "amount": abs(cash_ledger.total),
+        "user": request.user.username,
+        "timestamp": cash_ledger.timestamp.isoformat(),
+    }
+
+    topic = f"{mqtt.get_topic('receipts', position.name)}/audit_slip"
+
+    send_mqtt_message(topic, payload)
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def openDrawer(request):
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.OPEN, total=amount, user=request.user, position=position
+    )
+    cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.OPEN, cash_ledger)
+
+    return JsonResponse({"success": True})
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def cashDeposit(request):
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.DEPOSIT, total=amount, user=request.user, position=position
+    )
+    cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.DEPOSIT, cash_ledger)
+
+    return JsonResponse({"success": True})
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def safeDrop(request):
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.DROP, total=-abs(amount), user=request.user, position=position
+    )
+    cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.DROP, cash_ledger)
+
+    return JsonResponse({"success": True})
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def cashPickup(request):
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.PICKUP,
+        total=-abs(amount),
+        user=request.user,
+        position=position,
+    )
+    cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.PICKUP, cash_ledger)
+
+    return JsonResponse({"success": True})
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def closeDrawer(request):
+    amount = Decimal(request.POST.get("amount", None))
+    position = get_active_terminal(request)
+    cash_ledger = Cashdrawer(
+        action=Cashdrawer.CLOSE,
+        total=-abs(amount),
+        user=request.user,
+        position=position,
+    )
+    cash_ledger.save()
+    cash_ledger.refresh_from_db()
+    print_audit_receipt(request, Cashdrawer.CLOSE, cash_ledger)
 
     return JsonResponse({"success": True})
 
@@ -495,7 +636,7 @@ def completeCashTransaction(request):
 
     order.billingType = Order.CASH
     order.status = Order.COMPLETED
-    order.settledDate = datetime.now()
+    order.settledDate = timezone.now()
     order.notes = json.dumps({"type": "cash", "tendered": tendered})
     order.save()
 

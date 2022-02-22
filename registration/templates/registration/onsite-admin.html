@@ -34,6 +34,14 @@
                     <ul class="dropdown-menu" aria-labelledby="user">
                         <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
                         <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+			{% if perms.registration.cash_admin %}
+			<li role="separator" class="divider"></li>
+                    	<li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
+                    	<li><a href="#" id="cash-deposit">Cash Deposit <i class="fas fa-plus right"></i></a></li>
+                    	<li><a href="#" id="safe-drop">Safe Drop <i class="bi-safe-fill right"></i></a></li>
+                    	<li><a href="#" id="cash-pickup">Cash Pickup <i class="fas fa-minus right"></i></a></li>
+                    	<li><a href="#" id="close-drawer">Close Drawer <i class="fas fa-store-alt-slash right"></i></a></li>
+			{% endif %}
                     </ul>
                 </div>
             </div>
@@ -222,7 +230,7 @@
         <span data-content="holdType" data-format="HoldTypeFormatter"></span>
         <span data-content="printed" data-format="PrintedBadgeFormatter"></span>
         <a class="link-badge" href="#" data-id="delete_id"><span data-content="name"></span></a>
-        <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-minus-circle"></i></a>
+        <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-trash-can"></i></a>
         <span data-content="age" data-format="MinorFormFormatter" class="age"></span>
       </div>
       <table class="table cart-table">
@@ -281,6 +289,8 @@
 
 {% block javascript %}
 <script>
+const DEBUG = {% settings_value_bool 'DEBUG' %};
+
 const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assignBadgeNumber' %}";
 const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsitePrintBadges' %}";
 const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsiteAdminClearCart' %}";
@@ -289,6 +299,11 @@ const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsiteAd
 const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsiteRemoveFromCart' %}";
 const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:openTerminal' %}";
 const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:closeTerminal' %}";
+const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:openDrawer' %}";
+const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cashDeposit' %}";
+const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safeDrop' %}";
+const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cashPickup' %}";
+const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:closeDrawer' %}";
 const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enablePayment' %}";
 const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:completeCashTransaction' %}";
 const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
@@ -305,6 +320,7 @@ const MQTT_OPTIONS = {
 
 const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
 const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
+
 </script>
 
 <script src="{% static 'js/mqtt.min.js' %}"></script>

@@ -3,13 +3,14 @@ function get_topic(topic) {
     return MQTT_BASE_TOPIC + "/" + topic;
 }
 
+
 if (MQTT_ENABLED) {
     const client = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
 
     console.log(client);
 
     client.on('connect', function () {
-        var topic = get_topic("#");
+        let topic = get_topic("#");
         console.log("MQTT subscribe to", topic);
         client.subscribe(topic, function(err) {
             if (!err) {
