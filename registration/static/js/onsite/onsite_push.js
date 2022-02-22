@@ -46,12 +46,16 @@ if (MQTT_ENABLED) {
             refresh_cart();
         }
 
-        if (topic == get_topic("navigate")) {
+        if (topic == get_topic("open")) {
             window.open(message.url);
         }
 
         if (topic == get_topic("notification")) {
+            send_notification(message.text);
+        }
 
+        if (topic == get_topic("alert")) {
+            alert(message.text);
         }
     });
 }

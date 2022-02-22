@@ -92,7 +92,7 @@ def send_mqtt_message(topic, payload):
     logger.info(f"Sending MQTT message: {topic} ({payload_json})")
     auth = {
         "username": "apis_server",
-        "password": get_token("apis_server", publ=topic)
+        "password": get_token("apis_server", publ=[topic])
     }
     tls = settings.MQTT_BROKER.get("tls")
     mqtt.single(topic, payload_json, retain=False, hostname=settings.MQTT_BROKER["host"],
