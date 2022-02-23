@@ -821,6 +821,7 @@ def onsite_admin_cart(request):
             "firstName": badge.attendee.firstName,
             "lastName": badge.attendee.lastName,
             "badgeName": badge.badgeName,
+            "badgeNumber": badge.badgeNumber,
             "abandoned": badge.abandoned,
             "effectiveLevel": effectiveLevel,
             "discount": get_discount_dict(order.discount),
