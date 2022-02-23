@@ -54,13 +54,22 @@ def get_cart(request):
         total, total_discount = ordering.getTotal(cartItems, [], discount)
 
         hasMinors = False
-        for cart in cartItems:
+        for idx, cart in enumerate(cartItems):
             cartJson = json.loads(cart.formData)
             pda = cartJson["attendee"]
             event = Event.objects.get(name=cartJson["event"])
             evt = event.eventStart
             tz = timezone.get_current_timezone()
-            birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+            try:
+                birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+            except ValueError:
+                logger.warning(f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')")
+                logger.warning(f"Removing malformed cart from session: {cart}")
+                request.session["cart_items"].pop(idx)
+                cart.delete()
+                del cartItems[idx]
+                continue
+
             age_at_event = (
                 evt.year
                 - birthdate.year
@@ -199,15 +208,19 @@ def add_to_cart(request):
     except KeyError:
         return common.abort(400, "Required parameters not found in POST body")
 
+    try:
+        datetime.strptime(pda["birthdate"], "%Y-%m-%d")
+    except ValueError:
+        return common.abort(400, f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')")
+
     banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
         logger.error("***ban list registration attempt***")
         registrationEmail = common.getRegistrationEmail()
         return common.abort(
             403,
-            "We are sorry, but you are unable to register for {0}. If you have any questions, or would like further information or assistance, please contact Registration at {1}".format(
-                event, registrationEmail
-            ),
+            f"We are sorry, but you are unable to register for {event}. If you have any questions, or would like "
+            f"further information or assistance, please contact Registration at {registrationEmail}"
         )
 
     cart = Cart(
