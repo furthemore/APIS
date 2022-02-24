@@ -349,8 +349,8 @@ REGISTER_FORCE_LOCATION = eval_bool(os.getenv('REGISTER_FORCE_LOCATION', 'True')
 CLOUD_MESSAGING_KEY = os.getenv('CLOUD_MESSAGING_KEY')
 
 # Cron metrics recording provider and settings
-METRICS_BACKEND = "InfluxDBReporter"
-METRICS_SETTINGS = {
+APIS_METRICS_BACKEND = "InfluxDBReporter"
+APIS_METRICS_SETTINGS = {
     "database" : os.getenv("INFLUXDB_DATABASE", "apis"),
     "host": os.getenv("INFLUXDB_HOST", "localhost"),
 }
