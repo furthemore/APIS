@@ -432,7 +432,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         send_assistant_form_email,
         send_payment_email,
     ]
-    readonly_fields = ["get_email", "registrationToken"]
+    readonly_fields = ["get_email", "registrationToken", "get_badge"]
     raw_id_fields = ("attendee",)
     fieldsets = (
         (
@@ -440,7 +440,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
             {
                 "fields": (
                     ("attendee", "approved"),
-                    "get_email",
+                    ("get_email", "get_badge"),
                     ("registrationToken", "event"),
                     "tableNumber",
                     ("discount", "discountReason"),
@@ -480,7 +480,14 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         return "--"
 
     get_email.short_description = "Attendee Email"
+ 
+    def get_badge(self, obj):
+        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge is None:
+            return "--"
+        return badge.badgeName
 
+    get_badge.short_description = "Badge Name"
 
 admin.site.register(Dealer, DealerAdmin)
 
