@@ -351,7 +351,8 @@ CLOUD_MESSAGING_KEY = os.getenv('CLOUD_MESSAGING_KEY')
 # Cron metrics recording provider and settings
 METRICS_BACKEND = "InfluxDBReporter"
 METRICS_SETTINGS = {
-    "database" : "apis",
+    "database" : os.getenv("INFLUXDB_DATABASE", "apis"),
+    "host": os.getenv("INFLUXDB_HOST", "localhost"),
 }
 
 # MQTT for cash-drawer worker
