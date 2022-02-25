@@ -53,7 +53,7 @@ def get_active_terminal(request):
 
 
 @staff_member_required
-def onsiteAdmin(request):
+def onsite_admin(request):
     # Modify a dummy session variable to keep it alive
     request.session["heartbeat"] = time.time()
 
@@ -128,12 +128,12 @@ def onsiteAdmin(request):
 
 
 @staff_member_required
-def onsiteAdminSearch(request):
+def onsite_admin_search(request):
     event = Event.objects.get(default=True)
     terminals = list(Firebase.objects.all())
     query = request.POST.get("search", None)
     if query is None:
-        return redirect("registration:onsiteAdmin")
+        return redirect("registration:onsite_admin")
 
     errors = []
     results = Badge.objects.filter(
@@ -152,19 +152,18 @@ def onsiteAdminSearch(request):
 
 
 @staff_member_required
-def closeTerminal(request):
+def close_terminal(request):
     data = {"command": "close"}
-    return sendMessageToTerminal(request, data)
+    return send_message_to_terminal(request, data)
 
 
 @staff_member_required
-def openTerminal(request):
+def open_terminal(request):
     data = {"command": "open"}
-    return sendMessageToTerminal(request, data)
+    return send_message_to_terminal(request, data)
 
 
-def sendMessageToTerminal(request, data):
-    # import pdb; pdb.set_trace()
+def send_message_to_terminal(request, data):
     request.session["heartbeat"] = time.time()  # Keep session alive
     url_terminal = request.GET.get("terminal", None)
     logger.info("Terminal from GET parameter: {0}".format(url_terminal))
@@ -211,7 +210,7 @@ def sendMessageToTerminal(request, data):
 
 
 @staff_member_required
-def enablePayment(request):
+def enable_payment(request):
     cart = request.session.get("cart", None)
     if cart is None:
         request.session["cart"] = []
@@ -222,9 +221,9 @@ def enablePayment(request):
     badges = []
     first_order = None
 
-    for id in cart:
+    for pk in cart:
         try:
-            badge = Badge.objects.get(id=id)
+            badge = Badge.objects.get(id=pk)
             badges.append(badge)
 
             order = badge.getOrder()
@@ -238,19 +237,19 @@ def enablePayment(request):
                 order.reference = first_order.reference
                 order.save()
         except Badge.DoesNotExist:
-            cart.remove(id)
+            cart.remove(pk)
             logger.error(
-                "ID {0} was in cart but doesn't exist in the database".format(id)
+                "ID {0} was in cart but doesn't exist in the database".format(pk)
             )
 
     # Force a cart refresh to get the latest order reference to the terminal
-    onsiteAdminCart(request)
+    onsite_admin_cart(request)
 
     data = {"command": "process_payment"}
-    return sendMessageToTerminal(request, data)
+    return send_message_to_terminal(request, data)
 
 
-def notifyTerminal(request, data):
+def notify_terminal(request, data):
     # Generates preview layout based on cart items and sends the result
     # to the apropriate payment terminal for display to the customer
     term = request.session.get("terminal", None)
@@ -294,7 +293,7 @@ def notifyTerminal(request, data):
     return True
 
 
-def assignBadgeNumber(request):
+def assign_badge_number(request):
     request_badges = json.loads(request.body)
 
     badge_payload = {badge["id"]: badge for badge in request_badges}
@@ -317,7 +316,7 @@ def get_messages_list(request):
 
 
 @staff_member_required
-def onsitePrintBadges(request):
+def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
     con = printing.Main(local=True)
     tags = []
@@ -383,14 +382,14 @@ def admin_push_cart_refresh(request):
     send_mqtt_message(topic, None)
 
 
-def onsiteSignature(request):
+def onsite_signature(request):
     context = {}
     return render(request, "registration/signature.html", context)
 
 
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
-def completeSquareTransaction(request):
+def complete_square_transaction(request):
     key = request.GET.get("key", "")
     reference = request.GET.get("reference", None)
     clientTransactionId = request.GET.get("clientTransactionId", None)
@@ -466,7 +465,7 @@ def completeSquareTransaction(request):
             store_api_data["payment"] = {"id": payment_ids[0]}
             order.status = Order.COMPLETED
             order.settledDate = timezone.now()
-            order.notes = json.dumps(store_api_data)
+            order.apiData = json.dumps(store_api_data)
         else:
             order.status = Order.CAPTURED
             order.notes = "Need to refresh payment."
@@ -494,7 +493,7 @@ def completeSquareTransaction(request):
 
 @staff_member_required
 @permission_required("order.cash_admin")
-def drawerStatus(request):
+def drawer_status(request):
     if Cashdrawer.objects.count() == 0:
         return JsonResponse({"success": False})
     total = Cashdrawer.objects.all().aggregate(Sum("total"))
@@ -528,88 +527,54 @@ def print_audit_receipt(request, audit_type, cash_ledger):
     send_mqtt_message(topic, payload)
 
 
-@staff_member_required
-@permission_required("order.cash_admin")
-def openDrawer(request):
+def cash_audit_action(request, action):
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
+    if action in (Cashdrawer.DROP, Cashdrawer.PICKUP, Cashdrawer.CLOSE):
+        amount = -abs(amount)
     cash_ledger = Cashdrawer(
-        action=Cashdrawer.OPEN, total=amount, user=request.user, position=position
+        action=action, total=amount, user=request.user, position=position
     )
     cash_ledger.save()
     cash_ledger.refresh_from_db()
-    print_audit_receipt(request, Cashdrawer.OPEN, cash_ledger)
+    print_audit_receipt(request, action, cash_ledger)
 
     return JsonResponse({"success": True})
 
 
 @staff_member_required
 @permission_required("order.cash_admin")
-def cashDeposit(request):
-    amount = Decimal(request.POST.get("amount", None))
-    position = get_active_terminal(request)
-    cash_ledger = Cashdrawer(
-        action=Cashdrawer.DEPOSIT, total=amount, user=request.user, position=position
-    )
-    cash_ledger.save()
-    cash_ledger.refresh_from_db()
-    print_audit_receipt(request, Cashdrawer.DEPOSIT, cash_ledger)
-
-    return JsonResponse({"success": True})
+def open_drawer(request):
+    return cash_audit_action(request, Cashdrawer.OPEN)
 
 
 @staff_member_required
 @permission_required("order.cash_admin")
-def safeDrop(request):
-    amount = Decimal(request.POST.get("amount", None))
-    position = get_active_terminal(request)
-    cash_ledger = Cashdrawer(
-        action=Cashdrawer.DROP, total=-abs(amount), user=request.user, position=position
-    )
-    cash_ledger.save()
-    cash_ledger.refresh_from_db()
-    print_audit_receipt(request, Cashdrawer.DROP, cash_ledger)
-
-    return JsonResponse({"success": True})
+def cash_deposit(request):
+    return cash_audit_action(request, Cashdrawer.DEPOSIT)
 
 
 @staff_member_required
 @permission_required("order.cash_admin")
-def cashPickup(request):
-    amount = Decimal(request.POST.get("amount", None))
-    position = get_active_terminal(request)
-    cash_ledger = Cashdrawer(
-        action=Cashdrawer.PICKUP,
-        total=-abs(amount),
-        user=request.user,
-        position=position,
-    )
-    cash_ledger.save()
-    cash_ledger.refresh_from_db()
-    print_audit_receipt(request, Cashdrawer.PICKUP, cash_ledger)
-
-    return JsonResponse({"success": True})
+def safe_drop(request):
+    return cash_audit_action(request, Cashdrawer.DROP)
 
 
 @staff_member_required
 @permission_required("order.cash_admin")
-def closeDrawer(request):
-    amount = Decimal(request.POST.get("amount", None))
-    position = get_active_terminal(request)
-    cash_ledger = Cashdrawer(
-        action=Cashdrawer.CLOSE,
-        total=-abs(amount),
-        user=request.user,
-        position=position,
-    )
-    cash_ledger.save()
-    cash_ledger.refresh_from_db()
-    print_audit_receipt(request, Cashdrawer.CLOSE, cash_ledger)
-
-    return JsonResponse({"success": True})
+def cash_pickup(request):
+    return cash_audit_action(request, Cashdrawer.PICKUP)
 
 
-def completeCashTransaction(request):
+@staff_member_required
+@permission_required("order.cash_admin")
+def close_drawer(request):
+    return cash_audit_action(request, Cashdrawer.CLOSE)
+
+
+@staff_member_required
+@permission_required("order.cash")
+def complete_cash_transaction(request):
     reference = request.GET.get("reference", None)
     total = request.GET.get("total", None)
     tendered = request.GET.get("tendered", None)
@@ -692,7 +657,7 @@ def completeCashTransaction(request):
 
 
 @csrf_exempt
-def firebaseRegister(request):
+def firebase_register(request):
     key = request.GET.get("key", "")
     if key != settings.REGISTER_KEY:
         return JsonResponse(
@@ -738,7 +703,7 @@ def firebaseRegister(request):
 
 
 @csrf_exempt
-def firebaseLookup(request):
+def firebase_lookup(request):
     # Returns the common name stored for a given firebase token
     # (So client can notify server if either changes)
     token = request.GET.get("token", None)
@@ -794,7 +759,7 @@ def get_line_items(attendee_options):
 
 
 @staff_member_required
-def onsiteAdminCart(request):
+def onsite_admin_cart(request):
     # Returns dataset to render onsite cart preview
     request.session["heartbeat"] = time.time()  # Keep session alive
     cart = request.session.get("cart", None)
@@ -805,14 +770,14 @@ def onsiteAdminCart(request):
         )
 
     badges = []
-    for id in cart:
+    for pk in cart:
         try:
-            badge = Badge.objects.get(id=id)
+            badge = Badge.objects.get(id=pk)
             badges.append(badge)
         except Badge.DoesNotExist:
-            cart.remove(id)
+            cart.remove(pk)
             logger.error(
-                "ID {0} was in cart but doesn't exist in the database".format(id)
+                "ID {0} was in cart but doesn't exist in the database".format(pk)
             )
 
     order = None
@@ -856,6 +821,7 @@ def onsiteAdminCart(request):
             "firstName": badge.attendee.firstName,
             "lastName": badge.attendee.lastName,
             "badgeName": badge.badgeName,
+            "badgeNumber": badge.badgeNumber,
             "abandoned": badge.abandoned,
             "effectiveLevel": effectiveLevel,
             "discount": get_discount_dict(order.discount),
@@ -894,24 +860,24 @@ def onsiteAdminCart(request):
         data["order_id"] = None
         data["reference"] = None
 
-    notifyTerminal(request, data)
+    notify_terminal(request, data)
 
     return JsonResponse(data)
 
 
 @staff_member_required()
-def onsiteSignaturePrompt(request):
+def onsite_signature_prompt(request):
     data = {
         "command": "signature",
         "name": "Kasper Finch",
         "agreement": "I have read and agree to the FurTheMore 2020 Code of Conduct",
         "badge_id": "5",
     }
-    return sendMessageToTerminal(request, data)
+    return send_message_to_terminal(request, data)
 
 
 @staff_member_required
-def onsiteAddToCart(request):
+def onsite_add_to_cart(request):
     id = request.GET.get("id", None)
     if id is None or id == "":
         return JsonResponse(
@@ -935,7 +901,7 @@ def onsiteAddToCart(request):
 
 
 @staff_member_required
-def onsiteRemoveFromCart(request):
+def onsite_remove_from_cart(request):
     id = request.GET.get("id", None)
     if id is None or id == "":
         return JsonResponse(
@@ -956,10 +922,10 @@ def onsiteRemoveFromCart(request):
 
 
 @staff_member_required
-def onsiteAdminClearCart(request):
+def onsite_admin_clear_cart(request):
     request.session["cart"] = []
-    sendMessageToTerminal(request, {"command": "clear"})
-    return onsiteAdmin(request)
+    send_message_to_terminal(request, {"command": "clear"})
+    return onsite_admin(request)
 
 
 @staff_member_required

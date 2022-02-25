@@ -91,6 +91,14 @@ $(document).ready(function () {
         }
     );
 
+    $.addTemplateFormatter("PrintedBadgeNumberFormatter",
+        function(value, template) {
+            if (value) {
+                return '<span class="label label-info" title="Badge Number">' + value + '</span>';
+            }
+        }
+    );
+
     $.addTemplateFormatter("BadgeChangeFormatter",
         function(value, template) {
             if (value) {
@@ -159,6 +167,7 @@ $(document).ready(function () {
             cartTemplateData.push({
                   name : val.firstName + ' ' + val.lastName,
                   badgeName : val.badgeName,
+                  badgeNumber : val.badgeNumber,
                   age : val.age,
                   abandoned : val.abandoned,
                   level : level,

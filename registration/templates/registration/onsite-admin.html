@@ -8,7 +8,7 @@
 
     <div class="row">
         <div class="col-sm-6">
-            <h2><a href="{% url 'registration:onsiteAdmin' %}">APIS Register</a></h2>
+            <h2><a href="{% url 'registration:onsite_admin' %}">APIS Register</a></h2>
         </div>
         <div class="col-sm-2 col-sm-offset-2 col-top">
             <form class="form-inline" id="terminal_form" method="get">
@@ -51,7 +51,7 @@
                         <i class="fas fa-user"></i><span class="sr-only">User options</span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="user">
-                        <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsiteAdmin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
+                        <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsite_admin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
                     </ul>
                 </div>
             </div>
@@ -70,14 +70,14 @@
       <i class="fas fa-exclamation-triangle"></i>
       <span class="sr-only">Error:</span>
       <b>There was a problem while connecting to the server.</b>
-       <a class="alert-link" href="{% url 'registration:onsiteAdmin' %}">Reload</a>
+       <a class="alert-link" href="{% url 'registration:onsite_admin' %}">Reload</a>
     </div>
 
     <div class="row">
       <div class="col-md-6">
         <div class="row">
           <div class="col-md-12">
-            <form class="form-inline my-lg-0" action="{% url 'registration:onsiteAdmin' %}" method="get">
+            <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" method="get">
                 <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
                     autofocus="autofocus" autocomplete="off" name="search">
@@ -134,7 +134,7 @@
               </a>
             </h2>
           </div><div class="col-md-4" style="margin-top: 20px">
-            <a href="{% url 'registration:onsiteAdminClearCart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}" class="btn btn-danger right">Clear</a>
+            <a href="{% url 'registration:onsite_admin_clear_cart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}" class="btn btn-danger right">Clear</a>
           </div></div>
           <div id="cart"></div>
           <div class="total" id="total"></div>
@@ -229,6 +229,7 @@
         <span data-content="abandoned" data-format="PaidBadgeFormatter"></span>
         <span data-content="holdType" data-format="HoldTypeFormatter"></span>
         <span data-content="printed" data-format="PrintedBadgeFormatter"></span>
+        <span data-content="badgeNumber" data-format="PrintedBadgeNumberFormatter"></span>
         <a class="link-badge" href="#" data-id="delete_id"><span data-content="name"></span></a>
         <a class="remove-badge" href="#" data-id="delete_id"><i class="fas fa-trash-can"></i></a>
         <span data-content="age" data-format="MinorFormFormatter" class="age"></span>
@@ -291,21 +292,21 @@
 <script>
 const DEBUG = {% settings_value_bool 'DEBUG' %};
 
-const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assignBadgeNumber' %}";
-const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsitePrintBadges' %}";
-const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsiteAdminClearCart' %}";
-const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsiteAdminCart' %}";
-const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsiteAddToCart' %}";
-const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsiteRemoveFromCart' %}";
-const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:openTerminal' %}";
-const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:closeTerminal' %}";
-const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:openDrawer' %}";
-const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cashDeposit' %}";
-const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safeDrop' %}";
-const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cashPickup' %}";
-const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:closeDrawer' %}";
-const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enablePayment' %}";
-const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:completeCashTransaction' %}";
+const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assign_badge_number' %}";
+const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsite_print_badges' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsite_admin_clear_cart' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsite_admin_cart' %}";
+const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsite_add_to_cart' %}";
+const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsite_remove_from_cart' %}";
+const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:open_terminal' %}";
+const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:close_terminal' %}";
+const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:open_drawer' %}";
+const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cash_deposit' %}";
+const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safe_drop' %}";
+const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cash_pickup' %}";
+const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:close_drawer' %}";
+const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enable_payment' %}";
+const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:complete_cash_transaction' %}";
 const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
 const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
 
