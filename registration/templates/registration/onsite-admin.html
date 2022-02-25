@@ -77,7 +77,7 @@
       <div class="col-md-6">
         <div class="row">
           <div class="col-md-12">
-            <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" method="get">
+            <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" id="search_form" method="get">
                 <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
                     autofocus="autofocus" autocomplete="off" name="search">
@@ -191,6 +191,17 @@
             </div>
           {% endif %}
 
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-6 col-lg-offset-6">
+          <div class="well">
+            <p>
+              <strong>CONGOER</strong>, FIRSTNAME MIDDLE<br>
+              <i class="fas fa-cake-candles"></i> 2021-02-02
+            </p>
+          </div>
         </div>
       </div>
     </div>

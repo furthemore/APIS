@@ -42,20 +42,33 @@ if (MQTT_ENABLED) {
     client.on('message', function(topic, message) {
         console.log("MQTT message:", topic, message.toString());
 
+        let payload = null;
+        try {
+            payload = JSON.parse(message.toString());
+        } catch (SyntaxError) {
+        }
+
         if (topic === get_topic("refresh")) {
             refresh_cart();
         }
 
         if (topic == get_topic("open")) {
-            window.open(message.url);
+            window.open(payload.url);
         }
 
         if (topic == get_topic("notification")) {
-            send_notification(message.text);
+            send_notification(payload.text);
         }
 
         if (topic == get_topic("alert")) {
-            alert(message.text);
+            alert(payload.text);
+        }
+
+        if (topic == get_topic("scan/id")) {
+            // Cache the scan in local storage so it survives page refreshes
+            localStorage.setItem('id_scan', message.toString());
+            $("input[name=search]").val(payload.last);
+            $("#search_form").submit();
         }
     });
 }
