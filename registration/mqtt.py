@@ -91,7 +91,7 @@ def format_topic(topic):
     return topic.lower()
 
 
-def send_mqtt_message(topic, payload):
+def send_mqtt_message(topic, payload={}):
     payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
 
     logger.info(f"Sending MQTT message: {topic} ({payload_json})")
