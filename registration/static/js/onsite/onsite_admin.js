@@ -393,7 +393,7 @@ $(document).ready(function () {
         e.preventDefault();
         $.getJSON(URL_REGISTRATION_NO_SALE, {}, function (data) {
             if (!data.success) {
-                alert("Error while closing terminal: " + data.message);
+                alert("Error while opening drawer: " + data.message);
             }
         });
     });
