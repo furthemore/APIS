@@ -389,6 +389,15 @@ $(document).ready(function () {
         },'json');
     });
 
+    $("#no-sale").click(function (e) {
+        e.preventDefault();
+        $.getJSON(URL_REGISTRATION_NO_SALE, {}, function (data) {
+            if (!data.success) {
+                alert("Error while closing terminal: " + data.message);
+            }
+        });
+    });
+
 
     $("#credit_button").click(function (e) {
         e.preventDefault();

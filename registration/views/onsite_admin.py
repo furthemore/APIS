@@ -509,6 +509,15 @@ def drawer_status(request):
 
 @staff_member_required
 @permission_required("order.cash_admin")
+def no_sale(request):
+    position = get_active_terminal(request)
+    topic = f"{mqtt.get_topic('receipts', position.name)}/no_sale"
+
+    send_mqtt_message(topic)
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
 def print_audit_receipt(request, audit_type, cash_ledger):
     position = get_active_terminal(request)
     event = Event.objects.get(default=True)

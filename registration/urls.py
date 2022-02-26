@@ -231,6 +231,11 @@ urlpatterns = [
         name="close_drawer",
     ),
     url(
+        r"^onsite/cashdrawer/no_sale/?$",
+        registration.views.onsite_admin.no_sale,
+        name="close_drawer",
+    ),
+    url(
         r"^onsite/signature/?$",
         registration.views.onsite_admin.onsite_signature,
         name="onsite_signature",
