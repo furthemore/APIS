@@ -78,11 +78,11 @@
       <div class="col-md-6">
         <div class="row">
           <div class="col-md-12">
-            <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" method="get">
+            <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" id="search_form" method="get">
                 <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
                     autofocus="autofocus" autocomplete="off" name="search">
-                <button class="btn btn-secondary my-2 my-sm-0" type="submit">
+                <button class="btn btn-default my-2 my-sm-0" type="submit">
                     Search <i class="fas fa-search"></i>
                 </button>
                 <a href="{% url 'registration:onsite' %}" class="btn btn-success my-2 my-sm-0" target="_blank">
@@ -96,10 +96,13 @@
             <div class="panel-heading">Search results</div>
 
             <table class="table table-striped">
+              <col style="width: 40%">
+              <col style="width: 25%">
+              <col style="width: 15%">
+              <col style="width: 20%">
               <thead>
                 <tr>
                   <th>Legal Name</th>
-                  <th>Preferred Name</th>
                   <th>Badge Name</th>
                   <th>Status</th>
                   <th><span class="sr-only">Action</span></th>
@@ -108,8 +111,12 @@
               <tbody>
               {% for badge in results %}
                 <tr>
-                  <td class="results">{{ badge.attendee.firstName }} {{ badge.attendee.lastName }}</td>
-                  <td class="results">{{ badge.attendee.preferredName }}</td>
+                  <td class="results">
+                    {{ badge.attendee.firstName }} {{ badge.attendee.lastName }}<br>
+                    {% if badge.attendee.preferredName %}
+                      <i>Preferred Name:</i> <b>{{  badge.attendee.preferredName }}</b>
+                    {% endif %}
+                  </td>
                   <td class="results">{{ badge.badgeName }}</td>
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
@@ -121,6 +128,14 @@
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div class="panel panel-default" id="scan-panel">
+          <div class="panel-heading">
+            Scanner history
+            <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
+          </div>
+          <div id="scan-log"></div>
         </div>
       </div>
       <div class="col-md-6">
@@ -193,18 +208,19 @@
           {% endif %}
 
         </div>
+
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+  <!-- Modal -->
+  <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
           </div>
           <div class="modal-body">
             ...
@@ -287,6 +303,95 @@
       </tr>
     </table>
   </script>
+
+  {% verbatim %}
+  <script type="text/x-handlebars-template" id="scan-template">
+    <div class="panel panel-{{#if expired}}warning{{else}}primary{{/if}}">
+      <div class="panel-heading">
+        <i class="fa-solid fa-id-card"></i> License Scanned
+        {{#if expired}}- <b><i class="fa-solid fa-calendar-xmark"></i> Expired {{expiry}}{{/if}}</b>
+        <button type="button" class="close close-panel" aria-label="Close" data-item="id_scan">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="panel-body">
+        <a href="#"><strong>{{ first }} {{ middle }} {{ last }}</strong></a>
+        <span class="right"><i class="fas fa-cake-candles"></i> {{ dob }} ({{ age }} years)</span>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/x-handlebars-template" id="url-template">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a href="{{ url }}" target="_blank">{{ url }}</a>
+        <button type="button" class="close close-panel" aria-label="Close" data-item="url_scan">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </script>
+
+
+  <script type="text/x-handlebars-template" id="shc-template">
+    <div class="panel panel-{{verification.class}}">
+      <div class="panel-heading">
+        <i class="fa-solid fa-syringe"></i> Vaccination Record - {{ verification.status }}
+        <button type="button" class="close close-panel" aria-label="Close" data-item="shc_scan"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="panel-body">
+        <strong>{{ name }}</strong>
+        {{#unless this.dob_matches }}
+          <span class="right text-danger" title="Does not match ID"><i class="fa-solid fa-calendar-xmark"></i> {{ birthday }}<br></span>
+        {{else}}
+          <span class="right"><i class="fas fa-cake-candles"></i> {{ birthday }}<br></span>
+        {{/unless}}
+        <table class="table table-condensed">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vaccine</th>
+              <th>Lot</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each vaccines}}
+            {{#if this.cls}}
+            <tr class="{{this.cls}}" title="Vaccine dose was {{this.age}} days ago.">
+            {{else}}
+            <tr>
+            {{/if}}
+              <td title="{{ this.age }} days">{{ this.date }}</td>
+              <td>{{ this.name }}</td>
+              <td>{{ this.lotNumber }}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{#if verification.trusted}}
+          <span class="text-success" title="Issuer is in the Common Trust">
+            <i class="fa-solid fa-shield"></i> Issuer: {{verification.issuer}}
+          </span>
+        {{else}}
+          <span class="text-danger" title="Issuer is not in the Common Trust">
+            <i class="fa-solid fa-square-xmark"></i> <b>Not Trusted</b>: {{verification.issuer}}
+          </span>
+        {{/if}}
+        <span class="right">
+        {{#if verification.verified}}
+          <span class="text-success" title="Cryptographic signature is verified">
+            <i class="fa-solid fa-check"></i> Verified
+          </span>
+        {{else}}
+          <span class="text-danger">
+            <i class="fa-solid fa-square-xmark"></i> Not Trusted
+          </span>
+        {{/if}}
+        </span>
+      </div>
+    </div>
+  </script>
+  {% endverbatim %}
 {% endblock %}
 
 {% block javascript %}
