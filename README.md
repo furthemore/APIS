@@ -26,7 +26,7 @@ Stack:
     or label printer, with Unicode-supported fonts (Emoji!)
   + Protect admin and volunteer logins with TOTP 2-Factor or FIDO U2F.
 
-![Screenshot of Cash Register Position](https://i.imgur.com/8vB1m0q.png)
+![Screenshot of Cash Register Position](https://i.imgur.com/7iJSS8E.png)
 
 ## Quick start
 ### Running using Docker
