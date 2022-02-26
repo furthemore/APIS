@@ -539,6 +539,7 @@ def print_audit_receipt(request, audit_type, cash_ledger, cashdraw=True):
 
 
 def cash_audit_action(request, action):
+    cashdraw = True
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
     if action in (Cashdrawer.DROP, Cashdrawer.PICKUP, Cashdrawer.CLOSE):
