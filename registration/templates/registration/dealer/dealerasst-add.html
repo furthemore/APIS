@@ -123,8 +123,10 @@ var paymentForm = new SqPaymentForm({
             convenience, but cannot be edited here.
         </div>
 
-
-        <form class="form-horizontal" role="form" data-toggle="validator">
+        <noscript>
+          <h1>Javascript is required to use this form.</h1>
+        </noscript>
+        <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
 
             <div class="form-group">
                 <label for="tables" class="col-sm-3 control-label">Table Type</label>
@@ -310,18 +312,18 @@ var paymentForm = new SqPaymentForm({
 
 
 {% block javascript %}
-<script type="text/javascript">
-    var DEALER_EMAIL = "{{event.dealerEmail}}";
-    var URL_DONE_AST_DEALER = "{% url 'registration:doneAsstDealer' %}";
-    var URL_ADD_ASSISTANTS_CHECKOUT = "{% url 'registration:add_assistants_checkout' %}";
-    var dealer_id = {{dealer.id}};
-    var maxPartners = {{dealer.tableSize.partnerMax}};
-    var dealer_assistants = {{json_assistants|safe}};
-	$( "body" ).ready(function() {
-		$("#state").val("{{attendee.state}}");
-		$("#country").val("{{attendee.country}}");
-	});
-
-</script>
-<script src="{% static 'js/dealers/dealerasst-add.js' %}"></script>
+  <script type="text/javascript">
+      var DEALER_EMAIL = "{{event.dealerEmail}}";
+      var URL_DONE_AST_DEALER = "{% url 'registration:doneAsstDealer' %}";
+      var URL_ADD_ASSISTANTS_CHECKOUT = "{% url 'registration:add_assistants_checkout' %}";
+      var dealer_id = {{dealer.id}};
+      var maxPartners = {{dealer.tableSize.partnerMax}};
+      var dealer_assistants = {{json_assistants|safe}};
+      $("body").ready(function () {
+          $("form").fadeIn();
+          $("#state").val("{{attendee.state}}");
+          $("#country").val("{{attendee.country}}");
+      });
+  </script>
+  <script src="{% static 'js/dealers/dealerasst-add.js' %}"></script>
 {% endblock %}
