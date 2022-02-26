@@ -79,3 +79,7 @@
 #cart-error {
     display: none;
 }
+
+#scan_log > div > .panel {
+    margin: 20px 20px;
+}

@@ -81,7 +81,7 @@
                 <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
                 <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
                     autofocus="autofocus" autocomplete="off" name="search">
-                <button class="btn btn-secondary my-2 my-sm-0" type="submit">
+                <button class="btn btn-default my-2 my-sm-0" type="submit">
                     Search <i class="fas fa-search"></i>
                 </button>
                 <a href="{% url 'registration:onsite' %}" class="btn btn-success my-2 my-sm-0" target="_blank">
@@ -95,10 +95,13 @@
             <div class="panel-heading">Search results</div>
 
             <table class="table table-striped">
+              <col style="width: 40%">
+              <col style="width: 25%">
+              <col style="width: 15%">
+              <col style="width: 20%">
               <thead>
                 <tr>
                   <th>Legal Name</th>
-                  <th>Preferred Name</th>
                   <th>Badge Name</th>
                   <th>Status</th>
                   <th><span class="sr-only">Action</span></th>
@@ -107,8 +110,12 @@
               <tbody>
               {% for badge in results %}
                 <tr>
-                  <td class="results">{{ badge.attendee.firstName }} {{ badge.attendee.lastName }}</td>
-                  <td class="results">{{ badge.attendee.preferredName }}</td>
+                  <td class="results">
+                    {{ badge.attendee.firstName }} {{ badge.attendee.lastName }}<br>
+                    {% if badge.attendee.preferredName %}
+                      <i>Preferred Name:</i> <b>{{  badge.attendee.preferredName }}</b>
+                    {% endif %}
+                  </td>
                   <td class="results">{{ badge.badgeName }}</td>
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
@@ -192,16 +199,9 @@
           {% endif %}
 
         </div>
-      </div>
-
-      <div class="row">
-        <div class="col-lg-6 col-lg-offset-6">
-          <div class="well">
-            <p>
-              <strong>CONGOER</strong>, FIRSTNAME MIDDLE<br>
-              <i class="fas fa-cake-candles"></i> 2021-02-02
-            </p>
-          </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">Scanner history</div>
+          <div id="scan_log"></div>
         </div>
       </div>
     </div>
@@ -297,6 +297,73 @@
       </tr>
     </table>
   </script>
+
+  {% verbatim %}
+  <script type="text/x-handlebars-template" id="scan-template">
+    <div class="panel panel-{{#if expired}}warning{{else}}primary{{/if}}">
+      <div class="panel-heading">
+        <i class="fa-solid fa-id-card"></i> License Scanned
+        {{#if expired}}- <b><i class="fa-solid fa-calendar-xmark"></i> Expired {{expiry}}{{/if}}</b>
+        <button type="button" class="close close-panel" aria-label="Close" data-item="id_scan"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="panel-body">
+        <a href="#"><strong>{{ first }} {{ middle }} {{ last }}</strong></a>
+        <span class="right"><i class="fas fa-cake-candles"></i> {{ dob }} ({{ age }} years)</span>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/x-handlebars-template" id="shc-template">
+    <div class="panel panel-{{verification.class}}">
+      <div class="panel-heading">
+        <i class="fa-solid fa-syringe"></i> Vaccination Record - {{ verification.status }}
+        <button type="button" class="close close-panel" aria-label="Close" data-item="shc_scan"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="panel-body">
+        <strong>{{ name }}</strong>
+        <span class="right"><i class="fas fa-cake-candles"></i> {{ birthday }}<br></span>
+        <table class="table table-condensed">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vaccine</th>
+              <th>Lot</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each vaccines}}
+            <tr>
+              <td>{{ this.date }}</td>
+              <td>{{ this.name }}</td>
+              <td>{{  this.lotNumber }}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{#if verification.trusted}}
+          <span class="text-success" title="Issuer is in the Common Trust">
+            <i class="fa-solid fa-shield"></i> Issuer: {{verification.issuer}}
+          </span>
+        {{else}}
+          <span class="text-danger" title="Issuer is not in the Common Trust">
+            <i class="fa-solid fa-square-xmark"></i> <b>Not Trusted</b>: {{verification.issuer}}
+          </span>
+        {{/if}}
+        <span class="right">
+        {{#if verification.verified}}
+          <span class="text-success">
+            <i class="fa-solid fa-check"></i> Verified
+          </span>
+        {{else}}
+          <span class="text-danger">
+            <i class="fa-solid fa-square-xmark"></i> Not Trusted
+          </span>
+        {{/if}}
+        </span>
+      </div>
+    </div>
+  </script>
+  {% endverbatim %}
 {% endblock %}
 
 {% block javascript %}

@@ -378,7 +378,7 @@
             // American middle-endian format put out by datepicker javascript
             var birthdate = new Date(Date.parse($("#birthDate").val()));
         }
-        var age = getAge(birthdate);
+        var age = getAgeByEventStart(birthdate);
         if (age < 18){
             alert("You must be 18 by the first day of {{event.name}} to be a dealer.");
             return;
