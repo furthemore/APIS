@@ -233,7 +233,7 @@ urlpatterns = [
     url(
         r"^onsite/cashdrawer/no_sale/?$",
         registration.views.onsite_admin.no_sale,
-        name="close_drawer",
+        name="no_sale",
     ),
     url(
         r"^onsite/signature/?$",
