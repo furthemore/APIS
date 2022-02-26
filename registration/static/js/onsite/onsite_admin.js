@@ -325,6 +325,7 @@ $(document).ready(function () {
 
     $("#safe-drop").click(function (e) {
         e.preventDefault();
+        $("#no-sale").trigger("click");
         raw_amount = prompt("Enter amount dropped into safe");
         if (raw_amount == null || raw_amount === "") {
             return
@@ -347,6 +348,7 @@ $(document).ready(function () {
 
     $("#cash-pickup").click(function (e) {
         e.preventDefault();
+        $("#no-sale").trigger("click");
         raw_amount = prompt("Enter amount picked up from drawer");
         if (raw_amount == null || raw_amount === "") {
             return
@@ -369,6 +371,7 @@ $(document).ready(function () {
 
     $("#close-drawer").click(function (e) {
         e.preventDefault();
+        $("#no-sale").trigger("click");
         raw_amount = prompt("Enter final amount in drawer");
         if (raw_amount == null || raw_amount === "") {
             return
