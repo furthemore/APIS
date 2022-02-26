@@ -43,9 +43,12 @@
     </div>
 </div>
 
-<form class="form-horizontal" role="form" data-toggle="validator">
+<noscript>
+  <h1>Javascript is required to use this form.</h1>
+</noscript>
+<form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
     <div class="tab-content">
-        <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <div role="tabpanel" class="tab-pane active" id="personal">
             <h1>Dealer Registration - {{event}}</h1>
             <p>Welcome to the registration system. To continue, enter your information below.</p>
 
@@ -275,6 +278,10 @@
 
     $("#next-optional").click(function() {
         window.scrollTo(0, 0);
+    });
+
+    $(document).ready(function () {
+       $("form").fadeIn();
     });
 
 

@@ -28,7 +28,10 @@
   </div>
 </div>
 
-    <form class="form-horizontal" role="form" data-toggle="validator">
+    <noscript>
+      <h1>Javascript is required to use this form.</h1>
+    </noscript>
+    <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
     <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Pre-Register for {{event}}!</h1>
@@ -206,6 +209,7 @@
     };
 
     $( "body" ).ready(function() {
+        $("form").fadeIn();
         $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
             levelData = data;
             $.each( data, function( key, val ) {

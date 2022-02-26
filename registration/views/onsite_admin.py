@@ -509,7 +509,17 @@ def drawer_status(request):
 
 @staff_member_required
 @permission_required("order.cash_admin")
-def print_audit_receipt(request, audit_type, cash_ledger):
+def no_sale(request):
+    position = get_active_terminal(request)
+    topic = f"{mqtt.get_topic('receipts', position.name)}/no_sale"
+    send_mqtt_message(topic)
+
+    return JsonResponse({"success": True})
+
+
+@staff_member_required
+@permission_required("order.cash_admin")
+def print_audit_receipt(request, audit_type, cash_ledger, cashdraw=True):
     position = get_active_terminal(request)
     event = Event.objects.get(default=True)
     payload = {
@@ -520,6 +530,7 @@ def print_audit_receipt(request, audit_type, cash_ledger):
         "amount": abs(cash_ledger.total),
         "user": request.user.username,
         "timestamp": cash_ledger.timestamp.isoformat(),
+        "cashdraw": cashdraw,
     }
 
     topic = f"{mqtt.get_topic('receipts', position.name)}/audit_slip"
@@ -528,16 +539,18 @@ def print_audit_receipt(request, audit_type, cash_ledger):
 
 
 def cash_audit_action(request, action):
+    cashdraw = True
     amount = Decimal(request.POST.get("amount", None))
     position = get_active_terminal(request)
     if action in (Cashdrawer.DROP, Cashdrawer.PICKUP, Cashdrawer.CLOSE):
         amount = -abs(amount)
+        cashdraw = False
     cash_ledger = Cashdrawer(
         action=action, total=amount, user=request.user, position=position
     )
     cash_ledger.save()
     cash_ledger.refresh_from_db()
-    print_audit_receipt(request, action, cash_ledger)
+    print_audit_receipt(request, action, cash_ledger, cashdraw)
 
     return JsonResponse({"success": True})
 
