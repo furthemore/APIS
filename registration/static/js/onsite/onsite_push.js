@@ -2,6 +2,9 @@
 const shc_source = $("#shc-template").html();
 const shc_template = Handlebars.compile(shc_source);
 
+const url_source = $("#url-template").html()
+const url_template = Handlebars.compile(url_source);
+
 function get_topic(topic) {
     return MQTT_BASE_TOPIC + "/" + topic;
 }
@@ -39,7 +42,7 @@ function load_id_scan() {
     let template = Handlebars.compile(source);
 
     node.innerHTML = template(parsed);
-    $("#scan_log").append(node);
+    $("#scan-log").append(node);
 
     bind_close_panel();
 }
@@ -66,13 +69,35 @@ function load_shc_scan() {
 
     let node = document.createElement("div");
     node.innerHTML = shc_template(parsed);
-    $("#scan_log").append(node);
+    $("#scan-log").append(node);
     bind_close_panel();
+}
+
+function load_url_scan() {
+    let parsed = JSON.parse(localStorage.getItem("url_scan"))
+    if (parsed == null) {
+        return;
+    }
+
+    let node = document.createElement("div");
+    node.innerHTML = url_template(parsed);
+    $("#scan-log").append(node);
+    bind_close_panel();
+}
+
+function clear_scan_log() {
+    localStorage.removeItem("id_scan");
+    localStorage.removeItem("shc_scan");
+    localStorage.removeItem("url_scan");
+    $("#scan-log").html("");
 }
 
 $(document).ready(function () {
     load_id_scan();
     load_shc_scan();
+    load_url_scan();
+
+    $("#clear-scans-log").click(clear_scan_log);
 })
 
 if (MQTT_ENABLED) {
@@ -117,6 +142,8 @@ if (MQTT_ENABLED) {
 
         if (topic == get_topic("open")) {
             window.open(payload.url);
+            localStorage.setItem("url_scan", message.toString());
+            load_url_scan();
         }
 
         if (topic == get_topic("notification")) {

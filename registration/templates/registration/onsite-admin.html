@@ -201,8 +201,10 @@
 
         </div>
         <div class="panel panel-default">
-          <div class="panel-heading">Scanner history</div>
-          <div id="scan_log"></div>
+          <div class="panel-heading">
+            Scanner history <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
+          </div>
+          <div id="scan-log"></div>
         </div>
       </div>
     </div>
@@ -305,7 +307,9 @@
       <div class="panel-heading">
         <i class="fa-solid fa-id-card"></i> License Scanned
         {{#if expired}}- <b><i class="fa-solid fa-calendar-xmark"></i> Expired {{expiry}}{{/if}}</b>
-        <button type="button" class="close close-panel" aria-label="Close" data-item="id_scan"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close close-panel" aria-label="Close" data-item="id_scan">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="panel-body">
         <a href="#"><strong>{{ first }} {{ middle }} {{ last }}</strong></a>
@@ -313,6 +317,18 @@
       </div>
     </div>
   </script>
+
+  <script type="text/x-handlebars-template" id="url-template">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a href="{{ url }}">{{ url }}</a>
+        <button type="button" class="close close-panel" aria-label="Close" data-item="url_scan">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </script>
+
 
   <script type="text/x-handlebars-template" id="shc-template">
     <div class="panel panel-{{verification.class}}">
@@ -336,7 +352,7 @@
             <tr>
               <td>{{ this.date }}</td>
               <td>{{ this.name }}</td>
-              <td>{{  this.lotNumber }}</td>
+              <td>{{ this.lotNumber }}</td>
             </tr>
             {{/each}}
           </tbody>
