@@ -47,6 +47,11 @@ function load_id_scan() {
     bind_close_panel();
 }
 
+function get_age_days(datetime) {
+    let diff = new Date().getTime() - datetime.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
 function load_shc_scan() {
     let parsed = JSON.parse(localStorage.getItem("shc_scan"))
     if (parsed == null) {
@@ -65,6 +70,19 @@ function load_shc_scan() {
     if (!parsed.verification.verified) {
         parsed.verification.class = "danger";
         parsed.verification.status = "Not Verified";
+    }
+
+    parsed.vaccines.forEach(function (item, idx, arr) {
+        item.age = get_age_days(parseDate(item.date));
+        item.cls = (item.age < 14 ? "danger" : "");
+    });
+
+    // Check if birthdate matches an ID scan if it's there
+    let id_scan = JSON.parse(localStorage.getItem("id_scan"));
+    if (id_scan != null) {
+        parsed.dob_matches = id_scan.dob == parsed.birthday;
+    } else {
+        parsed.dob_matches = true;
     }
 
     let node = document.createElement("div");

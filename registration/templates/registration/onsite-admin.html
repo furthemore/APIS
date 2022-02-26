@@ -129,6 +129,14 @@
             </table>
           </div>
         </div>
+
+        <div class="panel panel-default" id="scan-panel">
+          <div class="panel-heading">
+            Scanner history
+            <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
+          </div>
+          <div id="scan-log"></div>
+        </div>
       </div>
       <div class="col-md-6">
         <div class="well">
@@ -200,24 +208,19 @@
           {% endif %}
 
         </div>
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            Scanner history <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
-          </div>
-          <div id="scan-log"></div>
-        </div>
+
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+  <!-- Modal -->
+  <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
           </div>
           <div class="modal-body">
             ...
@@ -321,7 +324,7 @@
   <script type="text/x-handlebars-template" id="url-template">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a href="{{ url }}">{{ url }}</a>
+        <a href="{{ url }}" target="_blank">{{ url }}</a>
         <button type="button" class="close close-panel" aria-label="Close" data-item="url_scan">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -338,7 +341,11 @@
       </div>
       <div class="panel-body">
         <strong>{{ name }}</strong>
-        <span class="right"><i class="fas fa-cake-candles"></i> {{ birthday }}<br></span>
+        {{#unless this.dob_matches }}
+          <span class="right text-danger" title="Does not match ID"><i class="fa-solid fa-calendar-xmark"></i> {{ birthday }}<br></span>
+        {{else}}
+          <span class="right"><i class="fas fa-cake-candles"></i> {{ birthday }}<br></span>
+        {{/unless}}
         <table class="table table-condensed">
           <thead>
             <tr>
@@ -349,8 +356,12 @@
           </thead>
           <tbody>
             {{#each vaccines}}
+            {{#if this.cls}}
+            <tr class="{{this.cls}}" title="Vaccine dose was {{this.age}} days ago.">
+            {{else}}
             <tr>
-              <td>{{ this.date }}</td>
+            {{/if}}
+              <td title="{{ this.age }} days">{{ this.date }}</td>
               <td>{{ this.name }}</td>
               <td>{{ this.lotNumber }}</td>
             </tr>
@@ -368,7 +379,7 @@
         {{/if}}
         <span class="right">
         {{#if verification.verified}}
-          <span class="text-success">
+          <span class="text-success" title="Cryptographic signature is verified">
             <i class="fa-solid fa-check"></i> Verified
           </span>
         {{else}}
