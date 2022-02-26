@@ -559,7 +559,9 @@ class TestDrawers(OnsiteBaseTestCase):
 
     @patch("registration.views.onsite_admin.send_mqtt_message")
     def test_safe_drop(self, mock_send_mqtt_message):
-        response = self.client.post(reverse("registration:safe_drop"), {"amount": "200"})
+        response = self.client.post(
+            reverse("registration:safe_drop"), {"amount": "200"}
+        )
         message = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message["success"])
@@ -592,4 +594,12 @@ class TestDrawers(OnsiteBaseTestCase):
         drawer = Cashdrawer.objects.last()
         self.assertEqual(drawer.action, Cashdrawer.CLOSE)
         self.assertEqual(drawer.total, -200)
+        mock_send_mqtt_message.assert_called_once()
+
+    @patch("registration.views.onsite_admin.send_mqtt_message")
+    def test_no_sale(self, mock_send_mqtt_message):
+        response = self.client.post(reverse("registration:no_sale"))
+        message = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(message["success"])
         mock_send_mqtt_message.assert_called_once()

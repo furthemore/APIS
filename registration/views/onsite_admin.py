@@ -512,8 +512,9 @@ def drawer_status(request):
 def no_sale(request):
     position = get_active_terminal(request)
     topic = f"{mqtt.get_topic('receipts', position.name)}/no_sale"
-
     send_mqtt_message(topic)
+
+    return JsonResponse({"success": True})
 
 
 @staff_member_required
