@@ -43,7 +43,7 @@
         <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
         <hr>
 
-          {% show_attendee_form event=event emailOptions=True %}
+          {% show_attendee_form event=event emailOptions=True attendee=request.GET %}
 
 
                 <div class="form-group">
