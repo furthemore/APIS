@@ -1,44 +1,48 @@
-{% load site static %}
+{% load site static settings %}
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{% current_site_name %} {% block title %}{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Bootstrap -->
-    <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
-	<link href="{% static 'css/bs-yeti.css' %}" rel="stylesheet" media="screen">
-	<link href="{% static 'css/main.css' %}" rel="stylesheet" media="screen">
-	<link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
-	<link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
-	{% block head %}{% endblock %}
+<head>
+  <title>{% current_site_name %} {% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap -->
+  <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
+  <link href="{% static 'css/bs-yeti.css' %}" rel="stylesheet" media="screen">
+  <link href="{% static 'css/main.css' %}" rel="stylesheet" media="screen">
+  <link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
+  <link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
+   <script src="https://unpkg.com/@sentry/browser@latest/build/bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+      const SENTRY_ENABLED = {% settings_value_bool 'SENTRY_ENABLED' %};
+      const SENTRY_USER_REPORTS = {% settings_value_bool 'SENTRY_USER_REPORTS' %};
+      const SENTRY_FRONTEND_DSN = "{% settings_value 'SENTRY_FRONTEND_DSN' %}";
+      const SENTRY_ENVIRONMENT = "{% settings_value 'SENTRY_ENVIRONMENT' %}";
+  </script>
+  <script src="{% static 'js/main-init-sentry.js' %}"></script>
+  {% block head %}{% endblock %}
 
-  </head>
-  <body>
+</head>
+<body>
 
 <!-- Subhead
 ================================================== -->
 <div class="artisan2">
-<div class="artisan">
-
-<div class="container">
-    <div class="row">
-
-	<div class="col-md-8 col-md-offset-2" id="content-holder">
-
-	{% block content %}
-
-	{% endblock %}
-	</div>
-</div>
-</div>
-</div>
+  <div class="artisan">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2" id="content-holder">
+          {% block content %}
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-	{% if event %}
-	  const event_start_date = new {% event_start_date event %};
-	{% endif %}
-	const IDEMPOTENCY_KEY = "{% idempotency_key %}";
+    {% if event %}
+        const event_start_date = new {% event_start_date event %};
+    {% endif %}
+    const IDEMPOTENCY_KEY = "{% idempotency_key %}";
 </script>
 
 <script src="{% static 'js/modernizr-custom.js' %}"></script>
@@ -50,8 +54,8 @@
 <script src="{% static 'js/validator.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
 
-{% block javascript  %}
+{% block javascript %}
 {% endblock %}
 
-  </body>
+</body>
 </html>

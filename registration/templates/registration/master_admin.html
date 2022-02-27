@@ -1,31 +1,38 @@
 <!DOCTYPE html>
-{% load static %}
+{% load static settings %}
 <html>
-  <head>
-    <title>APIS Register</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <title>APIS Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="{% static 'css/fontawesome-all-6.0.0-beta3.css' %}" rel="stylesheet">
-    <link href="{% static 'css/bootstrap-darkly.min.css' %}" rel="stylesheet" media="screen">
-    <link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
-    <link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
-    <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
-    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
+  <link href="{% static 'css/fontawesome-all-6.0.0-beta3.css' %}" rel="stylesheet">
+  <link href="{% static 'css/bootstrap-darkly.min.css' %}" rel="stylesheet" media="screen">
+  <link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
+  <link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
+  <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
+  <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
+  <script src="https://unpkg.com/@sentry/browser@latest/build/bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+      const SENTRY_ENABLED = {% settings_value_bool 'SENTRY_ENABLED' %};
+      const SENTRY_USER_REPORTS = {% settings_value_bool 'SENTRY_USER_REPORTS' %};
+      const SENTRY_FRONTEND_DSN = "{% settings_value 'SENTRY_FRONTEND_DSN' %}";
+      const SENTRY_ENVIRONMENT = "{% settings_value 'SENTRY_ENVIRONMENT' %}";
+  </script>
+  <script src="{% static 'js/main-init-sentry.js' %}"></script>
 
+  {% block head %}{% endblock %}
 
-    {% block head %}{% endblock %}
-
-  </head>
-  <body>
+</head>
+<body>
 
 <!-- Subhead
 ================================================== -->
 
 <div class="container">
 
-	{% block content %}
+  {% block content %}
 
-	{% endblock %}
+  {% endblock %}
 </div>
 
 <script src="{% static 'js/modernizr-custom.js' %}"></script>
@@ -38,9 +45,9 @@
 <script src="{% static 'js/handlebars.min-v4.7.7.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
 
-{% block javascript  %}
+{% block javascript %}
 
 {% endblock %}
 
-  </body>
+</body>
 </html>
