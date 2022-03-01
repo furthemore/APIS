@@ -330,11 +330,14 @@ admin.site.register(DealerAsst, DealerAsstAdmin)
 
 
 class DealerResource(resources.ModelResource):
+    badgeName = fields.Field()
+
     class Meta:
         model = Dealer
         fields = (
             "id",
             "event__name",
+            "badgeName",
             "attendee__firstName",
             "attendee__lastName",
             "attendee__address1",
@@ -373,6 +376,7 @@ class DealerResource(resources.ModelResource):
         export_order = (
             "id",
             "event__name",
+            "badgeName",
             "attendee__firstName",
             "attendee__lastName",
             "attendee__address1",
@@ -408,6 +412,12 @@ class DealerResource(resources.ModelResource):
             "discountReason",
             "emailed",
         )
+
+    def dehydrate_badgeName(self, obj):
+        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge is None:
+            return "--"
+        return badge.badgeName
 
 
 class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
@@ -482,7 +492,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         return "--"
 
     get_email.short_description = "Attendee Email"
- 
+
     def get_badge(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
         if badge is None:
@@ -490,6 +500,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         return badge.badgeName
 
     get_badge.short_description = "Badge Name"
+
 
 admin.site.register(Dealer, DealerAdmin)
 
