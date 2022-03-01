@@ -254,11 +254,14 @@ class DealerAsstInline(NestedTabularInline):
 
 
 class DealerAsstResource(resources.ModelResource):
+    badgeName = fields.Field()
+
     class Meta:
         model = DealerAsst
         fields = (
             "id",
             "name",
+            "badgeName",
             "email",
             "license",
             "event__name",
@@ -267,6 +270,24 @@ class DealerAsstResource(resources.ModelResource):
             "dealer__approved",
             "dealer__tableNumber",
         )
+        export_order = (
+            "id",
+            "name",
+            "badgeName",
+            "email",
+            "license",
+            "event__name",
+            "dealer__businessName",
+            "dealer__attendee__email",
+            "dealer__approved",
+            "dealer__tableNumber",
+        )
+
+    def dehydrate_badgeName(self, obj):
+        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge is None:
+            return "--"
+        return badge.badgeName
 
 
 def send_assistant_registration_email(modeladmin, request, queryset):
