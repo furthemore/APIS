@@ -7,7 +7,7 @@ Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 Stack:
   + Ubuntu 20.04 (LTS)
   + Postgres
-  + Python 3.7 - 3.9
+  + Python 3.8 - 3.10
   + Django 2.2
   + Bootstrap 3
   + jQuery 1.9
@@ -26,7 +26,7 @@ Stack:
     or label printer, with Unicode-supported fonts (Emoji!)
   + Protect admin and volunteer logins with TOTP 2-Factor or FIDO U2F.
 
-![Screenshot of Cash Register Position](https://i.imgur.com/8vB1m0q.png)
+![Screenshot of Cash Register Position](https://i.imgur.com/7iJSS8E.png)
 
 ## Quick start
 ### Running using Docker
