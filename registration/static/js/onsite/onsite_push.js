@@ -81,8 +81,10 @@ function load_shc_scan() {
     let id_scan = JSON.parse(localStorage.getItem("id_scan"));
     if (id_scan != null) {
         parsed.dob_matches = id_scan.dob == parsed.birthday;
+        parsed.name_matches = (id_scan.first + " " + id_scan.last).toUpperCase() == parsed.name.toUpperCase();
     } else {
         parsed.dob_matches = true;
+        parsed.name_matches = true;
     }
 
     let node = document.createElement("div");

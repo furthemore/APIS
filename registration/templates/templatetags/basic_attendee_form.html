@@ -131,7 +131,7 @@
           </select>
         </div>
 
-        <input type="hidden" name="birthDate" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}">
+        <input type="hidden" name="birthDate" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}{{ attendee.dob }}">
 
         <p><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#ageModal">Why do we need this?</button></p>
     </div>
