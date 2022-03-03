@@ -482,7 +482,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         return "--"
 
     get_email.short_description = "Attendee Email"
- 
+
     def get_badge(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
         if badge is None:
@@ -490,6 +490,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         return badge.badgeName
 
     get_badge.short_description = "Badge Name"
+
 
 admin.site.register(Dealer, DealerAdmin)
 
@@ -1315,6 +1316,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         "billingType",
         "status",
     )
+    search_fields = ["reference"]
     readonly_fields = ("createdDate",)
     save_on_top = True
     inlines = [OrderItemInline]
