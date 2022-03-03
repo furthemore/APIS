@@ -1,112 +1,119 @@
 {% extends "registration/master_admin.html" %}
 {% load admin_urls static settings %}
 {% block head %}
-  <link rel="stylesheet" href="{% static 'css/onsite-admin.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/onsite-admin.css' %}"/>
 {% endblock %}
 {% block content %}
 
 
-    <div class="row">
-        <div class="col-sm-6">
-            <h2><a href="{% url 'registration:onsite_admin' %}">APIS Register</a></h2>
-        </div>
-        <div class="col-sm-2 col-sm-offset-2 col-top">
-            <form class="form-inline" id="terminal_form" method="get">
-                <label for="pos" class="sr-only">Register Position</label>
-                <select class="form-control" id="pos" name="terminal">
-                {% for terminal in terminals %}
-                  {% if request.session.terminal == terminal.id %}
-                    <option selected value="{{ terminal.id }}">{{ terminal.name }}</option>
-                  {% else %}
-                    <option value="{{ terminal.id }}">{{ terminal.name }}</option>
-                  {% endif %}
-                {% endfor %}
-                </select>
-            </form>
-        </div>
-        <div class="col-sm-2 col-top">
-          <div class="row">
-            <div class="col-sm-4">
-                <div class="dropdown">
-                    <button id="options" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="user">
-                        <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
-                        <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
-			{% if perms.registration.cash_admin %}
-			<li role="separator" class="divider"></li>
-                    	<li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
-                    	<li><a href="#" id="cash-deposit">Cash Deposit <i class="fas fa-plus right"></i></a></li>
-                    	<li><a href="#" id="safe-drop">Safe Drop <i class="bi-safe-fill right"></i></a></li>
-                    	<li><a href="#" id="cash-pickup">Cash Pickup <i class="fas fa-minus right"></i></a></li>
-                    	<li><a href="#" id="close-drawer">Close Drawer <i class="fas fa-store-alt-slash right"></i></a></li>
-                      <li><a href="#" id="no-sale">No Sale <i class="fas fa-blender-phone right fa-spin" style="color: var(--white); --fa-animation-duration:2s;"></i></a></li>
-			{% endif %}
-                    </ul>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="dropdown">
-                    <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-user"></i><span class="sr-only">User options</span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="user">
-                        <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsite_admin' %}">Sign Out <i class="fas fa-sign-out-alt right"></i></a></li>
-                    </ul>
-                </div>
-            </div>
-
+  <div class="row">
+    <div class="col-sm-6">
+      <h2><a href="{% url 'registration:onsite_admin' %}">APIS Register</a></h2>
+    </div>
+    <div class="col-sm-2 col-sm-offset-2 col-top">
+      <form class="form-inline" id="terminal_form" method="get">
+        <label for="pos" class="sr-only">Register Position</label>
+        <select class="form-control" id="pos" name="terminal">
+          {% for terminal in terminals %}
+            {% if request.session.terminal == terminal.id %}
+              <option selected value="{{ terminal.id }}">{{ terminal.name }}</option>
+            {% else %}
+              <option value="{{ terminal.id }}">{{ terminal.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    <div class="col-sm-2 col-top">
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="dropdown">
+            <button id="options" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+              <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="user">
+              <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
+              <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+              {% if perms.registration.cash_admin %}
+                <li role="separator" class="divider"></li>
+                <li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
+                <li><a href="#" id="cash-deposit">Cash Deposit <i class="fas fa-plus right"></i></a></li>
+                <li><a href="#" id="safe-drop">Safe Drop <i class="bi-safe-fill right"></i></a></li>
+                <li><a href="#" id="cash-pickup">Cash Pickup <i class="fas fa-minus right"></i></a></li>
+                <li><a href="#" id="close-drawer">Close Drawer <i class="fas fa-store-alt-slash right"></i></a></li>
+                <li><a href="#" id="no-sale">No Sale <i class="fas fa-blender-phone right fa-spin"
+                                                        style="color: var(--white); --fa-animation-duration:2s;"></i></a>
+                </li>
+              {% endif %}
+            </ul>
           </div>
         </div>
+        <div class="col-sm-4">
+          <div class="dropdown">
+            <button id="user" type="button" class="btn btn-default" data-toggle="dropdown" aria-haspopup="true"
+                    aria-expanded="false">
+              <i class="fas fa-user"></i><span class="sr-only">User options</span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="user">
+              <li><a href="{% url 'registration:logout' %}?next={% url 'registration:onsite_admin' %}">Sign Out <i
+                  class="fas fa-sign-out-alt right"></i></a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
 
-    <hr>
+  <hr>
 
-    {% for error in errors %}
+  {% for error in errors %}
     <div class="alert alert-{{ error.type }}" role="alert">{{ error.text }}</div>
-    {% endfor %}
+  {% endfor %}
 
-    <div class="alert alert-danger" id="client-error">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span class="sr-only">Error:</span>
-      <b>There was a problem while connecting to the server.</b>
-       <a class="alert-link" href="{% url 'registration:onsite_admin' %}">Reload</a>
-    </div>
+  <div class="alert alert-danger" id="client-error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span class="sr-only">Error:</span>
+    <b>There was a problem while connecting to the server.</b>
+    <a class="alert-link" href="{% url 'registration:onsite_admin' %}">Reload</a>
+  </div>
 
-    <div class="row">
-      <div class="col-md-6">
-        <div class="row">
-          <div class="col-md-12">
-            <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" id="search_form" method="get">
-                <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
-                <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
-                    autofocus="autofocus" autocomplete="off" name="search">
-                <button class="btn btn-default my-2 my-sm-0" type="submit">
-                    Search <i class="fas fa-search"></i>
-                </button>
-                <a href="{% url 'registration:onsite' %}" class="btn btn-success my-2 my-sm-0" target="_blank">
-                    Add Attendee <i class="fas fa-plus-circle"></i>
-                </a>
-            </form>
-          </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-12">
+          <form class="form-inline my-lg-0" action="{% url 'registration:onsite_admin' %}" id="search_form"
+                method="get">
+            <input type="hidden" id="terminal" name="terminal" value="{{ request.session.terminal }}">
+            <input class="form-control mr-sm-2" type="text" placeholder="Search attendee"
+                   autofocus="autofocus" autocomplete="off" name="search">
+            <button class="btn btn-default my-2 my-sm-0" type="submit">
+              Search <i class="fas fa-search"></i>
+            </button>
+            <a href="{% url 'registration:onsite' %}" class="btn btn-success my-2 my-sm-0" target="_blank">
+              Add Attendee <i class="fas fa-plus-circle"></i>
+            </a>
+          </form>
         </div>
-        <div class="row">
-          <div class="panel panel-default">
-            <div class="panel-heading">Search results</div>
+      </div>
+      <div class="row">
+        <div class="panel panel-default">
+          <div class="panel-heading">Search results</div>
 
+          <div id="search-results">
             <table class="table table-striped">
-              <col style="width: 40%">
+              <col style="width: 35%">
               <col style="width: 25%">
               <col style="width: 15%">
-              <col style="width: 20%">
+              <col style="width: 25%">
               <thead>
-                <tr>
-                  <th>Legal Name</th>
-                  <th>Badge Name</th>
-                  <th>Status</th>
-                  <th><span class="sr-only">Action</span></th>
-                </tr>
+              <tr>
+                <th>Legal Name</th>
+                <th>Badge Name</th>
+                <th>Status</th>
+                <th><span class="sr-only">Action</span></th>
+              </tr>
               </thead>
               <tbody>
               {% for badge in results %}
@@ -114,14 +121,16 @@
                   <td class="results">
                     {{ badge.attendee.firstName }} {{ badge.attendee.lastName }}<br>
                     {% if badge.attendee.preferredName %}
-                      <i>Preferred Name:</i> <b>{{  badge.attendee.preferredName }}</b>
+                      <i>Preferred Name:</i> <b>{{ badge.attendee.preferredName }}</b>
                     {% endif %}
                   </td>
                   <td class="results">{{ badge.badgeName }}</td>
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
-                    <a target="_blank" href="{% url 'admin:registration_badge_change' badge.id %}" class="btn btn-info" title="Edit attendee"><i class="fas fa-edit"></i></a>
-                      <a href="#" class="btn btn-success add-badge" data-id="{{ badge.id }}" title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
+                    <a target="_blank" href="{% url 'admin:registration_badge_change' badge.id %}" class="btn btn-info"
+                       title="Edit attendee"><i class="fas fa-edit"></i></a>
+                    <a href="#" class="btn btn-success add-badge" data-id="{{ badge.id }}"
+                       title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
                   </td>
                 </tr>
               {% endfor %}
@@ -129,88 +138,93 @@
             </table>
           </div>
         </div>
-
-        <div class="panel panel-default" id="scan-panel">
-          <div class="panel-heading">
-            Scanner history
-            <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
-          </div>
-          <div id="scan-log"></div>
-        </div>
       </div>
-      <div class="col-md-6">
-        <div class="well">
+
+      <div class="panel panel-default" id="scan-panel">
+        <div class="panel-heading">
+          Scanner history
+          <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
+        </div>
+        <div id="scan-log"></div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="well">
         <div class="alert alert-danger" id="cart-error" role="alert">
           An error occurred.
         </div>
-          <div class="row"><div class="col-md-8">
+        <div class="row">
+          <div class="col-md-8">
             <h2>Cart&nbsp;
               <a id="refresh_button" href="#" title="Refresh">
                 <i class="fas fa-sync"></i><span class="sr-only">Refresh</span>
               </a>
             </h2>
-          </div><div class="col-md-4" style="margin-top: 20px">
-            <a href="{% url 'registration:onsite_admin_clear_cart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}" class="btn btn-danger right">Clear</a>
-          </div></div>
-          <div id="cart"></div>
-          <div class="total" id="total"></div>
+          </div>
+          <div class="col-md-4" style="margin-top: 20px">
+            <a href="{% url 'registration:onsite_admin_clear_cart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}"
+               class="btn btn-danger right">Clear</a>
+          </div>
+        </div>
+        <div id="cart"></div>
+        <div class="total" id="total"></div>
 
-            <div class="row button-group">
-                <div class="col-md-6">
-                    {% if perms.registration.cash %}
-                    <button class="btn btn-block btn-primary" id="cash_button" disabled>
-                        <i class="fas fa-money-bill-alt"></i> Tender Cash
-                    </button>
-                  {% endif %}
-                </div>
-                <div class="col-md-6">
-                    <button class="btn btn-block btn-warning" id="credit_button" disabled>
-                        <i class="fas fa-credit-card"></i> Credit/Debit
-                    </button>
-                </div>
-            </div>
-            <div class="row button-group">
-              <div class="col-md-6">
-                <button class="btn btn-block btn-primary" id="print_button" disabled>
-                  <i class="fas fa-print"></i> Print Badges
-                </button>
-              </div>
+        <div class="row button-group">
+          <div class="col-md-6">
+            {% if perms.registration.cash %}
+              <button class="btn btn-block btn-primary" id="cash_button" disabled>
+                <i class="fas fa-money-bill-alt"></i> Tender Cash
+              </button>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-block btn-warning" id="credit_button" disabled>
+              <i class="fas fa-credit-card"></i> Credit/Debit
+            </button>
+          </div>
+        </div>
+        <div class="row button-group">
+          <div class="col-md-6">
+            <button class="btn btn-block btn-primary" id="print_button" disabled>
+              <i class="fas fa-print"></i> Print Badges
+            </button>
+          </div>
 
-              <div class="col-md-6">
-                <button class="btn btn-block btn-primary" id="print_preview" disabled>
-                  <i class="fas fa-file-pdf"></i> Print Preview
-                </button>
-              </div>
-            </div>
-
-            {% if perms.registration.discount %}
-            <div class="row">
-              <div class="col-md-6">
-                <button class="btn btn-block btn-primary" id="receipt_button" disabled>
-                  <i class="fas fa-receipt"></i> Print Receipt
-                </button>
-              </div>
-
-                <div class="col-md-6">
-                <button class="btn btn-block btn-danger" id="discount_button">
-                    <i class="fas fa-tag"></i> Discount
-                </button>
-                </div>
-            </div>
-          {% else %}
-            <div class="row">
-              <div class="col-md-12">
-                <button class="btn btn-block btn-primary" id="receipt_button" disabled>
-                  <i class="fas fa-receipt"></i> Print Receipt
-                </button>
-              </div>
-            </div>
-          {% endif %}
-
+          <div class="col-md-6">
+            <button class="btn btn-block btn-primary" id="print_preview" disabled>
+              <i class="fas fa-file-pdf"></i> Print Preview
+            </button>
+          </div>
         </div>
 
+        {% if perms.registration.discount %}
+          <div class="row">
+            <div class="col-md-6">
+              <button class="btn btn-block btn-primary" id="receipt_button" disabled>
+                <i class="fas fa-receipt"></i> Print Receipt
+              </button>
+            </div>
+
+            <div class="col-md-6">
+              <button class="btn btn-block btn-danger" id="discount_button">
+                <i class="fas fa-tag"></i> Discount
+              </button>
+            </div>
+          </div>
+        {% else %}
+          <div class="row">
+            <div class="col-md-12">
+              <button class="btn btn-block btn-primary" id="receipt_button" disabled>
+                <i class="fas fa-receipt"></i> Print Receipt
+              </button>
+            </div>
+          </div>
+        {% endif %}
+
       </div>
+
     </div>
+  </div>
 
   <!-- Modal -->
   <div class="modal fade" id="info_modal" tabindex="-1" aria-labelledby="info_modal_label" aria-hidden="true">
@@ -221,21 +235,23 @@
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
-          </div>
-          <div class="modal-body">
-            ...
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
-          </div>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
         </div>
       </div>
     </div>
+  </div>
 
   <script type="text/html" id="itemRowTemplate">
     <tr>
-      <td><span data-content="quantity"></span> &times; <span data-content="item"></span> (@<span data-content="price"></span>)</td>
+      <td><span data-content="quantity"></span> &times; <span data-content="item"></span> (@<span
+          data-content="price"></span>)
+      </td>
       <td><span data-content="total"></span></td>
     </tr>
   </script>
@@ -253,26 +269,26 @@
       </div>
       <table class="table cart-table">
         <thead>
-          <tr data-class="state">
-            <th>Badge Name</th>
-            <th>Level</th>
-            <th>Price</th>
-           </tr>
+        <tr data-class="state">
+          <th>Badge Name</th>
+          <th>Level</th>
+          <th>Price</th>
+        </tr>
         </thead>
         <tbody>
-          <tr data-class="state">
-            <td data-content="badgeName"></td>
-            <td data-content="level"></td>
-            <td><span class="price-line" data-content="price"></span></td>
-          </tr>
+        <tr data-class="state">
+          <td data-content="badgeName"></td>
+          <td data-content="level"></td>
+          <td><span class="price-line" data-content="price"></span></td>
+        </tr>
         </tbody>
       </table>
       <table class="table">
         <thead>
-          <tr data-class="state">
-            <th>Order Item</th>
-            <th>Price</th>
-           </tr>
+        <tr data-class="state">
+          <th>Order Item</th>
+          <th>Price</th>
+        </tr>
         </thead>
         <tbody data-id="items_id"></tbody>
       </table>
@@ -315,7 +331,10 @@
         </button>
       </div>
       <div class="panel-body">
-        <a href="#"><strong>{{ first }} {{ middle }} {{ last }}</strong></a>
+        <a href="{% endverbatim %}{% url 'registration:onsite' %}{% verbatim %}?firstName={{first}}&lastName={{last}}&dob={{dob}}&address1={{address}}&address2={{address2}}&city={{city}}&state={{state}}&postalCode={{ZIP}}"
+           target="blank" class="" title="Add attendee">
+        <i class="fa-solid fa-user-plus"></i> <strong>{{ first }} {{ last }}</strong>
+        </a>
         <span class="right"><i class="fas fa-cake-candles"></i> {{ dob }} ({{ age }} years)</span>
       </div>
     </div>
@@ -332,48 +351,54 @@
     </div>
   </script>
 
-
   <script type="text/x-handlebars-template" id="shc-template">
     <div class="panel panel-{{verification.class}}">
       <div class="panel-heading">
         <i class="fa-solid fa-syringe"></i> Vaccination Record - {{ verification.status }}
-        <button type="button" class="close close-panel" aria-label="Close" data-item="shc_scan"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close close-panel" aria-label="Close" data-item="shc_scan"><span
+            aria-hidden="true">&times;</span></button>
       </div>
       <div class="panel-body">
-        <strong>{{ name }}</strong>
-        {{#unless this.dob_matches }}
-          <span class="right text-danger" title="Does not match ID"><i class="fa-solid fa-calendar-xmark"></i> {{ birthday }}<br></span>
+        {{#unless this.name_matches}}
+        <span class="text-warning" title="Name does not match ID">
+          <i class="fa-solid fa-triangle-exclamation"></i> <strong>{{ name }}</strong>
+        </span>
         {{else}}
-          <span class="right"><i class="fas fa-cake-candles"></i> {{ birthday }}<br></span>
+        <strong>{{ name }}</strong>
+        {{/unless}}
+        {{#unless this.dob_matches }}
+        <span class="right text-danger" title="Does not match ID"><i class="fa-solid fa-calendar-xmark"></i> {{ birthday }}<br></span>
+        {{else}}
+        <span class="right"><i class="fas fa-cake-candles"></i> {{ birthday }}<br></span>
         {{/unless}}
         <table class="table table-condensed">
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Vaccine</th>
-              <th>Lot</th>
-            </tr>
+          <tr>
+            <th>Date</th>
+            <th>Vaccine</th>
+            <th>Lot</th>
+          </tr>
           </thead>
           <tbody>
-            {{#each vaccines}}
-            {{#if this.cls}}
-            <tr class="{{this.cls}}" title="Vaccine dose was {{this.age}} days ago.">
+          {{#each vaccines}}
+          {{#if this.cls}}
+          <tr class="{{this.cls}}" title="Vaccine dose was {{this.age}} days ago.">
             {{else}}
-            <tr>
+          <tr>
             {{/if}}
-              <td title="{{ this.age }} days">{{ this.date }}</td>
-              <td>{{ this.name }}</td>
-              <td>{{ this.lotNumber }}</td>
-            </tr>
-            {{/each}}
+            <td title="{{ this.age }} days">{{ this.date }}</td>
+            <td>{{ this.name }}</td>
+            <td>{{ this.lotNumber }}</td>
+          </tr>
+          {{/each}}
           </tbody>
         </table>
         {{#if verification.trusted}}
-          <span class="text-success" title="Issuer is in the Common Trust">
+        <span class="text-success" title="Issuer is in the VCI Common Trust">
             <i class="fa-solid fa-shield"></i> Issuer: {{verification.issuer}}
           </span>
         {{else}}
-          <span class="text-danger" title="Issuer is not in the Common Trust">
+        <span class="text-danger" title="Issuer is not in the VCI Common Trust">
             <i class="fa-solid fa-square-xmark"></i> <b>Not Trusted</b>: {{verification.issuer}}
           </span>
         {{/if}}
@@ -395,43 +420,43 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
-const DEBUG = {% settings_value_bool 'DEBUG' %};
+  <script>
+      const DEBUG = {% settings_value_bool 'DEBUG' %};
 
-const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assign_badge_number' %}";
-const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsite_print_badges' %}";
-const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsite_admin_clear_cart' %}";
-const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsite_admin_cart' %}";
-const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsite_add_to_cart' %}";
-const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsite_remove_from_cart' %}";
-const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:open_terminal' %}";
-const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:close_terminal' %}";
-const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:open_drawer' %}";
-const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cash_deposit' %}";
-const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safe_drop' %}";
-const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cash_pickup' %}";
-const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:close_drawer' %}";
-const URL_REGISTRATION_NO_SALE = "{% url 'registration:no_sale' %}";
-const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enable_payment' %}";
-const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:complete_cash_transaction' %}";
-const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
-const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
+      const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assign_badge_number' %}";
+      const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsite_print_badges' %}";
+      const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsite_admin_clear_cart' %}";
+      const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsite_admin_cart' %}";
+      const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsite_add_to_cart' %}";
+      const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsite_remove_from_cart' %}";
+      const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:open_terminal' %}";
+      const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:close_terminal' %}";
+      const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:open_drawer' %}";
+      const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cash_deposit' %}";
+      const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safe_drop' %}";
+      const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cash_pickup' %}";
+      const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:close_drawer' %}";
+      const URL_REGISTRATION_NO_SALE = "{% url 'registration:no_sale' %}";
+      const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enable_payment' %}";
+      const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:complete_cash_transaction' %}";
+      const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
+      const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
 
-// MQTT credentials for in-browser push notifications
-const MQTT_ENABLED = {% if mqtt_auth %}true{% else %}false{% endif %};
-const MQTT_OPTIONS = {
-    username: "{{ mqtt_auth.user }}",
-    password: "{{ mqtt_auth.token }}",
-    clientId: "{{ mqtt_auth.user}}-" + Math.random().toString(16).substr(2, 8),
-    clean: true,
-};
+      // MQTT credentials for in-browser push notifications
+      const MQTT_ENABLED = {% if mqtt_auth %}true{% else %}false{% endif %};
+      const MQTT_OPTIONS = {
+          username: "{{ mqtt_auth.user }}",
+          password: "{{ mqtt_auth.token }}",
+          clientId: "{{ mqtt_auth.user}}-" + Math.random().toString(16).substr(2, 8),
+          clean: true,
+      };
 
-const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
-const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
+      const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
+      const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
 
-</script>
+  </script>
 
-<script src="{% static 'js/mqtt.min.js' %}"></script>
-<script src="{% static 'js/onsite/onsite_push.js' %}"></script>
-<script src="{% static 'js/onsite/onsite_admin.js' %}"></script>
+  <script src="{% static 'js/mqtt.min.js' %}"></script>
+  <script src="{% static 'js/onsite/onsite_push.js' %}"></script>
+  <script src="{% static 'js/onsite/onsite_admin.js' %}"></script>
 {% endblock %}

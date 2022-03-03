@@ -6,7 +6,13 @@ from decimal import Decimal
 from django.shortcuts import render
 from django.utils import timezone
 
-from registration.models import Cart, Discount, Event, PriceLevel, PriceLevelOption
+from registration.models import (
+    Cart,
+    Discount,
+    Event,
+    PriceLevel,
+    PriceLevelOption,
+)
 from registration.views.common import clear_session
 
 from .ordering import getTotal
@@ -27,7 +33,6 @@ def onsite(request):
 def onsite_cart(request):
     sessionItems = request.session.get("cart_items", [])
     cartItems = list(Cart.objects.filter(id__in=sessionItems))
-    orderItems = request.session.get("order_items", [])
     discount = request.session.get("discount", "")
 
     if not cartItems:
