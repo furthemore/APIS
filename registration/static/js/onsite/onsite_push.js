@@ -121,7 +121,11 @@ $(document).ready(function () {
 })
 
 if (MQTT_ENABLED) {
-    let notification_promise = Notification.requestPermission();
+    try {
+        let notification_promise = Notification.requestPermission();
+    } catch {
+        console.log("Notification permission request failed");
+    }
 
     const client = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
 

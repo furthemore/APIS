@@ -24,7 +24,7 @@ def onsite(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"event": event}
+    context = {"event": event, "onsite": True}
     if event.onsiteRegStart <= today <= event.onsiteRegEnd:
         return render(request, "registration/onsite.html", context)
     return render(request, "registration/closed.html", context)
