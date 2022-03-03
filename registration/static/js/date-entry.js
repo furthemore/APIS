@@ -31,7 +31,17 @@ $(document).ready(function (e) {
     $('#birthDate').val(bday);
   });
 
-  var day = $('#bday').val();
-  $('#bmonth').change();
-  $('#bday').val(day);
+  // Populate from passed in hidden field
+  let dob = $("#birthDate").val();
+  let [year, month, day] = dob.split('-');
+  if (year) {
+    $("#byear").val(year);
+    $("#bmonth").val(month);
+    $('#bmonth').change();
+    $("#bday").val(day);
+  } else {
+    day = $('#bday').val();
+    $('#bmonth').change();
+    $('#bday').val(day);
+  }
 });
