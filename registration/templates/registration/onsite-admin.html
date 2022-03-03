@@ -331,7 +331,10 @@
         </button>
       </div>
       <div class="panel-body">
-        <a href="#"><strong>{{ first }} {{ middle }} {{ last }}</strong></a>
+        <a href="{% endverbatim %}{% url 'registration:onsite' %}{% verbatim %}?firstName={{first}}&lastName={{last}}&dob={{dob}}&address1={{address}}&address2={{address2}}&city={{city}}&state={{state}}&postalCode={{ZIP}}"
+           target="blank" class="" title="Add attendee">
+        <i class="fa-solid fa-user-plus"></i> <strong>{{ first }} {{ last }}</strong>
+        </a>
         <span class="right"><i class="fas fa-cake-candles"></i> {{ dob }} ({{ age }} years)</span>
       </div>
     </div>
@@ -348,7 +351,6 @@
     </div>
   </script>
 
-
   <script type="text/x-handlebars-template" id="shc-template">
     <div class="panel panel-{{verification.class}}">
       <div class="panel-heading">
@@ -357,7 +359,13 @@
             aria-hidden="true">&times;</span></button>
       </div>
       <div class="panel-body">
+        {{#unless this.name_matches}}
+        <span class="text-warning" title="Name does not match ID">
+          <i class="fa-solid fa-triangle-exclamation"></i> <strong>{{ name }}</strong>
+        </span>
+        {{else}}
         <strong>{{ name }}</strong>
+        {{/unless}}
         {{#unless this.dob_matches }}
         <span class="right text-danger" title="Does not match ID"><i class="fa-solid fa-calendar-xmark"></i> {{ birthday }}<br></span>
         {{else}}

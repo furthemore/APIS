@@ -1347,6 +1347,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         "billingType",
         "status",
     )
+    search_fields = ["reference"]
     readonly_fields = ("createdDate",)
     save_on_top = True
     inlines = [OrderItemInline]

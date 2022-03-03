@@ -1,6 +1,8 @@
+import base64
 import json
 import logging
 import time
+import uuid
 from datetime import datetime
 from decimal import Decimal
 
@@ -21,6 +23,7 @@ from registration.admin import TWOPLACES
 from registration.models import (
     Badge,
     Cashdrawer,
+    Discount,
     Event,
     Firebase,
     Order,
@@ -416,7 +419,6 @@ def complete_square_transaction(request):
     #   serverTransactionId (online payments)
 
     try:
-        # order = Order.objects.get(reference=reference)
         orders = Order.objects.filter(reference=reference).prefetch_related()
     except Order.DoesNotExist:
         logger.error("No order matching reference {0}".format(reference))
@@ -428,21 +430,7 @@ def complete_square_transaction(request):
             status=404,
         )
 
-    # If there is more than one order, we should flatten them into one by reassigning all these
-    # orderItems to the first order, and deleting the rest.
-    first_order = orders[0]
-    if len(orders) > 1:
-
-        order_items = []
-        for order in orders[1:]:
-            order_items += order.orderitem_set.all()
-
-        for order_item in order_items:
-            old_order = order_item.order
-            order_item.order = first_order
-            logger.warning("Deleting old order id={0}".format(old_order.id))
-            old_order.delete()
-            order_item.save()
+    combine_orders(orders)
 
     store_api_data = {
         "onsite": {
@@ -480,15 +468,35 @@ def complete_square_transaction(request):
     order.apiData = json.dumps(store_api_data)
     order.save()
 
-    status, errors = payments.refresh_payment(order, store_api_data)
-
-    if not status:
-        return JsonResponse({"success": False, "error": errors,}, status=210)
+    if serverTransactionId:
+        status, errors = payments.refresh_payment(order, store_api_data)
+        if not status:
+            return JsonResponse({"success": False, "error": errors}, status=210)
 
     return JsonResponse({"success": True})
 
 
-# json.dumps(the_thing, cls=JSONDecimalEncoder)
+def combine_orders(orders):
+    # If there is more than one order, we should flatten them into one by reassigning all these
+    # orderItems to the first order, and delete the rest.
+    first_order = orders[0]
+    if len(orders) > 1:
+
+        order_items = []
+        for order in orders[1:]:
+            order_items += order.orderitem_set.all()
+            first_order.notes += (
+                f"\n[Combined from order reference {order.reference}]\n{order.notes}\n"
+            )
+
+        for order_item in order_items:
+            old_order = order_item.order
+            order_item.order = first_order
+            logger.warning("Deleting old order id={0}".format(old_order.id))
+            old_order.delete()
+            order_item.save()
+
+        first_order.save()
 
 
 @staff_member_required
@@ -602,7 +610,7 @@ def complete_cash_transaction(request):
         )
 
     try:
-        order = Order.objects.get(reference=reference)
+        orders = Order.objects.filter(reference=reference).prefetch_related()
     except Order.DoesNotExist:
         return JsonResponse(
             {
@@ -612,6 +620,9 @@ def complete_cash_transaction(request):
             status=404,
         )
 
+    combine_orders(orders)
+
+    order = orders[0]
     order.billingType = Order.CASH
     order.status = Order.COMPLETED
     order.settledDate = timezone.now()
@@ -941,6 +952,53 @@ def onsite_admin_clear_cart(request):
     return onsite_admin(request)
 
 
+def get_b32_uuid():
+    uid = base64.b32encode(uuid.uuid4().bytes)
+    return uid[:26]
+
+
 @staff_member_required
+@permission_required("order.discount")
 def create_discount(request):
-    JsonResponse({"success": True})
+    # e.g '$10.00' or '10%'
+    amount = request.POST.get("amount")
+    amount_off = Decimal("0")
+    percent_off = 0
+
+    try:
+        if amount.startswith("$"):
+            amount_off = Decimal(amount[1:])
+        elif amount.startswith("%"):
+            percent_off = int(amount[1:])
+    except ValueError as e:
+        return JsonResponse({"success": False, "reason": str(e)}, status=400)
+
+    cart = request.session.get("cart", None)
+    if cart is None:
+        request.session["cart"] = []
+        return JsonResponse(
+            {"success": False, "message": "Cart not initialized"}, status=400
+        )
+
+    discount = Discount(
+        codeName=get_b32_uuid(),
+        percentOff=percent_off,
+        amountOff=amount_off,
+        startDate=timezone.now(),
+        endDate=timezone.now() + datetime.timedelta(hours=1),
+        notes=f"Applied by [{request.user}]",
+        oneTime=True,
+        used=1,
+        reason="Onsite admin discount",
+    )
+    discount.save()
+
+    # Combine cart orders and apply discount to combined order
+    badges = Badge.objects.filter(pk__in=cart)
+    orders = [badge.getOrder() for badge in badges]
+    combine_orders(orders)
+
+    orders[0].discount = discount
+    orders[0].save()
+
+    JsonResponse({"success": True, "order": orders[0].pk})
