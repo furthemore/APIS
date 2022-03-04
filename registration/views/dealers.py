@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from django.forms import model_to_dict
-from django.http import HttpResponse, HttpResponseServerError, JsonResponse
+from django.http import HttpResponse, HttpResponseServerError, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -113,7 +113,7 @@ def findDealer(request):
             attendee__email__iexact=email, registrationToken=token
         )
     except Dealer.DoesNotExist:
-        return HttpResponseServerError("No Dealer Found " + email)
+        return HttpResponseNotFound("No Dealer Found " + email)
 
     request.session["dealer_id"] = dealer.id
     return JsonResponse({"success": True, "message": "DEALER"})
@@ -135,7 +135,7 @@ def find_dealer_to_add_assistant_post(request):
             attendee__email__iexact=email, registrationToken=token
         )
     except Dealer.DoesNotExist:
-        return HttpResponseServerError("No dealer found")
+        return HttpResponseNotFound("No dealer found")
 
     request.session["dealer_id"] = dealer.pk
     return JsonResponse(
@@ -157,7 +157,7 @@ def findAsstDealer(request):
             email__iexact=email, registrationToken=token
         )
     except DealerAsst.DoesNotExist:
-        return HttpResponseServerError("No assistant dealer found")
+        return HttpResponseNotFound("No assistant dealer found")
 
     # Check if they've already registered:
     if dealer_assistant.attendee is not None:
