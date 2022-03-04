@@ -49,10 +49,12 @@ logger = logging.getLogger(__name__)
 
 def get_active_terminal(request):
     term_id = request.session.get("terminal")
-    try:
-        return Firebase.objects.get(pk=int(term_id))
-    except Firebase.DoesNotExist:
-        return None
+    if term_id:
+        try:
+            return Firebase.objects.get(pk=int(term_id))
+        except Firebase.DoesNotExist:
+            return None
+    return None
 
 
 @staff_member_required

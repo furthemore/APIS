@@ -31,7 +31,7 @@ class PushyAPI:
         try:
             # Actually send the push
             response = urllib.request.urlopen(req, json.dumps(postData).encode("utf-8"))
-        except urllib.error.HTTPError as e:
+        except (urllib.error.HTTPError, urllib.request.HTTPError) as e:
             # Print response errors
             error_message = f"Pushy API returned HTTP error {e.code} {e.read()}"
             logger.error(error_message)
