@@ -463,10 +463,13 @@ def complete_square_transaction(request):
 
     order.status = Order.COMPLETED
     order.settledDate = timezone.now()
-    order.notes = json.dumps(store_api_data)
 
     order.apiData = json.dumps(store_api_data)
     order.save()
+
+    # Async notify the frontend to refresh the cart
+    logger.info("Refreshing admin cart")
+    admin_push_cart_refresh(request)
 
     if serverTransactionId:
         status, errors = payments.refresh_payment(order, store_api_data)
