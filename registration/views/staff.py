@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from django.forms import model_to_dict
-from django.http import HttpResponseServerError, JsonResponse
+from django.http import HttpResponseServerError, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render
 
 import registration.emails
@@ -29,7 +29,7 @@ def findNewStaff(request):
 
         token = TempToken.objects.get(email__iexact=email, token=token)
         if not token:
-            return HttpResponseServerError("No Staff Found")
+            return HttpResponseNotFound("No Staff Found")
 
         if token.validUntil < timezone.now():
             return HttpResponseServerError("Invalid Token")
@@ -155,7 +155,7 @@ def findStaff(request):
             attendee__email__iexact=email, registrationToken=token
         )
         if not staff:
-            return HttpResponseServerError("No Staff Found")
+            return HttpResponseNotFound("No Staff Found")
 
         request.session["staff_id"] = staff.id
         return JsonResponse({"success": True, "message": "STAFF"})
