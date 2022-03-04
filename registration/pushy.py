@@ -39,4 +39,5 @@ class PushyAPI:
 
 
 class PushyError(Exception):
-    pass
+    def __init__(self, message=None):
+        self.message = message
