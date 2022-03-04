@@ -157,6 +157,7 @@ def getDiscountTotal(disc, subtotal):
             return discount.amountOff
         elif discount.percentOff:
             return Decimal(float(subtotal) * float(discount.percentOff) / 100)
+    return 0
 
 
 def getTotal(cartItems, orderItems, disc=""):
