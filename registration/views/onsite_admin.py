@@ -217,6 +217,7 @@ def send_message_to_terminal(request, data):
 @staff_member_required
 def enable_payment(request):
     cart = request.session.get("cart", None)
+    terminal = get_active_terminal(request)
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
@@ -251,6 +252,8 @@ def enable_payment(request):
     onsite_admin_cart(request)
 
     data = {"command": "process_payment"}
+    if terminal:
+        data["terminal"] = terminal.pk
     return send_message_to_terminal(request, data)
 
 
@@ -468,10 +471,6 @@ def complete_square_transaction(request):
 
     order.apiData = json.dumps(store_api_data)
     order.save()
-
-    # Async notify the frontend to refresh the cart
-    logger.info("Refreshing admin cart")
-    admin_push_cart_refresh(request)
 
     if serverTransactionId:
         status, errors = payments.refresh_payment(order, store_api_data)
