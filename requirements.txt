@@ -3,7 +3,7 @@ django-mathfilters~=0.4.0
 # There is a bug that affects the Django 2 update, a fix has been accepted
 # and we are waiting for it to be merged and released by the maintainer
 #django-nested-inline~=0.4.4
-git+git://github.com/grebble-team/django-nested-inline.git@3ac625f
+git+https://github.com/grebble-team/django-nested-inline.git@0.4.3
 django-import-export~=1.1.0
 psycopg2-binary==2.8.6
 configobj==5.0.6
@@ -15,7 +15,7 @@ squareup==4.1.0.20200122
 django-u2f~=1.0.0
 django-maintenance-mode==0.14.0
 Pillow>=5.3
-PyJWT~=2.3.0
+PyJWT~=2.4.0
 influxdb~=5.2.3          # Influx < v1.7
 influxdb-client~=1.25.0  # Influxdb 1.8, 2.x
 Werkzeug==0.15.3
