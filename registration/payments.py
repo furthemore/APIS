@@ -305,9 +305,12 @@ def get_payments_from_order_id(order_id):
     :return: list of payment IDs, or None if there was an error
     """
 
-    body = {"order_ids": [order_id,]}
+    body = {
+        "order_ids": [order_id,],
+        "location_id": settings.SQUARE_LOCATION_ID,
+    }
 
-    result = orders_api.batch_retrieve_orders(settings.SQUARE_LOCATION_ID, body)
+    result = orders_api.batch_retrieve_orders(body)
 
     if result.is_success():
         if result.body:
