@@ -1,36 +1,26 @@
-django~=2.2
-django-mathfilters~=0.4.0
-# There is a bug that affects the Django 2 update, a fix has been accepted
-# and we are waiting for it to be merged and released by the maintainer
-#django-nested-inline~=0.4.4
-git+https://github.com/grebble-team/django-nested-inline.git@0.4.3
-django-import-export~=1.1.0
-psycopg2-binary==2.8.6
 configobj==5.0.6
-django-extensions~=3.1.5
-django-flat-responsive==2.0
-django-widget-tweaks==1.4.9
-freezegun==1.1.0
-squareup==4.1.0.20200122
-django-u2f~=1.0.0
+django>=3.2.15,<4
+django-admin-env-notice~=0.4
+django-debug-toolbar~=3.7.0
+django-extensions~=3.2.1
+django-idempotency-key~=1.2.0
+django-import-export~=2.9.0
 django-maintenance-mode==0.14.0
-Pillow>=5.3
-PyJWT~=2.4.0
+django-mathfilters~=1.0.0
+django-nested-inline~=0.4.5
+django-prometheus~=2.2.0
+django-redis~=5.2.0
+django-u2f~=1.0.1
+django-widget-tweaks==1.4.12
+freezegun==1.1.0
 influxdb~=5.2.3          # Influx < v1.7
 influxdb-client~=1.25.0  # Influxdb 1.8, 2.x
-Werkzeug==0.15.3
-django-admin-env-notice~=0.4
-django-debug-toolbar~=3.2.2
-django-prometheus~=2.2.0
-django_idempotency_key~=1.1.1
-django-redis~=5.2.0
-mock==3.0.5
-paho-mqtt==1.5.0
-sentry-sdk
-odfpy==1.4.0
-pyyaml==5.4
-xlrd==1.2.0
-xlwt==1.3.0
 markuppy
-openpyxl==2.5.12
-tablib==0.12.1
+mock==3.0.5
+paho-mqtt==1.6.1
+Pillow>=5.3
+psycopg2-binary==2.8.6
+PyJWT~=2.4.0
+sentry-sdk
+squareup==22.0.0.20220921
+Werkzeug==2.2.2
