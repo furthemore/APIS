@@ -10,7 +10,10 @@
   <link href="{% static 'css/main.css' %}" rel="stylesheet" media="screen">
   <link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
   <link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
-   <script src="https://unpkg.com/@sentry/browser@latest/build/bundle.min.js" crossorigin="anonymous"></script>
+  <script
+    src="https://unpkg.com/@sentry/browser@latest/build/bundle.min.js"
+    crossorigin="anonymous"
+  ></script>
   <script>
       const SENTRY_ENABLED = {% settings_value_bool 'SENTRY_ENABLED' %};
       const SENTRY_USER_REPORTS = {% settings_value_bool 'SENTRY_USER_REPORTS' %};
