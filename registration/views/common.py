@@ -110,9 +110,7 @@ def getOptionsDict(orderItems):
     return orderDict
 
 
-cache_page(60)
-
-
+@cache_page(60)
 def get_events(request):
     events = Event.objects.all()
     data = [
@@ -312,27 +310,21 @@ def vipBadges(request):
     return render(request, "registration/utility/viplist.html", context,)
 
 
-cache_page(60)
-
-
+@cache_page(60)
 def get_departments(request):
     depts = Department.objects.filter(volunteerListOk=True).order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-cache_page(60)
-
-
+@cache_page(60)
 def get_all_departments(request):
     depts = Department.objects.order_by("name")
     data = [{"name": item.name, "id": item.id} for item in depts]
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-cache_page(60)
-
-
+@cache_page(60)
 def getShirtSizes(request):
     sizes = ShirtSizes.objects.all()
     data = [{"name": size.name, "id": size.id} for size in sizes]
@@ -390,9 +382,6 @@ def getSessionAddresses(request):
 
             data.append(cartItem)
     return HttpResponse(json.dumps(data), content_type="application/json")
-
-
-cache_page(60)
 
 
 def getRegistrationEmail(event=None):

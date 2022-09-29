@@ -713,11 +713,7 @@ class StaffAdmin(ImportExportModelAdmin):
                 return HttpResponseRedirect(request.get_full_path())
 
         if not form:
-            form = self.CopyToEvent(
-                initial={
-                    "_selected_action": request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-                }
-            )
+            form = self.CopyToEvent()
 
         return render(
             request, "admin/copy_event.html", {"staff": queryset, "form": form}
