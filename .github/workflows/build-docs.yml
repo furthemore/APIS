@@ -13,15 +13,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.event.pull_request.head.ref }}
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: "3.10"
+
     - name: Install Dependencies
       run: |
         sudo apt-get -y install python3-psycopg2
         python -m pip install --upgrade pip wheel
         pip install -r requirements.txt
+
     - name: Generate mermaid docs
       run: |
         cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
