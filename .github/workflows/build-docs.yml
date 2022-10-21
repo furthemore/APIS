@@ -26,8 +26,9 @@ jobs:
       run: |
         cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
         wget https://raw.githubusercontent.com/Mr-Destructive/django-mermaid/main/mermaid.py
-        mkdir -p docs/
         python mermaid.py fm_eventmanager
+        mkdir -p docs/
+        mv fm_eventmanager_model.md docs/
         rm mermaid.py
       env:
         SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
