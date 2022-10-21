@@ -1,7 +1,7 @@
 import json
 
-from django.urls import reverse
 from django.test import tag
+from django.urls import reverse
 
 from registration.models import *
 from registration.tests.common import OrdersTestCase

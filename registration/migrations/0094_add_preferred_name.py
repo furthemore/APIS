@@ -6,23 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0093_add_dealerasst_paid'),
+        ("registration", "0093_add_dealerasst_paid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='attendee',
-            name='preferredName',
-            field=models.CharField(blank=True, max_length=200, verbose_name='Preferred First Name'),
+            model_name="attendee",
+            name="preferredName",
+            field=models.CharField(
+                blank=True, max_length=200, verbose_name="Preferred First Name"
+            ),
         ),
         migrations.AlterField(
-            model_name='attendee',
-            name='firstName',
-            field=models.CharField(max_length=200, verbose_name='Legal First Name'),
+            model_name="attendee",
+            name="firstName",
+            field=models.CharField(max_length=200, verbose_name="Legal First Name"),
         ),
         migrations.AlterField(
-            model_name='attendee',
-            name='lastName',
-            field=models.CharField(max_length=200, verbose_name='Legal Last Name'),
+            model_name="attendee",
+            name="lastName",
+            field=models.CharField(max_length=200, verbose_name="Legal Last Name"),
         ),
     ]
