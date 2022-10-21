@@ -29,6 +29,12 @@ jobs:
         mkdir -p docs/
         python mermaid.py fm_eventmanager
         rm mermaid.py
+      env:
+        SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+        SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}
+        SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
 
     - name: Commit mermaid docs back to branch
       uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
