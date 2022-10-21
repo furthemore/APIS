@@ -25,7 +25,7 @@ jobs:
     - name: Generate mermaid docs
       run: |
         wget https://raw.githubusercontent.com/Mr-Destructive/django-mermaid/main/mermaid.py
-        mkdir -m docs/
+        mkdir -p docs/
         python mermaid.py fm_eventmanager
         rm mermaid.py
 
