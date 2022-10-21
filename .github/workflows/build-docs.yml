@@ -24,6 +24,7 @@ jobs:
         pip install -r requirements.txt
     - name: Generate mermaid docs
       run: |
+        cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
         wget https://raw.githubusercontent.com/Mr-Destructive/django-mermaid/main/mermaid.py
         mkdir -p docs/
         python mermaid.py fm_eventmanager
