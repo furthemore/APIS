@@ -15,7 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 def doCheckout(
-    billingData, total, discount, cartItems, orderItems, donationOrg, donationCharity, request=None
+    billingData,
+    total,
+    discount,
+    cartItems,
+    orderItems,
+    donationOrg,
+    donationCharity,
+    request=None,
 ):
     event = Event.objects.get(default=True)
     reference = common.get_unique_confirmation_token(Order)

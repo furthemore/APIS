@@ -7,7 +7,14 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 
-from registration.models import Attendee, Badge, BanList, Dealer, PriceLevel, Staff
+from registration.models import (
+    Attendee,
+    Badge,
+    BanList,
+    Dealer,
+    PriceLevel,
+    Staff,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -3,13 +3,24 @@ import logging
 from datetime import datetime
 
 from django.forms import model_to_dict
-from django.http import HttpResponseServerError, HttpResponseNotFound, JsonResponse
+from django.http import (
+    HttpResponseNotFound,
+    HttpResponseServerError,
+    JsonResponse,
+)
 from django.shortcuts import render
 
 import registration.emails
 from registration.models import *
 
-from .common import abort, clear_session, get_client_ip, handler, logger, success
+from .common import (
+    abort,
+    clear_session,
+    get_client_ip,
+    handler,
+    logger,
+    success,
+)
 from .ordering import doCheckout, doZeroCheckout, getTotal
 
 logger = logging.getLogger(__name__)

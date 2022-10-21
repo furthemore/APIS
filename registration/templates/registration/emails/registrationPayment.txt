@@ -2,8 +2,8 @@ Thank you for your payment.
 
 ---------------------------------
 {% for oi, options in orderItems.items %}
-  Badge Name - {{oi.badge.badgeName}} 
-  Level      - {{oi.priceLevel.name}} 
+  Badge Name - {{oi.badge.badgeName}}
+  Level      - {{oi.priceLevel.name}}
   Price      - ${{oi.priceLevel.subtotal}}
   {% for ao in options %}
     {% if ao.option.optionExtraType == 'int'%}
@@ -13,9 +13,9 @@ Thank you for your payment.
     {% endif %}
   {% endfor %}
   {% if oi.priceLevel.emailVip %}
-    ** This person qualifies for our VIP experience. Please complete your hotel reservation and email 
+    ** This person qualifies for our VIP experience. Please complete your hotel reservation and email
        your hotel confirmation code to {{ event.registrationEmail }}. Our VIP department has also been notified
-       of your registration and should be contacting you directly with more information. If you have 
+       of your registration and should be contacting you directly with more information. If you have
        questions regarding perks please contact {{ event.registrationEmail }}. Thank you for your support!
   {% endif %}
 
@@ -51,5 +51,4 @@ must have a parent or guardian also register and accompany them during the event
 
 If you have any questions about your order, please contact us at {{ event.registrationEmail }}.
 
-Thank you! 
-
+Thank you!
