@@ -3,7 +3,12 @@ import logging
 from datetime import datetime
 
 from django.forms import model_to_dict
-from django.http import HttpResponse, HttpResponseServerError, HttpResponseNotFound, JsonResponse
+from django.http import (
+    HttpResponse,
+    HttpResponseNotFound,
+    HttpResponseServerError,
+    JsonResponse,
+)
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -296,7 +301,9 @@ def add_assistants_checkout(request):
         total = total + Decimal(60 * unpaid_partner_count)
 
     if total <= 0:
-        logger.error(f"Error checking out dealer while adding assistants: total too low: {total} <= 0")
+        logger.error(
+            f"Error checking out dealer while adding assistants: total too low: {total} <= 0"
+        )
         return JsonResponse(
             {
                 "success": False,

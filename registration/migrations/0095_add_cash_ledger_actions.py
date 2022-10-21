@@ -5,21 +5,47 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    replaces = [('registration', '0095_drop_and_pickup'), ('registration', '0096_add_cash_adjustment')]
+    replaces = [
+        ("registration", "0095_drop_and_pickup"),
+        ("registration", "0096_add_cash_adjustment"),
+    ]
 
     dependencies = [
-        ('registration', '0094_add_preferred_name'),
+        ("registration", "0094_add_preferred_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='cashdrawer',
-            name='action',
-            field=models.CharField(choices=[('Open', 'Open'), ('Close', 'Close'), ('Transaction', 'Transaction'), ('Deposit', 'Deposit'), ('Drop', 'Drop'), ('Pickup', 'Pickup')], default='Open', max_length=20),
+            model_name="cashdrawer",
+            name="action",
+            field=models.CharField(
+                choices=[
+                    ("Open", "Open"),
+                    ("Close", "Close"),
+                    ("Transaction", "Transaction"),
+                    ("Deposit", "Deposit"),
+                    ("Drop", "Drop"),
+                    ("Pickup", "Pickup"),
+                ],
+                default="Open",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='cashdrawer',
-            name='action',
-            field=models.CharField(choices=[('Open', 'Open'), ('Close', 'Close'), ('Transaction', 'Transaction'), ('Deposit', 'Deposit'), ('Drop', 'Drop'), ('Pickup', 'Pickup'), ('Adjustment', 'Adjustment')], default='Open', max_length=20),
+            model_name="cashdrawer",
+            name="action",
+            field=models.CharField(
+                choices=[
+                    ("Open", "Open"),
+                    ("Close", "Close"),
+                    ("Transaction", "Transaction"),
+                    ("Deposit", "Deposit"),
+                    ("Drop", "Drop"),
+                    ("Pickup", "Pickup"),
+                    ("Adjustment", "Adjustment"),
+                ],
+                default="Open",
+                max_length=20,
+            ),
         ),
     ]

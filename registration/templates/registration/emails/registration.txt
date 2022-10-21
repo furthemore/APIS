@@ -4,8 +4,7 @@ Your registration confirmation is: {{reference}}
 Your badge name is: {{orderItem.badge.badgeName}}
 Your attending level is: {{orderItem.priceLevel.name}}
 
-You my pick up your badge from the pre-reg line at the convention. 
+You my pick up your badge from the pre-reg line at the convention.
 If you have any questions regarding your registration, please contact {{ event.registrationEmail }}.
 
 See you at {{ event }}!
-

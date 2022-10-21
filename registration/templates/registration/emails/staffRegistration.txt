@@ -2,4 +2,3 @@ Thank you for registering as staff.
 Your registration confirmation number is: {{reference}}
 If you have any questions about your registration, please contact your supervisor or {{ event.staffEmail }}.
 Thank you!
-

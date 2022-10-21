@@ -63,7 +63,9 @@ def get_cart(request):
             try:
                 birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
             except ValueError:
-                logger.warning(f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')")
+                logger.warning(
+                    f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')"
+                )
                 logger.warning(f"Removing malformed cart from session: {cart}")
                 request.session["cart_items"].pop(idx)
                 cart.delete()
@@ -211,7 +213,10 @@ def add_to_cart(request):
     try:
         datetime.strptime(pda["birthdate"], "%Y-%m-%d")
     except ValueError:
-        return common.abort(400, f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')")
+        return common.abort(
+            400,
+            f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')",
+        )
 
     banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
@@ -220,7 +225,7 @@ def add_to_cart(request):
         return common.abort(
             403,
             f"We are sorry, but you are unable to register for {event}. If you have any questions, or would like "
-            f"further information or assistance, please contact Registration at {registrationEmail}"
+            f"further information or assistance, please contact Registration at {registrationEmail}",
         )
 
     cart = Cart(

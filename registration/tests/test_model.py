@@ -1,5 +1,6 @@
-from django.test import TestCase
 from decimal import Decimal
+
+from django.test import TestCase
 
 from registration.models import Attendee, Charity, Venue
 from registration.tests.common import DEFAULT_VENUE_ARGS, TEST_ATTENDEE_ARGS

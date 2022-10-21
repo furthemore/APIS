@@ -1,4 +1,4 @@
-A Super Sponsor has just registered: 
+A Super Sponsor has just registered:
 
 Badge Name - {{badge.badgeName}}
 Real Name  - {{badge.attendee}}
