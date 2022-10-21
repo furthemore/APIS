@@ -51,11 +51,6 @@ jobs:
         # Default: github_actor
         default_author: github_actor
 
-        # Arguments for the git fetch command. If set to false, the action won't fetch the repo.
-        # For more info as to why fetching is usually recommended, please see the "Performance on large repos" FAQ.
-        # Default: --tags --force
-        fetch: false
-
         # The message for the commit.
         # Default: 'Commit from GitHub Actions (name of the workflow)'
         message: 'Generate mermaid graph of Django model'
