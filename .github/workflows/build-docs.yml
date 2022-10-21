@@ -1,0 +1,57 @@
+name: Build Documentation
+
+on:
+  push:
+    branches: [ production, stage ]
+  pull_request:
+    branches: [ production, stage ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        sudo apt-get -y install xfonts-75dpi xfonts-base python3-psycopg2
+        python -m pip install --upgrade pip wheel
+        pip install -r requirements.txt
+    - name: Generate mermaid docs
+      run: |
+        wget https://raw.githubusercontent.com/Mr-Destructive/django-mermaid/main/mermaid.py
+        mkdir -m docs/
+        python mermaid.py fm_eventmanager
+        rm mermaid.py
+
+    - name: Commit mermaid docs back to branch
+      uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
+      with:
+        # The arguments for the `git add` command (see the paragraph below for more info)
+        # Default: '.'
+        add: 'docs'
+
+        # Determines the way the action fills missing author name and email. Three options are available:
+        # - github_actor -> UserName <UserName@users.noreply.github.com>
+        # - user_info -> Your Display Name <your-actual@email.com>
+        # - github_actions -> github-actions <email associated with the github logo>
+        # Default: github_actor
+        default_author: github_actor
+
+        # Arguments for the git fetch command. If set to false, the action won't fetch the repo.
+        # For more info as to why fetching is usually recommended, please see the "Performance on large repos" FAQ.
+        # Default: --tags --force
+        fetch: false
+
+        # The message for the commit.
+        # Default: 'Commit from GitHub Actions (name of the workflow)'
+        message: 'Generate mermaid graph of Django model'
