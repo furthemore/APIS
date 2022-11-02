@@ -8,9 +8,9 @@ Stack:
   + Ubuntu 20.04 (LTS)
   + Postgres
   + Python 3.8 - 3.10
-  + Django 2.2
+  + Django 3.2
   + Bootstrap 3
-  + jQuery 1.9
+  + jQuery 1.12
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
