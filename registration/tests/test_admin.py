@@ -726,7 +726,8 @@ class TestStaffAdmin(AdminTestCase):
 
     def test_copy_to_event_form(self):
         request = HttpRequest()
-        response = self.staff_admin.copy_to_event(request, [self.staff])
+        staff = Staff.objects.all()
+        response = self.staff_admin.copy_to_event(request, staff)
         self.assertEqual(response.status_code, 200)
 
     @patch("registration.admin.StaffAdmin.message_user")
