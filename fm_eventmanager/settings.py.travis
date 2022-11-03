@@ -83,7 +83,6 @@ INSTALLED_APPS = [
     'import_export',
     'django_extensions',
     'django_u2f',
-    'argonauts',
     'maintenance_mode',
     'registration',
     'debug_toolbar',

@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-{% load staticfiles %}
+{% load static %}
 {% load i18n %}
 
 {% block content %}
-<script src="{% static 'django_u2f/u2f-api.js' %}"></script>
 {{ block.super }}
 
 <div id="u2f-not-defined-error" style="display: none" class="alert alert-danger">

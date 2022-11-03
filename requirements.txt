@@ -10,7 +10,8 @@ django-mathfilters~=1.0.0
 django-nested-inline~=0.4.5
 django-prometheus~=2.2.0
 django-redis~=5.2.0
-django-u2f~=1.0.1
+#django-u2f~=1.0.1
+git+https://github.com/gavinwahl/django-u2f.git@34410af
 django-widget-tweaks==1.4.12
 freezegun==1.1.0
 influxdb~=5.2.3          # Influx < v1.7
