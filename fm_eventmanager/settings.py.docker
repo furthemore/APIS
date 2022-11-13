@@ -298,6 +298,7 @@ IDEMPOTENCY_KEY = {
 
 }
 
+MAINTENANCE_MODE = eval_bool(os.getenv('MAINTENANCE_MODE', 'False'))
 MAINTENANCE_MODE_STATE_FILE_PATH = "/app/fm_eventmanager/maintenance_mode_state.txt"
 MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
 MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
