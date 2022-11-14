@@ -1,5 +1,5 @@
 {% extends "registration/master.html" %}
-{% load settings mathfilters registration_tags %}
+{% load settings static registration_tags %}
 
 {% block title %}| Checkout{% endblock %}
 {% block head %}
@@ -214,19 +214,16 @@
               <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
             <div class="form-group">
-              <label for="city" class="col-sm-3 control-label">City/State/Zip<span style="color:red;">*</span></label>
+              <label for="city" class="col-sm-3 control-label">City/State<span style="color:red;">*</span></label>
               <div class="col-sm-4">
                 <input type="text" name="city" id="city" placeholder="City" class="form-control validate" required
                        data-error="City is required."/>
               </div>
-              <div class="col-sm-2">
+              <div class="col-sm-5">
                 <select class="form-control bfh-states" id="state" data-country="country" data-state="VA"
                         name="state"></select>
               </div>
-              <div class="col-sm-3">
-                <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control validate"
-                       data-minlength="5" data-error="Zip code is required."/>
-              </div>
+
               <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
             <div class="form-group">
@@ -238,31 +235,15 @@
             <hr/>
           {% endif %}
 
-          <div class="form-group">
-            <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number<span
-                style="color:red;">*</span></label>
-            <div class="col-sm-9">
-              <div id="sq-card-number"></div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="ccMonth" class="col-sm-3 control-label">Expiration Date<span style="color:red;">*</span></label>
-            <div class="col-sm-2">
-              <div id="sq-expiration-date"></div>
-            </div>
-            <label for="ccCVV" class="col-sm-1 control-label">CVV<span style="color:red;">*</span></label>
-            <div class="col-sm-2">
-              <div id="sq-cvv"></div>
-            </div>
-            <label for="ccZip" class="col-sm-2 control-label">Zip Code<span style="color:red;">*</span></label>
-            <div class="col-sm-2">
-              <div id="sq-postal-code"></div>
-            </div>
-
+          <div>
+            <form id="payment-form">
+              <div id="card-container"></div>
+            </form>
+            <div id="payment-status-container"></div>
           </div>
           <br/>
-          <input type="hidden" id="card-nonce" name="nonce">
           {% csrf_token %}
+
           <!-- <div class="form-group" style="margin-right:0px;"> -->
           <button class="btn btn-primary col-sm-3 col-sm-offset-9 mobile-block" style="padding-right:10px;"
                   id="checkout">Checkout
@@ -270,22 +251,6 @@
           <!-- </div> -->
         </form>
       </div>
-        {% if SQUARE_ENVIRONMENT == "sandbox" %}
-            <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
-        {% else %}
-            <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
-        {% endif %}
-
-        <script type="text/javascript">
-          var paymentForm = new SqPaymentForm({
-
-            // Initialize the payment form elements
-            applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
-            locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
-            inputClass: 'form-control',
-          })
-        </script>
-
     {% else %}
 
       {% csrf_token %}
@@ -318,6 +283,17 @@
 
 
 {% block javascript %}
+  {% if SQUARE_ENVIRONMENT == "sandbox" %}
+    <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  {% else %}
+    <script type="text/javascript" src=""></script>
+  {% endif %}
+
+  <script type="text/javascript">
+    const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
+    const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
+  </script>
+  <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
   <script type="text/javascript">
       var addresses = [];
 
@@ -418,7 +394,6 @@
               return;
           }
 
-          var userName = $("#useFrom option[value='" + userId + "']").text();
           var address = addresses[userId];
           $("#fname").val(address.fname);
           $("#lname").val(address.lname);

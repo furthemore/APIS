@@ -23,5 +23,5 @@ Pillow>=5.3
 psycopg2-binary==2.8.6
 PyJWT~=2.4.0
 sentry-sdk
-squareup==22.0.0.20220921
+squareup==23.0.0.20221019
 Werkzeug==2.2.2
