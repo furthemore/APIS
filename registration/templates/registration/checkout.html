@@ -286,20 +286,32 @@
   {% if SQUARE_ENVIRONMENT == "sandbox" %}
     <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
   {% else %}
-    <script type="text/javascript" src=""></script>
+    <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
   {% endif %}
-
   <script type="text/javascript">
+    /* Square & Payments constants */
     const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
     const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
+
+    /* APIS URLs */
+    const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout' %}";
+    const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
+    const URL_REGISTRATION_DONE = "{% url 'registration:done' %}";
+    const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
+    const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+    const URL_REGISTRATION_REMOVE_FROM_CART = "{% url 'registration:remove_from_cart' %}";
+    const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:cancel_order' %}";
+
+    /* Application data */
+    let cart_total = {{ total|default:0 }};
   </script>
   <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
   <script type="text/javascript">
-      var addresses = [];
+      let addresses = [];
 
       $("body").ready(function () {
           {% if event.collectAddress %}
-              $.getJSON("{% url 'registration:addresses' %}", function (data) {
+              $.getJSON(URL_REGISTRATION_ADDRESSES, function (data) {
                   addresses = data;
               });
           {% endif %}
@@ -309,12 +321,12 @@
       //$("#donateOrg").change(setTwoNumberDecimal);
 
       $(".deleteAttendee").click(function (e) {
-          var id = this.id.split('_')[1];
-          var data = {'id': id}
+          const id = this.id.split('_')[1];
+          const data = {'id': id};
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:remove_from_cart' %}",
+              "url": URL_REGISTRATION_REMOVE_FROM_CART,
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -334,44 +346,45 @@
       });
 
       $("#addAnother").click(function () {
-          window.location = "{% url 'registration:index' %}";
+          window.location = URL_REGISTRATION_INDEX;
       });
 
       $("#cancel").click(function () {
-          var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
+          const cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.");
           if (cancel == false) {
               return;
           }
 
-          $.getJSON("{% url 'registration:cancel_order' %}", function (data) {
-              window.location = "{% url 'registration:index' %}";
+          $.getJSON(URL_REGISTRATION_CANCEL_ORDER, function (data) {
+              window.location = URL_REGISTRATION_INDEX;
           });
       });
 
       $("#apply_discount").click(function (e) {
-          var discount = $("#discount").val();
+          const discount = $("#discount").val();
           if (discount == '') {
               alert("You must enter a discount to apply.");
               return;
           }
-          var data = {'discount': discount}
+          const data = {'discount': discount};
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:discount' %}",
+              "url": URL_REGISTRATION_DISCOUNT,
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
                   $.ajaxSettings.beforeSend(xhr, settings);
               },
               "error": function (result, status, error) {
-                  alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                  alert("An error has occurred. If this error continues, please contact "+ EVENT_REGISTRATION_EMAIL + " for assistance.")
               },
               "success": function (result, status) {
                   if (result.success) {
                       window.location.reload();
                   } else {
-                      alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                      alert("An error has occurred: " + result.message + " If this error continues, please contact " +
+                            EVENT_REGISTRATION_EMAIL + " for assistance.");
                   }
               }
           });
@@ -380,7 +393,7 @@
       });
 
       $("#useFrom").on("change", function (e) {
-          var userId = $(this).val();
+          const userId = $(this).val();
           if (userId == "") {
               $("#fname").val("");
               $("#lname").val("");
@@ -394,7 +407,7 @@
               return;
           }
 
-          var address = addresses[userId];
+          const address = addresses[userId];
           $("#fname").val(address.fname);
           $("#lname").val(address.lname);
           $("#email").val(address.email);
@@ -410,7 +423,7 @@
           $(this).prop('disabled', true);
           e.preventDefault();
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          const errorCount = $(".has-error").length;
           if (errorCount > 0) {
               $(this).prop("disabled", false);
               $("#checkout").one('click', checkout_click);
@@ -418,18 +431,20 @@
           }
 
           {% if total > 0 %}
-              paymentForm.requestCardNonce();
+              const token = tokenize(card);
+              console.log(token);
           {% else %}
               doCheckout();
           {% endif %}
 
       }
 
-      $("#checkout").one('click', checkout_click);
+      // $("#checkout").one('click', checkout_click);
 
       function doCheckout(card_data) {
+          let data = {};
           {% if total > 0 %}
-              var data = {
+              data = {
                   'onsite': false,
                   'billingData': {
                       'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
@@ -440,47 +455,43 @@
                   'charityDonation': $("#donateCharity").val(),
                   'orgDonation': $("#donateOrg").val()
               };
-
-          {% else %}
-              var data = {};
           {% endif %}
 
-          var success_callback = function (result, status) {
+          const success_callback = function (result, status) {
               if (result.success) {
-                  window.location = "{% url 'registration:done' %}";
+                  window.location = URL_REGISTRATION_DONE;
               } else {
                   $("#checkout").removeAttr("disabled");
                   if (result.message.indexOf("email") > -1) {
                       alert(result.message);
-                      window.location = "{% url 'registration:done' %}";
+                      window.location = URL_REGISTRATION_DONE;
                   } else {
-                      alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                      alert("An error has occurred: " + result.message + " If this error continues, please contact " + EVENT_REGISTRATION_EMAIL + " for assistance.");
                       $("#checkout").one('click', checkout_click);
                   }
               }
           };
 
-          var error_callback = function (result, status, error) {
+          const error_callback = function (result, status, error) {
               if (result.status == 409) {
                   // Probably actually an idempotent success
                   success_callback(result, status);
                   return;
               }
 
-              var redirect = false;
-              var error_message = "An error occurred while attempting to process your order:\n";
+              let error_message = "An error occurred while attempting to process your order:\n";
               try {
-                  var message = JSON.parse(result.responseText);
+                  const message = JSON.parse(result.responseText);
                   if (('reason' in message) && ('errors' in message.reason)) {
                       message.reason.errors.forEach(function (element) {
                           error_message += element.detail + " (" + element.code + ")\n";
                       });
                   }
               } catch (e) {
-                  redirect = true;
-                  error_message = "An unspecified error occurred while attempting to process your order.\n"
+                  error_message = "An unspecified error occurred while attempting to process your order.\n";
+                  throw new Error(error_message);
               }
-              error_message += "If this error continues, please contact {{event.registrationEmail}} for assistance.";
+              error_message += "If this error continues, please contact " + EVENT_REGISTRATION_EMAIL + " for assistance.";
               alert(error_message);
               $("#checkout").removeAttr("disabled");
               window.location = "{% url 'registration:cart' %}";
@@ -489,7 +500,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:checkout' %}",
+              "url": URL_REGISTRATION_CHECKOUT,
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");

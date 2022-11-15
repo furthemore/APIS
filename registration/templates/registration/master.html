@@ -46,6 +46,8 @@
 <script>
     {% if event %}
         const event_start_date = new {% event_start_date event %};
+        const EVENT_NAME = "{{ event.name }}";
+        const EVENT_REGISTRATION_EMAIL = "{{ event.registrationEmail }}";
     {% endif %}
     const IDEMPOTENCY_KEY = "{% idempotency_key %}";
 </script>

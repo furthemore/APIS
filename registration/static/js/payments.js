@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             // payment request.
             cardButton.disabled = true;
             const token = await tokenize(paymentMethod);
-            const paymentResults = await createPayment(token);
+            const paymentResults = doCheckout(token);
             displayPaymentResults('SUCCESS');
 
             console.debug('Payment Success', paymentResults);
@@ -71,7 +71,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    const cardButton = document.getElementById('card-button');
+
+    const cardButton = document.getElementById('checkout');
     cardButton.addEventListener('click', async function (event) {
         await handlePaymentMethodSubmission(event, card);
     });
