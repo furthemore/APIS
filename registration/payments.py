@@ -68,6 +68,9 @@ def charge_payment(order, cc_data, request=None):
         "location_id": settings.SQUARE_LOCATION_ID,
     }
 
+    if "verificationToken" in cc_data:
+        body["verificationToken"] = cc_data["verificationToken"]
+
     logger.debug("---- Begin Transaction ----")
     logger.debug(body)
 

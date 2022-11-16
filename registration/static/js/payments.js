@@ -39,6 +39,35 @@ function displayPaymentResults(status) {
     statusContainer.style.visibility = 'visible';
 }
 
+async function createPayment(token) {
+    const body = JSON.stringify({
+        onsite: false,
+        billingData: {
+            billingData: {
+                cc_firstname: $("#fname").val(),
+                cc_lastname: $("#lname").val(),
+                email: $("#email").val(),
+                address1: $("#add1").val(),
+                address2: $("#add2").val(),
+                city: $("#city").val(),
+                state: $("#state").val(),
+                country: $("#country").val(),
+                postal: $("#zip").val(),
+                token: token,
+            },
+            charityDonation: $("#donateCharity").val(),
+            orgDonation: $("#donateOrg").val()
+        }
+    });
+
+    const paymentResponse = await postJSON(URL_REGISTRATION_CHECKOUT, body);
+    if (paymentResponse.ok) {
+        return paymentResponse.json();
+    }
+    const errorBody = await paymentResponse.text();
+    throw new Error(errorBody);
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
     if (!window.Square) {
         throw new Error('Square.js failed to load properly');
@@ -60,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             // payment request.
             cardButton.disabled = true;
             const token = await tokenize(paymentMethod);
-            const paymentResults = doCheckout(token);
+            const paymentResults = await createPayment(token);
             displayPaymentResults('SUCCESS');
 
             console.debug('Payment Success', paymentResults);

@@ -441,7 +441,7 @@
 
       // $("#checkout").one('click', checkout_click);
 
-      function doCheckout(card_data) {
+      function doCheckout(token) {
           let data = {};
           {% if total > 0 %}
               data = {
@@ -450,7 +450,7 @@
                       'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                       'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
                       'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                      'nonce': $("#card-nonce").val(), 'card_data': card_data,
+                      'token': token,
                   },
                   'charityDonation': $("#donateCharity").val(),
                   'orgDonation': $("#donateOrg").val()
