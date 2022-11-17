@@ -232,6 +232,7 @@
                 <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
               </div>
             </div>
+            <input type="hidden" name="postal" id="postal" value="">
             <hr/>
           {% endif %}
 
@@ -244,11 +245,15 @@
           <br/>
           {% csrf_token %}
 
-          <!-- <div class="form-group" style="margin-right:0px;"> -->
-          <button class="btn btn-primary col-sm-3 col-sm-offset-9 mobile-block" style="padding-right:10px;"
-                  id="checkout">Checkout
-          </button>
-          <!-- </div> -->
+          <div class="row">
+            <div class="col-sm-9">
+              <div id="alert-bar" class="alert alert-danger alert-hidden" role="alert"><b>Test alert....</b></div>
+            </div>
+            <div class="col-sm-3">
+              <button class="btn btn-primary btn-block" id="checkout">Checkout</button>
+            </div>
+          </div>
+
         </form>
       </div>
     {% else %}
@@ -283,10 +288,12 @@
 
 
 {% block javascript %}
-  {% if SQUARE_ENVIRONMENT == "sandbox" %}
-    <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
-  {% else %}
-    <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+  {% if total > 0 %}
+    {% if SQUARE_ENVIRONMENT == "sandbox" %}
+      <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    {% else %}
+      <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+    {% endif %}
   {% endif %}
   <script type="text/javascript">
     /* Square & Payments constants */
@@ -305,7 +312,9 @@
     /* Application data */
     let cart_total = {{ total|default:0 }};
   </script>
+  {% if total > 0 %}
   <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+  {% endif %}
   <script type="text/javascript">
       let addresses = [];
 
@@ -402,7 +411,6 @@
               $("#add2").val("");
               $("#city").val("");
               $("#state").val("");
-              $("#zip").val("");
               $("#country").val("");
               return;
           }
@@ -415,10 +423,11 @@
           $("#add2").val(address.address2);
           $("#city").val(address.city);
           $("#state").val(address.state);
-          $("#zip").val(address.postalCode);
+          $("#postal").val(address.postalCode);
           $("#country").val(address.country);
       });
 
+      /*
       function checkout_click(e) {
           $(this).prop('disabled', true);
           e.preventDefault();
@@ -449,7 +458,7 @@
                   'billingData': {
                       'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
                       'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                      'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                      'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#postal").val(),
                       'token': token,
                   },
                   'charityDonation': $("#donateCharity").val(),
@@ -503,7 +512,6 @@
               "url": URL_REGISTRATION_CHECKOUT,
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
-                  console.log("Before Send");
                   $.ajaxSettings.beforeSend(xhr, settings);
               },
               "error": error_callback,
@@ -511,6 +519,7 @@
           });
 
       }
+      */
 
   </script>
 {% endblock %}

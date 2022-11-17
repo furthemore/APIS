@@ -39,25 +39,28 @@ function displayPaymentResults(status) {
     statusContainer.style.visibility = 'visible';
 }
 
+function hidePaymentResults() {
+    const statusContainer = document.getElementById('payment-status-container');
+    statusContainer.style.visibility = 'hidden';
+}
+
 async function createPayment(token) {
     const body = JSON.stringify({
         onsite: false,
         billingData: {
-            billingData: {
-                cc_firstname: $("#fname").val(),
-                cc_lastname: $("#lname").val(),
-                email: $("#email").val(),
-                address1: $("#add1").val(),
-                address2: $("#add2").val(),
-                city: $("#city").val(),
-                state: $("#state").val(),
-                country: $("#country").val(),
-                postal: $("#zip").val(),
-                token: token,
-            },
-            charityDonation: $("#donateCharity").val(),
-            orgDonation: $("#donateOrg").val()
-        }
+            cc_firstname: $("#fname").val(),
+            cc_lastname: $("#lname").val(),
+            email: $("#email").val(),
+            address1: $("#add1").val(),
+            address2: $("#add2").val(),
+            city: $("#city").val(),
+            state: $("#state").val(),
+            country: $("#country").val(),
+            postal: $("#postal").val(),
+            source_id: token,
+        },
+        charityDonation: $("#donateCharity").val(),
+        orgDonation: $("#donateOrg").val()
     });
 
     const paymentResponse = await postJSON(URL_REGISTRATION_CHECKOUT, body);
@@ -83,14 +86,26 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function handlePaymentMethodSubmission(event, paymentMethod) {
         event.preventDefault();
+        hidePaymentResults();
 
         try {
             // disable the submit button as we await tokenization and make a
             // payment request.
             cardButton.disabled = true;
+
+            $("form").validator('validate');
+            const errorCount = $(".has-error").length;
+            if (errorCount > 0) {
+                cardButton.disabled = false;
+                return;
+            }
+
             const token = await tokenize(paymentMethod);
             const paymentResults = await createPayment(token);
-            displayPaymentResults('SUCCESS');
+            if (paymentResults.success) {
+                displayPaymentResults('SUCCESS');
+                window.location = URL_REGISTRATION_DONE;
+            }
 
             console.debug('Payment Success', paymentResults);
         } catch (e) {
@@ -100,9 +115,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-
     const cardButton = document.getElementById('checkout');
     cardButton.addEventListener('click', async function (event) {
         await handlePaymentMethodSubmission(event, card);
     });
+
+    const postal_callback = async (cardInputEvent) => {
+        const postal_input = document.getElementById('postal');
+        postal_input.value = cardInputEvent.detail.postalCodeValue;
+    };
+    card.addEventListener("postalCodeChanged", postal_callback);
 });

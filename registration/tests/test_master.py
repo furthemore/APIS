@@ -101,7 +101,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         order = badge.getOrder()
         self.assertEqual(order.discount, None)
         self.assertEqual(order.total, 45 + 10 + 20)
-        self.assertEqual(attendee.postalCode, order.billingPostal)
+        self.assertEqual("45733", order.billingPostal)
         self.assertEqual(order.orgDonation, 20)
         self.assertEqual(order.charityDonation, 10)
 
@@ -199,7 +199,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         order = orderItem.order
         self.assertEqual(order.discount, None)
         self.assertEqual(order.total, 675 + 11)
-        self.assertEqual(attendee.postalCode, order.billingPostal)
+        self.assertEqual("45733", order.billingPostal)
         self.assertEqual(order.orgDonation, 1.00)
         self.assertEqual(order.charityDonation, 10.00)
 
@@ -732,20 +732,12 @@ class TestAttendeeCheckout(OrdersTestCase):
             "billingData": {
                 "address1": "Qui qui quasi amet",
                 "address2": "Sunt voluptas dolori",
-                "card_data": {
-                    "billing_postal_code": "94044",
-                    "card_brand": "VISA",
-                    "digital_wallet_type": "NONE",
-                    "exp_month": 12,
-                    "exp_year": 2021,
-                    "last_4": "1111",
-                },
                 "cc_firstname": "Whitney",
                 "cc_lastname": "Thompson",
                 "city": "Quam earum Nam dolor",
                 "country": "FK",
                 "email": "apis@mailinator.net",
-                "nonce": "cnon:card-nonce-ok",
+                "source_id": "cnon:card-nonce-ok",
                 "postal": "13271",
                 "state": "",
             },

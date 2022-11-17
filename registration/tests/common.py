@@ -330,7 +330,7 @@ class OrdersTestCase(TestCase):
                 "city": "Quam earum Nam dolor",
                 "country": "FK",
                 "email": "apis@mailinator.net",
-                "nonce": "cnon:card-nonce-ok",
+                "source_id": "cnon:card-nonce-ok",
                 "postal": "13271",
                 "state": "",
             },
@@ -378,7 +378,7 @@ class OrdersTestCase(TestCase):
         )
         return response
 
-    def checkout(self, nonce, orgDonation="", charityDonation="", onsite=False):
+    def checkout(self, token, orgDonation="", charityDonation="", onsite=False):
         postData = {
             "billingData": {},
             "charityDonation": charityDonation,
@@ -390,20 +390,12 @@ class OrdersTestCase(TestCase):
             postData["billingData"] = {
                 "address1": "123 Any Street",
                 "address2": "Apt 4",
-                "card_data": {
-                    "billing_postal_code": "12345",
-                    "card_brand": "VISA",
-                    "digital_wallet_type": "NONE",
-                    "exp_month": 2,
-                    "exp_year": 2020,
-                    "last_4": "1111",
-                },
                 "cc_firstname": "Buffy",
                 "cc_lastname": "Cleveland",
                 "city": "39535",
                 "country": "ST",
                 "email": "apis@mailinator.net",
-                "nonce": nonce,
+                "source_id": token,
                 "postal": "45733",
                 "state": "ID",
             }

@@ -47,6 +47,7 @@ def doCheckout(
             order.billingState = billingData["state"]
             order.billingCountry = billingData["country"]
             order.billingEmail = billingData["email"]
+            order.billingPostal = billingData["zip"]
         except KeyError as e:
             common.abort(
                 400,
@@ -54,16 +55,6 @@ def doCheckout(
                     e
                 ),
             )
-
-    # Otherwise, no need for anything except postal code (Square US/CAN)
-    try:
-        card_data = billingData["card_data"]
-        order.billingPostal = card_data["billing_postal_code"]
-        order.lastFour = card_data["last_4"]
-    except KeyError as e:
-        common.abort(
-            400, "A required field was missing from billingData: {0}".format(e)
-        )
 
     status, response = charge_payment(order, billingData, request)
 

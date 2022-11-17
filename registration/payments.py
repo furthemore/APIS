@@ -37,8 +37,9 @@ def charge_payment(order, cc_data, request=None):
 
     amount = {"amount": converted_total, "currency": settings.SQUARE_CURRENCY}
 
+    order.billingPostal = cc_data["postal"]
     billing_address = {
-        "postal_code": cc_data["card_data"]["billing_postal_code"],
+        "postal_code": cc_data["postal"],
     }
 
     try:
@@ -60,7 +61,7 @@ def charge_payment(order, cc_data, request=None):
 
     body = {
         "idempotency_key": idempotency_key,
-        "source_id": cc_data["nonce"],
+        "source_id": cc_data["source_id"],
         "autocomplete": True,
         "amount_money": amount,
         "reference_id": order.reference,
