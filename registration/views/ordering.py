@@ -47,7 +47,7 @@ def doCheckout(
             order.billingState = billingData["state"]
             order.billingCountry = billingData["country"]
             order.billingEmail = billingData["email"]
-            order.billingPostal = billingData["zip"]
+            order.billingPostal = billingData["postal"]
         except KeyError as e:
             common.abort(
                 400,
