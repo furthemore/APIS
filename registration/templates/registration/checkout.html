@@ -261,7 +261,7 @@
       {% csrf_token %}
       <div class="container-fluid">
         <div class="row">
-          <a class="btn btn-primary col-sm-3 col-sm-offset-9 col-xs-12" id="checkout">Checkout</a>
+          <button class="btn btn-primary col-sm-3 col-sm-offset-9 col-xs-12" id="checkout">Checkout</button>
         </div>
       </div>
 
@@ -319,15 +319,16 @@
     <script type="application/javascript">
       async function checkout(event) {
           event.preventDefault();
-          hideAlert();
           const checkoutButton = document.getElementById('checkout');
           checkoutButton.disabled = true;
+          hideAlert();
 
           const body = JSON.stringify({});
           try {
               const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
               if (response.ok) {
                   window.location = URL_REGISTRATION_DONE;
+                  return;
               } else {
                   const reason = await formatError(response);
                   showAlert(
