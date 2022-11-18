@@ -213,10 +213,10 @@
         $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
             levelData = data;
             $.each( data, function( key, val ) {
-                var percentOff = val.base_price * discount.percentOff;
+                var centsOff = (parseFloat(val.base_price) * discount.percentOff) / 100;
                 levelTemplateData.push({
                     name: val.name,
-                    price: "$" + (parseFloat(val.base_price) - percentOff - discount.amountOff),
+                    price: "$" + (parseFloat(val.base_price) - centsOff - parseFloat(discount.amountOff)),
                     levelId: "level_" + val.id,
                     selectText: "Select " + val.name
                 });

@@ -37,8 +37,9 @@ def charge_payment(order, cc_data, request=None):
 
     amount = {"amount": converted_total, "currency": settings.SQUARE_CURRENCY}
 
+    order.billingPostal = cc_data["postal"]
     billing_address = {
-        "postal_code": cc_data["card_data"]["billing_postal_code"],
+        "postal_code": cc_data["postal"],
     }
 
     try:
@@ -60,13 +61,16 @@ def charge_payment(order, cc_data, request=None):
 
     body = {
         "idempotency_key": idempotency_key,
-        "source_id": cc_data["nonce"],
+        "source_id": cc_data["source_id"],
         "autocomplete": True,
         "amount_money": amount,
         "reference_id": order.reference,
         "billing_address": billing_address,
         "location_id": settings.SQUARE_LOCATION_ID,
     }
+
+    if "verificationToken" in cc_data:
+        body["verificationToken"] = cc_data["verificationToken"]
 
     logger.debug("---- Begin Transaction ----")
     logger.debug(body)
@@ -79,16 +83,11 @@ def charge_payment(order, cc_data, request=None):
     # Square still returns data for failed payments
     order.apiData = json.dumps(api_response.body)
 
+    order.lastFour = api_response.body["payment"]["card_details"]["card"]["last_4"]
+
     if api_response.is_success():
         order.status = Order.COMPLETED
         order.notes = "Square: #" + api_response.body["payment"]["id"][:4]
-        card_details = api_response.body["payment"]["card_details"]
-        order.lastFour = "0000"
-        if (
-            api_response.body["payment"]["source_type"] == "CARD"
-            and card_details is not None
-        ):
-            order.lastFour = card_details["card"].get("last_4")
         order.save()
 
     elif api_response.is_error():
