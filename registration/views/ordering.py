@@ -245,6 +245,8 @@ def add_attendee_to_assistant(request, attendee):
 
 @idempotency_key(optional=False)
 def checkout(request):
+    return common.abort(400, "Some dumb reason")
+
     event = Event.objects.get(default=True)
     sessionItems = request.session.get("cart_items", [])
     cartItems = list(Cart.objects.filter(id__in=sessionItems))
@@ -365,6 +367,7 @@ def checkout(request):
                     registrationEmail
                 ),
             )
+
         return common.success()
     else:
         return common.abort(400, message)

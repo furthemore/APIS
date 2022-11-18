@@ -13,6 +13,9 @@
   <div role="tabpanel" class="tab-pane fade in active" id="personal">
     <h1>Checkout</h1>
     <h3>Add another attendee to your order, or checkout</h3>
+    <div class="col-sm-12">
+        <div id="alert-bar" class="alert alert-danger alert-hidden" role="alert"><b>Test alert....</b></div>
+    </div>
     <hr>
 
     <h3>Your Order</h3>
@@ -246,10 +249,7 @@
           {% csrf_token %}
 
           <div class="row">
-            <div class="col-sm-9">
-              <div id="alert-bar" class="alert alert-danger alert-hidden" role="alert"><b>Test alert....</b></div>
-            </div>
-            <div class="col-sm-3">
+            <div class="col-sm-3 col-sm-offset-9">
               <button class="btn btn-primary btn-block" id="checkout">Checkout</button>
             </div>
           </div>
@@ -312,8 +312,44 @@
     /* Application data */
     let cart_total = {{ total|default:0 }};
   </script>
+  <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
   {% if total > 0 %}
-  <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+    <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+  {% else %}
+    <script type="application/javascript">
+      async function checkout(event) {
+          event.preventDefault();
+          hideAlert();
+          const checkoutButton = document.getElementById('checkout');
+          checkoutButton.disabled = true;
+
+          const body = JSON.stringify({});
+          try {
+              const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
+              if (response.ok) {
+                  window.location = URL_REGISTRATION_DONE;
+              } else {
+                  const reason = await formatError(response);
+                  showAlert(
+                      `<b>Sorry, an unknown error occurred while submitting your registration for the following reason:</b>` +
+                      `<br><br>${reason}<br><br>  Please try again later.  If the problem persists, please contact ` +
+                          `<a href="mailto:${EVENT_REGISTRATION_EMAIL}">${EVENT_REGISTRATION_EMAIL}</a> for assistance.`
+                  );
+              }
+          } catch (e) {
+              alert(`Sorry, an error occurred while submitting your registration:\n\n${e}`);
+          }
+
+          checkoutButton.disabled = false;
+      }
+
+      document.addEventListener('DOMContentLoaded', async function () {
+          const cardButton = document.getElementById('checkout');
+          cardButton.addEventListener('click', async function (event) {
+              await checkout(event);
+          });
+      });
+    </script>
   {% endif %}
   <script type="text/javascript">
       let addresses = [];
@@ -342,13 +378,13 @@
                   $.ajaxSettings.beforeSend(xhr, settings);
               },
               "error": function (result, status, error) {
-                  alert("An error has occurred. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
+                  alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
               },
               "success": function (result, status) {
                   if (result.success) {
                       window.location.reload();
                   } else {
-                      alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                      alert(`An error has occurred: ${result.message}. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
                   }
               }
           });
@@ -386,19 +422,17 @@
                   $.ajaxSettings.beforeSend(xhr, settings);
               },
               "error": function (result, status, error) {
-                  alert("An error has occurred. If this error continues, please contact "+ EVENT_REGISTRATION_EMAIL + " for assistance.")
+                  alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
               },
               "success": function (result, status) {
                   if (result.success) {
                       window.location.reload();
                   } else {
-                      alert("An error has occurred: " + result.message + " If this error continues, please contact " +
-                            EVENT_REGISTRATION_EMAIL + " for assistance.");
+                      alert(`An error has occurred: ${result.message} If this error continues, please contact ` +
+                            `${EVENT_REGISTRATION_EMAIL} for assistance.`);
                   }
               }
           });
-
-
       });
 
       $("#useFrom").on("change", function (e) {
