@@ -86,13 +86,6 @@ def charge_payment(order, cc_data, request=None):
     if api_response.is_success():
         order.status = Order.COMPLETED
         order.notes = "Square: #" + api_response.body["payment"]["id"][:4]
-        card_details = api_response.body["payment"]["card_details"]
-        order.lastFour = "0000"
-        if (
-            api_response.body["payment"]["source_type"] == "CARD"
-            and card_details is not None
-        ):
-            order.lastFour = card_details["card"].get("last_4")
         order.save()
 
     elif api_response.is_error():

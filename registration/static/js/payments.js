@@ -66,9 +66,18 @@ async function createPayment(token) {
     const paymentResponse = await postJSON(URL_REGISTRATION_CHECKOUT, body);
     if (paymentResponse.ok) {
         return paymentResponse.json();
+    } else if (paymentResponse.status == 409) {
+        // Probably actually an idempotent success
+        return paymentResponse.json();
     }
-    const errorBody = await paymentResponse.text();
-    throw new Error(errorBody);
+
+    try {
+        const errorBody = await paymentResponse.json();
+        return errorBody;
+    } catch (e) {
+        const errorBody = await paymentResponse.text();
+        throw new Error(errorBody);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -102,17 +111,25 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             const token = await tokenize(paymentMethod);
             const paymentResults = await createPayment(token);
+            // Subsequent requests will need a new idempotency key
+            IDEMPOTENCY_KEY = crypto.randomUUID();
             if (paymentResults.success) {
                 displayPaymentResults('SUCCESS');
                 window.location = URL_REGISTRATION_DONE;
+            } else {
+                displayPaymentResults('FAILURE');
+                console.log(paymentResults.reason);
             }
 
             console.debug('Payment Success', paymentResults);
+            cardButton.disabled = false;
         } catch (e) {
             cardButton.disabled = false;
             displayPaymentResults('FAILURE');
             console.error(e.message);
         }
+
+        
     }
 
     const cardButton = document.getElementById('checkout');
