@@ -1,5 +1,5 @@
 {% extends "u2f/base.html" %}
-{% load argonauts widget_tweaks %}
+{% load widget_tweaks %}
 {% load i18n %}
 {% load static %}
 {% block title %}{% trans 'Add U2F Key' %}{% endblock %}
@@ -25,8 +25,6 @@
   </div>
 </div>
 
-<script type="application/json" id="django_u2f_registration">
-  {{ registration_request|json }}
-</script>
+{{ registration_request|json_script:"django_u2f_registration" }}
 <script src="{% static 'django_u2f/django_u2f.js' %}"></script>
 {% endblock %}

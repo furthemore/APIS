@@ -43,6 +43,7 @@ if SENTRY_ENABLED:
         auto_session_tracking=False,
     )
 
+    SENTRY_RELEASE = os.environ.get("SENTRY_RELEASE", "local")
     SENTRY_ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT")
     SENTRY_FRONTEND_DSN = os.environ.get("SENTRY_FRONTEND_DSN")
     SENTRY_USER_REPORTS = True
@@ -109,7 +110,6 @@ INSTALLED_APPS = [
     'import_export',
     'django_extensions',
     'django_u2f',
-    'argonauts',
     'maintenance_mode',
     'registration',
     'debug_toolbar',

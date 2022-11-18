@@ -48,7 +48,7 @@
                 <div class="col-sm-12">
                     <label>
                         <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required>
-                        I agree to abide by {{ event }}'s <a href="https://docs.google.com/document/d/e/2PACX-1vQwPV-toFZdjPJioZjlUGTWoLeC3kssVd8YRPGTKP99337JMCnQP94gpRWygr5dA9J9DITQE6ChdRWU/pub" target="_blank">Code of Conduct</a>.
+                        I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>. By registering for {{event}} you attest that you are not listed on any sexual offender registry.
                     </label>
                 </div>
 		        <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>

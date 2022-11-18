@@ -117,15 +117,6 @@
             </div>
 
             <div class="form-group">
-                <label for="artShow" class="col-sm-3 control-label">I have items to place in the Art Show</label>
-                <div class="col-sm-9">
-                    <input type="checkbox" id="artShow" name="artShow" class="form-control form-control-checkbox"/>
-                </div>
-                <div class="col-sm-9 col-sm-offset-3 small">We will contact you seperately with instructions and
-                    guidelines for how to submit art to the art show.
-                </div>
-            </div>
-            <div class="form-group">
                 <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
                 <div class="col-sm-9">
                     <textarea id="buttonOffer" name="buttonOffer"
@@ -216,10 +207,7 @@
                     <label>
                         <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox"
                                required>
-                        I have read and understand the rules pertaining to both {{event.name}} and the Markeplace. I agree
-                        to abide by these rules and by the {{event.name}} Code of Conduct. By registering for Mid-Atlantic
-                        Anthropomorphic Association’s {{event.name}} you attest that you are not listed on any sexual
-                        offender registry.
+                        I have read and understand the rules pertaining to both {{event.name}} and the Markeplace. I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>. By registering for {{event}} you attest that you are not listed on any sexual offender registry.
                     </label>
                 </div>
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
@@ -406,7 +394,7 @@
                 'wall': false, 'near':$("#near").val(), 'far':$("#far").val(),
                 'description': $("#description").val(), 'tableSize': $("#tableSize").val(),
                 'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
-                'reception': false, 'artShow': $("#artShow").is(':checked'),
+                'reception': false, 'artShow': false,
                 'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
                 'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
                 'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': false
