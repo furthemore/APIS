@@ -7,282 +7,283 @@
 
 {% block content %}
 
-{% if orderItems %}
+  {% if orderItems %}
 
-  <div class="tab-content">
-  <div role="tabpanel" class="tab-pane fade in active" id="personal">
-    <h1>Checkout</h1>
-    <h3>Add another attendee to your order, or checkout</h3>
-    <div class="col-sm-12">
+    <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <h1>Checkout</h1>
+      <h3>Add another attendee to your order, or checkout</h3>
+      <div class="col-sm-12">
         <div id="alert-bar" class="alert alert-danger alert-hidden" role="alert"><b>Test alert....</b></div>
-    </div>
-    <hr>
-
-    <h3>Your Order</h3>
-
-    <div class="row">
-      <div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
-      <div class="col-sm-2"><h4>Price</h4></div>
-    </div>
-
-    {% for item in orderItems %}
-      <div class="row">
-        {% if item.attendee %}
-          <div class="col-sm-5 col-sm-offset-1">{% attendee_get_first item.attendee %} {{ item.attendee.lastName }}
-            - {{ item.priceLevel }}</div>
-        {% else %}
-          <div class="col-sm-5 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</div>
-        {% endif %}
-        <div class="col-sm-2">${{ item.priceLevel.basePrice }}</div>
-        <div class="col-sm-2">
-          <a class="deleteAttendee" id="delete_{{ item.id }}">&times; Remove</a>
-        </div>
       </div>
-      {% for option in item.options %}
-        <div class="row">
-          {% if "number" in option and option.number %}
-            <div class="col-sm-5 col-sm-offset-1">{{ option.name }} x{{ option.number }}</div>
-          {% else %}
-            <div class="col-sm-5 col-sm-offset-1">{{ option.name }}</div>
-          {% endif %}
-          {% if option.total == 0 %}
-            <div class="col-sm-2">Free</div>
-          {% else %}
-            <div class="col-sm-2">${{ option.total }}</div>
-          {% endif %}
+      <hr>
 
-        </div>
-      {% endfor %}
-      {% if discount %}
+      <h3>Your Order</h3>
+
+      <div class="row">
+        <div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
+        <div class="col-sm-2"><h4>Price</h4></div>
+      </div>
+
+      {% for item in orderItems %}
         <div class="row">
-          <div class="col-sm-5 col-sm-offset-1">Discount - {{ discount.codeName }}</div>
-          {% if discount.amountOff == 0 %}
-            <div class="col-sm-2">- ${{ total_discount|floatformat:2 }}</div>
+          {% if item.attendee %}
+            <div class="col-sm-5 col-sm-offset-1">{% attendee_get_first item.attendee %} {{ item.attendee.lastName }}
+              - {{ item.priceLevel }}</div>
           {% else %}
-            <div class="col-sm-2">- ${{ discount.amountOff|floatformat:2 }}</div>
+            <div class="col-sm-5 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</div>
           {% endif %}
+          <div class="col-sm-2">${{ item.priceLevel.basePrice }}</div>
           <div class="col-sm-2">
+            <a class="deleteAttendee" id="delete_{{ item.id }}">&times; Remove</a>
           </div>
         </div>
-      {% endif %}
-      <div class="row" style="height:10px;">&nbsp;</div>
-
-    {% endfor %}
-    <div class="row">
-      <div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
-      <div class="col-sm-2"><h4>${{ total|floatformat:2 }}</h4></div>
-    </div>
-
-
-    <br/>
-    {% if not discount.newStaffEvent and not discount.staffEvent %}
-      <a class="btn btn-primary" id="addAnother">Add Another Attendee</a>
-      <a class="btn btn-danger" id="cancel">Cancel Registration</a>
-    {% endif %}
-
-    {% if hasMinors %}
-      <hr/>
-      <h3>Important Information About Minor Registration</h3>
-      <div class="row">
-        <div class="col-sm-11 col-sm-offset-1">
-          One or more of the attendees in this order will still be minors at the start of the convention.
-          Please note that we require a parent or guardian to be present at registration to sign our
-          consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention)
-          must have a parent or guardian also register and accompany them during the event. If you have
-          any questions about our policies, please contact
-          <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>.
-        </div>
-      </div>
-    {% endif %}
-
-    <hr/>
-    {% if total > 0 %}
-
-      {% if not discount %}
-
-        <h3>Discount</h3>
-        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount
-          code, enter it below:
-        </div>
-        <div class="row">
-        <div class="col-sm-11 col-sm-offset-1">
-          <div class="form-inline">
-            <div class="form-group">
-              <label for="discount" class="sr-only">Discount Code</label>
-              <input type="text" id="discount" class="form-control"/>
-            </div>
-            <button class="btn btn-primary" id="apply_discount">Apply</button>
-            <p>&nbsp;</p>
-          </div>
-        </div>
-
-      {% endif %}
-      <div class="container" style="width: inherit">
-        <form class="form-horizontal" role="form" data-toggle="validator">
-
-          <h3>Extra Donations</h3>
-          <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
-            {% if event.charity %}
-              If you would like to make an extra gift to our annual charity,
-              {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}
-                {{ event.charity }}{% endif %}, or to the convention, please enter it below.
+        {% for option in item.options %}
+          <div class="row">
+            {% if "number" in option and option.number %}
+              <div class="col-sm-5 col-sm-offset-1">{{ option.name }} x{{ option.number }}</div>
             {% else %}
-              If you would like to make an extra gift to the convention, please enter it below.
+              <div class="col-sm-5 col-sm-offset-1">{{ option.name }}</div>
             {% endif %}
+            {% if option.total == 0 %}
+              <div class="col-sm-2">Free</div>
+            {% else %}
+              <div class="col-sm-2">${{ option.total }}</div>
+            {% endif %}
+
           </div>
-          {% if event.charity %}
+        {% endfor %}
+        {% if discount %}
+          <div class="row">
+            <div class="col-sm-5 col-sm-offset-1">Discount - {{ discount.codeName }}</div>
+            {% if discount.amountOff == 0 %}
+              <div class="col-sm-2">- ${{ total_discount|floatformat:2 }}</div>
+            {% else %}
+              <div class="col-sm-2">- ${{ discount.amountOff|floatformat:2 }}</div>
+            {% endif %}
+            <div class="col-sm-2">
+            </div>
+          </div>
+        {% endif %}
+        <div class="row" style="height:10px;">&nbsp;</div>
+
+      {% endfor %}
+      <div class="row">
+        <div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
+        <div class="col-sm-2"><h4>${{ total|floatformat:2 }}</h4></div>
+      </div>
+
+
+      <br/>
+      {% if not discount.newStaffEvent and not discount.staffEvent %}
+        <a class="btn btn-primary" id="addAnother">Add Another Attendee</a>
+        <a class="btn btn-danger" id="cancel">Cancel Registration</a>
+      {% endif %}
+
+      {% if hasMinors %}
+        <hr/>
+        <h3>Important Information About Minor Registration</h3>
+        <div class="row">
+          <div class="col-sm-11 col-sm-offset-1">
+            One or more of the attendees in this order will still be minors at the start of the convention.
+            Please note that we require a parent or guardian to be present at registration to sign our
+            consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention)
+            must have a parent or guardian also register and accompany them during the event. If you have
+            any questions about our policies, please contact
+            <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>.
+          </div>
+        </div>
+      {% endif %}
+
+      <hr/>
+      {% if total > 0 %}
+
+        {% if not discount %}
+
+          <h3>Discount</h3>
+          <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount
+            code, enter it below:
+          </div>
+          <div class="row">
+          <div class="col-sm-11 col-sm-offset-1">
+            <div class="form-inline">
+              <div class="form-group">
+                <label for="discount" class="sr-only">Discount Code</label>
+                <input type="text" id="discount" class="form-control"/>
+              </div>
+              <button class="btn btn-primary" id="apply_discount">Apply</button>
+              <p>&nbsp;</p>
+            </div>
+          </div>
+
+        {% endif %}
+        <div class="container" style="width: inherit">
+          <form class="form-horizontal" role="form" data-toggle="validator">
+
+            <h3>Extra Donations</h3>
+            <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+              {% if event.charity %}
+                If you would like to make an extra gift to our annual charity,
+                {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}
+                  {{ event.charity }}{% endif %}, or to the convention, please enter it below.
+              {% else %}
+                If you would like to make an extra gift to the convention, please enter it below.
+              {% endif %}
+            </div>
+            {% if event.charity %}
+              <div class="form-group">
+                <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+                <div class="col-sm-4">
+                  <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00"
+                           id="donateCharity" class="form-control validate"
+                           data-error="Please use only numbers and a decimal."/>
+                  </div>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+            {% endif %}
+
             <div class="form-group">
-              <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+              <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
               <div class="col-sm-4">
                 <div class="input-group">
                   <div class="input-group-addon">$</div>
-                  <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00"
-                         id="donateCharity" class="form-control validate"
-                         data-error="Please use only numbers and a decimal."/>
+                  <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg"
+                         class="form-control validate" data-error="Please use only numbers and a decimal."/>
                 </div>
               </div>
               <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
-          {% endif %}
+            <hr/>
 
-          <div class="form-group">
-            <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
-            <div class="col-sm-4">
-              <div class="input-group">
-                <div class="input-group-addon">$</div>
-                <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg"
-                       class="form-control validate" data-error="Please use only numbers and a decimal."/>
-              </div>
-            </div>
-            <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-          </div>
-          <hr/>
+            {% if event.collectBillingAddress %}
+              <h3>Billing Information</h3>
 
-          {% if event.collectBillingAddress %}
-            <h3>Billing Information</h3>
+              {% if not hasMinors and event.collectAddress %}
+                <div class="form-group">
+                  <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+                  <div class="col-sm-9">
+                    <select id="useFrom" class="form-control">
+                      <option value="" selected>The Fields Below</option>
+                      {% for oi in orderItems %}
+                        {% if oi.attendee %}
+                          <option
+                              value="{{ forloop.counter0 }}">{% attendee_get_first oi.attendee %} {{ oi.attendee.lastName }}</option>
+                        {% else %}
+                          <option value="{{ forloop.counter0 }}">{{ oi.badge.attendee }}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              {% endif %}
 
-            {% if not hasMinors and event.collectAddress %}
               <div class="form-group">
-                <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+                <label for="billingName" class="col-sm-3 control-label">Legal Billing Name<span
+                    style="color:red;">*</span></label>
+                <div class="col-sm-4">
+                  <input type="text" id="fname" placeholder="Billing First Name" class="form-control validate" required
+                         data-error="Billing name is required. "/>
+                </div>
+                <div class="col-sm-5">
+                  <input type="text" id="lname" placeholder="Billing Last Name" class="form-control validate" required
+                         data-error="Billing name is required. "/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="email" class="col-sm-3 control-label">Email<span style="color:red;">*</span></label>
                 <div class="col-sm-9">
-                  <select id="useFrom" class="form-control">
-                    <option value="" selected>The Fields Below</option>
-                    {% for oi in orderItems %}
-                      {% if oi.attendee %}
-                        <option
-                            value="{{ forloop.counter0 }}">{% attendee_get_first oi.attendee %} {{ oi.attendee.lastName }}</option>
-                      {% else %}
-                        <option value="{{ forloop.counter0 }}">{{ oi.badge.attendee }}</option>
-                      {% endif %}
-                    {% endfor %}
-                  </select>
+                  <input type="email" id="email" placeholder="Email" class="form-control validate" required
+                         data-error="Email is required. "/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="add1" class="col-sm-3 control-label">Billing Address<span
+                    style="color:red;">*</span></label>
+                <div class="col-sm-9">
+                  <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control validate"
+                         required/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                <div class="col-sm-9">
+                  <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control"/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="city" class="col-sm-3 control-label">City/State<span style="color:red;">*</span></label>
+                <div class="col-sm-4">
+                  <input type="text" name="city" id="city" placeholder="City" class="form-control validate" required
+                         data-error="City is required."/>
+                </div>
+                <div class="col-sm-5">
+                  <select class="form-control bfh-states" id="state" data-country="country" data-state="VA"
+                          name="state"></select>
+                </div>
+
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="country" class="col-sm-3 control-label">Country<span style="color:red;">*</span></label>
+                <div class="col-sm-9">
+                  <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
                 </div>
               </div>
+              <input type="hidden" name="postal" id="postal" value="">
+              <hr/>
             {% endif %}
 
-            <div class="form-group">
-              <label for="billingName" class="col-sm-3 control-label">Legal Billing Name<span
-                  style="color:red;">*</span></label>
-              <div class="col-sm-4">
-                <input type="text" id="fname" placeholder="Billing First Name" class="form-control validate" required
-                       data-error="Billing name is required. "/>
-              </div>
-              <div class="col-sm-5">
-                <input type="text" id="lname" placeholder="Billing Last Name" class="form-control validate" required
-                       data-error="Billing name is required. "/>
-              </div>
-              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            <div>
+              <form id="payment-form">
+                <div id="card-container"></div>
+              </form>
+              <div id="payment-status-container"></div>
             </div>
-            <div class="form-group">
-              <label for="email" class="col-sm-3 control-label">Email<span style="color:red;">*</span></label>
-              <div class="col-sm-9">
-                <input type="email" id="email" placeholder="Email" class="form-control validate" required
-                       data-error="Email is required. "/>
-              </div>
-              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-            </div>
-            <div class="form-group">
-              <label for="add1" class="col-sm-3 control-label">Billing Address<span style="color:red;">*</span></label>
-              <div class="col-sm-9">
-                <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control validate"
-                       required/>
-              </div>
-              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-            </div>
-            <div class="form-group">
-              <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-              <div class="col-sm-9">
-                <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control"/>
-              </div>
-              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-            </div>
-            <div class="form-group">
-              <label for="city" class="col-sm-3 control-label">City/State<span style="color:red;">*</span></label>
-              <div class="col-sm-4">
-                <input type="text" name="city" id="city" placeholder="City" class="form-control validate" required
-                       data-error="City is required."/>
-              </div>
-              <div class="col-sm-5">
-                <select class="form-control bfh-states" id="state" data-country="country" data-state="VA"
-                        name="state"></select>
-              </div>
+            <br/>
+            {% csrf_token %}
 
-              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-            </div>
-            <div class="form-group">
-              <label for="country" class="col-sm-3 control-label">Country<span style="color:red;">*</span></label>
-              <div class="col-sm-9">
-                <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+            <div class="row">
+              <div class="col-sm-3 col-sm-offset-9">
+                <button class="btn btn-primary btn-block" id="checkout">Checkout</button>
               </div>
             </div>
-            <input type="hidden" name="postal" id="postal" value="">
-            <hr/>
-          {% endif %}
 
-          <div>
-            <form id="payment-form">
-              <div id="card-container"></div>
-            </form>
-            <div id="payment-status-container"></div>
-          </div>
-          <br/>
-          {% csrf_token %}
-
-          <div class="row">
-            <div class="col-sm-3 col-sm-offset-9">
-              <button class="btn btn-primary btn-block" id="checkout">Checkout</button>
-            </div>
-          </div>
-
-        </form>
-      </div>
-    {% else %}
-
-      {% csrf_token %}
-      <div class="container-fluid">
-        <div class="row">
-          <button class="btn btn-primary col-sm-3 col-sm-offset-9 col-xs-12" id="checkout">Checkout</button>
+          </form>
         </div>
+      {% else %}
+
+        {% csrf_token %}
+        <div class="container-fluid">
+          <div class="row">
+            <button class="btn btn-primary col-sm-3 col-sm-offset-9 col-xs-12" id="checkout">Checkout</button>
+          </div>
+        </div>
+
+      {% endif %}
+
       </div>
-
-    {% endif %}
-
     </div>
-  </div>
-{% else %}
+  {% else %}
 
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
-      <h1>Checkout</h1>
-      <h3>There are no attendees in your order</h3>
-      <hr>
-      <a class="btn btn-primary" href="{% url 'registration:index' %}">Add Attendee</a>
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Checkout</h1>
+        <h3>There are no attendees in your order</h3>
+        <hr>
+        <a class="btn btn-primary" href="{% url 'registration:index' %}">Add Attendee</a>
 
 
+      </div>
     </div>
-  </div>
 
-{% endif %}
+  {% endif %}
 
 {% endblock %}
 
@@ -296,60 +297,60 @@
     {% endif %}
   {% endif %}
   <script type="text/javascript">
-    /* Square & Payments constants */
-    const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
-    const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
+      /* Square & Payments constants */
+      const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
+      const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
 
-    /* APIS URLs */
-    const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout' %}";
-    const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
-    const URL_REGISTRATION_DONE = "{% url 'registration:done' %}";
-    const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
-    const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
-    const URL_REGISTRATION_REMOVE_FROM_CART = "{% url 'registration:remove_from_cart' %}";
-    const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:cancel_order' %}";
+      /* APIS URLs */
+      const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout' %}";
+      const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
+      const URL_REGISTRATION_DONE = "{% url 'registration:done' %}";
+      const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
+      const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+      const URL_REGISTRATION_REMOVE_FROM_CART = "{% url 'registration:remove_from_cart' %}";
+      const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:cancel_order' %}";
 
-    /* Application data */
-    let cart_total = {{ total|default:0 }};
+      /* Application data */
+      let cart_total = {{ total|default:0 }};
   </script>
   <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
   {% if total > 0 %}
     <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
   {% else %}
     <script type="application/javascript">
-      async function checkout(event) {
-          event.preventDefault();
-          const checkoutButton = document.getElementById('checkout');
-          checkoutButton.disabled = true;
-          hideAlert();
+        async function checkout(event) {
+            event.preventDefault();
+            const checkoutButton = document.getElementById('checkout');
+            checkoutButton.disabled = true;
+            hideAlert();
 
-          const body = JSON.stringify({});
-          try {
-              const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
-              if (response.ok) {
-                  window.location = URL_REGISTRATION_DONE;
-                  return;
-              } else {
-                  const reason = await formatError(response);
-                  showAlert(
-                      `<b>Sorry, an unknown error occurred while submitting your registration for the following reason:</b>` +
-                      `<br><br>${reason}<br><br>  Please try again later.  If the problem persists, please contact ` +
-                          `<a href="mailto:${EVENT_REGISTRATION_EMAIL}">${EVENT_REGISTRATION_EMAIL}</a> for assistance.`
-                  );
-              }
-          } catch (e) {
-              alert(`Sorry, an error occurred while submitting your registration:\n\n${e}`);
-          }
+            const body = JSON.stringify({});
+            try {
+                const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
+                if (response.ok) {
+                    window.location = URL_REGISTRATION_DONE;
+                    return;
+                } else {
+                    const reason = await formatError(response);
+                    showAlert(
+                        `<b>Sorry, an unknown error occurred while submitting your registration for the following reason:</b>` +
+                        `<br><br>${reason}<br><br>  Please try again later.  If the problem persists, please contact ` +
+                        `<a href="mailto:${EVENT_REGISTRATION_EMAIL}">${EVENT_REGISTRATION_EMAIL}</a> for assistance.`
+                    );
+                }
+            } catch (e) {
+                alert(`Sorry, an error occurred while submitting your registration:\n\n${e}`);
+            }
 
-          checkoutButton.disabled = false;
-      }
+            checkoutButton.disabled = false;
+        }
 
-      document.addEventListener('DOMContentLoaded', async function () {
-          const cardButton = document.getElementById('checkout');
-          cardButton.addEventListener('click', async function (event) {
-              await checkout(event);
-          });
-      });
+        document.addEventListener('DOMContentLoaded', async function () {
+            const cardButton = document.getElementById('checkout');
+            cardButton.addEventListener('click', async function (event) {
+                await checkout(event);
+            });
+        });
     </script>
   {% endif %}
   <script type="text/javascript">
@@ -430,7 +431,7 @@
                       window.location.reload();
                   } else {
                       alert(`An error has occurred: ${result.message} If this error continues, please contact ` +
-                            `${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                          `${EVENT_REGISTRATION_EMAIL} for assistance.`);
                   }
               }
           });

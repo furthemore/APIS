@@ -3,467 +3,492 @@
 {% load registration_tags static %}
 
 {% block content %}
-<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
-      </div>
-      <div class="modal-body">
-        {% if event.allowOnlineMinorReg %}
-          <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the door
-            to sign our consent form.</p>
-          <p>A parent or guardian must register and accompany anyone under the age of 13 (by the start of the convention).</p>
-          <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
-        {% else %}
-          <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
-          <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the time of the event
-            (born after {% subtract_years event.eventStart 18 %}). A parent or guardian must also register for the convention to accompany
-            anyone under the age of 13 at the time of the event (born after {% subtract_years event.eventStart 13 %}).</p>
-          <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
-        {% endif %}
+  <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
+        </div>
+        <div class="modal-body">
+          {% if event.allowOnlineMinorReg %}
+            <p>Anyone under the age of 18 (by the start of the convention) must have a parent or guardian present at the
+              door
+              to sign our consent form.</p>
+            <p>A parent or guardian must register and accompany anyone under the age of 13 (by the start of the
+              convention).</p>
+            <p>Please contact <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a> if you
+              have any questions.</p>
+          {% else %}
+            <p>Only those over the age of 18 (by the start of the convention) may register online.</p>
+            <p>A parent or legal guardian must be present at the door to register anybody who will be under 18 at the
+              time of the event
+              (born after {% subtract_years event.eventStart 18 %}). A parent or guardian must also register for the
+              convention to accompany
+              anyone under the age of 13 at the time of the event (born
+              after {% subtract_years event.eventStart 13 %}).</p>
+            <p>Please contact <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a> if you
+              have any questions.</p>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-    <noscript>
-      <h1>Javascript is required to use this form.</h1>
-    </noscript>
-    <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
+  <noscript>
+    <h1>Javascript is required to use this form.</h1>
+  </noscript>
+  <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
     <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Pre-Register for {{event}}!</h1>
-        <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
-	<hr>
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Pre-Register for {{ event }}!</h1>
+        <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked
+          with a red asterisk (<span style="color:red;">*</span>).</p>
+        <hr>
 
-            {% show_attendee_form event=event emailOptions=True %}
+        {% show_attendee_form event=event emailOptions=True %}
 
         <h3><a name="level"></a>Select your registration options and level.</h3>
         <hr>
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.." class="form-control form-control-text" maxlength="25" required="required" autocomplete="nope">
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="firstName" class="col-sm-3 control-label">Are you interested in volunteering?</label>
-                    <div class="col-sm-9">
-                        <select id="volunteer" name="volunteer"  class="form-control form-control-select" ><option value="">No Thanks</option></select>
-                    </div>
+        <div class="form-group">
+          <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
+          <div class="col-sm-9">
+            <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.."
+                   class="form-control form-control-text" maxlength="25" required="required" autocomplete="nope">
+          </div>
+          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+        </div>
+        <div class="form-group">
+          <label for="firstName" class="col-sm-3 control-label">Are you interested in volunteering?</label>
+          <div class="col-sm-9">
+            <select id="volunteer" name="volunteer" class="form-control form-control-select">
+              <option value="">No Thanks</option>
+            </select>
+          </div>
 
-                </div>
-		<hr/>
+        </div>
+        <hr/>
         <div class="container-fluid">
-    		<div class="row" id="levelContainer">
-                <noscript>Javascript is required for this site.</noscript>
-                <div id="levelContainerAlert" class="alert alert-danger" style="display:none">
-                    <b>No price levels have been set up yet!</b>
-                    If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add some</a> before this form will work.
-                </div>
+          <div class="row" id="levelContainer">
+            <noscript>Javascript is required for this site.</noscript>
+            <div id="levelContainerAlert" class="alert alert-danger" style="display:none">
+              <b>No price levels have been set up yet!</b>
+              If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add
+              some</a> before this form will work.
             </div>
+          </div>
         </div>
-		<br/>
-		<hr/>
-             <div>
-                    <div>
-                        <label>
-                            <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
-			I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>. By registering for {{event}} you attest that you are not listed on any sexual offender registry.
-                        </label>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<div class="container-fluid">
-       	    <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button> &nbsp;
+        <br/>
+        <hr/>
+        <div>
+          <div>
+            <label>
+              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
+              I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of
+              Conduct</a>. By registering for {{ event }} you attest that you are not listed on any sexual offender
+              registry.
+            </label>
+          </div>
+          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
         </div>
-	</div>
-	</div>
-	{% csrf_token %}
-	</form>
+        <div class="container-fluid">
+          <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button> &nbsp;
+        </div>
+      </div>
+    </div>
+    {% csrf_token %}
+  </form>
 
 {% endblock %}
 
 {% block javascript %}
 
-<script type="text/html" id="levelTemplate">
+  <script type="text/html" id="levelTemplate">
     <div id="levelTemplateColumn" class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
-    <div class="panel price">
+      <div class="panel price">
         <div class="panel-heading  text-center">
-        <h3 data-content="name"></h3>
+          <h3 data-content="name"></h3>
         </div>
         <div class="panel-body text-center">
-            <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+          <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
         </div>
         <div class="panel-footer">
-            <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
-            <a class="btn btn-default btn-block changeLevel">Change Level?</a>
+          <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
+          <a class="btn btn-default btn-block changeLevel">Change Level?</a>
         </div>
+      </div>
     </div>
-    </div>
-</script>
+  </script>
 
-<script type="text/html" id="optionPlainTextTemplate">
+  <script type="text/html" id="optionPlainTextTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <div data-content="content"></div>
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <div data-content="content"></div>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionBoolTemplate">
+  </script>
+  <script type="text/html" id="optionBoolTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionBoolReqTemplate">
+  </script>
+  <script type="text/html" id="optionBoolReqTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionIntTemplate">
+  </script>
+  <script type="text/html" id="optionIntTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0/>
+      </div>
     </div>
 
-</script>
-<script type="text/html" id="optionIntReqTemplate">
+  </script>
+  <script type="text/html" id="optionIntReqTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0/>
+      </div>
     </div>
 
-</script>
-<script type="text/html" id="optionStringTemplate">
+  </script>
+  <script type="text/html" id="optionStringTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
-            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+               data-template-bind='{"attribute": "placeholder", "value": "placeholder"}'/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionStringReqTemplate">
+  </script>
+  <script type="text/html" id="optionStringReqTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
-            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+               data-template-bind='{"attribute": "placeholder", "value": "placeholder"}'/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionListTemplate">
+  </script>
+  <script type="text/html" id="optionListTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <select data-id="id" class="form-control form-control-select levelOptions"
-              data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <select data-id="id" class="form-control form-control-select levelOptions"
+                data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+      </div>
     </div>
-</script>
+  </script>
 
- <script type="text/javascript">
-    var levelTemplateData = [];
-    var levelData = [];
-    var deptData = [];
-    var shirtSizes = [];
-    {% if discount %}
-    var discount = {
-        amountOff: {{ discount.amountOff }},
-        percentOff: {{ discount.percentOff }}
-    };
-    {% else %}
-    var discount = {
-        amountOff: 0,
-        percentOff: 0
-    };
-    {% endif %}
+  <script type="text/javascript">
+      var levelTemplateData = [];
+      var levelData = [];
+      var deptData = [];
+      var shirtSizes = [];
+      {% if discount %}
+          var discount = {
+              amountOff: {{ discount.amountOff }},
+              percentOff: {{ discount.percentOff }}
+          };
+      {% else %}
+          var discount = {
+              amountOff: 0,
+              percentOff: 0
+          };
+      {% endif %}
 
-    var select_level = function (levelId) {
-        $.each( levelTemplateData, function( key, val ) {
-            var id = val.levelId.split('_')[1];
-            if (id == levelId){
-                $("#regLevel").val(val.name);
-                $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                $(".changeLevel").show();
-                $(".selectLevel").text("Selected!");
-                $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
-                generateOptions(id);
-                return false;
-            }
-        });
-    };
+      var select_level = function (levelId) {
+          $.each(levelTemplateData, function (key, val) {
+              var id = val.levelId.split('_')[1];
+              if (id == levelId) {
+                  $("#regLevel").val(val.name);
+                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                  $(".changeLevel").show();
+                  $(".selectLevel").text("Selected!");
+                  $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
+                  generateOptions(id);
+                  return false;
+              }
+          });
+      };
 
-    $( "body" ).ready(function() {
-        $("form").fadeIn();
-        $.getJSON("{% url 'registration:pricelevels' %}", function(data) {
-            levelData = data;
-            $.each( data, function( key, val ) {
-                var centsOff = (parseFloat(val.base_price) * discount.percentOff) / 100;
-                levelTemplateData.push({
-                    name: val.name,
-                    price: "$" + (parseFloat(val.base_price) - centsOff - parseFloat(discount.amountOff)),
-                    levelId: "level_" + val.id,
-                    selectText: "Select " + val.name
-                });
-            });
-            if (levelTemplateData.length == 0) {
-                $("#levelContainerAlert").show();
-            } else {
-                $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-                if (levelTemplateData.length == 1) {
-                    select_level(1);
-                }
-            }
-            $(".changeLevel").hide();
+      $("body").ready(function () {
+          $("form").fadeIn();
+          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+              levelData = data;
+              $.each(data, function (key, val) {
+                  var centsOff = (parseFloat(val.base_price) * discount.percentOff) / 100;
+                  levelTemplateData.push({
+                      name: val.name,
+                      price: "$" + (parseFloat(val.base_price) - centsOff - parseFloat(discount.amountOff)),
+                      levelId: "level_" + val.id,
+                      selectText: "Select " + val.name
+                  });
+              });
+              if (levelTemplateData.length == 0) {
+                  $("#levelContainerAlert").show();
+              } else {
+                  $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+                  if (levelTemplateData.length == 1) {
+                      select_level(1);
+                  }
+              }
+              $(".changeLevel").hide();
 
-        });
-        $.getJSON("{% url 'registration:departments' %}", function(data) {
-            deptData = data;
-            $.each(data, function(key, val) {
-                $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
-            });
-        });
-        $.getJSON("{% url 'registration:shirtsizes' %}", function(data) {
-            shirtSizes = data;
-        });
-    });
+          });
+          $.getJSON("{% url 'registration:departments' %}", function (data) {
+              deptData = data;
+              $.each(data, function (key, val) {
+                  $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
+              });
+          });
+          $.getJSON("{% url 'registration:shirtsizes' %}", function (data) {
+              shirtSizes = data;
+          });
+      });
 
-    $("#levelContainer").on('click', 'a.selectLevel', function(){
-        clearLevels();
-        var levelId = $(this).attr('id').split('_')[1];
-        select_level(levelId);
-    });
+      $("#levelContainer").on('click', 'a.selectLevel', function () {
+          clearLevels();
+          var levelId = $(this).attr('id').split('_')[1];
+          select_level(levelId);
+      });
 
-    $("#levelContainer").on('click', 'a.changeLevel', function() {
-        $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-        $("#regLevel").val("");
-        $(".changeLevel").hide();
-    });
+      $("#levelContainer").on('click', 'a.changeLevel', function () {
+          $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+          $("#regLevel").val("");
+          $(".changeLevel").hide();
+      });
 
-    var clearLevels = function(){
-        $.each( levelTemplateData, function( key, val ) {
-            $("#"+val.levelId).text("Select " + val.name);
-        });
-        $("form").validator('update');
-    };
+      var clearLevels = function () {
+          $.each(levelTemplateData, function (key, val) {
+              $("#" + val.levelId).text("Select " + val.name);
+          });
+          $("form").validator('update');
+      };
 
-    var generateOptions = function (levelId) {
-        var data = [];
-        var description = "";
-        var image = null;
-        $.each(levelData, function (key, thing) {
-            if (thing.id == levelId) {
-                data = thing.options;
-                description = thing.description;
-                if (thing.image === undefined) {
-                } else {
-                    image = "<br><button data-url='" + thing.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</button>";
-                }
-                return false;
-            }
-        });
-        var container = $("<div id='optionsContainer' class='col-xs-12 col-sm-6 col-md-8 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
-        $("#levelContainer").append(container);
-        $.each(data, function (key, val) {
-            if (val.value == "0.00") {
-                var price = " (Free) ";
-            } else {
-                var price = " (+$" + val.value + ") "
-            }
-            if (val.image == null) {
-                var image = ""
-            } else {
-                var image = "<br><a href='javascript:;' data-image='" + val.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>"
-            }
-            var required = "";
-            console.log(val);
-            if (val.required) {
-                required = "required";
-            }
-            if (val.active) {
-                switch (val.type) {
-                    case "plaintext":
-                        var template = $("#optionPlainTextTemplate");
-                        $("#optionsContainer").loadTemplate(template, {
-                            'content': val.description
-                        }, {append: true});
-                        break;
-                    case "bool":
-                        var template = $("#optionBoolTemplate");
-                        if (val.required) {
-                            template = $("#optionBoolReqTemplate");
-                        }
-                        $("#optionsContainer").loadTemplate(template, {
-                            'name': val.name + " " + price + image,
-                            'id': "option_" + val.id
-                        }, {append: true});
-                        if (val.value == "0.00") {
-                            $("#option_" + val.id).prop('checked', true);
-                        }
-                        break;
-                    case "int":
-                        var template = $("#optionIntTemplate");
-                        if (val.required) {
-                            template = $("#optionIntReqTemplate");
-                        }
-                        $("#optionsContainer").loadTemplate(template, {
-                            'name': val.name + " " + price + image,
-                            'id': "option_" + val.id
-                        }, {append: true});
-                        break;
-                    case "string":
-                        var template = $("#optionStringTemplate");
-                        if (val.required) {
-                            template = $("#optionStringReqTemplate");
-                        }
-                        var placeholder = val.name;
-                        $("#optionsContainer").loadTemplate(template, {
-                            'name': val.name + " " + price + image,
-                            'id': "option_" + val.id,
-                            'placeholder': placeholder,
-                        }, {append: true});
-                        break;
-                    case "Jersey":
-                        break;
-                    case "StaffJersey":
-                        break;
-                    default:
-                        if (val.list == []) {
-                            break;
-                        }
-                        var options = [];
-                        if (!val.required) {
-                            options.push({"content": "Select One...", "value": ""});
-                        }
-                        $.each(val.list, function (key, item) {
-                            options.push({"content": item.name, "value": item.id})
-                        });
-                        $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-                            'name': val.name + " " + price + image,
-                            'id': "option_" + val.id,
-                            'options': options
-                        }, {append: true});
-                        break;
-                }
-            }
-        });
+      var generateOptions = function (levelId) {
+          var data = [];
+          var description = "";
+          var image = null;
+          $.each(levelData, function (key, thing) {
+              if (thing.id == levelId) {
+                  data = thing.options;
+                  description = thing.description;
+                  if (thing.image === undefined) {
+                  } else {
+                      image = "<br><button data-url='" + thing.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</button>";
+                  }
+                  return false;
+              }
+          });
+          var container = $("<div id='optionsContainer' class='col-xs-12 col-sm-6 col-md-8 col-lg-8'><h4>Level Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
+          $("#levelContainer").append(container);
+          $.each(data, function (key, val) {
+              if (val.value == "0.00") {
+                  var price = " (Free) ";
+              } else {
+                  var price = " (+$" + val.value + ") "
+              }
+              if (val.image == null) {
+                  var image = ""
+              } else {
+                  var image = "<br><a href='javascript:;' data-image='" + val.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>"
+              }
+              var required = "";
+              console.log(val);
+              if (val.required) {
+                  required = "required";
+              }
+              if (val.active) {
+                  switch (val.type) {
+                      case "plaintext":
+                          var template = $("#optionPlainTextTemplate");
+                          $("#optionsContainer").loadTemplate(template, {
+                              'content': val.description
+                          }, {append: true});
+                          break;
+                      case "bool":
+                          var template = $("#optionBoolTemplate");
+                          if (val.required) {
+                              template = $("#optionBoolReqTemplate");
+                          }
+                          $("#optionsContainer").loadTemplate(template, {
+                              'name': val.name + " " + price + image,
+                              'id': "option_" + val.id
+                          }, {append: true});
+                          if (val.value == "0.00") {
+                              $("#option_" + val.id).prop('checked', true);
+                          }
+                          break;
+                      case "int":
+                          var template = $("#optionIntTemplate");
+                          if (val.required) {
+                              template = $("#optionIntReqTemplate");
+                          }
+                          $("#optionsContainer").loadTemplate(template, {
+                              'name': val.name + " " + price + image,
+                              'id': "option_" + val.id
+                          }, {append: true});
+                          break;
+                      case "string":
+                          var template = $("#optionStringTemplate");
+                          if (val.required) {
+                              template = $("#optionStringReqTemplate");
+                          }
+                          var placeholder = val.name;
+                          $("#optionsContainer").loadTemplate(template, {
+                              'name': val.name + " " + price + image,
+                              'id': "option_" + val.id,
+                              'placeholder': placeholder,
+                          }, {append: true});
+                          break;
+                      case "Jersey":
+                          break;
+                      case "StaffJersey":
+                          break;
+                      default:
+                          if (val.list == []) {
+                              break;
+                          }
+                          var options = [];
+                          if (!val.required) {
+                              options.push({"content": "Select One...", "value": ""});
+                          }
+                          $.each(val.list, function (key, item) {
+                              options.push({"content": item.name, "value": item.id})
+                          });
+                          $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
+                              'name': val.name + " " + price + image,
+                              'id': "option_" + val.id,
+                              'options': options
+                          }, {append: true});
+                          break;
+                  }
+              }
+          });
 
-        $("form").validator('update');
-    };
+          $("form").validator('update');
+      };
 
-    var getOptions = function() {
-        var options = $(".levelOptions");
-                var data = [];
-        $.each(options, function(key, option) {
-            if ($(option).is(':checkbox')) {
-                if ($(option).is(':checked')) {
-                    data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
-                }
-            } else {
-                if ($(option).val() != "") {
-                    data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-                }
-            }
-        });
-        return data;
-    };
+      var getOptions = function () {
+          var options = $(".levelOptions");
+          var data = [];
+          $.each(options, function (key, option) {
+              if ($(option).is(':checkbox')) {
+                  if ($(option).is(':checked')) {
+                      data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
+                  }
+              } else {
+                  if ($(option).val() != "") {
+                      data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                  }
+              }
+          });
+          return data;
+      };
 
-    function validate_date(date) {
-        const date_regex = /\d\d\d\d-\d\d-\d\d/;
-        return date.match(date_regex);
-    }
+      function validate_date(date) {
+          const date_regex = /\d\d\d\d-\d\d-\d\d/;
+          return date.match(date_regex);
+      }
 
-    function register_click(e) {
-        e.preventDefault();
-        $("form").validator('validate');
-        let errorCount = $(".has-error").length;
-        if (errorCount > 0) {
-            $("#register").one('click', register_click);
-            return;
-        }
+      function register_click(e) {
+          e.preventDefault();
+          $("form").validator('validate');
+          let errorCount = $(".has-error").length;
+          if (errorCount > 0) {
+              $("#register").one('click', register_click);
+              return;
+          }
 
-        let birthdate_str = $("#birthDate").val();
-        if (birthdate_str == "" || !validate_date(birthdate_str)) {
-            alert("You must enter your birthdate to submit your registration.");
-            $("#register").one('click', register_click);
-            return;
-        }
-        let birthdate = parseDate(birthdate_str);
+          let birthdate_str = $("#birthDate").val();
+          if (birthdate_str == "" || !validate_date(birthdate_str)) {
+              alert("You must enter your birthdate to submit your registration.");
+              $("#register").one('click', register_click);
+              return;
+          }
+          let birthdate = parseDate(birthdate_str);
 
-        {% if not event.allowOnlineMinorReg %}
-        let age = getAgeByEventStart(birthdate);
-        if (age < 18) {
-            alert("You must be 18 by the first day of {{event}} to register online.");
-            $("#register").one('click', register_click);
-            return;
-        }
-        {% endif %}
-        let data = {
-            'attendee': {
-                'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 'preferredName': $("#preferredName").val(),
-                'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                'phone': $("#phone").val(), 'email': $("#email").val(), 'birthdate': $("#birthDate").val(),
-                'badgeName': $("#badgeName").val(), 'emailsOk': $("#contact").is(':checked'),
-                'volDepts': $("#volunteer").val(), 'surveyOk': $("#survey").is(':checked'),
-                'asl': false,
-            },
-            'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': '{{event}}'
-        };
-        $.ajax({
-            "type": "POST",
-            "dataType": "json",
-            "url": "{% url 'registration:add_to_cart' %}",
-            "data": JSON.stringify(data),
-            "beforeSend": function(xhr, settings) {
-                console.log("Before Send");
-                $.ajaxSettings.beforeSend(xhr, settings);
-            },
-            "success": function(result) {
-                if (result.success) {
-                    window.location = "{% url 'registration:cart' %}";
-                } else {
-                    alert(result.message);
-                    $("#register").one('click', register_click);
-                }
-            },
-            "error": function(result, status) {
-                alert("An error has occurred. (" + result.status + ": " + result.responseText + ").\n\nCheck your information and try again.  " +
-                "If the issue persists, please contact {{ event.registrationEmail }} for assistance.");
-                $("#register").one('click', register_click);
-            }
-        });
-    }
+          {% if not event.allowOnlineMinorReg %}
+              let age = getAgeByEventStart(birthdate);
+              if (age < 18) {
+                  alert("You must be 18 by the first day of {{event}} to register online.");
+                  $("#register").one('click', register_click);
+                  return;
+              }
+          {% endif %}
+          let data = {
+              'attendee': {
+                  'firstName': $("#firstName").val(),
+                  'lastName': $("#lastName").val(),
+                  'preferredName': $("#preferredName").val(),
+                  'address1': $("#add1").val(),
+                  'address2': $("#add2").val(),
+                  'city': $("#city").val(),
+                  'state': $("#state").val(),
+                  'country': $("#country").val(),
+                  'postal': $("#zip").val(),
+                  'phone': $("#phone").val(),
+                  'email': $("#email").val(),
+                  'birthdate': $("#birthDate").val(),
+                  'badgeName': $("#badgeName").val(),
+                  'emailsOk': $("#contact").is(':checked'),
+                  'volDepts': $("#volunteer").val(),
+                  'surveyOk': $("#survey").is(':checked'),
+                  'asl': false,
+              },
+              'priceLevel': {'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions()},
+              'event': '{{event}}'
+          };
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:add_to_cart' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "success": function (result) {
+                  if (result.success) {
+                      window.location = "{% url 'registration:cart' %}";
+                  } else {
+                      alert(result.message);
+                      $("#register").one('click', register_click);
+                  }
+              },
+              "error": function (result, status) {
+                  alert("An error has occurred. (" + result.status + ": " + result.responseText + ").\n\nCheck your information and try again.  " +
+                      "If the issue persists, please contact {{ event.registrationEmail }} for assistance.");
+                  $("#register").one('click', register_click);
+              }
+          });
+      }
 
 
-    $(document).ready(function (e) {
-        $("#register").one('click', register_click);
-    });
+      $(document).ready(function (e) {
+          $("#register").one('click', register_click);
+      });
 
 
-    $(document).on("click",".open-image", function(event){
-    	window.open($(event.target).data("image"),"_blank","width=750,height=750,left=35%,top=25%,menubar=no,statusbar=no");
-    });
+      $(document).on("click", ".open-image", function (event) {
+          window.open($(event.target).data("image"), "_blank", "width=750,height=750,left=35%,top=25%,menubar=no,statusbar=no");
+      });
 
-</script>
+  </script>
 
-<script src="{% static 'js/date-entry.js' %}"></script>
+  <script src="{% static 'js/date-entry.js' %}"></script>
 
 
 {% endblock %}

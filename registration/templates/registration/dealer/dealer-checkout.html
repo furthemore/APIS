@@ -2,505 +2,523 @@
 {% load settings mathfilters registration_tags %}
 
 {% block head %}
-    {% if SQUARE_ENVIRONMENT == "sandbox" %}
-        <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
-    {% else %}
-        <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
-    {% endif %}
+  {% if SQUARE_ENVIRONMENT == "sandbox" %}
+    <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
+  {% else %}
+    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+  {% endif %}
 
-    <script type="text/javascript">
-var paymentForm = new SqPaymentForm({
-  // Initialize the payment form elements
-  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
-  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+  <script type="text/javascript">
+      var paymentForm = new SqPaymentForm({
+          // Initialize the payment form elements
+          applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+          locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
 
-  inputClass: 'form-control',
-  // Initialize the credit card placeholders
-  cardNumber: {
-    elementId: 'sq-card-number',
-    placeholder: '•••• •••• •••• ••••'
-  },
-  cvv: {
-    elementId: 'sq-cvv',
-    placeholder: 'CVV'
-  },
-  expirationDate: {
-    elementId: 'sq-expiration-date',
-    placeholder: 'MM/YY'
-  },
-  postalCode: {
-    elementId: 'sq-postal-code',
-    placeholder: '•••••'
-  },
-  // SqPaymentForm callback functions
-  callbacks: {
-    /*
-     * callback function: cardNonceResponseReceived
-     * Triggered when: SqPaymentForm completes a card nonce request
-     */
-    cardNonceResponseReceived: function(errors, nonce, cardData) {
-      if (errors) {
-        var errorList = "";
-        console.log("Encountered errors:");
-        errors.forEach(function(error) {
-          console.log('  ' + error.message);
-          errorList += error.message + "; ";
-        });
-        alert("One or more Square payment errors have occurred: " + errorList);
-        $("#checkout").removeAttr("disabled");
-        return;
-      }
-      document.getElementById('card-nonce').value = nonce;
-      doCheckout(cardData);
-    },
-    /*
-     * callback function: unsupportedBrowserDetected
-     * Triggered when: the page loads and an unsupported browser is detected
-     */
-    unsupportedBrowserDetected: function() {
-      /* PROVIDE FEEDBACK TO SITE VISITORS */
-    },
-    inputEventReceived: function(inputEvent) {
-      switch (inputEvent.eventType) {
-        case 'focusClassAdded':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'focusClassRemoved':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'errorClassAdded':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'errorClassRemoved':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'cardBrandChanged':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'postalCodeChanged':
-          /* HANDLE AS DESIRED */
-          break;
-      }
-    },
-  }
-});
-    </script>
+          inputClass: 'form-control',
+          // Initialize the credit card placeholders
+          cardNumber: {
+              elementId: 'sq-card-number',
+              placeholder: '•••• •••• •••• ••••'
+          },
+          cvv: {
+              elementId: 'sq-cvv',
+              placeholder: 'CVV'
+          },
+          expirationDate: {
+              elementId: 'sq-expiration-date',
+              placeholder: 'MM/YY'
+          },
+          postalCode: {
+              elementId: 'sq-postal-code',
+              placeholder: '•••••'
+          },
+          // SqPaymentForm callback functions
+          callbacks: {
+              /*
+               * callback function: cardNonceResponseReceived
+               * Triggered when: SqPaymentForm completes a card nonce request
+               */
+              cardNonceResponseReceived: function (errors, nonce, cardData) {
+                  if (errors) {
+                      var errorList = "";
+                      console.log("Encountered errors:");
+                      errors.forEach(function (error) {
+                          console.log('  ' + error.message);
+                          errorList += error.message + "; ";
+                      });
+                      alert("One or more Square payment errors have occurred: " + errorList);
+                      $("#checkout").removeAttr("disabled");
+                      return;
+                  }
+                  document.getElementById('card-nonce').value = nonce;
+                  doCheckout(cardData);
+              },
+              /*
+               * callback function: unsupportedBrowserDetected
+               * Triggered when: the page loads and an unsupported browser is detected
+               */
+              unsupportedBrowserDetected: function () {
+                  /* PROVIDE FEEDBACK TO SITE VISITORS */
+              },
+              inputEventReceived: function (inputEvent) {
+                  switch (inputEvent.eventType) {
+                      case 'focusClassAdded':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'focusClassRemoved':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'errorClassAdded':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'errorClassRemoved':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'cardBrandChanged':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'postalCodeChanged':
+                          /* HANDLE AS DESIRED */
+                          break;
+                  }
+              },
+          }
+      });
+  </script>
 {% endblock %}
 
 {% block content %}
 
-{% if orderItems %}
+  {% if orderItems %}
 
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Checkout</h1>
-		<h3>Review the invoice below and checkout</h3>
-		<hr>
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Checkout</h1>
+        <h3>Review the invoice below and checkout</h3>
+        <hr>
 
-		<h3>Your Order</h3>
+        <h3>Your Order</h3>
 
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1"><h4>Dealer</h4></div>
-				<div class="col-sm-2"><h4>Price</h4></div>
-			</div>
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Table Type - {{dealer.tableSize}}</div>
-				<div class="col-sm-2">${{dealer.tableSize.basePrice}}</div>
-				<div class="col-sm-2">
-				</div>
-			</div>
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-1"><h4>Dealer</h4></div>
+          <div class="col-sm-2"><h4>Price</h4></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-1">Table Type - {{ dealer.tableSize }}</div>
+          <div class="col-sm-2">${{ dealer.tableSize.basePrice }}</div>
+          <div class="col-sm-2">
+          </div>
+        </div>
 
-			{% if dealer.getUnpaidPartnerCount > 0 %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getUnpaidPartnerCount }}</div>
-				<div class="col-sm-2">${{dealer.getUnpaidPartnerCount|mul:55}}.00</div>
-				<div class="col-sm-2">
-				</div>
-			</div>
-			{% endif %}
+        {% if dealer.getUnpaidPartnerCount > 0 %}
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getUnpaidPartnerCount }}</div>
+            <div class="col-sm-2">${{ dealer.getUnpaidPartnerCount|mul:55 }}.00</div>
+            <div class="col-sm-2">
+            </div>
+          </div>
+        {% endif %}
 
-            {% if dealer.needWifi %}
-	            <div class="row">
-				    <div class="col-sm-6 col-sm-offset-1">Wifi</div>
-				    <div class="col-sm-2">$50.00</div>
-				    <div class="col-sm-2"></div>
-			    </div>
-            {% endif %}
+        {% if dealer.needWifi %}
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">Wifi</div>
+            <div class="col-sm-2">$50.00</div>
+            <div class="col-sm-2"></div>
+          </div>
+        {% endif %}
 
 
 
-		{% for item in orderItems %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
-				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>
-				<div class="col-sm-2">
-				</div>
-			</div>
+        {% for item in orderItems %}
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</div>
+            <div class="col-sm-2">${{ item.priceLevel.basePrice }}</div>
+            <div class="col-sm-2">
+            </div>
+          </div>
 
-            {% for option in item.getOptions %}
+          {% for option in item.getOptions %}
             <div class="row">
-                {% if option.option.optionExtraType == "int" %}
-                  {% if option.optionValue != '0' %}
-                  <div class="col-sm-6 col-sm-offset-1">{{option.option.optionName}} x {{option.optionValue}}</div>
-                    {% if option.option.optionPrice == 0 %}
-                      <div class="col-sm-2">Free</div>
-                    {% else %}
-                      <div class="col-sm-2">${{option.option.optionPrice}} each</div>
-                    {% endif %}
-                  {% else %}
-                  <div class="col-sm-5 col-sm-offset-1">{{option.option}} x 0</div>
-                  <div class="col-sm-2">--</div>
-                  {% endif %}
-
-                {% else %}
-
-                  <div class="col-sm-6 col-sm-offset-1">{{option.option.optionName}}</div>
+              {% if option.option.optionExtraType == "int" %}
+                {% if option.optionValue != '0' %}
+                  <div class="col-sm-6 col-sm-offset-1">{{ option.option.optionName }} x {{ option.optionValue }}</div>
                   {% if option.option.optionPrice == 0 %}
                     <div class="col-sm-2">Free</div>
                   {% else %}
-                    <div class="col-sm-2">${{option.option.optionPrice}}</div>
+                    <div class="col-sm-2">${{ option.option.optionPrice }} each</div>
                   {% endif %}
-
+                {% else %}
+                  <div class="col-sm-5 col-sm-offset-1">{{ option.option }} x 0</div>
+                  <div class="col-sm-2">--</div>
                 {% endif %}
 
+              {% else %}
+
+                <div class="col-sm-6 col-sm-offset-1">{{ option.option.optionName }}</div>
+                {% if option.option.optionPrice == 0 %}
+                  <div class="col-sm-2">Free</div>
+                {% else %}
+                  <div class="col-sm-2">${{ option.option.optionPrice }}</div>
+                {% endif %}
+
+              {% endif %}
+
             </div>
-            {% endfor %}
+          {% endfor %}
 
-			{% if dealer.attendee.effectiveLevel %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{item.priceLevel}}</div>
-				<div class="col-sm-2">- $50.00</div>
-				<div class="col-sm-2">
-				</div>
-			</div>
-			{% endif %}
-			{% if discount and not dealer.paidTotal %}
-				<div class="row">
-					<div class="col-sm-6 col-sm-offset-1">Discount - {{discount.codeName}}</div>
-					<div class="col-sm-2">- ${{discount.amountOff}}</div>
-					<div class="col-sm-2">
-					</div>
-				</div>
-			{% endif%}
-			{% if dealer.discount %}
-				<div class="row">
-					<div class="col-sm-6 col-sm-offset-1">Discount - {{dealer.discountReason}}</div>
-					<div class="col-sm-2">- ${{dealer.discount}}</div>
-					<div class="col-sm-2">
-					</div>
-				</div>
-			{% endif%}
-			<div class="row" style="height:10px;">&nbsp;</div>
-
-		{% endfor %}
-			<div class="row">
-				<div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
-				<div class="col-sm-2"><h4>${{total}}</h4></div>
-			</div>
-			<div class="row">
-				<div class="col-sm-12"><h3 style="color: red; text-align: center">Please review the total and invoice items above carefully!</h3></div>
-			</div>
-
-
-		<br/>
-		<a id="cancel" href="#">Cancel and Restart</a>
-		<hr/>
-		{% if total > 0%}
-
-		<form class="form-horizontal" role="form" data-toggle="validator">
-
-		<h3>Extra Donations</h3>
-        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
-        {% if event.charity %}
-            If you would like to make an extra gift to our annual charity,
-            {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}{{ event.charity }}{% endif %}, or to the convention, please enter it below.
-        {% else %}
-            If you would like to make an extra gift to the convention, please enter it below.
-        {% endif %}
-        </div>
-        {% if event.charity %}
-        <div class="form-group">
-            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
-            <div class="col-sm-4">
-                <div class="input-group">
-                    <div class="input-group-addon">$</div>
-                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
-                </div>
+          {% if dealer.attendee.effectiveLevel %}
+            <div class="row">
+              <div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{ item.priceLevel }}</div>
+              <div class="col-sm-2">- $50.00</div>
+              <div class="col-sm-2">
+              </div>
             </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+          {% endif %}
+          {% if discount and not dealer.paidTotal %}
+            <div class="row">
+              <div class="col-sm-6 col-sm-offset-1">Discount - {{ discount.codeName }}</div>
+              <div class="col-sm-2">- ${{ discount.amountOff }}</div>
+              <div class="col-sm-2">
+              </div>
+            </div>
+          {% endif %}
+          {% if dealer.discount %}
+            <div class="row">
+              <div class="col-sm-6 col-sm-offset-1">Discount - {{ dealer.discountReason }}</div>
+              <div class="col-sm-2">- ${{ dealer.discount }}</div>
+              <div class="col-sm-2">
+              </div>
+            </div>
+          {% endif %}
+          <div class="row" style="height:10px;">&nbsp;</div>
+
+        {% endfor %}
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
+          <div class="col-sm-2"><h4>${{ total }}</h4></div>
         </div>
-        {% endif %}
-
-		<div class="form-group">
-            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
-		    <div class="col-sm-4">
-                <div class="input-group">
-                    <div class="input-group-addon">$</div>
-                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg" class="form-control validate" data-error="Please use only numbers and a decimal." />
-                </div>
-		    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<hr/>
-
-
-		<h3>Billing Information</h3>
-
-
-		<div class="form-group">
-                    <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
-                    <div class="col-sm-9">
-                        <select id="useFrom" class="form-control" ><option value="" selected>The Fields Below</option>
-			{% for oi in orderItems %}
-			    <option value="{{oi.badge.attendee.id}}">{{oi.badge.attendee}}</option>
-			{% endfor %}
-			</select>
-                    </div>
-		</div>
-		<div class="form-group">
-                    <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
-                    <div class="col-sm-4">
-                        <input type="text" id="fname" placeholder="Billing First Name" class="form-control" required data-error="Billing name is required. " />
-                    </div>
-                    <div class="col-sm-5">
-                        <input type="text" id="lname" placeholder="Billing Last Name" class="form-control" required data-error="Billing name is required. " />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control" required data-error="Email is required. " />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-		</div>
-		<div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Billing Address</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control" />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
-		    <div class="col-sm-4">
-			<input type="text" name="city" id="city" placeholder="City" class="form-control" required data-error="City is required." />
-		    </div>
-                    <div class="col-sm-2">
-			<select class="form-control bfh-states" id="state" data-country="US" data-state="VA" name="state"></select>
-                    </div>
-		    <div class="col-sm-3">
-			<input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" required data-minlength="5" data-error="Zip code is required." />
-		    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country</label>
-                    <div class="col-sm-9">
-			<select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
-                    </div>
-		</div>
-	<hr/>
-        <div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
-                    <div class="col-sm-9">
-                        <div id="sq-card-number"></div>
-                    </div>
-                </div>
-        <div class="form-group">
-                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
-                    <div class="col-sm-2">
-                        <div id="sq-expiration-date"></div>
-                    </div>
-                    <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
-                    <div class="col-sm-2">
-                        <div id="sq-cvv"></div>
-                    </div>
-                    <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
-                    <div class="col-sm-2">
-                        <div id="sq-postal-code"></div>
-                    </div>
-
+        <div class="row">
+          <div class="col-sm-12"><h3 style="color: red; text-align: center">Please review the total and invoice items
+            above carefully!</h3></div>
         </div>
+
+
         <br/>
-        <input type="hidden" id="card-nonce" name="nonce">
-        {% csrf_token %}
+        <a id="cancel" href="#">Cancel and Restart</a>
+        <hr/>
+        {% if total > 0 %}
 
-        <div class="form-group" style="margin-right:0px;">
-			<button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">Checkout</button>
-		</div>
- 		</form>
+          <form class="form-horizontal" role="form" data-toggle="validator">
+
+            <h3>Extra Donations</h3>
+            <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+              {% if event.charity %}
+                If you would like to make an extra gift to our annual charity,
+                {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}
+                  {{ event.charity }}{% endif %}, or to the convention, please enter it below.
+              {% else %}
+                If you would like to make an extra gift to the convention, please enter it below.
+              {% endif %}
+            </div>
+            {% if event.charity %}
+              <div class="form-group">
+                <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+                <div class="col-sm-4">
+                  <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity"
+                           class="form-control validate" data-error="Please use only numbers and a decimal."/>
+                  </div>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+            {% endif %}
+
+            <div class="form-group">
+              <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <div class="input-group-addon">$</div>
+                  <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg"
+                         class="form-control validate" data-error="Please use only numbers and a decimal."/>
+                </div>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <hr/>
 
 
-		{% else %}
-
-			{% csrf_token %}
-			<div class="row">
-				<a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Checkout</a>
-			</div>
-
-		{% endif %}
-
-	</div>
-	</div>
-{% else %}
-
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Checkout</h1>
-		<h3>There are no dealers in your order</h3>
-		<div>Please click on the link in your email to begin.</div>
+            <h3>Billing Information</h3>
 
 
-	</div>
-	</div>
+            <div class="form-group">
+              <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+              <div class="col-sm-9">
+                <select id="useFrom" class="form-control">
+                  <option value="" selected>The Fields Below</option>
+                  {% for oi in orderItems %}
+                    <option value="{{ oi.badge.attendee.id }}">{{ oi.badge.attendee }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
+              <div class="col-sm-4">
+                <input type="text" id="fname" placeholder="Billing First Name" class="form-control" required
+                       data-error="Billing name is required. "/>
+              </div>
+              <div class="col-sm-5">
+                <input type="text" id="lname" placeholder="Billing Last Name" class="form-control" required
+                       data-error="Billing name is required. "/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="email" class="col-sm-3 control-label">Email</label>
+              <div class="col-sm-9">
+                <input type="email" id="email" placeholder="Email" class="form-control" required
+                       data-error="Email is required. "/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="add1" class="col-sm-3 control-label">Billing Address</label>
+              <div class="col-sm-9">
+                <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+              <div class="col-sm-9">
+                <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control"/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+              <div class="col-sm-4">
+                <input type="text" name="city" id="city" placeholder="City" class="form-control" required
+                       data-error="City is required."/>
+              </div>
+              <div class="col-sm-2">
+                <select class="form-control bfh-states" id="state" data-country="US" data-state="VA"
+                        name="state"></select>
+              </div>
+              <div class="col-sm-3">
+                <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" required
+                       data-minlength="5" data-error="Zip code is required."/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="country" class="col-sm-3 control-label">Country</label>
+              <div class="col-sm-9">
+                <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+              </div>
+            </div>
+            <hr/>
+            <div class="form-group">
+              <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+              <div class="col-sm-9">
+                <div id="sq-card-number"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
+              <div class="col-sm-2">
+                <div id="sq-expiration-date"></div>
+              </div>
+              <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
+              <div class="col-sm-2">
+                <div id="sq-cvv"></div>
+              </div>
+              <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
+              <div class="col-sm-2">
+                <div id="sq-postal-code"></div>
+              </div>
 
-{% endif %}
+            </div>
+            <br/>
+            <input type="hidden" id="card-nonce" name="nonce">
+            {% csrf_token %}
+
+            <div class="form-group" style="margin-right:0px;">
+              <button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">
+                Checkout
+              </button>
+            </div>
+          </form>
+
+
+        {% else %}
+
+          {% csrf_token %}
+          <div class="row">
+            <a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Checkout</a>
+          </div>
+
+        {% endif %}
+
+      </div>
+    </div>
+  {% else %}
+
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Checkout</h1>
+        <h3>There are no dealers in your order</h3>
+        <div>Please click on the link in your email to begin.</div>
+
+
+      </div>
+    </div>
+
+  {% endif %}
 
 {% endblock %}
 
 
 {% block javascript %}
-<script type="text/javascript">
-	var addresses = [];
-	$( "body" ).ready(function() {
-                $.getJSON("{% url 'registration:addresses' %}", function(data) {
-		addresses = data;
-                });
-	});
+  <script type="text/javascript">
+      var addresses = [];
+      $("body").ready(function () {
+          $.getJSON("{% url 'registration:addresses' %}", function (data) {
+              addresses = data;
+          });
+      });
 
-	$("#useFrom").on("change", function(e) {
-		var userId = $(this).val();
-		if (userId == ""){
-			$("#fname").val("");
-			$("#lname").val("");
-			$("#email").val("");
-			$("#add1").val("");
-			$("#add2").val("");
-			$("#city").val("");
-			$("#state").val("");
-			$("#country").val("");
-			$("#zip").val("");
-			return;
-		}
+      $("#useFrom").on("change", function (e) {
+          var userId = $(this).val();
+          if (userId == "") {
+              $("#fname").val("");
+              $("#lname").val("");
+              $("#email").val("");
+              $("#add1").val("");
+              $("#add2").val("");
+              $("#city").val("");
+              $("#state").val("");
+              $("#country").val("");
+              $("#zip").val("");
+              return;
+          }
 
-		$.each(addresses, function (key, item) {
-			if (item.id != userId) { return; }
-			$("#fname").val(item.fname);
-			$("#lname").val(item.lname);
-			$("#email").val(item.email);
-			$("#add1").val(item.address1);
-			$("#add2").val(item.address2);
-			$("#city").val(item.city);
-			$("#state").val(item.state);
-			$("#country").val(item.country);
-			$("#zip").val(item.postalCode);
-		});
-	});
+          $.each(addresses, function (key, item) {
+              if (item.id != userId) {
+                  return;
+              }
+              $("#fname").val(item.fname);
+              $("#lname").val(item.lname);
+              $("#email").val(item.email);
+              $("#add1").val(item.address1);
+              $("#add2").val(item.address2);
+              $("#city").val(item.city);
+              $("#state").val(item.state);
+              $("#country").val(item.country);
+              $("#zip").val(item.postalCode);
+          });
+      });
 
-	$("#cancel").click(function(e){
-                $.getJSON("{% url 'registration:flush' %}", function(data) {
-			window.location.reload();
-                });
-	});
+      $("#cancel").click(function (e) {
+          $.getJSON("{% url 'registration:flush' %}", function (data) {
+              window.location.reload();
+          });
+      });
 
-	$("#checkout").click(function (e) {
-		e.preventDefault();
-		$("form").validator('validate');
-		var errorCount = $(".has-error").length;
-		if (errorCount > 0) {return;}
+      $("#checkout").click(function (e) {
+          e.preventDefault();
+          $("form").validator('validate');
+          var errorCount = $(".has-error").length;
+          if (errorCount > 0) {
+              return;
+          }
 
-		$("#checkout").attr("disabled", "disabled");
+          $("#checkout").attr("disabled", "disabled");
 
-        {% if total > 0 %}
-            paymentForm.requestCardNonce();
-        {% else %}
-            doCheckout();
-        {% endif %}
-
-
-	});
+          {% if total > 0 %}
+              paymentForm.requestCardNonce();
+          {% else %}
+              doCheckout();
+          {% endif %}
 
 
-function doCheckout(card_data) {
-	{% if total > 0 %}
-		var data = {
-		    'billingData': {
-			        'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(),
-			        'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
-			        'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                    'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                    'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                    'nonce': $("#card-nonce").val(), card_data: card_data,
-		    },
-		    'charityDonation': $("#donateCharity").val(),
-		    'orgDonation': $("#donateOrg").val()
-		};
-	{% else %}
-		var data = {};
+      });
 
-	{% endif %}
 
-		$.ajax({
-		    "type": "POST",
-		    "dataType": "json",
-		    "url": "{% url 'registration:checkoutDealer' %}",
-		    "data": JSON.stringify(data),
-		    "beforeSend": function(xhr, settings) {
-		        console.log("Before Send");
-		        $.ajaxSettings.beforeSend(xhr, settings);
-		    },
-		    "error": function(result, status, error) {
-                    alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
-	        		$("#checkout").removeAttr("disabled");
-		    },
-            "success": function (result, status) {
-                    if (result.success) {
-				        window.location = "{% url 'registration:doneDealer' %}";
-                    } else {
-                        if (result.message.indexOf("email") > -1) {
-                            alert(result.message);
-                            window.location = "{% url 'registration:doneDealer' %}";
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
-			                $("#checkout").removeAttr("disabled");
-                        }
-			        }
-            }
-		});
+      function doCheckout(card_data) {
+          {% if total > 0 %}
+              var data = {
+                  'billingData': {
+                      'cc_number': $("#ccNumber").val(), 'cc_month': $("#ccMonth").val(),
+                      'cc_year': $("#ccYear").val(), 'cc_security': $("#ccCVV").val(),
+                      'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
+                      'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
+                      'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
+                      'nonce': $("#card-nonce").val(), card_data: card_data,
+                  },
+                  'charityDonation': $("#donateCharity").val(),
+                  'orgDonation': $("#donateOrg").val()
+              };
+          {% else %}
+              var data = {};
 
-}
+          {% endif %}
 
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    }
-});
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:checkoutDealer' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "error": function (result, status, error) {
+                  alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                  $("#checkout").removeAttr("disabled");
+              },
+              "success": function (result, status) {
+                  if (result.success) {
+                      window.location = "{% url 'registration:doneDealer' %}";
+                  } else {
+                      if (result.message.indexOf("email") > -1) {
+                          alert(result.message);
+                          window.location = "{% url 'registration:doneDealer' %}";
+                      } else {
+                          alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                          $("#checkout").removeAttr("disabled");
+                      }
+                  }
+              }
+          });
 
-</script>
+      }
+
+      function getCookie(name) {
+          var cookieValue = null;
+          if (document.cookie && document.cookie != '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                  var cookie = jQuery.trim(cookies[i]);
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return cookieValue;
+      }
+
+      $.ajaxSetup({
+          beforeSend: function (xhr, settings) {
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          }
+      });
+
+  </script>
 {% endblock %}

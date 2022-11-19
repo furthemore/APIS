@@ -4,164 +4,181 @@
 
 {% block content %}
 
-<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
-      </div>
-      <div class="modal-body">
-    	<p>Staff must be over the age of 18.</p>
-	    <p>Please contact <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a> if you have any questions.</p>
+  <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
+        </div>
+        <div class="modal-body">
+          <p>Staff must be over the age of 18.</p>
+          <p>Please contact <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a> if you have
+            any questions.</p>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-	{% if not staff %}
-		<h1>Staff Registration - {{event}}</h1>
-		<p>Your session has expired. Please use the link in your registration email again to start over.</p>
-	{% else %}
+  {% if not staff %}
+    <h1>Staff Registration - {{ event }}</h1>
+    <p>Your session has expired. Please use the link in your registration email again to start over.</p>
+  {% else %}
 
-	<form class="form-horizontal" role="form" data-toggle="validator">
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Staff Registration - {{event}}</h1>
+    <form class="form-horizontal" role="form" data-toggle="validator">
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="personal">
+          <h1>Staff Registration - {{ event }}</h1>
 
-		<p>Please review and update the information below. If you have any questions about this form, please contact <a href='mailto:{{event.registrationEmail}}'>{{event.registrationEmail}}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>)</p>
+          <p>Please review and update the information below. If you have any questions about this form, please contact
+            <a href='mailto:{{ event.registrationEmail }}'>{{ event.registrationEmail }}</a>. Required fields are marked
+            with a red asterisk (<span style="color:red;">*</span>)</p>
 
-		<hr>
+          <hr>
 
-        {% show_attendee_form attendee=staff.attendee event=event %}
+          {% show_attendee_form attendee=staff.attendee event=event %}
 
-        {% show_staff_form staff=staff badge=badge %}
+          {% show_staff_form staff=staff badge=badge %}
 
-        <hr/>
-        <h3>Badge Level</h3>
-        <br/>
-        {% show_price_types %}
-        <br/>
-        <hr/>
+          <hr/>
+          <h3>Badge Level</h3>
+          <br/>
+          {% show_price_types %}
+          <br/>
+          <hr/>
 
-            <div class="form-group">
-                <div class="col-sm-12">
-                    <label>
-                        <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox" required>
-                        I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>. By registering for {{event}} you attest that you are not listed on any sexual offender registry.
-                    </label>
-                </div>
-		        <div class="col-sm-offset-1 help-block with-errors"style=" padding-left:15px;"></div>
-		    </div>
-		    <div class="form-group">
-                 <div class="col-sm-12">
-                    <button id="register" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Register</button>
-		        </div>
+          <div class="form-group">
+            <div class="col-sm-12">
+              <label>
+                <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox"
+                       required>
+                I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of
+                Conduct</a>. By registering for {{ event }} you attest that you are not listed on any sexual offender
+                registry.
+              </label>
             </div>
-	    </div>
-	</div>
-	{% csrf_token %}
-	</div>
-	</form>
+            <div class="col-sm-offset-1 help-block with-errors" style=" padding-left:15px;"></div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-12">
+              <button id="register" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6"
+                      aria-controls="profile" data-toggle="tab">Register
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% csrf_token %}
+      </div>
+    </form>
 
-	{% endif %}
+  {% endif %}
 
 {% endblock %}
 
 {% block javascript %}
-<script>
-    let discount = {{event.staffDiscount.amountOff|default:0}};
-    let adult = true;
-</script>
-<script type="text/javascript" src="/static/js/templates/price-types.js"></script>
-<script type="text/javascript" src="/static/js/templates/staff.js"></script>
- <script type="text/javascript">
-  let staff = {{ jsonStaff|safe|default:"null" }};
-	let attendee = {{ jsonAttendee|safe|default:"null" }};
+  <script>
+      let discount = {{event.staffDiscount.amountOff|default:0}};
+      let adult = true;
+  </script>
+  <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
+  <script type="text/javascript" src="/static/js/templates/staff.js"></script>
+  <script type="text/javascript">
+      let staff = {{ jsonStaff|safe|default:"null" }};
+      let attendee = {{ jsonAttendee|safe|default:"null" }};
 
-	function doRegister(e) {
-		e.preventDefault();
-		$("form").validator('validate');
-		let errorCount = $(".has-error").length;
-		if (errorCount > 0) {return;}
+      function doRegister(e) {
+          e.preventDefault();
+          $("form").validator('validate');
+          let errorCount = $(".has-error").length;
+          if (errorCount > 0) {
+              return;
+          }
 
-        // Validate birthdate input
-        if ($("#birthDate").val() == "") {
-            alert("You must enter your birthdate to submit your registration.");
-            $(this).one('click', doRegister);
-            return;
-        }
-        if (Modernizr.inputtypes.date) {
-            // native datepicker - expect ISO date
-            let birthdate = parseDate($("#birthDate").val());
-        } else {
-            // American middle-endian format put out by datepicker javascript
-            let birthdate = new Date(Date.parse($("#birthDate").val()));
-        }
-        let age = getAgeByEventStart(birthdate);
-        if (age < 18) {
-            alert("You must be 18 by the first day of {{ event }} to register online.")
-            $(this).one('click', doRegister);
-            return;
-        }
+          // Validate birthdate input
+          if ($("#birthDate").val() == "") {
+              alert("You must enter your birthdate to submit your registration.");
+              $(this).one('click', doRegister);
+              return;
+          }
+          if (Modernizr.inputtypes.date) {
+              // native datepicker - expect ISO date
+              let birthdate = parseDate($("#birthDate").val());
+          } else {
+              // American middle-endian format put out by datepicker javascript
+              let birthdate = new Date(Date.parse($("#birthDate").val()));
+          }
+          let age = getAgeByEventStart(birthdate);
+          if (age < 18) {
+              alert("You must be 18 by the first day of {{ event }} to register online.")
+              $(this).one('click', doRegister);
+              return;
+          }
 
-		$("#register").attr("disabled", "disabled");
+          $("#register").attr("disabled", "disabled");
 
-		let data = {
-			'attendee': {
-				'id': attendee.id,
-				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 'preferredName': $("#preferredName").val(),
-				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'birthdate' : $("#birthDate").val(), 'phone': $("#phone").val(),
-                'badgeName': $("#badgeName").val()
-			},
-			'staff': {
-				'id': staff.id,
-				'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
-				'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
-				'specialFood': $("#food").val(), 'specialMedical': $("#medical").val(),
-				'contactPhone': $("#contactPhone").val(), 'contactName': $("#contactName").val(),
-				'contactRelation': $("#contactRel").val(),
-			},
-            'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': '{{event}}'
-		};
+          let data = {
+              'attendee': {
+                  'id': attendee.id,
+                  'firstName': $("#firstName").val(),
+                  'lastName': $("#lastName").val(),
+                  'preferredName': $("#preferredName").val(),
+                  'address1': $("#add1").val(),
+                  'address2': $("#add2").val(),
+                  'city': $("#city").val(),
+                  'state': $("#state").val(),
+                  'country': $("#country").val(),
+                  'postal': $("#zip").val(),
+                  'birthdate': $("#birthDate").val(),
+                  'phone': $("#phone").val(),
+                  'badgeName': $("#badgeName").val()
+              },
+              'staff': {
+                  'id': staff.id,
+                  'twitter': $("#twitter").val(), 'telegram': $("#telegram").val(),
+                  'shirtsize': $("#shirt").val(), 'specialSkills': $("#skills").val(),
+                  'specialFood': $("#food").val(), 'specialMedical': $("#medical").val(),
+                  'contactPhone': $("#contactPhone").val(), 'contactName': $("#contactName").val(),
+                  'contactRelation': $("#contactRel").val(),
+              },
+              'priceLevel': {'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions()},
+              'event': '{{event}}'
+          };
 
 
-		$.ajax({
-		    "type": "POST",
-		    "dataType": "json",
-		    "url": "{% url 'registration:addStaff' %}",
-		    "data": JSON.stringify(data),
-		    "beforeSend": function(xhr, settings) {
-		        console.log("Before Send");
-		        $.ajaxSettings.beforeSend(xhr, settings);
-		    },
-		    "error": function(result, status, error) {
-			    if (result.responseText == "") {
-				    alert("Your session has expired.");
-			    } else {
-                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{event.registrationEmail}} for assistance.")
-			    }
-			    $("#register").removeAttr("disabled").one('click', doRegister);
-		    },
-            "success": function (result, status) {
-                if (result.success)
-                {
- 	                window.location = "{% url 'registration:cart' %}";
-			    } else {
-                    alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
-			    }
-			    $("#register").removeAttr("disabled").one('click', doRegister);
-            }
-		});
-	}
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:addStaff' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "error": function (result, status, error) {
+                  if (result.responseText == "") {
+                      alert("Your session has expired.");
+                  } else {
+                      alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{event.registrationEmail}} for assistance.")
+                  }
+                  $("#register").removeAttr("disabled").one('click', doRegister);
+              },
+              "success": function (result, status) {
+                  if (result.success) {
+                      window.location = "{% url 'registration:cart' %}";
+                  } else {
+                      alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
+                  }
+                  $("#register").removeAttr("disabled").one('click', doRegister);
+              }
+          });
+      }
 
-    $("#register").one('click', doRegister);
+      $("#register").one('click', doRegister);
 
- </script>
+  </script>
 
-<script src="{% static 'js/date-entry.js' %}"></script>
+  <script src="{% static 'js/date-entry.js' %}"></script>
 
 {% endblock %}

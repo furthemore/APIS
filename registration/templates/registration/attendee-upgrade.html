@@ -3,371 +3,401 @@
 {% block content %}
 
 
-{% if attendee %}
+  {% if attendee %}
 
-	<form class="form-horizontal" role="form" data-toggle="validator">
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Registration Upgrade - {{badge.event}}</h1>
+    <form class="form-horizontal" role="form" data-toggle="validator">
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="personal">
+          <h1>Registration Upgrade - {{ badge.event }}</h1>
 
-		<p>Please select a new registration level. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+          <p>Please select a new registration level. Required fields are marked with a red asterisk (<span
+              style="color:red;">*</span>).</p>
 
-		<hr>
-		<div class="form-group">
-            <div class="col-sm-3">Full Name</div><div class="col-sm-9">{{attendee.firstName}} {{attendee.lastName}}</div>
-            <div class="col-sm-3">Email</div><div class="col-sm-9">{{attendee.email}}</div>
-            <div class="col-sm-3">Address</div><div class="col-sm-9">{{attendee.address1}}, {{attendee.city}}, {{attendee.city}}, {{attendee.state}}, {{attendee.postalCode}} </div>
-            <div class="col-sm-3">Phone Number</div><div class="col-sm-9">{{attendee.phone}}</div>
-            <div class="col-sm-3">Birthdate</div><div class="col-sm-9">{{attendee.birthdate}}</div>
-            <div class="col-sm-3">Badge Name</div><div class="col-sm-9">{{badge.badgeName}}</div>
-        </div>
+          <hr>
+          <div class="form-group">
+            <div class="col-sm-3">Full Name</div>
+            <div class="col-sm-9">{{ attendee.firstName }} {{ attendee.lastName }}</div>
+            <div class="col-sm-3">Email</div>
+            <div class="col-sm-9">{{ attendee.email }}</div>
+            <div class="col-sm-3">Address</div>
+            <div
+                class="col-sm-9">{{ attendee.address1 }}, {{ attendee.city }}, {{ attendee.city }}, {{ attendee.state }}, {{ attendee.postalCode }} </div>
+            <div class="col-sm-3">Phone Number</div>
+            <div class="col-sm-9">{{ attendee.phone }}</div>
+            <div class="col-sm-3">Birthdate</div>
+            <div class="col-sm-9">{{ attendee.birthdate }}</div>
+            <div class="col-sm-3">Badge Name</div>
+            <div class="col-sm-9">{{ badge.badgeName }}</div>
+          </div>
 
-		<hr/>
+          <hr/>
 
-		<h3>Choose a different attendee level</h3>
+          <h3>Choose a different attendee level</h3>
 
-        <div>Your previously selected options will be included below. You can change any option at this time. If you previously purchased options that do not appear in your new level you will still reveive those purchases even if they do not appear below. If you have questions, please contact <a href="mailto:{{badge.event.registrationEmail}}">{{ badge.event.registrationEmail }}</a>.</div>
+          <div>Your previously selected options will be included below. You can change any option at this time. If you
+            previously purchased options that do not appear in your new level you will still reveive those purchases
+            even if they do not appear below. If you have questions, please contact <a
+                href="mailto:{{ badge.event.registrationEmail }}">{{ badge.event.registrationEmail }}</a>.
+          </div>
 
-		<div class="row" id="levelContainer"></div>
+          <div class="row" id="levelContainer"></div>
 
-		<div class="form-group">
+          <div class="form-group">
             <div class="col-sm-12">
-                <button id="checkout" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile" data-toggle="tab">Continue</button>
-		    </div>
+              <button id="checkout" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6"
+                      aria-controls="profile" data-toggle="tab">Continue
+              </button>
+            </div>
+          </div>
+
         </div>
+        {% csrf_token %}
 
-	</div>
-	{% csrf_token %}
+      </div>
+    </form>
 
-	</div>
-	</form>
+  {% else %}
 
-{% else %}
+    <h1>Registration Upgrade - {{ event.name }}</h1>
+    <p>Your session has expired. Please use the link in your email again to start over.</p>
 
-<h1>Registration Upgrade - {{ event.name }}</h1>
-<p>Your session has expired. Please use the link in your email again to start over.</p>
-
-{% endif %}
+  {% endif %}
 
 {% endblock %}
 
 {% block javascript %}
-<script type="text/html" id="levelTemplate">
+  <script type="text/html" id="levelTemplate">
     <div id="levelTemplateColumn" class="col-xs-12 col-sm-6 col-md-6 col-lg-4">
-    <div class="panel price">
+      <div class="panel price">
         <div class="panel-heading  text-center">
-        <h3 data-content="name"></h3>
+          <h3 data-content="name"></h3>
         </div>
         <div class="panel-body text-center">
-            <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+          <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
         </div>
         <div class="panel-footer">
-            <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
-            <a class="btn btn-default btn-block changeLevel">Change Level?</a>
+          <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
+          <a class="btn btn-default btn-block changeLevel">Change Level?</a>
         </div>
+      </div>
     </div>
-    </div>
-</script>
+  </script>
 
-<script type="text/html" id="optionPlainTextTemplate">
+  <script type="text/html" id="optionPlainTextTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <div data-content="content"></div>
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <div data-content="content"></div>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionBoolTemplate">
+  </script>
+  <script type="text/html" id="optionBoolTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions"/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionBoolReqTemplate">
+  </script>
+  <script type="text/html" id="optionBoolReqTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="checkbox" data-id="id" class="form-control form-control-text levelOptions" required/>
+      </div>
     </div>
-</script>
+  </script>
 
-<script type="text/html" id="optionIntTemplate">
+  <script type="text/html" id="optionIntTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0 />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="number" data-id="id" class="form-control form-control-text levelOptions" min=0/>
+      </div>
     </div>
 
-</script>
-<script type="text/html" id="optionIntReqTemplate">
+  </script>
+  <script type="text/html" id="optionIntReqTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0 />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="number" data-id="id" class="form-control form-control-text levelOptions" required min=0/>
+      </div>
     </div>
 
-</script>
-<script type="text/html" id="optionStringTemplate">
+  </script>
+  <script type="text/html" id="optionStringTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
-            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions"
+               data-template-bind='{"attribute": "placeholder", "value": "placeholder"}'/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionStringReqTemplate">
+  </script>
+  <script type="text/html" id="optionStringReqTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
-            data-template-bind='{"attribute": "placeholder", "value": "placeholder"}' />
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <input type="text" data-id="id" max-length=15 class="form-control form-control-text levelOptions" required
+               data-template-bind='{"attribute": "placeholder", "value": "placeholder"}'/>
+      </div>
     </div>
-</script>
-<script type="text/html" id="optionListTemplate">
+  </script>
+  <script type="text/html" id="optionListTemplate">
     <div class="form-group">
-        <label class="col-sm-3 control-label" data-content="name"></label>
-        <div class="col-sm-9">
-            <select data-id="id" class="form-control form-control-select levelOptions"
-              data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
-        </div>
+      <label class="col-sm-3 control-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <select data-id="id" class="form-control form-control-select levelOptions"
+                data-template-bind='{"attribute": "options", "value": {"data": "options", "value":"value", "content":"content"}}'></select>
+      </div>
     </div>
-</script>
- <script type="text/javascript">
-	var attendee = {{ jsonAttendee|safe }}
-	var badge = {{ jsonBadge|safe }}
-	var currentLevel = {{ jsonLevel|safe }}
-	var levelTemplateData = [];
-    var shirtSizes = [];
+  </script>
+  <script type="text/javascript">
+      var attendee =
+      {{ jsonAttendee|safe }}
+      var badge =
+      {{ jsonBadge|safe }}
+      var currentLevel =
+      {{ jsonLevel|safe }}
+      var levelTemplateData = [];
+      var shirtSizes = [];
 
-	$( "body" ).ready(function() {
-		$.getJSON("{% url 'registration:pricelevels' %}", function(data) {
-			levelData = data;
-			var prevLevel = 50;
-			if (currentLevel && currentLevel.hasOwnProperty("basePrice")){
-				prevLevel = parseFloat(currentLevel.basePrice);
-			}
-			$.each( data, function( key, val ) {
-				levelTemplateData.push({
-					name: val.name,
-					price: "$" + (val.base_price - prevLevel),
-					levelId: "level_" + val.id,
-				});
-			});
-			$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-			$(".changeLevel").hide();
-			if (shirtSizes.length > 0){
-				$(".selectLevel")[0].click();
-			}
+      $("body").ready(function () {
+          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+              levelData = data;
+              var prevLevel = 50;
+              if (currentLevel && currentLevel.hasOwnProperty("basePrice")) {
+                  prevLevel = parseFloat(currentLevel.basePrice);
+              }
+              $.each(data, function (key, val) {
+                  levelTemplateData.push({
+                      name: val.name,
+                      price: "$" + (val.base_price - prevLevel),
+                      levelId: "level_" + val.id,
+                  });
+              });
+              $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+              $(".changeLevel").hide();
+              if (shirtSizes.length > 0) {
+                  $(".selectLevel")[0].click();
+              }
 
-		});
-		$.getJSON("{% url 'registration:shirtsizes' %}", function(data) {
-			shirtSizes = data;
-			if (levelTemplateData.length > 0){
-				$(".selectLevel")[0].click();
-			}
-		});
-	});
+          });
+          $.getJSON("{% url 'registration:shirtsizes' %}", function (data) {
+              shirtSizes = data;
+              if (levelTemplateData.length > 0) {
+                  $(".selectLevel")[0].click();
+              }
+          });
+      });
 
-	$("#levelContainer").on('click', 'a.selectLevel', function(){
-		clearLevels();
-		var levelId = $(this).attr('id').split('_')[1];
-		$.each( levelTemplateData, function( key, val ) {
-			var id = val.levelId.split('_')[1];
-			if (id == levelId){
-				$("#regLevel").val(val.name);
-				$("#levelContainer").loadTemplate($("#levelTemplate"), val);
-				$(".changeLevel").show();
-				$(".selectLevel").text("Selected!");
-				generateOptions(id);
-				return false;
-			}
-		});
-	});
-	$("#levelContainer").on('click', 'a.changeLevel', function() {
-		$("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-		$("#regLevel").val("");
-		$(".changeLevel").hide();
-	});
-	var clearLevels = function(){
-		$.each( levelTemplateData, function( key, val ) {
-			$("#"+val.levelId).text("Select " + val.name);
-		});
-		$("form").validator('update');
-	};
+      $("#levelContainer").on('click', 'a.selectLevel', function () {
+          clearLevels();
+          var levelId = $(this).attr('id').split('_')[1];
+          $.each(levelTemplateData, function (key, val) {
+              var id = val.levelId.split('_')[1];
+              if (id == levelId) {
+                  $("#regLevel").val(val.name);
+                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                  $(".changeLevel").show();
+                  $(".selectLevel").text("Selected!");
+                  generateOptions(id);
+                  return false;
+              }
+          });
+      });
+      $("#levelContainer").on('click', 'a.changeLevel', function () {
+          $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+          $("#regLevel").val("");
+          $(".changeLevel").hide();
+      });
+      var clearLevels = function () {
+          $.each(levelTemplateData, function (key, val) {
+              $("#" + val.levelId).text("Select " + val.name);
+          });
+          $("form").validator('update');
+      };
 
-    var getExistingOptions = function(id) {
-        if (!currentLevel.options) return [];
-        var matches = currentLevel.options.filter(function(opt) { return opt.id == id; });
-        return matches;
-    }
+      var getExistingOptions = function (id) {
+          if (!currentLevel.options) return [];
+          var matches = currentLevel.options.filter(function (opt) {
+              return opt.id == id;
+          });
+          return matches;
+      }
 
-	var generateOptions = function(levelId){
-		var data = [];
-		$.each(levelData, function(key, thing){
-			if (thing.id == levelId){
-				data = thing.options;
-                description = thing.description;
-				return false;
-			}
-		});
-		var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
-		$("#levelContainer").append(container);
-		$.each( data, function(key, val) {
-			if (val.value == "0.00"){
-				var price = " (Free) ";
-			} else {
-				var price = " (+$" + val.value + ") "
-			}
-			var required = "";
-			if (val.required) {required = "required";}
-			switch (val.type){
-                case "plaintext":
-                    var template = $("#optionPlainTextTemplate");
-                    $("#optionsContainer").loadTemplate(template, {
-                        'content': val.description
-                    }, {append: true});
-                    break;
-				case "bool":
-					var template = $("#optionBoolTemplate");
-					if (val.required) {template = $("#optionBoolReqTemplate");}
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id
-					}, {append: true});
-                    if (val.value == "0.00") {
-                        $("#option_"+val.id).prop('checked', true);
-                    }
-                    var opts = getExistingOptions(val.id);
-                    if (opts && opts[0] && opts[0].value == "True") {
-                        $("#option_" + val.id).attr("checked", "checked");
-                    }
-					break;
-				case "int":
-					var template = $("#optionIntTemplate");
-					if (val.required) {template = $("#optionIntReqTemplate");}
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id
-					}, {append: true});
-                    var opts = getExistingOptions(val.id);
-                    if (opts && opts[0]) {
-                        $("#option_" + val.id).val(opts[0].value);
-                    }
-					break;
-				case "string":
-					var template = $("#optionStringTemplate");
-					if (val.required) {template = $("#optionStringReqTemplate");}
-					var placeholder = val.name;
-					$("#optionsContainer").loadTemplate(template, {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id,
-						'placeholder': placeholder,
-					}, {append: true});
-                    var opts = getExistingOptions(val.id);
-                    if (opts && opts[0]) {
-                        $("#option_" + val.id).val(opts[0].value);
-                    }
-					break;
-				default:
-					if (val.list == []){break;}
-					var options = [];
-					if (!val.required) {options.push({"content": "Select One...", "value": ""});}
-					$.each(val.list, function (key, item) {
-						options.push({"content": item.name, "value": item.id})
-					});
-					$("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-						'name': val.name + " " + price,
-						'id': "option_" + val.id,
-						'options': options
-					}, {append: true});
-                    var opts = getExistingOptions(val.id);
-                    if (opts && opts[0]) {
-                        $("#option_" + val.id).val(opts[0].value);
-                    }
-					break;
-			}
-		});
+      var generateOptions = function (levelId) {
+          var data = [];
+          $.each(levelData, function (key, thing) {
+              if (thing.id == levelId) {
+                  data = thing.options;
+                  description = thing.description;
+                  return false;
+              }
+          });
+          var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/><div class='form-group'><div class='col-sm-12'>" + description + "</div></div></div>");
+          $("#levelContainer").append(container);
+          $.each(data, function (key, val) {
+              if (val.value == "0.00") {
+                  var price = " (Free) ";
+              } else {
+                  var price = " (+$" + val.value + ") "
+              }
+              var required = "";
+              if (val.required) {
+                  required = "required";
+              }
+              switch (val.type) {
+                  case "plaintext":
+                      var template = $("#optionPlainTextTemplate");
+                      $("#optionsContainer").loadTemplate(template, {
+                          'content': val.description
+                      }, {append: true});
+                      break;
+                  case "bool":
+                      var template = $("#optionBoolTemplate");
+                      if (val.required) {
+                          template = $("#optionBoolReqTemplate");
+                      }
+                      $("#optionsContainer").loadTemplate(template, {
+                          'name': val.name + " " + price,
+                          'id': "option_" + val.id
+                      }, {append: true});
+                      if (val.value == "0.00") {
+                          $("#option_" + val.id).prop('checked', true);
+                      }
+                      var opts = getExistingOptions(val.id);
+                      if (opts && opts[0] && opts[0].value == "True") {
+                          $("#option_" + val.id).attr("checked", "checked");
+                      }
+                      break;
+                  case "int":
+                      var template = $("#optionIntTemplate");
+                      if (val.required) {
+                          template = $("#optionIntReqTemplate");
+                      }
+                      $("#optionsContainer").loadTemplate(template, {
+                          'name': val.name + " " + price,
+                          'id': "option_" + val.id
+                      }, {append: true});
+                      var opts = getExistingOptions(val.id);
+                      if (opts && opts[0]) {
+                          $("#option_" + val.id).val(opts[0].value);
+                      }
+                      break;
+                  case "string":
+                      var template = $("#optionStringTemplate");
+                      if (val.required) {
+                          template = $("#optionStringReqTemplate");
+                      }
+                      var placeholder = val.name;
+                      $("#optionsContainer").loadTemplate(template, {
+                          'name': val.name + " " + price,
+                          'id': "option_" + val.id,
+                          'placeholder': placeholder,
+                      }, {append: true});
+                      var opts = getExistingOptions(val.id);
+                      if (opts && opts[0]) {
+                          $("#option_" + val.id).val(opts[0].value);
+                      }
+                      break;
+                  default:
+                      if (val.list == []) {
+                          break;
+                      }
+                      var options = [];
+                      if (!val.required) {
+                          options.push({"content": "Select One...", "value": ""});
+                      }
+                      $.each(val.list, function (key, item) {
+                          options.push({"content": item.name, "value": item.id})
+                      });
+                      $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
+                          'name': val.name + " " + price,
+                          'id': "option_" + val.id,
+                          'options': options
+                      }, {append: true});
+                      var opts = getExistingOptions(val.id);
+                      if (opts && opts[0]) {
+                          $("#option_" + val.id).val(opts[0].value);
+                      }
+                      break;
+              }
+          });
 
-		$("form").validator('update');
-	};
-
-
-    var getOptions = function() {
-        var options = $(".levelOptions");
-                var data = [];
-        $.each(options, function(key, option) {
-            if ($(option).is(':checkbox')) {
-                if ($(option).is(':checked')) {
-                    data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
-                }
-            } else {
-                if ($(option).val() != "") {
-                    data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
-                }
-            }
-        });
-        return data;
-    };
-
-	function doRegister(e) {
-		e.preventDefault();
-		$("form").validator('validate');
-		var errorCount = $(".has-error").length;
-		if (errorCount > 0) {
-			$("#checkout").one('click', doRegister);
-			return;
-		}
-
-		$("#checkout").attr("disabled", "disabled");
-
-		var data = {
-			'attendee': {'id': attendee.id,},
-			'badge': {'id': badge.id,},
-			'event': '{{ event }}',
-			'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() }
-		};
+          $("form").validator('update');
+      };
 
 
-		$.ajax({
-			"type": "POST",
-			"dataType": "json",
-			"url": "{% url 'registration:addUpgrade' %}",
-			"data": JSON.stringify(data),
-			"beforeSend": function(xhr, settings) {
-				console.log("Before Send");
-				$.ajaxSettings.beforeSend(xhr, settings);
-			},
-			"error": function(result, status, error) {
-				if (result.responseText == "") {
-					alert("Your session has expired.");
-				} else {
-					alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
-				}
-				$("#checkout").removeAttr("disabled").one('click', doRegister);
-			},
-			"success": function (result, status) {
-				if (result.success)
-				{
-					window.location = "{% url 'registration:invoiceUpgrade' %}";
-				} else {
-					$("#checkout").removeAttr("disabled").one('click', doRegister);
-					alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.");
-				}
-			}
-		});
-	}
+      var getOptions = function () {
+          var options = $(".levelOptions");
+          var data = [];
+          $.each(options, function (key, option) {
+              if ($(option).is(':checkbox')) {
+                  if ($(option).is(':checked')) {
+                      data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
+                  }
+              } else {
+                  if ($(option).val() != "") {
+                      data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                  }
+              }
+          });
+          return data;
+      };
 
-    $(document).ready(function (e) {
-	    $("#checkout").one('click', doRegister);
-	});
+      function doRegister(e) {
+          e.preventDefault();
+          $("form").validator('validate');
+          var errorCount = $(".has-error").length;
+          if (errorCount > 0) {
+              $("#checkout").one('click', doRegister);
+              return;
+          }
 
- </script>
+          $("#checkout").attr("disabled", "disabled");
+
+          var data = {
+              'attendee': {'id': attendee.id,},
+              'badge': {'id': badge.id,},
+              'event': '{{ event }}',
+              'priceLevel': {'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions()}
+          };
+
+
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:addUpgrade' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "error": function (result, status, error) {
+                  if (result.responseText == "") {
+                      alert("Your session has expired.");
+                  } else {
+                      alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
+                  }
+                  $("#checkout").removeAttr("disabled").one('click', doRegister);
+              },
+              "success": function (result, status) {
+                  if (result.success) {
+                      window.location = "{% url 'registration:invoiceUpgrade' %}";
+                  } else {
+                      $("#checkout").removeAttr("disabled").one('click', doRegister);
+                      alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.");
+                  }
+              }
+          });
+      }
+
+      $(document).ready(function (e) {
+          $("#checkout").one('click', doRegister);
+      });
+
+  </script>
 
 {% endblock %}
