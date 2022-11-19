@@ -366,7 +366,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:addUpgrade' %}",
+              "url": "{% url 'registration:add_upgrade' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -382,7 +382,7 @@
               },
               "success": function (result, status) {
                   if (result.success) {
-                      window.location = "{% url 'registration:invoiceUpgrade' %}";
+                      window.location = "{% url 'registration:invoice_upgrade' %}";
                   } else {
                       $("#checkout").removeAttr("disabled").one('click', doRegister);
                       alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{ event.registrationEmail }} for assistance.");

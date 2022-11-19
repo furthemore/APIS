@@ -173,7 +173,7 @@ def findAsstDealer(request):
             {
                 "success": True,
                 "message": "ASSISTANT",
-                "location": reverse("registration:findUpgrade"),
+                "location": reverse("registration:find_upgrade"),
             }
         )
 

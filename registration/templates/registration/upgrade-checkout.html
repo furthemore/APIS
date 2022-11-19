@@ -1,95 +1,5 @@
 {% extends "registration/master.html" %}
-{% load mathfilters %}
-{% load settings %}
-
-{% block head %}
-  {% if SQUARE_ENVIRONMENT == "sandbox" %}
-    <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
-  {% else %}
-    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
-  {% endif %}
-
-  <script type="text/javascript">
-      var paymentForm = new SqPaymentForm({
-          // Initialize the payment form elements
-          applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
-          locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
-
-          inputClass: 'form-control',
-          // Initialize the credit card placeholders
-          cardNumber: {
-              elementId: 'sq-card-number',
-              placeholder: '•••• •••• •••• ••••'
-          },
-          cvv: {
-              elementId: 'sq-cvv',
-              placeholder: 'CVV'
-          },
-          expirationDate: {
-              elementId: 'sq-expiration-date',
-              placeholder: 'MM/YY'
-          },
-          postalCode: {
-              elementId: 'sq-postal-code',
-              placeholder: '•••••'
-          },
-          // SqPaymentForm callback functions
-          callbacks: {
-              /*
-               * callback function: cardNonceResponseReceived
-               * Triggered when: SqPaymentForm completes a card nonce request
-               */
-              cardNonceResponseReceived: function (errors, nonce, cardData) {
-                  if (errors) {
-                      var errorList = "";
-
-                      console.log("Encountered errors:");
-                      errors.forEach(function (error) {
-                          console.log('  ' + error.message);
-                          errorList += error.message + "; ";
-                      });
-                      alert("One or more Square payment errors have occurred: " + errorList);
-                      $("#checkout").removeAttr("disabled");
-                      return;
-                  }
-
-                  document.getElementById('card-nonce').value = nonce;
-                  doCheckout(cardData);
-
-              },
-              /*
-               * callback function: unsupportedBrowserDetected
-               * Triggered when: the page loads and an unsupported browser is detected
-               */
-              unsupportedBrowserDetected: function () {
-                  /* PROVIDE FEEDBACK TO SITE VISITORS */
-              },
-              inputEventReceived: function (inputEvent) {
-                  switch (inputEvent.eventType) {
-                      case 'focusClassAdded':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'focusClassRemoved':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'errorClassAdded':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'errorClassRemoved':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'cardBrandChanged':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'postalCodeChanged':
-                          /* HANDLE AS DESIRED */
-                          break;
-                  }
-              },
-          }
-      });
-  </script>
-{% endblock %}
+{% load mathfilters settings static registration_tags %}
 
 {% block content %}
 
@@ -99,6 +9,9 @@
       <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Checkout</h1>
         <h3>Review the invoice below and checkout</h3>
+        <div class="col-sm-12">
+          <div id="alert-bar" class="alert alert-danger alert-hidden" role="alert"><b>Test alert....</b></div>
+        </div>
         <hr>
 
         <h3>Your Order</h3>
@@ -210,7 +123,12 @@
                 <select id="useFrom" class="form-control">
                   <option value="" selected>The Fields Below</option>
                   {% for oi in orderItems %}
-                    <option value="{{ oi.badge.attendee.id }}">{{ oi.badge.attendee }}</option>
+                    {% if oi.attendee %}
+                      <option
+                          value="{{ forloop.counter0 }}">{% attendee_get_first oi.attendee %} {{ oi.attendee.lastName }}</option>
+                    {% else %}
+                      <option value="{{ forloop.counter0 }}">{{ oi.badge.attendee }}</option>
+                    {% endif %}
                   {% endfor %}
                 </select>
               </div>
@@ -250,18 +168,14 @@
               <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
             <div class="form-group">
-              <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+              <label for="city" class="col-sm-3 control-label">City/State</label>
               <div class="col-sm-4">
                 <input type="text" name="city" id="city" placeholder="City" class="form-control" required
                        data-error="City is required."/>
               </div>
-              <div class="col-sm-2">
+              <div class="col-sm-5">
                 <select class="form-control bfh-states" id="state" data-country="US" data-state="VA"
                         name="state"></select>
-              </div>
-              <div class="col-sm-3">
-                <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control" data-minlength="5"
-                       data-error="Zip code is required."/>
               </div>
               <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
             </div>
@@ -271,32 +185,15 @@
                 <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
               </div>
             </div>
-            <hr/>
-            <div class="form-group">
-              <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number<span
-                  style="color:red;">*</span></label>
-              <div class="col-sm-9">
-                <div id="sq-card-number"></div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="ccMonth" class="col-sm-3 control-label">Expiration Date<span
-                  style="color:red;">*</span></label>
-              <div class="col-sm-2">
-                <div id="sq-expiration-date"></div>
-              </div>
-              <label for="ccCVV" class="col-sm-1 control-label">CVV<span style="color:red;">*</span></label>
-              <div class="col-sm-2">
-                <div id="sq-cvv"></div>
-              </div>
-              <label for="ccZip" class="col-sm-2 control-label">Zip Code<span style="color:red;">*</span></label>
-              <div class="col-sm-2">
-                <div id="sq-postal-code"></div>
-              </div>
+            <input type="hidden" name="postal" id="postal" value="">
 
+            <div>
+              <form id="payment-form">
+                <div id="card-container"></div>
+              </form>
+              <div id="payment-status-container"></div>
             </div>
-            <br/>
-            <input type="hidden" id="card-nonce" name="nonce">
+
             {% csrf_token %}
             <div class="form-group" style="margin-right:0px;">
               <button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">
@@ -335,117 +232,33 @@
 
 
 {% block javascript %}
+  {% if SQUARE_ENVIRONMENT == "sandbox" %}
+    <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  {% else %}
+    <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+  {% endif %}
+
   <script type="text/javascript">
-      var addresses = [];
-      $("body").ready(function () {
-          $.getJSON("{% url 'registration:addresses' %}", function (data) {
-              addresses = data;
-          });
-      });
+      /* Square & Payments constants */
+      const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
+      const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
 
-      $("#useFrom").on("change", function (e) {
-          var userId = $(this).val();
-          if (userId == "") {
-              $("#fname").val("");
-              $("#lname").val("");
-              $("#email").val("");
-              $("#add1").val("");
-              $("#add2").val("");
-              $("#city").val("");
-              $("#state").val("");
-              $("#country").val("");
-              $("#zip").val("");
-              return;
-          }
+      /* APIS URLs */
+      const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout_upgrade' %}";
+      const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
+      const URL_REGISTRATION_DONE = "{% url 'registration:done_upgrade' %}";
+      const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+      const URL_REGISTRATION_FLUSH = "{% url 'registration:flush' %}";
+      const URL_REGISTRATION_CHECKOUT_UPGRADE = "{% url 'registration:checkout_upgrade' %}";
+      const URL_REGISTRATION_DONE_UPGRADE = "{% url 'registration:done_upgrade' %}";
 
-          $.each(addresses, function (key, item) {
-              $("#fname").val(item.fname);
-              $("#lname").val(item.lname);
-              $("#email").val(item.email);
-              $("#add1").val(item.address1);
-              $("#add2").val(item.address2);
-              $("#city").val(item.city);
-              $("#state").val(item.state);
-              $("#country").val(item.country);
-              $("#zip").val(item.postalCode);
-          });
-      });
-
-      $("#cancel").click(function (e) {
-          $.getJSON("{% url 'registration:flush' %}", function (data) {
-              window.location.reload();
-          });
-      });
-
-      function checkout_click(e) {
-          e.preventDefault();
-          $("form").validator('validate');
-          var errorCount = $(".has-error").length;
-          if (errorCount > 0) {
-              $("#checkout").one('click', checkout_click);
-              return;
-          }
-
-          $("#checkout").attr("disabled", "disabled");
-
-          {% if total > 0 %}
-              paymentForm.requestCardNonce();
-          {% else %}
-              doCheckout();
-          {% endif %}
-      }
-
-      $("#checkout").one('click', checkout_click);
-
-      function doCheckout(card_data) {
-          {% if total > 0 %}
-              var data = {
-                  'onsite': false,
-                  'billingData': {
-                      'cc_firstname': $("#fname").val(), 'cc_lastname': $("#lname").val(), 'email': $("#email").val(),
-                      'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-                      'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-                      'nonce': $("#card-nonce").val(), 'card_data': card_data,
-                  },
-                  'charityDonation': $("#donateCharity").val(),
-                  'orgDonation': $("#donateOrg").val()
-              };
-
-          {% else %}
-              var data = {};
-
-          {% endif %}
-
-          $.ajax({
-              "type": "POST",
-              "dataType": "json",
-              "url": "{% url 'registration:checkoutUpgrade' %}",
-              "data": JSON.stringify(data),
-              "beforeSend": function (xhr, settings) {
-                  console.log("Before Send");
-                  $.ajaxSettings.beforeSend(xhr, settings);
-              },
-              "error": function (result, status, error) {
-                  alert("An error has occurred. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
-                  $("#checkout").removeAttr("disabled");
-              },
-              "success": function (result, status) {
-                  if (result.success) {
-                      window.location = "{% url 'registration:doneUpgrade' %}";
-                  } else {
-                      if (result.mesage.indexOf("email") > -1) {
-                          alert(result.message);
-                          window.location = "{% url 'registration:doneUpgrade' %}";
-                      } else {
-                          alert("An error has occurred: " + result.message + " If this error continues, please contact {{ event.registrationEmail }} for assistence.");
-                          $("#checkout").removeAttr("disabled").one('click', checkout_click);
-                      }
-                  }
-              }
-          });
-
-      }
-
+      /* Application data */
+      let cart_total = {{ total|default:0 }};
 
   </script>
+  <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
+  <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+  <script type="application/javascript" src="{% static 'js/upgrade.js' %}"></script>
+
+
 {% endblock %}

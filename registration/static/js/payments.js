@@ -1,7 +1,7 @@
 async function initializeCard(payments) {
     const card = await payments.card();
     await card.attach('#card-container');
-    return card
+    return card;
 }
 
 // This function tokenizes a payment method.
@@ -44,7 +44,7 @@ function hidePaymentResults() {
     statusContainer.style.visibility = 'hidden';
 }
 
-async function createPayment(token) {
+async function createPayment(token, url) {
     const body = JSON.stringify({
         onsite: false,
         billingData: {

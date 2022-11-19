@@ -26,25 +26,29 @@ urlpatterns = [
     url(r"^logout/$", LogoutView.as_view(), name="logout"),
     url(
         r"^upgrade/lookup/?$",
-        registration.views.upgrade.findUpgrade,
-        name="findUpgrade",
+        registration.views.upgrade.find_upgrade,
+        name="find_upgrade",
     ),
     url(
-        r"^upgrade/info/?$", registration.views.upgrade.infoUpgrade, name="infoUpgrade"
+        r"^upgrade/info/?$",
+        registration.views.upgrade.info_upgrade,
+        name="info_upgrade",
     ),
-    url(r"^upgrade/add/?$", registration.views.upgrade.addUpgrade, name="addUpgrade"),
+    url(r"^upgrade/add/?$", registration.views.upgrade.add_upgrade, name="add_upgrade"),
     url(
         r"^upgrade/invoice/?$",
-        registration.views.upgrade.invoiceUpgrade,
-        name="invoiceUpgrade",
+        registration.views.upgrade.invoice_upgrade,
+        name="invoice_upgrade",
     ),
     url(
         r"^upgrade/checkout/?$",
-        registration.views.upgrade.checkoutUpgrade,
-        name="checkoutUpgrade",
+        registration.views.upgrade.checkout_upgrade,
+        name="checkout_upgrade",
     ),
     url(
-        r"^upgrade/done/?$", registration.views.upgrade.doneUpgrade, name="doneUpgrade"
+        r"^upgrade/done/?$",
+        registration.views.upgrade.done_upgrade,
+        name="done_upgrade",
     ),
     url(
         r"^upgrade/(?P<guid>\w+)/?$", registration.views.upgrade.upgrade, name="upgrade"
