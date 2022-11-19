@@ -2,220 +2,224 @@
 {% load settings registration_tags %}
 {% block content %}
 
-{% if orderItems %}
+  {% if orderItems %}
 
     <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Finalize Registration</h1>
         <h3>Add another attendee to your order, or click Finish</h3>
         <hr>
 
         <h3>Your Order</h3>
 
-            <div class="row">
-                <div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
-                <div class="col-sm-2"><h4>Price</h4></div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-1"><h4>Attendee</h4></div>
+          <div class="col-sm-2"><h4>Price</h4></div>
+        </div>
+
+
+
+        {% for item in orderItems %}
+          <div class="row">
+            {% if item.attendee %}
+              <div class="col-sm-5 col-sm-offset-1">{% attendee_get_first item.attendee %} {{ item.attendee.lastName }}
+                - {{ item.priceLevel }}</div>
+            {% else %}
+              <div class="col-sm-5 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</div>
+            {% endif %}
+            <div class="col-sm-2">${{ item.priceLevel.basePrice }}</div>
+            <div class="col-sm-2">
+              <a class="deleteAttendee" id="delete_{{ item.id }}">&times; Remove</a>
             </div>
+          </div>
+          {% if discount %}
+            <div class="row">
+              <div class="col-sm-5 col-sm-offset-1">Discount - {{ discount.codeName }}</div>
+              {% if discount.amountOff == 0 %}
+                <div class="col-sm-2">- ${{ total_discount|floatformat:2 }}</div>
+              {% else %}
+                <div class="col-sm-2">- ${{ discount.amountOff|floatformat:2 }}</div>
+              {% endif %}
+              <div class="col-sm-2">
+              </div>
+            </div>
+          {% endif %}
+          <div class="row" style="height:10px;">&nbsp;</div>
 
+        {% endfor %}
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
+          <div class="col-sm-2"><h4>${{ total|floatformat:2 }}</h4></div>
+        </div>
 
-
-		{% for item in orderItems %}
-			<div class="row">
-                {% if item.attendee %}
-				  <div class="col-sm-5 col-sm-offset-1">{% attendee_get_first item.attendee %} {{item.attendee.lastName}} - {{item.priceLevel}}</div>
-                {% else %}
-				  <div class="col-sm-5 col-sm-offset-1">{{item.badge.attendee}} - {{item.priceLevel}}</div>
-                {% endif %}
-				<div class="col-sm-2">${{item.priceLevel.basePrice}}</div>
-				<div class="col-sm-2">
-					<a class="deleteAttendee" id="delete_{{item.id}}">&times; Remove</a>
-				</div>
-			</div>
-			{% if discount %}
-				<div class="row">
-					<div class="col-sm-5 col-sm-offset-1">Discount - {{discount.codeName}}</div>
-                    {% if discount.amountOff == 0 %}
-                    <div class="col-sm-2">- ${{total_discount|floatformat:2}}</div>
-                    {% else %}
-					<div class="col-sm-2">- ${{discount.amountOff|floatformat:2}}</div>
-                    {% endif %}
-					<div class="col-sm-2">
-					</div>
-				</div>
-			{% endif%}
-			<div class="row" style="height:10px;">&nbsp;</div>
-
-		{% endfor %}
-			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1"><h4>Total</h4></div>
-				<div class="col-sm-2"><h4>${{total|floatformat:2}}</h4></div>
-			</div>
-
-
-		<br/>
 
         <br/>
-        <a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel Registration</a>
+
+        <br/>
+        <a class="btn btn-primary" id="addAnother">Add Another Attendee</a> <a class="btn" id="cancel">Cancel
+        Registration</a>
 
         <hr/>
 
         <div class="container" style="width: inherit">
-        <form class="form-horizontal" role="form" data-toggle="validator">
+          <form class="form-horizontal" role="form" data-toggle="validator">
 
-        <h3>Extra Donations</h3>
-        <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
-        {% if event.charity %}
-            If you would like to make an extra gift to our annual charity,
-            {{ event.charity }}, or to the convention, please enter it below.
-        {% else %}
-            If you would like to make an extra gift to the convention, please enter it below.
-        {% endif %}
-        </div>
-        {% if event.charity %}
-        <div class="form-group">
-            <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
-            <div class="col-sm-4">
-                <div class="input-group">
-                    <div class="input-group-addon">$</div>
-                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity" class="form-control validate"  data-error="Please use only numbers and a decimal." />
-                </div>
+            <h3>Extra Donations</h3>
+            <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+              {% if event.charity %}
+                If you would like to make an extra gift to our annual charity,
+                {{ event.charity }}, or to the convention, please enter it below.
+              {% else %}
+                If you would like to make an extra gift to the convention, please enter it below.
+              {% endif %}
             </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-        </div>
-        {% endif %}
-        <div class="form-group">
-            <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
-            <div class="col-sm-4">
-                <div class="input-group">
+            {% if event.charity %}
+              <div class="form-group">
+                <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+                <div class="col-sm-4">
+                  <div class="input-group">
                     <div class="input-group-addon">$</div>
-                    <input type="number" id="donateOrg" class="form-control" placeholder="0.00" min="0" step="0.01">
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity"
+                           class="form-control validate" data-error="Please use only numbers and a decimal."/>
+                  </div>
                 </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+            {% endif %}
+            <div class="form-group">
+              <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <div class="input-group-addon">$</div>
+                  <input type="number" id="donateOrg" class="form-control" placeholder="0.00" min="0" step="0.01">
+                </div>
+              </div>
             </div>
-        </div>
-
 
 
             {% csrf_token %}
-        </form>
+          </form>
         </div>
 
         <div class="container" style="width: inherit">
-        <div class="row">
+          <div class="row">
             <a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Finish</a>
-        </div>
+          </div>
         </div>
 
+      </div>
     </div>
-    </div>
-{% else %}
+  {% else %}
 
     <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Checkout</h1>
         <h3>There are no attendees in your order</h3>
         <hr>
         <a class="btn btn-primary" href="{% url 'registration:onsite' %}">Add Attendee</a>
 
 
-    </div>
+      </div>
     </div>
 
-{% endif %}
+  {% endif %}
 
 {% endblock %}
 
 
 {% block javascript %}
-<script type="text/javascript">
-    $( "body" ).ready(function() {
-    });
+  <script type="text/javascript">
+      $("body").ready(function () {
+      });
 
-    $("#donateCharity").change(setTwoNumberDecimal);
-    $("#donateOrg").change(setTwoNumberDecimal);
+      $("#donateCharity").change(setTwoNumberDecimal);
+      $("#donateOrg").change(setTwoNumberDecimal);
 
-    $(".deleteAttendee").click(function(e) {
-        var id = this.id.split('_')[1];
-        var data = {'id': id}
-        $.ajax({
-            "type": "POST",
-            "dataType": "json",
-            "url": "{% url 'registration:remove_from_cart' %}",
-            "data": JSON.stringify(data),
-            "beforeSend": function(xhr, settings) {
-                console.log("Before Send");
-                $.ajaxSettings.beforeSend(xhr, settings);
-            },
-            "error": function(result, status, error) {
-                        alert(error);
-            },
-                    "success": function (result, status) {
-                        if (result.success) {
-                window.location.reload();
-                        } else {
-                            alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
-            }
-                    }
-        });
-    });
+      $(".deleteAttendee").click(function (e) {
+          var id = this.id.split('_')[1];
+          var data = {'id': id}
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:remove_from_cart' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "error": function (result, status, error) {
+                  alert(error);
+              },
+              "success": function (result, status) {
+                  if (result.success) {
+                      window.location.reload();
+                  } else {
+                      alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                  }
+              }
+          });
+      });
 
-    $("#addAnother").click(function() {
-        window.location = "{% url 'registration:onsite' %}";
-    });
+      $("#addAnother").click(function () {
+          window.location = "{% url 'registration:onsite' %}";
+      });
 
-    $("#cancel").click(function() {
-        var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
-        if (cancel == false) { return;}
+      $("#cancel").click(function () {
+          var cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.")
+          if (cancel == false) {
+              return;
+          }
 
-                $.getJSON("{% url 'registration:cancel_order' %}", function(data) {
-            window.location = "{% url 'registration:onsite' %}";
-                });
-    });
+          $.getJSON("{% url 'registration:cancel_order' %}", function (data) {
+              window.location = "{% url 'registration:onsite' %}";
+          });
+      });
 
-    function checkout_click(e) {
-        e.preventDefault();
-        $("form").validator('validate');
-        var errorCount = $(".has-error").length;
-        if (errorCount > 0) {
-            $("#checkout").one('click', checkout_click);
-            return;
-        }
+      function checkout_click(e) {
+          e.preventDefault();
+          $("form").validator('validate');
+          var errorCount = $(".has-error").length;
+          if (errorCount > 0) {
+              $("#checkout").one('click', checkout_click);
+              return;
+          }
 
-        $("#checkout").attr("disabled", "disabled");
+          $("#checkout").attr("disabled", "disabled");
 
-        var data = {
-            'onsite': true,
-            'billingData': {},
-            'charityDonation': $("#donateCharity").val(),
-            'orgDonation': $("#donateOrg").val()
-        };
+          var data = {
+              'onsite': true,
+              'billingData': {},
+              'charityDonation': $("#donateCharity").val(),
+              'orgDonation': $("#donateOrg").val()
+          };
 
-        $.ajax({
-            "type": "POST",
-            "dataType": "json",
-            "url": "{% url 'registration:checkout' %}",
-            "data": JSON.stringify(data),
-            "beforeSend": function(xhr, settings) {
-                console.log("Before Send");
-                $.ajaxSettings.beforeSend(xhr, settings);
-            },
-            "error": function(result, status, error) {
-                alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.");
-                $("#checkout").one('click', checkout_click).removeAttr("disabled");
-            },
-            "success": function (result, status) {
-                if (result.success) {
-                    window.location = "{% url 'registration:onsite_done' %}";
-                } else {
-                    alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
-                    $("#checkout").one('click', checkout_click).removeAttr("disabled");
-                }
-            }
-        });
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:checkout' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "error": function (result, status, error) {
+                  alert("An error has occurred. If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                  $("#checkout").one('click', checkout_click).removeAttr("disabled");
+              },
+              "success": function (result, status) {
+                  if (result.success) {
+                      window.location = "{% url 'registration:onsite_done' %}";
+                  } else {
+                      alert("An error has occurred: " + result.message + " If this error continues, please contact {{event.registrationEmail}} for assistance.");
+                      $("#checkout").one('click', checkout_click).removeAttr("disabled");
+                  }
+              }
+          });
 
 
-    }
+      }
 
-    $("#checkout").one('click', checkout_click);
+      $("#checkout").one('click', checkout_click);
 
-</script>
+  </script>
 {% endblock %}

@@ -5,381 +5,435 @@
 {% block content %}
 
 
-{% if dealer and not dealer.approved%}
+  {% if dealer and not dealer.approved %}
 
-<h1>Dealer Registration - {{event}}</h1>
-<p>Your dealer application was not approved. Please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a> if you feel this is in error or have any questions.</p>
+    <h1>Dealer Registration - {{ event }}</h1>
+    <p>Your dealer application was not approved. Please contact <a
+        href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if you feel this is in error or have any
+      questions.</p>
 
-{% elif dealer and dealer.approved %}
+  {% elif dealer and dealer.approved %}
 
-<div class="modal fade" id="buttonModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Buttons for a Cause</h4>
-      </div>
-      <div class="modal-body">
-          <p>As an effort to further support our selected charity, we are asking Marketplace and Artist Alley
+    <div class="modal fade" id="buttonModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Buttons for a Cause</h4>
+          </div>
+          <div class="modal-body">
+            <p>As an effort to further support our selected charity, we are asking Marketplace and Artist Alley
               participants to provide incentives for those who donate. For a donation of $5 or more, the donor
               will receive a free button. We humbly ask as a community, that we come together and help support the
               cause.</p>
-          <p>Suggestions for incentives: a percentage or amount off of a purchase or a free gift to attendees
+            <p>Suggestions for incentives: a percentage or amount off of a purchase or a free gift to attendees
               possessing the button. If you are interested, please let us know what incentive you would like to
-              offer and we will list your business and incentive on the {{event.name}} website along with signs at
+              offer and we will list your business and incentive on the {{ event.name }} website along with signs at
               the charity donation table.</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
-      </div>
-      <div class="modal-body">
-        <p>Due to state and federal laws, minors may not sell merchandice in our Marketplace. You must be 18 years of age or older before the start of the convention to be a dealer. </p>
-	<p>Please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a> if you have any questions.</p>
+    <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Why do we need your birthdate?</h4>
+          </div>
+          <div class="modal-body">
+            <p>Due to state and federal laws, minors may not sell merchandice in our Marketplace. You must be 18 years
+              of age or older before the start of the convention to be a dealer. </p>
+            <p>Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if you have any
+              questions.</p>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-	<form class="form-horizontal" role="form" data-toggle="validator">
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Registration - {{event}}</h1>
+    <form class="form-horizontal" role="form" data-toggle="validator">
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="personal">
+          <h1>Dealer Registration - {{ event }}</h1>
 
-		<p>Please review and update the information below. If you have any questions about this invoice, please contact <a href="mailto:{{event.dealerEmail}}">{{event.dealerEmail}}</a>. Required fields are marked with a red asterisk (<span style="color:red;">*</span>).</p>
+          <p>Please review and update the information below. If you have any questions about this invoice, please
+            contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a>. Required fields are marked
+            with a red asterisk (<span style="color:red;">*</span>).</p>
 
-        {% show_attendee_form attendee=badge.attendee emailOptions=True event=event %}
+          {% show_attendee_form attendee=badge.attendee emailOptions=True event=event %}
 
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" name="badgeName" id="badgeName" value="{{badge.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
-                </div>
+          <div class="form-group">
+            <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
+            <div class="col-sm-9">
+              <input type="text" name="badgeName" id="badgeName" value="{{ badge.badgeName }}" placeholder="Badge Name"
+                     class="form-control" required data-error="Badge name is required.">
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+          </div>
 
 
-		<hr>
-                <div class="form-group">
-                    <label for="businessName" class="col-sm-3 control-label">Business Name <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" id="businessName" value="{{dealer.businessName}}" name="businessName" placeholder="Business Name" class="form-control form-control-text" required>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="license" class="col-sm-3 control-label">Virginia Tax License <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="text" id="license" value="{{dealer.license}}"  name="license" placeholder="VA Tax License" class="form-control form-control-text" required>
-			<input type="checkbox" id="tempLicense" /> <small>I need a temporary tax license for VA.</small>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <input type="url" id="website" value="{{dealer.website}}" name="website" placeholder="http://www.mysite.org" class="form-control form-control-text" required data-error="Please enter a full URL here. Ex: http://www.google.com" />
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-            <div class="form-group">
-                    <label for="website" class="col-sm-3 control-label">Logo</label>
-                    <div class="col-sm-9">
-                        <input type="url" id="logo" name="logo" value="{{dealer.logo}}" placeholder="http://www.mysite.org/logo.png" class="form-control form-control-text" data-error="Please enter a full URL here. Ex: http://www.google.com/image.png" />
-                    </div>
-            <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-            <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location map.</div>
-                </div>
+          <hr>
+          <div class="form-group">
+            <label for="businessName" class="col-sm-3 control-label">Business Name <span
+                style="color:red;">*</span></label>
+            <div class="col-sm-9">
+              <input type="text" id="businessName" value="{{ dealer.businessName }}" name="businessName"
+                     placeholder="Business Name" class="form-control form-control-text" required>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+          </div>
+          <div class="form-group">
+            <label for="license" class="col-sm-3 control-label">Virginia Tax License <span
+                style="color:red;">*</span></label>
+            <div class="col-sm-9">
+              <input type="text" id="license" value="{{ dealer.license }}" name="license" placeholder="VA Tax License"
+                     class="form-control form-control-text" required>
+              <input type="checkbox" id="tempLicense"/> <small>I need a temporary tax license for VA.</small>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+          </div>
+          <div class="form-group">
+            <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
+            <div class="col-sm-9">
+              <input type="url" id="website" value="{{ dealer.website }}" name="website"
+                     placeholder="http://www.mysite.org" class="form-control form-control-text" required
+                     data-error="Please enter a full URL here. Ex: http://www.google.com"/>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+          </div>
+          <div class="form-group">
+            <label for="website" class="col-sm-3 control-label">Logo</label>
+            <div class="col-sm-9">
+              <input type="url" id="logo" name="logo" value="{{ dealer.logo }}"
+                     placeholder="http://www.mysite.org/logo.png" class="form-control form-control-text"
+                     data-error="Please enter a full URL here. Ex: http://www.google.com/image.png"/>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location map.
+            </div>
+          </div>
 
-                <div class="form-group">
-                    <label for="description" class="col-sm-3 control-label">Description of Wares <span style="color:red;">*</span></label>
-                    <div class="col-sm-9">
-                        <textarea id="description" name="description" class="form-control form-control-textarea" required>{{dealer.description}}</textarea>
-                    </div>
-		    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="artShow" class="col-sm-3 control-label">I have items to place in the Art Show</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="artShow" name="artShow" class="form-control form-control-checkbox" />
-                    </div>
-		    <div class="col-sm-9 col-sm-offset-3 small">We will contact you seperately with instructions and guidelines for how to submit art to the art show.</div>
-                </div>
-                <div class="form-group">
-                    <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
-                    <div class="col-sm-9">
-                        <textarea id="buttonOffer" name="buttonOffer" class="form-control form-control-textarea">{{dealer.buttonOffer}}</textarea>
-                    </div>
-		    <div class="col-sm-9 col-sm-offset-3 small"><button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal" >What's this?</button></div>
-                </div>
-                <div class="form-group">
-                    <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity Raffle</label>
-                    <div class="col-sm-9">
-                        <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea">{{dealer.charityRaffle}}</textarea>
-                    </div>
-		    <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity onsite for additional information and receipts.</div>
-                </div>
+          <div class="form-group">
+            <label for="description" class="col-sm-3 control-label">Description of Wares <span
+                style="color:red;">*</span></label>
+            <div class="col-sm-9">
+              <textarea id="description" name="description" class="form-control form-control-textarea"
+                        required>{{ dealer.description }}</textarea>
+            </div>
+            <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+          </div>
+          <div class="form-group">
+            <label for="artShow" class="col-sm-3 control-label">I have items to place in the Art Show</label>
+            <div class="col-sm-9">
+              <input type="checkbox" id="artShow" name="artShow" class="form-control form-control-checkbox"/>
+            </div>
+            <div class="col-sm-9 col-sm-offset-3 small">We will contact you seperately with instructions and guidelines
+              for how to submit art to the art show.
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="buttonOffer" class="col-sm-3 control-label">My offer for "Buttons for a Cause"</label>
+            <div class="col-sm-9">
+              <textarea id="buttonOffer" name="buttonOffer"
+                        class="form-control form-control-textarea">{{ dealer.buttonOffer }}</textarea>
+            </div>
+            <div class="col-sm-9 col-sm-offset-3 small">
+              <button class="btn btn-link btn-sm" data-toggle="modal" data-target="#buttonModal">What's this?</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity
+              Raffle</label>
+            <div class="col-sm-9">
+              <textarea id="charityRaffle" name="charityRaffle"
+                        class="form-control form-control-textarea">{{ dealer.charityRaffle }}</textarea>
+            </div>
+            <div class="col-sm-9 col-sm-offset-3 small">Any donation provided is tax deductible. Please see the charity
+              onsite for additional information and receipts.
+            </div>
+          </div>
 
-       <hr/>
-                <div class="form-group">
-                    <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
-                    </div>
-		    <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. Details for Wi-Fi access will be in your welcome packet at the con.</div>
-                </div>
-                <div class="form-group">
-                    <label for="wall" class="col-sm-3 control-label">I would like a wall space<br/>(Space is limited)</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="wall" name="wall" class="form-control form-control-checkbox" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="wall" class="col-sm-3 control-label">I will consider different table types</label>
-                    <div class="col-sm-9">
-                        <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
-                    </div>
-		    <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I am willing to be assigned a different spot type (Table to booth or booth to table). You can decide to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept, you will be responsible for any difference in price.</div>
-                </div>
-                <div class="form-group">
-                    <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
-                    <div class="col-sm-9">
-                        <input type="text" value="{{dealer.tableSize.name}} (${{dealer.tableSize.basePrice}})" class="form-control form-control-text" disabled />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="chairs" class="col-sm-3 control-label">Chair Count</label>
-                    <div class="col-sm-9">
-                        <input type="number" value="{{dealer.chairs}}" name="chairs" class="form-control form-control-text" disabled />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="tables" class="col-sm-3 control-label">Table Count</label>
-                    <div class="col-sm-9">
-                        <input type="number" value="{{dealer.tables}}" name="tables" class="form-control form-control-text" disabled />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="tables" class="col-sm-3 control-label">Partner Information</label>
-                    <div class="col-sm-9" id="partnerList">
-                        {% for asst in dealer.dealerasst_set.all %}
-                        <input type="text" value="{{asst}}, {{asst.email}}" class="form-control form-control-text" disabled />
-                        {% endfor %}
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
-                    <div class="col-sm-9">
-                        <input type="text" id="near" value="{{dealer.nearTo}}" name="near" placeholder="Business or Person" class="form-control form-control-text"/>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
-                    <div class="col-sm-9">
-                        <input type="text" id="far" value="{{dealer.farFrom}}" name="far" placeholder="Business or Person" class="form-control form-control-text" />
-                    </div>
-                </div>
+          <hr/>
+          <div class="form-group">
+            <label for="wifi" class="col-sm-3 control-label">I do need Wi-Fi</label>
+            <div class="col-sm-9">
+              <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox"/>
+            </div>
+            <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. Details for Wi-Fi
+              access will be in your welcome packet at the con.
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="wall" class="col-sm-3 control-label">I would like a wall space<br/>(Space is limited)</label>
+            <div class="col-sm-9">
+              <input type="checkbox" id="wall" name="wall" class="form-control form-control-checkbox"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="wall" class="col-sm-3 control-label">I will consider different table types</label>
+            <div class="col-sm-9">
+              <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox"/>
+            </div>
+            <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I am
+              willing to be assigned a different spot type (Table to booth or booth to table). You can decide to decline
+              a dealer spot if you'd rather not have the spot type assigned in this way. If you accept, you will be
+              responsible for any difference in price.
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
+            <div class="col-sm-9">
+              <input type="text" value="{{ dealer.tableSize.name }} (${{ dealer.tableSize.basePrice }})"
+                     class="form-control form-control-text" disabled/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="chairs" class="col-sm-3 control-label">Chair Count</label>
+            <div class="col-sm-9">
+              <input type="number" value="{{ dealer.chairs }}" name="chairs" class="form-control form-control-text"
+                     disabled/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tables" class="col-sm-3 control-label">Table Count</label>
+            <div class="col-sm-9">
+              <input type="number" value="{{ dealer.tables }}" name="tables" class="form-control form-control-text"
+                     disabled/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tables" class="col-sm-3 control-label">Partner Information</label>
+            <div class="col-sm-9" id="partnerList">
+              {% for asst in dealer.dealerasst_set.all %}
+                <input type="text" value="{{ asst }}, {{ asst.email }}" class="form-control form-control-text"
+                       disabled/>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
+            <div class="col-sm-9">
+              <input type="text" id="near" value="{{ dealer.nearTo }}" name="near" placeholder="Business or Person"
+                     class="form-control form-control-text"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
+            <div class="col-sm-9">
+              <input type="text" id="far" value="{{ dealer.farFrom }}" name="far" placeholder="Business or Person"
+                     class="form-control form-control-text"/>
+            </div>
+          </div>
 
-        <hr/>
-        <h3>Badge Level</h3>
-        <br/>
-        {% show_price_types %}
-        <br/>
-        <hr/>
+          <hr/>
+          <h3>Badge Level</h3>
+          <br/>
+          {% show_price_types %}
+          <br/>
+          <hr/>
 
-		<div class="form-group">
-                    <div class="col-sm-6 col-sm-offset-6">
-                        <button id="checkout" type="submit" class="btn btn-primary col-sm-12" aria-controls="profile" data-toggle="tab">Continue to Checkout</button>
-		    </div>
-                </div>
-	</div>
-	{% csrf_token %}
+          <div class="form-group">
+            <div class="col-sm-6 col-sm-offset-6">
+              <button id="checkout" type="submit" class="btn btn-primary col-sm-12" aria-controls="profile"
+                      data-toggle="tab">Continue to Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+        {% csrf_token %}
 
-	</div>
-	</form>
+      </div>
+    </form>
 
-{% else %}
+  {% else %}
 
-<h1>Dealer Registration - {{event}}</h1>
-<p>Your session has expired. Please use the link in your application acceptance email again to start over.</p>
+    <h1>Dealer Registration - {{ event }}</h1>
+    <p>Your session has expired. Please use the link in your application acceptance email again to start over.</p>
 
-{% endif %}
+  {% endif %}
 
 {% endblock %}
 
 {% block javascript %}
-<script>
-    var discount = {{event.dealerDiscount.amountOff|default:0.0}}
-    var adult=true;
-</script>
-<script type="text/javascript" src="/static/js/templates/price-types.js"></script>
- <script type="text/javascript">
-	var dealer = {{ jsonDealer|safe }}
-	var attendee = {{ jsonAttendee|safe }}
-	var badge = {{ jsonBadge|safe }}
-	var table = {{ jsonTable|safe }}
+  <script>
+      var discount =
+      {{event.dealerDiscount.amountOff|default:0.0}}
+      var adult = true;
+  </script>
+  <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
+  <script type="text/javascript">
+      var dealer =
+      {{ jsonDealer|safe }}
+      var attendee =
+      {{ jsonAttendee|safe }}
+      var badge =
+      {{ jsonBadge|safe }}
+      var table =
+      {{ jsonTable|safe }}
 
-    var partners = dealer.partners.split(', ');
-  	var partnerCount = 0;
-    var partner1 = "";
-    var partner2 = "";
-    $.each(partners, function(key, item) {
-		if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
-			partnerCount = partnerCount + 1;
-		}
-		if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
-			partnerCount = partnerCount + 1;
-		}
-		if (item.indexOf("_1") > -1) {
-			var p1 = item.split(':');
-			partner1 = partner1 + " " + p1[0] + ": " + p1[1];
-		}
-		if (item.indexOf("_2") > -1) {
-			var p2 = item.split(':');
-			partner2 = partner2 + " " + p2[0] + ": " + p2[1];
-		}
+      var partners = dealer.partners.split(', ');
+      var partnerCount = 0;
+      var partner1 = "";
+      var partner2 = "";
+      $.each(partners, function (key, item) {
+          if (item.indexOf("name_1") > -1 && item.split(':')[1].trim() != "") {
+              partnerCount = partnerCount + 1;
+          }
+          if (item.indexOf("name_2") > -1 && item.split(':')[1].trim() != "") {
+              partnerCount = partnerCount + 1;
+          }
+          if (item.indexOf("_1") > -1) {
+              var p1 = item.split(':');
+              partner1 = partner1 + " " + p1[0] + ": " + p1[1];
+          }
+          if (item.indexOf("_2") > -1) {
+              var p2 = item.split(':');
+              partner2 = partner2 + " " + p2[0] + ": " + p2[1];
+          }
 
-	});
-	$("#partner1").val(partner1);
-	$("#partner2").val(partner2);
-	$("#partnerCount").text(partnerCount);
-	$("#partnerTotal").text("$" + partnerCount*40 + ".00");
-	$("#contact").attr('checked', attendee.emailsOk);
-	$("#survey").attr('checked', attendee.surveyOk);
-	$("#breakfast").attr('checked', dealer.breakfast);
-	$("#reception").attr('checked', dealer.reception);
-	$("#artShow").attr('checked', dealer.artShow);
-	$("#wifi").attr('checked', dealer.needWifi);
-	$("#wall").attr('checked', dealer.wallSpace);
-	$("#switch").attr('checked', dealer.willSwitch);
-    $("#asstbreakfast").attr('checked', dealer.asstBreakfast);
+      });
+      $("#partner1").val(partner1);
+      $("#partner2").val(partner2);
+      $("#partnerCount").text(partnerCount);
+      $("#partnerTotal").text("$" + partnerCount * 40 + ".00");
+      $("#contact").attr('checked', attendee.emailsOk);
+      $("#survey").attr('checked', attendee.surveyOk);
+      $("#breakfast").attr('checked', dealer.breakfast);
+      $("#reception").attr('checked', dealer.reception);
+      $("#artShow").attr('checked', dealer.artShow);
+      $("#wifi").attr('checked', dealer.needWifi);
+      $("#wall").attr('checked', dealer.wallSpace);
+      $("#switch").attr('checked', dealer.willSwitch);
+      $("#asstbreakfast").attr('checked', dealer.asstBreakfast);
 
-	if (dealer.license == "temporary") {
-		$("#license").attr("disabled", "disabled");
-		$("#tempLicense").attr('checked', true);
-	}
+      if (dealer.license == "temporary") {
+          $("#license").attr("disabled", "disabled");
+          $("#tempLicense").attr('checked', true);
+      }
 
-	$("#country").on("change", function() {
-		if ($(this).val() == "US"){
-			$("#state").val("VA").removeAttr("disabled").attr("required", "required");
-			$("#zip").val("").removeAttr("disabled").attr("required", "required");
-		} else {
-			$("#state").val("").attr("disabled", "disabled").removeAttr("required");
-			$("#zip").val("").attr("disabled", "disabled").removeAttr("required");
-		}
-	});
+      $("#country").on("change", function () {
+          if ($(this).val() == "US") {
+              $("#state").val("VA").removeAttr("disabled").attr("required", "required");
+              $("#zip").val("").removeAttr("disabled").attr("required", "required");
+          } else {
+              $("#state").val("").attr("disabled", "disabled").removeAttr("required");
+              $("#zip").val("").attr("disabled", "disabled").removeAttr("required");
+          }
+      });
 
-	$("#tempLicense").on("click", function () {
-		if ($(this).is(":checked")) {
-			$("#license").val("temporary").attr("disabled", "disabled");
-		} else {
-			$("#license").val("").removeAttr("disabled");
-		}
-	});
-
-
-	$("#checkout").click(doRegister);
-
-
-	function doRegister(e) {
-		e.preventDefault();
-		$("form").validator('validate');
-		var errorCount = $(".has-error").length;
-		if (errorCount > 0) {return;}
-
-		$("#checkout").attr("disabled", "disabled");
-
-		var data = {
-			'attendee': {
-				'id': attendee.id,
-				'firstName': $("#firstName").val(), 'lastName': $("#lastName").val(), 'preferredName': $("#preferredName").val(),
-				'address1': $("#add1").val(), 'address2': $("#add2").val(), 'city': $("#city").val(),
-				'state': $("#state").val(), 'country': $("#country").val(), 'postal': $("#zip").val(),
-				'phone': $("#phone").val(),'emailsOk': $("#contact").is(':checked'),
-				'surveyOk': $("#survey").is(':checked'), 'badgeName': $("#badgeName").val()
-			},
-			'dealer': {
-				'id': dealer.id,
-				'businessName':$("#businessName").val(), 'website':$("#website").val(),
-				'license':$("#license").val(), 'power': true, 'wifi':$("#wifi").is(':checked'),
-                'wall':$("#wall").is(':checked'), 'near':$("#near").val(), 'far':$("#far").val(),
-				'description': $("#description").val(), 'logo': $("#logo").val(),
-				'reception': false, 'artShow': $("#artShow").is(':checked'),
-				'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
-				'breakfast': false, 'switch': $('#switch').is(':checked'),
-				'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': false,
-			},
-            'priceLevel': { 'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions() },
-            'event': '{{event}}'
-		};
+      $("#tempLicense").on("click", function () {
+          if ($(this).is(":checked")) {
+              $("#license").val("temporary").attr("disabled", "disabled");
+          } else {
+              $("#license").val("").removeAttr("disabled");
+          }
+      });
 
 
-		$.ajax({
-		    "type": "POST",
-		    "dataType": "json",
-		    "url": "{% url 'registration:addDealer' %}",
-		    "data": JSON.stringify(data),
-		    "beforeSend": function(xhr, settings) {
-		        console.log("Before Send");
-		        $.ajaxSettings.beforeSend(xhr, settings);
-		    },
-		    "error": function(result, status, error) {
-			if (result.responseText == "") {
-				alert("Your session has expired.");
-			} else {
-                        	alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.")
-			}
-			$("#checkout").removeAttr("disabled");
-		    },
-                    "success": function (result, status) {
-                        if (result.success)
-                        {
-                            window.location = "{% url 'registration:invoiceDealer' %}";
-                        } else {
-			    $("#checkout").removeAttr("disabled");
-                            alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.");
-			}
-                    }
-		});
-	}
+      $("#checkout").click(doRegister);
 
 
+      function doRegister(e) {
+          e.preventDefault();
+          $("form").validator('validate');
+          var errorCount = $(".has-error").length;
+          if (errorCount > 0) {
+              return;
+          }
 
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+          $("#checkout").attr("disabled", "disabled");
 
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    }
-});
+          var data = {
+              'attendee': {
+                  'id': attendee.id,
+                  'firstName': $("#firstName").val(),
+                  'lastName': $("#lastName").val(),
+                  'preferredName': $("#preferredName").val(),
+                  'address1': $("#add1").val(),
+                  'address2': $("#add2").val(),
+                  'city': $("#city").val(),
+                  'state': $("#state").val(),
+                  'country': $("#country").val(),
+                  'postal': $("#zip").val(),
+                  'phone': $("#phone").val(),
+                  'emailsOk': $("#contact").is(':checked'),
+                  'surveyOk': $("#survey").is(':checked'),
+                  'badgeName': $("#badgeName").val()
+              },
+              'dealer': {
+                  'id': dealer.id,
+                  'businessName': $("#businessName").val(), 'website': $("#website").val(),
+                  'license': $("#license").val(), 'power': true, 'wifi': $("#wifi").is(':checked'),
+                  'wall': $("#wall").is(':checked'), 'near': $("#near").val(), 'far': $("#far").val(),
+                  'description': $("#description").val(), 'logo': $("#logo").val(),
+                  'reception': false, 'artShow': $("#artShow").is(':checked'),
+                  'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
+                  'breakfast': false, 'switch': $('#switch').is(':checked'),
+                  'buttonOffer': $('#buttonOffer').val(), 'asstbreakfast': false,
+              },
+              'priceLevel': {'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions()},
+              'event': '{{event}}'
+          };
 
 
+          $.ajax({
+              "type": "POST",
+              "dataType": "json",
+              "url": "{% url 'registration:addDealer' %}",
+              "data": JSON.stringify(data),
+              "beforeSend": function (xhr, settings) {
+                  console.log("Before Send");
+                  $.ajaxSettings.beforeSend(xhr, settings);
+              },
+              "error": function (result, status, error) {
+                  if (result.responseText == "") {
+                      alert("Your session has expired.");
+                  } else {
+                      alert("An error has occurred. Please check the form and your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.")
+                  }
+                  $("#checkout").removeAttr("disabled");
+              },
+              "success": function (result, status) {
+                  if (result.success) {
+                      window.location = "{% url 'registration:invoiceDealer' %}";
+                  } else {
+                      $("#checkout").removeAttr("disabled");
+                      alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.");
+                  }
+              }
+          });
+      }
 
 
- </script>
+      function getCookie(name) {
+          var cookieValue = null;
+          if (document.cookie && document.cookie != '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                  var cookie = jQuery.trim(cookies[i]);
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return cookieValue;
+      }
 
-<script src="{% static 'js/date-entry.js' %}"></script>
+      $.ajaxSetup({
+          beforeSend: function (xhr, settings) {
+              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                  // Only send the token to relative URLs i.e. locally.
+                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+              }
+          }
+      });
+
+
+  </script>
+
+  <script src="{% static 'js/date-entry.js' %}"></script>
 
 {% endblock %}

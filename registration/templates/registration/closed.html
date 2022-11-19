@@ -1,20 +1,20 @@
 {% extends "registration/master.html" %}
 
 {% block content %}
-<div class="tab-content">
+  <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Registration - {{event}}</h1>
-        <hr>
-        <p>Registration for {{event}} is closed. If you have any questions please contact
-            <a href="mailto:{{event.registrationEmail}}">{{event.registrationEmail}}</a>
-        </p>
-        <p style="float:right;">
-            {% if onsite %}
-            <a href="{% url 'registration:onsite' %}">Back to Main Page</a>
-            {% else %}
-            <a href="{% url 'registration:index' %}">Back to Main Page</a>
-            {% endif %}
-        </p>
+      <h1>Registration - {{ event }}</h1>
+      <hr>
+      <p>Registration for {{ event }} is closed. If you have any questions please contact
+        <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
+      </p>
+      <p style="float:right;">
+        {% if onsite %}
+          <a href="{% url 'registration:onsite' %}">Back to Main Page</a>
+        {% else %}
+          <a href="{% url 'registration:index' %}">Back to Main Page</a>
+        {% endif %}
+      </p>
     </div>
-</div>
+  </div>
 {% endblock %}

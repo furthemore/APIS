@@ -2,311 +2,313 @@
 {% load settings static %}
 
 {% block head %}
-{% if SQUARE_ENVIRONMENT == "sandbox" %}
-<script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
-{% else %}
-<script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
-{% endif %}
+  {% if SQUARE_ENVIRONMENT == "sandbox" %}
+    <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
+  {% else %}
+    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
+  {% endif %}
 
-<script type="text/javascript">
-var paymentForm = new SqPaymentForm({
-  // Initialize the payment form elements
-  applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
-  locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
+  <script type="text/javascript">
+      var paymentForm = new SqPaymentForm({
+          // Initialize the payment form elements
+          applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
+          locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
 
-  inputClass: 'form-control',
-  // Initialize the credit card placeholders
-  cardNumber: {
-    elementId: 'sq-card-number',
-    placeholder: '•••• •••• •••• ••••'
-  },
-  cvv: {
-    elementId: 'sq-cvv',
-    placeholder: 'CVV'
-  },
-  expirationDate: {
-    elementId: 'sq-expiration-date',
-    placeholder: 'MM/YY'
-  },
-  postalCode: {
-    elementId: 'sq-postal-code',
-    placeholder: '•••••'
-  },
-  // SqPaymentForm callback functions
-  callbacks: {
-    /*
-     * callback function: cardNonceResponseReceived
-     * Triggered when: SqPaymentForm completes a card nonce request
-     */
-    cardNonceResponseReceived: function(errors, nonce, cardData) {
-      if (errors) {
-        var errorList = "";
-        console.log("Encountered errors:");
-        errors.forEach(function(error) {
-          console.log('  ' + error.message);
-          errorList += error.message + "; ";
-        });
-        alert("One or more Square payment errors have occurred: " + errorList);
-        $("#checkout").removeAttr("disabled");
-        return;
-      }
-      document.getElementById('card-nonce').value = nonce;
-      doCheckout(cardData);
-    },
-    /*
-     * callback function: unsupportedBrowserDetected
-     * Triggered when: the page loads and an unsupported browser is detected
-     */
-    unsupportedBrowserDetected: function() {
-      /* PROVIDE FEEDBACK TO SITE VISITORS */
-    },
-    inputEventReceived: function(inputEvent) {
-      switch (inputEvent.eventType) {
-        case 'focusClassAdded':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'focusClassRemoved':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'errorClassAdded':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'errorClassRemoved':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'cardBrandChanged':
-          /* HANDLE AS DESIRED */
-          break;
-        case 'postalCodeChanged':
-          /* HANDLE AS DESIRED */
-          break;
-      }
-    },
-  }
-});
+          inputClass: 'form-control',
+          // Initialize the credit card placeholders
+          cardNumber: {
+              elementId: 'sq-card-number',
+              placeholder: '•••• •••• •••• ••••'
+          },
+          cvv: {
+              elementId: 'sq-cvv',
+              placeholder: 'CVV'
+          },
+          expirationDate: {
+              elementId: 'sq-expiration-date',
+              placeholder: 'MM/YY'
+          },
+          postalCode: {
+              elementId: 'sq-postal-code',
+              placeholder: '•••••'
+          },
+          // SqPaymentForm callback functions
+          callbacks: {
+              /*
+               * callback function: cardNonceResponseReceived
+               * Triggered when: SqPaymentForm completes a card nonce request
+               */
+              cardNonceResponseReceived: function (errors, nonce, cardData) {
+                  if (errors) {
+                      var errorList = "";
+                      console.log("Encountered errors:");
+                      errors.forEach(function (error) {
+                          console.log('  ' + error.message);
+                          errorList += error.message + "; ";
+                      });
+                      alert("One or more Square payment errors have occurred: " + errorList);
+                      $("#checkout").removeAttr("disabled");
+                      return;
+                  }
+                  document.getElementById('card-nonce').value = nonce;
+                  doCheckout(cardData);
+              },
+              /*
+               * callback function: unsupportedBrowserDetected
+               * Triggered when: the page loads and an unsupported browser is detected
+               */
+              unsupportedBrowserDetected: function () {
+                  /* PROVIDE FEEDBACK TO SITE VISITORS */
+              },
+              inputEventReceived: function (inputEvent) {
+                  switch (inputEvent.eventType) {
+                      case 'focusClassAdded':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'focusClassRemoved':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'errorClassAdded':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'errorClassRemoved':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'cardBrandChanged':
+                          /* HANDLE AS DESIRED */
+                          break;
+                      case 'postalCodeChanged':
+                          /* HANDLE AS DESIRED */
+                          break;
+                  }
+              },
+          }
+      });
 
-</script>
+  </script>
 {% endblock %}
 
 {% block content %}
-<style>
-    .row {
-        counter-reset: section;
-    }
+  <style>
+      .row {
+          counter-reset: section;
+      }
 
-    .partnerGroup {
-        margin-bottom: 10px;
-    }
+      .partnerGroup {
+          margin-bottom: 10px;
+      }
 
-    div.partnerGroup::before {
-        counter-increment: section;
-        content: "Partner " counter(section);
-    }
-</style>
+      div.partnerGroup::before {
+          counter-increment: section;
+          content: "Partner " counter(section);
+      }
+  </style>
 
-{% if attendee %}
+  {% if attendee %}
 
-<div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Add a Partner</h1>
         <hr>
 
         {% if dealer.tableSize.partnerMax == asst_count_registered %}
 
-        <div>You already have the maximum partners for this table type. If you feel this is in error, please contact <a
+          <div>You already have the maximum partners for this table type. If you feel this is in error, please contact
+            <a
                 href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a></div>
 
         {% else %}
 
-        <div class="form-group">Please enter only the name(s) and email(s) for dealer partners that you need to pay for.
-            You do not need to enter your own information.  Assistants you've previously paid for are shown for your
+          <div class="form-group">Please enter only the name(s) and email(s) for dealer partners that you need to pay
+            for.
+            You do not need to enter your own information. Assistants you've previously paid for are shown for your
             convenience, but cannot be edited here.
-        </div>
+          </div>
 
-        <noscript>
-          <h1>Javascript is required to use this form.</h1>
-        </noscript>
-        <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
+          <noscript>
+            <h1>Javascript is required to use this form.</h1>
+          </noscript>
+          <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
 
             <div class="form-group">
-                <label for="tables" class="col-sm-3 control-label">Table Type</label>
-                <div class="col-sm-9"><input type='text' value='{{ dealer.tableSize }}' disabled class='form-control'/>
-                </div>
+              <label for="tables" class="col-sm-3 control-label">Table Type</label>
+              <div class="col-sm-9"><input type='text' value='{{ dealer.tableSize }}' disabled class='form-control'/>
+              </div>
             </div>
             <div class="form-group">
-                <label for="tables" class="col-sm-3 control-label">Partner Information</label>
-                <div class="col-sm-9">
-                    <div class="row">
-                    {% for assistant in assistants %}
-                        <div class="partnerGroup">
-                            <input {% if assistant.paid %} disabled="disabled"{% endif %}
-                                   type="text" id="name_existing_{{assistant.id}}"
-                                   class="form-control form-control-text"
-                                   placeholder="Partner Name"
-                                   value="{% if assistant.paid %}[PAID] {% endif %}{{assistant.name}}"
-                            />
-                            <input {% if assistant.paid %} disabled="disabled"{% endif %}
-                                   type="email" id="email_existing_{{assistant.id}}"
-                                   class="form-control form-control-text"
-                                   placeholder="Partner Email"
-                                   value="{{assistant.email}}"
-                            />
-                            {% if not assistant.paid %}
-                            <input type="hidden" id="id_existing_{{assistant.id}}" value="{{assistant.id}}" />
-                            {% endif %}
-                        </div>
-                    {% endfor %}{% for i in extra_assistants_range %}
-                        <div class="partnerGroup">
-                            <input type="text" id="name_new_{{i}}"
-                                   class="form-control form-control-text"
-                                   placeholder="Partner Name"
-                                   value="{{assistant.name}}"
-                            />
-                            <input type="email" id="email_new_{{i}}"
-                                   class="form-control form-control-text"
-                                   placeholder="Partner Email"
-                                   value="{{assistant.email}}"
-                            />
-                        </div>
-                    {% endfor %}
+              <label for="tables" class="col-sm-3 control-label">Partner Information</label>
+              <div class="col-sm-9">
+                <div class="row">
+                  {% for assistant in assistants %}
+                    <div class="partnerGroup">
+                      <input {% if assistant.paid %} disabled="disabled"{% endif %}
+                                                     type="text" id="name_existing_{{ assistant.id }}"
+                                                     class="form-control form-control-text"
+                                                     placeholder="Partner Name"
+                                                     value="{% if assistant.paid %}[PAID] {% endif %}{{ assistant.name }}"
+                      />
+                      <input {% if assistant.paid %} disabled="disabled"{% endif %}
+                                                     type="email" id="email_existing_{{ assistant.id }}"
+                                                     class="form-control form-control-text"
+                                                     placeholder="Partner Email"
+                                                     value="{{ assistant.email }}"
+                      />
+                      {% if not assistant.paid %}
+                        <input type="hidden" id="id_existing_{{ assistant.id }}" value="{{ assistant.id }}"/>
+                      {% endif %}
                     </div>
+                  {% endfor %}{% for i in extra_assistants_range %}
+                  <div class="partnerGroup">
+                    <input type="text" id="name_new_{{ i }}"
+                           class="form-control form-control-text"
+                           placeholder="Partner Name"
+                           value="{{ assistant.name }}"
+                    />
+                    <input type="email" id="email_new_{{ i }}"
+                           class="form-control form-control-text"
+                           placeholder="Partner Email"
+                           value="{{ assistant.email }}"
+                    />
+                  </div>
+                {% endfor %}
                 </div>
+              </div>
             </div>
 
             <hr/>
 
             <div id="billingInfo">
-                <h3>Charges</h3>
+              <h3>Charges</h3>
 
-                <div class='form-group' style='margin-left:30px;'>You will be charged $55 for each new partner added via
-                    this form.
+              <div class='form-group' style='margin-left:30px;'>You will be charged $55 for each new partner added via
+                this form.
+              </div>
+              <div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do
+                not use this form if you <u>only</u> wish to change existing partner information. Contact <a
+                    href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a> instead.
+              </div>
+
+              <div class='form-group'>
+                <label class="col-sm-3 control-label">Total: </label>
+                <div class="col-sm-9" id="total" style="padding-top:5px;">$0.00</div>
+              </div>
+              <hr/>
+              <h3>Billing Information</h3>
+
+
+              <div class="form-group">
+                <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
+                <div class="col-sm-4">
+                  <input type="text" id="fname" placeholder="Billing First Name" value="{{ attendee.firstName }}"
+                         class="form-control" required data-error="Billing name is required. "/>
                 </div>
-                <div class='form-group' style='margin-left:30px;'><span style='color:red'><b>Important!</b></span> Do
-                    not use this form if you <u>only</u> wish to change existing partner information. Contact <a
-                            href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a> instead.
+                <div class="col-sm-5">
+                  <input type="text" id="lname" placeholder="Billing Last Name" value="{{ attendee.lastName }}"
+                         class="form-control" required data-error="Billing name is required. "/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="email" class="col-sm-3 control-label">Email</label>
+                <div class="col-sm-9">
+                  <input type="email" id="email" placeholder="Email" class="form-control"
+                         value="{{ attendee.email }}" required data-error="Email is required. "/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="add1" class="col-sm-3 control-label">Billing Address</label>
+                <div class="col-sm-9">
+                  <input type="text" name="add1" id="add1" placeholder="Address Line 1"
+                         value="{{ attendee.address1 }}" class="form-control" required/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                <div class="col-sm-9">
+                  <input type="text" name="add2" id="add2" placeholder="Address Line 2"
+                         value="{{ attendee.address2 }}" class="form-control"/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
+                <div class="col-sm-4">
+                  <input type="text" name="city" id="city" placeholder="City" class="form-control"
+                         value="{{ attendee.city }}" required data-error="City is required."/>
+                </div>
+                <div class="col-sm-2">
+                  <select class="form-control bfh-states" id="state" data-country="US" data-state="VA"
+                          name="state"></select>
+                </div>
+                <div class="col-sm-3">
+                  <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control"
+                         data-minlength="5" value="{{ attendee.postalCode }}" data-error="Zip code is required."/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="country" class="col-sm-3 control-label">Country</label>
+                <div class="col-sm-9">
+                  <select id="country" class="form-control bfh-countries" data-country="US"
+                          name="country"></select>
+                </div>
+              </div>
+              <hr/>
+              <div class="form-group">
+                <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
+                <div class="col-sm-9">
+                  <div id="sq-card-number"></div>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
+                <div class="col-sm-2">
+                  <div id="sq-expiration-date"></div>
+                </div>
+                <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
+                <div class="col-sm-2">
+                  <div id="sq-cvv"></div>
+                </div>
+                <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
+                <div class="col-sm-2">
+                  <div id="sq-postal-code"></div>
                 </div>
 
-                <div class='form-group'>
-                    <label class="col-sm-3 control-label">Total: </label>
-                    <div class="col-sm-9" id="total" style="padding-top:5px;">$0.00</div>
-                </div>
-                <hr/>
-                <h3>Billing Information</h3>
-
-
-                <div class="form-group">
-                    <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
-                    <div class="col-sm-4">
-                        <input type="text" id="fname" placeholder="Billing First Name" value="{{attendee.firstName}}"
-                               class="form-control" required data-error="Billing name is required. "/>
-                    </div>
-                    <div class="col-sm-5">
-                        <input type="text" id="lname" placeholder="Billing Last Name" value="{{attendee.lastName}}"
-                               class="form-control" required data-error="Billing name is required. "/>
-                    </div>
-                    <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="email" class="col-sm-3 control-label">Email</label>
-                    <div class="col-sm-9">
-                        <input type="email" id="email" placeholder="Email" class="form-control"
-                               value="{{attendee.email}}" required data-error="Email is required. "/>
-                    </div>
-                    <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add1" class="col-sm-3 control-label">Billing Address</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add1" id="add1" placeholder="Address Line 1"
-                               value="{{attendee.address1}}" class="form-control" required/>
-                    </div>
-                    <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
-                    <div class="col-sm-9">
-                        <input type="text" name="add2" id="add2" placeholder="Address Line 2"
-                               value="{{attendee.address2}}" class="form-control"/>
-                    </div>
-                    <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
-                    <div class="col-sm-4">
-                        <input type="text" name="city" id="city" placeholder="City" class="form-control"
-                               value="{{attendee.city}}" required data-error="City is required."/>
-                    </div>
-                    <div class="col-sm-2">
-                        <select class="form-control bfh-states" id="state" data-country="US" data-state="VA"
-                                name="state"></select>
-                    </div>
-                    <div class="col-sm-3">
-                        <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control"
-                               data-minlength="5" value="{{attendee.postalCode}}" data-error="Zip code is required."/>
-                    </div>
-                    <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="country" class="col-sm-3 control-label">Country</label>
-                    <div class="col-sm-9">
-                        <select id="country" class="form-control bfh-countries" data-country="US"
-                                name="country"></select>
-                    </div>
-                </div>
-                <hr/>
-                <div class="form-group">
-                    <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
-                    <div class="col-sm-9">
-                        <div id="sq-card-number"></div>
-                    </div>
-                    <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-                </div>
-                <div class="form-group">
-                    <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
-                    <div class="col-sm-2">
-                        <div id="sq-expiration-date"></div>
-                    </div>
-                    <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
-                    <div class="col-sm-2">
-                        <div id="sq-cvv"></div>
-                    </div>
-                    <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
-                    <div class="col-sm-2">
-                        <div id="sq-postal-code"></div>
-                    </div>
-
-                </div>
-                <br/>
-                <input type="hidden" id="card-nonce" name="nonce">
-                {% csrf_token %}
-                <div class="form-group" style="margin-right:0px;">
-                    <button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">
-                        Checkout
-                    </button>
-                </div>
+              </div>
+              <br/>
+              <input type="hidden" id="card-nonce" name="nonce">
+              {% csrf_token %}
+              <div class="form-group" style="margin-right:0px;">
+                <button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">
+                  Checkout
+                </button>
+              </div>
 
             </div>
-        </form>
+          </form>
 
         {% endif %}
 
+      </div>
     </div>
-</div>
 
 
-{% else %}
+  {% else %}
 
-<div class="tab-content">
-    <!--suppress XmlDuplicatedId -->
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+    <div class="tab-content">
+      <!--suppress XmlDuplicatedId -->
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Checkout</h1>
         <div>Your session has expired. Please check your email link and try again, or contact <a
-                href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> for help.
+            href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> for help.
         </div>
+      </div>
     </div>
-</div>
 
-{% endif %}
+  {% endif %}
 
 {% endblock %}
 

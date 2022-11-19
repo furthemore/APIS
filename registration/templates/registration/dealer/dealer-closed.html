@@ -1,13 +1,13 @@
 {% extends "registration/master.html" %}
 
 {% block content %}
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Registration - {{event}}</h1>
-		<hr>
-		<p>Dealer registration for {{event}} is closed. If you have any questions please contact
-		   <a href='mailto:{{event.dealerEmail}}'>{{event.dealerEmail}}</a></p>
-		<p style='float:right;'><a href='/'>Back to Main Page</a></p>
-	</div>
-	</div>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <h1>Dealer Registration - {{ event }}</h1>
+      <hr>
+      <p>Dealer registration for {{ event }} is closed. If you have any questions please contact
+        <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a></p>
+      <p style='float:right;'><a href='/'>Back to Main Page</a></p>
+    </div>
+  </div>
 {% endblock %}

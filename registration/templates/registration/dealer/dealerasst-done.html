@@ -1,15 +1,16 @@
 {% extends "registration/master.html" %}
 
 {% block content %}
-	<div class="tab-content">
-	<div role="tabpanel" class="tab-pane fade in active" id="personal">
-		<h1>Dealer Partners - {{ event }}</h1>
-		<h3>Thank you for your Marketplace Payment!</h3>
-		<hr>
-        <p>Salutations Vendor,</p>
-		<p>Thank you for adding a dealer partner to your order. If you have any questions or concerns, please email <a href='mailto:event.dealerEmail'>{{ event.dealerEmail }}</a>.</p>
-		<p style='float:right;'><a href='/'>Back to Main Page</a></p>
-                <p>You should be receiving an email confirmation shortly.</p>
-	</div>
-	</div>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <h1>Dealer Partners - {{ event }}</h1>
+      <h3>Thank you for your Marketplace Payment!</h3>
+      <hr>
+      <p>Salutations Vendor,</p>
+      <p>Thank you for adding a dealer partner to your order. If you have any questions or concerns, please email <a
+          href='mailto:event.dealerEmail'>{{ event.dealerEmail }}</a>.</p>
+      <p style='float:right;'><a href='/'>Back to Main Page</a></p>
+      <p>You should be receiving an email confirmation shortly.</p>
+    </div>
+  </div>
 {% endblock %}
