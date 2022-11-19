@@ -35,7 +35,7 @@
           <h3>Choose a different attendee level</h3>
 
           <div>Your previously selected options will be included below. You can change any option at this time. If you
-            previously purchased options that do not appear in your new level you will still reveive those purchases
+            previously purchased options that do not appear in your new level you will still receive those purchases
             even if they do not appear below. If you have questions, please contact <a
                 href="mailto:{{ badge.event.registrationEmail }}">{{ badge.event.registrationEmail }}</a>.
           </div>
@@ -154,12 +154,9 @@
     </div>
   </script>
   <script type="text/javascript">
-      var attendee =
-      {{ jsonAttendee|safe }}
-      var badge =
-      {{ jsonBadge|safe }}
-      var currentLevel =
-      {{ jsonLevel|safe }}
+      var attendee = {{ jsonAttendee|safe }};
+      var badge = {{ jsonBadge|safe }};
+      var currentLevel = {{ jsonLevel|safe }};
       var levelTemplateData = [];
       var shirtSizes = [];
 
