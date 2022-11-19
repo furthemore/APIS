@@ -347,6 +347,10 @@
 
         document.addEventListener('DOMContentLoaded', async function () {
             const cardButton = document.getElementById('checkout');
+            if (cardButton === null) {
+                return;
+            }
+
             cardButton.addEventListener('click', async function (event) {
                 await checkout(event);
             });
