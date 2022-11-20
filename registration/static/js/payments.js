@@ -1,7 +1,7 @@
 async function initializeCard(payments) {
     const card = await payments.card();
     await card.attach('#card-container');
-    return card
+    return card;
 }
 
 // This function tokenizes a payment method.
@@ -26,8 +26,10 @@ async function tokenize(paymentMethod) {
 
 // Helper method for displaying the Payment Status on the screen.
 // status is either SUCCESS or FAILURE;
-function displayPaymentResults(status) {
+function displayPaymentResults(status, message) {
     const statusContainer = document.getElementById('payment-status-container');
+    statusContainer.innerHTML = message;
+
     if (status === 'SUCCESS') {
         statusContainer.classList.remove('is-failure');
         statusContainer.classList.add('is-success');
@@ -44,7 +46,15 @@ function hidePaymentResults() {
     statusContainer.style.visibility = 'hidden';
 }
 
-async function createPayment(token) {
+class PaymentError extends Error {
+    constructor(message, response) {
+        super(message);
+        this.response = response;
+        this.name = "PaymentError";
+    }
+}
+
+async function createPayment(token, url) {
     const body = JSON.stringify({
         onsite: false,
         billingData: {
@@ -63,20 +73,20 @@ async function createPayment(token) {
         orgDonation: $("#donateOrg").val()
     });
 
-    const paymentResponse = await postJSON(URL_REGISTRATION_CHECKOUT, body);
-    if (paymentResponse.ok) {
-        return paymentResponse.json();
-    } else if (paymentResponse.status == 409) {
+    const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
+    if (response.ok) {
+        return response.json();
+    } else if (response.status == 409) {
         // Probably actually an idempotent success
-        return paymentResponse.json();
+        return response.json();
     }
 
+    const paymentResponseText = await response.text();
+
     try {
-        const errorBody = await paymentResponse.json();
-        return errorBody;
+        return JSON.parse(paymentResponseText);
     } catch (e) {
-        const errorBody = await paymentResponse.text();
-        throw new Error(errorBody);
+        throw new PaymentError(`Payment failed: ${response.status} ${response.statusText} while making request`, response);
     }
 }
 
@@ -91,6 +101,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     } catch (e) {
         console.error('Initializing Card failed', e);
         return;
+    }
+
+    function formatSquareErrors(errors) {
+        const errorCodes = errors.map((obj) => obj.code);
+        return errorCodes.join(', ')
     }
 
     async function handlePaymentMethodSubmission(event, paymentMethod) {
@@ -114,22 +129,35 @@ document.addEventListener('DOMContentLoaded', async function () {
             // Subsequent requests will need a new idempotency key
             IDEMPOTENCY_KEY = crypto.randomUUID();
             if (paymentResults.success) {
-                displayPaymentResults('SUCCESS');
+                displayPaymentResults('SUCCESS', '');
                 window.location = URL_REGISTRATION_DONE;
             } else {
-                displayPaymentResults('FAILURE');
+                let message;
+                try {
+                    const errorCodes = formatSquareErrors(paymentResults.reason.errors);
+                    message = `<p>Payment error: payment failed for the following reasons:` +
+                        `<br><span class="error-code">${errorCodes}</span>.<br>  Please check your payment details `+
+                        `carefully and try again.</p>`;
+
+                } catch (e) {
+                    message = `<p>Sorry, your payment failed for a mysterious reason. If the problem persists, please ` +
+                        `contact <a href="mailto:${EVENT_REGISTRATION_EMAIL}">${EVENT_REGISTRATION_EMAIL}</a> for assistance.</p>`;
+                }
+
+                displayPaymentResults('FAILURE', message);
                 console.log(paymentResults.reason);
             }
 
             console.debug('Payment Success', paymentResults);
             cardButton.disabled = false;
-        } catch (e) {
+        } catch (err) {
+            if (err instanceof PaymentError) {
+                IDEMPOTENCY_KEY = crypto.randomUUID();
+            }
             cardButton.disabled = false;
-            displayPaymentResults('FAILURE');
-            console.error(e.message);
+            displayPaymentResults('FAILURE', err.message);
+            console.error(err.message);
         }
-
-        
     }
 
     const cardButton = document.getElementById('checkout');

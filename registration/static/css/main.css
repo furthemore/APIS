@@ -128,8 +128,9 @@ input[type=number] {
     box-sizing: border-box;
     border-radius: 2px;
     margin: 0 auto;
-    height: 48px;
+    min-height: 48px;
     visibility: hidden;
+    padding: 15px;
 }
 
 #payment-status-container.missing-credentials {
@@ -163,9 +164,13 @@ input[type=number] {
 }
 
 #payment-status-container.is-failure:after {
-    content: 'Payment failed - please check your details and try again.';
     font-size: 14px;
     line-height: 16px;
+}
+
+#payment-status-container .error-code {
+    font-weight: bold;
+    color: darkred;
 }
 
 body > footer {

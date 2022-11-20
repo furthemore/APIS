@@ -16,7 +16,7 @@ class TestUpgrades(OrdersTestCase):
 
     def test_infoUpgrade_bad_json(self):
         response = self.client.post(
-            reverse("registration:infoUpgrade"),
+            reverse("registration:info_upgrade"),
             "notJSON-",
             content_type="application/json",
         )
@@ -25,7 +25,7 @@ class TestUpgrades(OrdersTestCase):
         self.assertEqual(data, {"success": False})
 
     def test_infoUpgrade_wrong_token(self):
-        # Failed lookup against infoUpgrade()
+        # Failed lookup against info_upgrade()
         attendee = Attendee(**self.attendee_upgrade)
         attendee.save()
         badge = Badge(attendee=attendee, event=self.event, badgeName="Test Upgrade")
@@ -36,7 +36,7 @@ class TestUpgrades(OrdersTestCase):
             "event": self.event.name,
         }
         response = self.client.post(
-            reverse("registration:infoUpgrade"),
+            reverse("registration:info_upgrade"),
             json.dumps(post_data),
             content_type="application/json",
         )
@@ -45,7 +45,7 @@ class TestUpgrades(OrdersTestCase):
         attendee.delete()
 
     def test_infoUpgrade_wrong_email(self):
-        # Failed lookup against infoUpgrade()
+        # Failed lookup against info_upgrade()
         attendee = Attendee(**self.attendee_upgrade)
         attendee.save()
         badge = Badge(attendee=attendee, event=self.event, badgeName="Test Upgrade")
@@ -55,7 +55,7 @@ class TestUpgrades(OrdersTestCase):
             "token": badge.registrationToken,
         }
         response = self.client.post(
-            reverse("registration:infoUpgrade"),
+            reverse("registration:info_upgrade"),
             json.dumps(post_data),
             content_type="application/json",
         )
@@ -74,7 +74,7 @@ class TestUpgrades(OrdersTestCase):
             "token": badge.registrationToken,
         }
         response = self.client.post(
-            reverse("registration:infoUpgrade"),
+            reverse("registration:info_upgrade"),
             json.dumps(post_data),
             content_type="application/json",
         )
@@ -106,13 +106,13 @@ class TestUpgrades(OrdersTestCase):
             "token": badge.registrationToken,
         }
         response = self.client.post(
-            reverse("registration:infoUpgrade"),
+            reverse("registration:info_upgrade"),
             json.dumps(post_data),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get(reverse("registration:findUpgrade"))
+        response = self.client.get(reverse("registration:find_upgrade"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["attendee"], attendee)
         self.assertEqual(response.context["badge"], badge)
@@ -144,14 +144,14 @@ class TestUpgrades(OrdersTestCase):
         badge = Badge.objects.get(attendee=attendee, event=self.event)
         self.assertEqual(badge.effectiveLevel(), self.price_45)
 
-        # infoUpgrade()
+        # info_upgrade()
         post_data = {
             "event": self.event.name,
             "email": badge.attendee.email,
             "token": badge.registrationToken,
         }
         response = self.client.post(
-            reverse("registration:infoUpgrade"),
+            reverse("registration:info_upgrade"),
             json.dumps(post_data),
             content_type="application/json",
         )
@@ -159,7 +159,7 @@ class TestUpgrades(OrdersTestCase):
         return badge, attendee
 
     def upgrade_add_and_checkout(self, price_level, form, badge, attendee):
-        # addUpgrade()
+        # add_upgrade()
         post_data = {
             "event": self.event.name,
             "badge": {"id": badge.id,},
@@ -167,14 +167,14 @@ class TestUpgrades(OrdersTestCase):
             "priceLevel": {"id": price_level.id, "options": [],},
         }
         self.client.post(
-            reverse("registration:addUpgrade"),
+            reverse("registration:add_upgrade"),
             json.dumps(post_data),
             content_type="application/json",
         )
-        cart_response = self.client.get(reverse("registration:invoiceUpgrade"))
+        cart_response = self.client.get(reverse("registration:invoice_upgrade"))
 
         checkout_response = self.client.post(
-            reverse("registration:checkoutUpgrade"),
+            reverse("registration:checkout_upgrade"),
             json.dumps(form),
             content_type="application/json",
         )

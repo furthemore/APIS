@@ -32,11 +32,11 @@ def upgrade(request, guid):
     return render(request, "registration/attendee-locate.html", context)
 
 
-def infoUpgrade(request):
+def info_upgrade(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for infoUpgrade()")
+        logger.error("Unable to decode JSON for info_upgrade()")
         return JsonResponse({"success": False}, status=400)
 
     email = postData.get("email")
@@ -55,7 +55,7 @@ def infoUpgrade(request):
     return JsonResponse({"success": True, "message": "ATTENDEE"})
 
 
-def findUpgrade(request):
+def find_upgrade(request):
     event = Event.objects.get(default=True)
     context = {"attendee": None, "event": event}
     try:
@@ -87,11 +87,11 @@ def findUpgrade(request):
     return render(request, "registration/attendee-upgrade.html", context)
 
 
-def addUpgrade(request):
+def add_upgrade(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for addUpgrade()")
+        logger.error("Unable to decode JSON for add_upgrade()")
         return JsonResponse({"success": False})
 
     pda = postData["attendee"]
@@ -128,7 +128,7 @@ def addUpgrade(request):
     return JsonResponse({"success": True})
 
 
-def invoiceUpgrade(request):
+def invoice_upgrade(request):
     sessionItems = request.session.get("order_items", [])
     if not sessionItems:
         context = {"orderItems": [], "total": 0, "discount": {}}
@@ -157,7 +157,7 @@ def invoiceUpgrade(request):
     return render(request, "registration/upgrade-checkout.html", context)
 
 
-def doneUpgrade(request):
+def done_upgrade(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/upgrade-done.html", context)
@@ -184,7 +184,7 @@ def send_upgrade_email(request, attendee, order):
     return JsonResponse({"success": True})
 
 
-def checkoutUpgrade(request):
+def checkout_upgrade(request):
     try:
         session_items = request.session.get("order_items", [])
         order_items = list(OrderItem.objects.filter(id__in=session_items))
@@ -195,7 +195,7 @@ def checkoutUpgrade(request):
         try:
             post_data = json.loads(request.body)
         except ValueError as e:
-            logger.error("Unable to decode JSON for checkoutUpgrade()")
+            logger.error("Unable to decode JSON for checkout_upgrade()")
             return JsonResponse({"success": False})
 
         subtotal, total_discount = getTotal([], order_items)

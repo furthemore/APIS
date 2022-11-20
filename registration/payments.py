@@ -83,7 +83,8 @@ def charge_payment(order, cc_data, request=None):
     # Square still returns data for failed payments
     order.apiData = json.dumps(api_response.body)
 
-    order.lastFour = api_response.body["payment"]["card_details"]["card"]["last_4"]
+    if "payment" in api_response.body:
+        order.lastFour = api_response.body["payment"]["card_details"]["card"]["last_4"]
 
     if api_response.is_success():
         order.status = Order.COMPLETED
