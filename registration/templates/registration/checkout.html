@@ -6,10 +6,8 @@
 {% endblock %}
 
 {% block content %}
-
+  <div class="tab-content">
   {% if orderItems %}
-
-    <div class="tab-content">
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
       <h1>Checkout</h1>
       <h3>Add another attendee to your order, or checkout</h3>
@@ -271,9 +269,7 @@
       </div>
     </div>
   {% else %}
-
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
         <h1>Checkout</h1>
         <h3>There are no attendees in your order</h3>
         <hr>
@@ -281,9 +277,8 @@
 
 
       </div>
-    </div>
-
   {% endif %}
+  </div>
 
 {% endblock %}
 
