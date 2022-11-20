@@ -1,0 +1,527 @@
+{
+  "id": "26f28301-e046-49b5-a0c9-603a532d6c02",
+  "version": "2.0",
+  "name": "APIS",
+  "url": "https://staging.furthemore.org",
+  "tests": [{
+    "id": "f0787cf6-7c99-40cf-8a0f-a31eb9786d02",
+    "name": "Successful attendee registration",
+    "commands": [{
+      "id": "b03583c9-64bd-4b34-bcd3-97bae62d6305",
+      "comment": "",
+      "command": "open",
+      "target": "/registration/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "b118fd15-c096-4a60-ba26-2c767e4d18b1",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1312x1457",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "85eebfe0-2285-4abb-8b86-1e641b721535",
+      "comment": "",
+      "command": "type",
+      "target": "id=firstName",
+      "targets": [
+        ["id=firstName", "id"],
+        ["css=#firstName", "css:finder"],
+        ["xpath=//input[@id='firstName']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "Ifeoma"
+    }, {
+      "id": "db963890-c5e2-461c-a68f-56cc951222bf",
+      "comment": "",
+      "command": "type",
+      "target": "id=lastName",
+      "targets": [
+        ["id=lastName", "id"],
+        ["css=#lastName", "css:finder"],
+        ["xpath=//input[@id='lastName']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div/div[2]/input", "xpath:idRelative"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "Santiago"
+    }, {
+      "id": "dde72d2c-6f96-4046-8712-2bb4f0e97a35",
+      "comment": "",
+      "command": "type",
+      "target": "id=preferredName",
+      "targets": [
+        ["id=preferredName", "id"],
+        ["css=#preferredName", "css:finder"],
+        ["xpath=//input[@id='preferredName']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[2]/div/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/input", "xpath:position"]
+      ],
+      "value": "Isaiah"
+    }, {
+      "id": "97bbbe97-f3de-4314-be98-07e675b6cd11",
+      "comment": "",
+      "command": "type",
+      "target": "id=email",
+      "targets": [
+        ["id=email", "id"],
+        ["css=#email", "css:finder"],
+        ["xpath=//input[@id='email']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[3]/div/input", "xpath:idRelative"],
+        ["xpath=//div[3]/div/input", "xpath:position"]
+      ],
+      "value": "apis@mailinator.com"
+    }, {
+      "id": "f8a6af74-05a5-4f1b-85fb-64d9809b5a10",
+      "comment": "",
+      "command": "type",
+      "target": "id=phone",
+      "targets": [
+        ["id=phone", "id"],
+        ["css=#phone", "css:finder"],
+        ["xpath=//input[@id='phone']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[5]/div/input", "xpath:idRelative"],
+        ["xpath=//div[5]/div/input", "xpath:position"]
+      ],
+      "value": "+1 (347) 543-1138"
+    }, {
+      "id": "3e559278-c47a-4512-875d-a8bd5755acb9",
+      "comment": "",
+      "command": "type",
+      "target": "id=add1",
+      "targets": [
+        ["id=add1", "id"],
+        ["name=add1", "name"],
+        ["css=#add1", "css:finder"],
+        ["xpath=//input[@id='add1']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[6]/div/input", "xpath:idRelative"],
+        ["xpath=//div[6]/div/input", "xpath:position"]
+      ],
+      "value": "Ea cumque ipsa cons"
+    }, {
+      "id": "6db4d2af-0faf-4deb-bf3d-e206dddc1eb6",
+      "comment": "",
+      "command": "type",
+      "target": "id=add2",
+      "targets": [
+        ["id=add2", "id"],
+        ["name=add2", "name"],
+        ["css=#add2", "css:finder"],
+        ["xpath=//input[@id='add2']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[7]/div/input", "xpath:idRelative"],
+        ["xpath=//div[7]/div/input", "xpath:position"]
+      ],
+      "value": "In qui voluptatem d"
+    }, {
+      "id": "b6acfe67-5c0d-4457-9fe9-f5f7cc6403cb",
+      "comment": "",
+      "command": "type",
+      "target": "id=city",
+      "targets": [
+        ["id=city", "id"],
+        ["name=city", "name"],
+        ["css=#city", "css:finder"],
+        ["xpath=//input[@id='city']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[8]/div/input", "xpath:idRelative"],
+        ["xpath=//div[8]/div/input", "xpath:position"]
+      ],
+      "value": "Nesciunt Nam quia i"
+    }, {
+      "id": "78305ed5-2921-4d74-9656-bcfac909db05",
+      "comment": "",
+      "command": "type",
+      "target": "id=zip",
+      "targets": [
+        ["id=zip", "id"],
+        ["name=zip", "name"],
+        ["css=#zip", "css:finder"],
+        ["xpath=//input[@id='zip']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[9]/div/input", "xpath:idRelative"],
+        ["xpath=//div[9]/div/input", "xpath:position"]
+      ],
+      "value": "81073"
+    }, {
+      "id": "adcbe802-d2f4-446d-990c-d83d964bbcbc",
+      "comment": "",
+      "command": "type",
+      "target": "id=byear",
+      "targets": [
+        ["id=byear", "id"],
+        ["name=byear", "name"],
+        ["css=#byear", "css:finder"],
+        ["xpath=//input[@id='byear']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[10]/div/div/input", "xpath:idRelative"],
+        ["xpath=//div[10]/div/div/input", "xpath:position"]
+      ],
+      "value": "2012"
+    }, {
+      "id": "022fdb57-374d-4313-ae4b-6435f44c94f5",
+      "comment": "",
+      "command": "type",
+      "target": "id=badgeName",
+      "targets": [
+        ["id=badgeName", "id"],
+        ["name=badgeName", "name"],
+        ["css=#badgeName", "css:finder"],
+        ["xpath=//input[@id='badgeName']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[11]/div/input", "xpath:idRelative"],
+        ["xpath=//div[11]/div/input", "xpath:position"]
+      ],
+      "value": "Unity Crane"
+    }, {
+      "id": "4eb09de0-4347-44b8-9893-4ed027f72f52",
+      "comment": "",
+      "command": "select",
+      "target": "id=state",
+      "targets": [],
+      "value": "label=Kentucky"
+    }, {
+      "id": "8479af03-18d1-4585-8c59-bcdf3fd3d05c",
+      "comment": "",
+      "command": "select",
+      "target": "id=country",
+      "targets": [],
+      "value": "label=Estonia"
+    }, {
+      "id": "25cf1c30-5a31-4e1d-88ef-e8fdbb1faa1c",
+      "comment": "",
+      "command": "select",
+      "target": "id=bmonth",
+      "targets": [],
+      "value": "label=December"
+    }, {
+      "id": "46b130f1-e793-480e-af80-86426c9efff4",
+      "comment": "",
+      "command": "select",
+      "target": "id=volunteer",
+      "targets": [],
+      "value": "label=Programming"
+    }, {
+      "id": "f3421c56-3029-4ba3-b83a-6750c15e0fda",
+      "comment": "",
+      "command": "click",
+      "target": "id=level_1",
+      "targets": [
+        ["id=level_1", "id"],
+        ["linkText=Select", "linkText"],
+        ["css=#level_1", "css:finder"],
+        ["xpath=//a[contains(text(),'Select')]", "xpath:link"],
+        ["xpath=//a[@id='level_1']", "xpath:attributes"],
+        ["xpath=//div[@id='levelTemplateColumn']/div/div[3]/a", "xpath:idRelative"],
+        ["xpath=//div[3]/a", "xpath:position"],
+        ["xpath=//a[contains(.,'Select')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "fe152967-f5ce-44bf-b913-08c2cabbed3f",
+      "comment": "",
+      "command": "click",
+      "target": "id=register",
+      "targets": [
+        ["id=register", "id"],
+        ["css=#register", "css:finder"],
+        ["xpath=//button[@id='register']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[15]/button", "xpath:idRelative"],
+        ["xpath=//div[15]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Register')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "f9051bd6-9d39-4cd3-adcc-85b48479fa1a",
+      "comment": "",
+      "command": "assertAlert",
+      "target": "You must be 18 by the first day of Stage-a-more 2023 to register online.",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "63cc5ec1-612a-416b-b811-ca82969f818c",
+      "comment": "",
+      "command": "click",
+      "target": "css=.form-group:nth-child(14)",
+      "targets": [
+        ["css=.form-group:nth-child(14)", "css:finder"],
+        ["xpath=//div[@id='personal']/div[10]", "xpath:idRelative"],
+        ["xpath=//div[10]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "2642277f-400b-44d9-b5bc-9e74fd52cbd6",
+      "comment": "",
+      "command": "type",
+      "target": "id=byear",
+      "targets": [
+        ["id=byear", "id"],
+        ["name=byear", "name"],
+        ["css=#byear", "css:finder"],
+        ["xpath=//input[@id='byear']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[10]/div/div/input", "xpath:idRelative"],
+        ["xpath=//div[10]/div/div/input", "xpath:position"]
+      ],
+      "value": "2000"
+    }, {
+      "id": "1ee3b252-b5db-4cc7-8630-43bed638ff17",
+      "comment": "",
+      "command": "click",
+      "target": "id=register",
+      "targets": [
+        ["id=register", "id"],
+        ["css=#register", "css:finder"],
+        ["xpath=//button[@id='register']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[15]/button", "xpath:idRelative"],
+        ["xpath=//div[15]/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Register')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "424ed40b-4066-4f93-8a51-dbd922f8d130",
+      "comment": "",
+      "command": "click",
+      "target": "id=useFrom",
+      "targets": [
+        ["id=useFrom", "id"],
+        ["css=#useFrom", "css:finder"],
+        ["xpath=//select[@id='useFrom']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[11]/div[2]/form/div[3]/div/select", "xpath:idRelative"],
+        ["xpath=//select", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "7383aeec-308c-42aa-be30-a1cacadf66cf",
+      "comment": "",
+      "command": "select",
+      "target": "id=useFrom",
+      "targets": [],
+      "value": "label=Isaiah Santiago"
+    }, {
+      "id": "e65680c0-2d89-4d4f-98a6-8ef5f809e930",
+      "comment": "",
+      "command": "selectFrame",
+      "target": "index=1",
+      "targets": [
+        ["index=1"]
+      ],
+      "value": ""
+    }, {
+      "id": "c5b7805a-69aa-4f78-af3b-bb6519052c24",
+      "comment": "",
+      "command": "click",
+      "target": "id=cardNumber",
+      "targets": [
+        ["id=cardNumber", "id"],
+        ["css=#cardNumber", "css:finder"],
+        ["xpath=//input[@id='cardNumber']", "xpath:attributes"],
+        ["xpath=//div[@id='card-number-wrapper']/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "52ef5bfb-a76c-4088-87eb-6ccd776c1e37",
+      "comment": "",
+      "command": "type",
+      "target": "id=cardNumber",
+      "targets": [
+        ["id=cardNumber", "id"],
+        ["css=#cardNumber", "css:finder"],
+        ["xpath=//input[@id='cardNumber']", "xpath:attributes"],
+        ["xpath=//div[@id='card-number-wrapper']/div/input", "xpath:idRelative"],
+        ["xpath=//input", "xpath:position"]
+      ],
+      "value": "4111 1111 1111 1111"
+    }, {
+      "id": "2cb224b5-c04c-40ac-adf4-749f2ec46e69",
+      "comment": "",
+      "command": "type",
+      "target": "id=expirationDate",
+      "targets": [
+        ["id=expirationDate", "id"],
+        ["css=#expirationDate", "css:finder"],
+        ["xpath=//input[@id='expirationDate']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/input", "xpath:position"]
+      ],
+      "value": "01/40"
+    }, {
+      "id": "e36b205a-ad8a-455e-b6d6-fcec30327b25",
+      "comment": "",
+      "command": "type",
+      "target": "id=cvv",
+      "targets": [
+        ["id=cvv", "id"],
+        ["css=#cvv", "css:finder"],
+        ["xpath=//input[@id='cvv']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div[2]/input", "xpath:idRelative"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "911"
+    }, {
+      "id": "1101a96e-d69d-45f1-91f6-4d5b0da0950b",
+      "comment": "",
+      "command": "type",
+      "target": "id=postalCode",
+      "targets": [
+        ["id=postalCode", "id"],
+        ["css=#postalCode", "css:finder"],
+        ["xpath=//input[@id='postalCode']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div[3]/input", "xpath:idRelative"],
+        ["xpath=//div[3]/input", "xpath:position"]
+      ],
+      "value": "99999"
+    }, {
+      "id": "9ac7a216-0fa3-46f3-b733-c9bb0a16e788",
+      "comment": "",
+      "command": "selectFrame",
+      "target": "relative=parent",
+      "targets": [
+        ["relative=parent"]
+      ],
+      "value": ""
+    }, {
+      "id": "68a2a901-010e-427e-b2a7-44ac9f0d6f8b",
+      "comment": "",
+      "command": "click",
+      "target": "id=checkout",
+      "targets": [
+        ["id=checkout", "id"],
+        ["css=#checkout", "css:finder"],
+        ["xpath=//button[@id='checkout']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[11]/div[2]/div/div/button", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Checkout')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "61f95609-0099-4f5b-a67d-2522ebde99f8",
+      "comment": "",
+      "command": "assertText",
+      "target": "css=#payment-status-container p",
+      "targets": [
+        ["id=payment-status-container", "id"],
+        ["css=#payment-status-container", "css:finder"],
+        ["xpath=//div[@id='payment-status-container']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[11]/div[2]/form/div[10]/div[2]", "xpath:idRelative"],
+        ["xpath=//div[10]/div[2]", "xpath:position"]
+      ],
+      "value": "Payment error: payment failed for the following reasons:\\nCVV_FAILURE, ADDRESS_VERIFICATION_FAILURE, INVALID_EXPIRATION.\\nPlease check your payment details carefully and try again."
+    }, {
+      "id": "aa04b45e-959d-416f-80f8-e9c613c5a6a3",
+      "comment": "",
+      "command": "selectFrame",
+      "target": "index=1",
+      "targets": [
+        ["index=1"]
+      ],
+      "value": ""
+    }, {
+      "id": "40d5f697-4bbf-48ec-8288-56140c694461",
+      "comment": "",
+      "command": "click",
+      "target": "id=expirationDate",
+      "targets": [
+        ["id=expirationDate", "id"],
+        ["css=#expirationDate", "css:finder"],
+        ["xpath=//input[@id='expirationDate']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/input", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "288b7b19-3f2d-4560-bf80-e3f6a078099e",
+      "comment": "",
+      "command": "type",
+      "target": "id=expirationDate",
+      "targets": [
+        ["id=expirationDate", "id"],
+        ["css=#expirationDate", "css:finder"],
+        ["xpath=//input[@id='expirationDate']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div/input", "xpath:idRelative"],
+        ["xpath=//div[2]/div/input", "xpath:position"]
+      ],
+      "value": "05/55"
+    }, {
+      "id": "088e84d6-8425-4469-a5ff-052533a9ee05",
+      "comment": "",
+      "command": "type",
+      "target": "id=cvv",
+      "targets": [
+        ["id=cvv", "id"],
+        ["css=#cvv", "css:finder"],
+        ["xpath=//input[@id='cvv']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div[2]/input", "xpath:idRelative"],
+        ["xpath=//div[2]/input", "xpath:position"]
+      ],
+      "value": "111"
+    }, {
+      "id": "6c610253-a443-4c54-a048-3ba516f2534f",
+      "comment": "",
+      "command": "type",
+      "target": "id=postalCode",
+      "targets": [
+        ["id=postalCode", "id"],
+        ["css=#postalCode", "css:finder"],
+        ["xpath=//input[@id='postalCode']", "xpath:attributes"],
+        ["xpath=//div[@id='card-data-wrapper']/div[3]/input", "xpath:idRelative"],
+        ["xpath=//div[3]/input", "xpath:position"]
+      ],
+      "value": "91192"
+    }, {
+      "id": "d77fc165-e6b7-491b-8b2b-500a984b2ecd",
+      "comment": "",
+      "command": "selectFrame",
+      "target": "relative=parent",
+      "targets": [
+        ["relative=parent"]
+      ],
+      "value": ""
+    }, {
+      "id": "95d4be01-7901-4b7c-9e0b-8f95cca2b778",
+      "comment": "",
+      "command": "click",
+      "target": "id=checkout",
+      "targets": [
+        ["id=checkout", "id"],
+        ["css=#checkout", "css:finder"],
+        ["xpath=//button[@id='checkout']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[11]/div[2]/div/div/button", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/button", "xpath:position"],
+        ["xpath=//button[contains(.,'Checkout')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "812fd07b-5824-4db6-ab4b-00d73a345c56",
+      "comment": "",
+      "command": "click",
+      "target": "id=payment-status-container",
+      "targets": [
+        ["id=payment-status-container", "id"],
+        ["css=#payment-status-container", "css:finder"],
+        ["xpath=//div[@id='payment-status-container']", "xpath:attributes"],
+        ["xpath=//div[@id='personal']/div[11]/div[2]/form/div[10]/div[2]", "xpath:idRelative"],
+        ["xpath=//div[10]/div[2]", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "8b93144a-f0f4-4336-a2d6-6d14674c986d",
+      "comment": "",
+      "command": "verifyText",
+      "target": "xpath=//div[@id='personal']/h3",
+      "targets": [
+        ["css=h3", "css:finder"],
+        ["xpath=//div[@id='personal']/h3", "xpath:idRelative"],
+        ["xpath=//h3", "xpath:position"],
+        ["xpath=//h3[contains(.,'Thank you for your Payment!')]", "xpath:innerText"]
+      ],
+      "value": "Thank you for your Payment!"
+    }]
+  }],
+  "suites": [{
+    "id": "a97ca332-e767-41bc-b39f-b946ec8419e8",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["f0787cf6-7c99-40cf-8a0f-a31eb9786d02"]
+  }],
+  "urls": ["https://staging.furthemore.org/"],
+  "plugins": []
+}
