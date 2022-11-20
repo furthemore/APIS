@@ -1,16 +1,46 @@
 import json
+from datetime import datetime, timedelta
 
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.test.utils import tag
 from django.urls import reverse
 
 from registration.models import *
 from registration.tests.common import OrdersTestCase
 
+tz = timezone.get_current_timezone()
+now = timezone.now()
+one_hour = timedelta(hours=1)
+one_day = timedelta(days=1)
+ten_days = timedelta(days=10)
 
-class StaffTest(TestCase):
+
+class StaffTestCase(TestCase):
     def setUp(self):
-        self.client = Client()
+        self.token = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour
+        )
+        self.token_used = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True
+        )
+        self.token_expired = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now - one_hour
+        )
+
+        self.event = Event.objects.create(
+            default=True,
+            name="Test Event 2020!",
+            dealerRegStart=now - ten_days,
+            dealerRegEnd=now + ten_days,
+            staffRegStart=now - ten_days,
+            staffRegEnd=now + ten_days,
+            attendeeRegStart=now - ten_days,
+            attendeeRegEnd=now + ten_days,
+            onsiteRegStart=now - ten_days,
+            onsiteRegEnd=now + ten_days,
+            eventStart=now + one_day,
+            eventEnd=now + ten_days,
+        )
 
 
 class TestFindStaff(TestCase):
@@ -29,6 +59,141 @@ class TestFindStaff(TestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
+
+
+class TestNewStaff(StaffTestCase):
+    def test_new_staff(self):
+        response = self.client.get(reverse("registration:new_staff", args=("foobar",)))
+        self.assertEqual(response.status_code, 200)
+
+
+class TestFindNewStaff(StaffTestCase):
+    def test_find_new_staff_empty(self):
+        response = self.client.post(reverse("registration:find_new_staff"))
+        self.assertEqual(response.status_code, 400)
+
+    def test_find_new_staff_404(self):
+        body = {
+            "email": "foo",
+            "token": "bar",
+        }
+        response = self.client.post(
+            reverse("registration:find_new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_find_new_staff(self):
+        body = {
+            "email": self.token.email,
+            "token": self.token.token,
+        }
+        response = self.client.post(
+            reverse("registration:find_new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"success": True, "message": "STAFF"})
+
+    def test_find_new_staff_token_used(self):
+        body = {
+            "email": self.token_used.email,
+            "token": self.token_used.token,
+        }
+        response = self.client.post(
+            reverse("registration:find_new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"success": False, "reason": "Token Used"})
+
+    def test_find_new_staff_token_expired(self):
+        body = {
+            "email": self.token_expired.email,
+            "token": self.token_expired.token,
+        }
+        response = self.client.post(
+            reverse("registration:find_new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"success": False, "reason": "Invalid Token"})
+
+
+class TestInfoNewStaff(StaffTestCase):
+    def test_info_new_staff_404(self):
+        result = self.client.get(reverse("registration:info_new_staff"))
+        self.assertEqual(result.status_code, 404)
+
+    def test_info_new_staff(self):
+        session = self.client.session
+        session["new_staff"] = self.token.token
+        session.save()
+        result = self.client.get(reverse("registration:info_new_staff"))
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.context["token"].token, self.token.token)
+
+
+class TestAddNewStaff(OrdersTestCase):
+    def setUp(self):
+        super().setUp()
+        self.token = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour
+        )
+        self.token_used = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True
+        )
+        self.token_expired = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now - one_hour
+        )
+
+    def test_add_new_staff(self):
+        body = {
+            "attendee": {
+                "firstName": "Staffer",
+                "lastName": "Testsalot",
+                "badgeName": "Flagrant System Error",
+                "address1": "123 Any Place",
+                "address2": "",
+                "city": "Countrytown",
+                "state": "PA",
+                "country": "US",
+                "postal": "12345",
+                "phone": "2125551212",
+                "email": self.token.email,
+                "birthdate": "1990-01-01",
+            },
+            "staff": {
+                "department": self.department1.id,
+                "title": "Something Cool",
+                "twitter": "@twitstaff",
+                "telegram": "@twitstaffagain",
+                "shirtsize": self.shirt1.id,
+                "specialSkills": "Something here",
+                "specialFood": "no water please",
+                "specialMedical": "alerigic to bandaids",
+                "contactPhone": "4442223333",
+                "contactName": "Test Testerson",
+                "contactRelation": "Pet",
+            },
+            "priceLevel": {
+                "id": self.price_150.id,
+                "options": [
+                    {"id": self.option_100_int.id, "value": 1},
+                    {"id": self.option_shirt.id, "value": self.shirt1.id},
+                ],
+            },
+            "event": self.event.name,
+        }
+        result = self.client.post(
+            reverse("registration:add_new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
 
 
 class TestAddStaff(OrdersTestCase):

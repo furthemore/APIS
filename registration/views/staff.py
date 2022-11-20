@@ -35,6 +35,7 @@ def new_staff(request, guid):
     return render(request, "registration/staff/staff-new.html", context)
 
 
+@require_POST
 def find_new_staff(request):
     try:
         post_data = json.loads(request.body)
@@ -42,8 +43,6 @@ def find_new_staff(request):
         token = post_data["token"]
 
         token = TempToken.objects.get(email__iexact=email, token=token)
-        if not token:
-            return abort(404, "No Staff Found")
 
         if token.validUntil < timezone.now():
             return abort(400, "Invalid Token")
@@ -61,22 +60,25 @@ def find_new_staff(request):
 
 def info_new_staff(request):
     event = Event.objects.get(default=True)
+    token_value = request.session.get("new_staff")
+    context = {"staff": None, "event": event}
     try:
-        tokenValue = request.session["new_staff"]
-        token = TempToken.objects.get(token=tokenValue)
-    except Exception as e:
-        token = None
-    context = {"staff": None, "event": event, "token": token}
+        context["token"] = TempToken.objects.get(token=token_value)
+    except ObjectDoesNotExist:
+        return render(
+            request, "registration/staff/staff-new-payment.html", context, status=404
+        )
     return render(request, "registration/staff/staff-new-payment.html", context)
 
 
+@require_POST
 def add_new_staff(request):
     postData = json.loads(request.body)
     # create attendee from request post
     pda = postData["attendee"]
     pds = postData["staff"]
     pdp = postData["priceLevel"]
-    evt = postData["event"]
+    evt = postData.get("event")
 
     if evt:
         event = Event.objects.get(name=evt)
@@ -184,12 +186,12 @@ def find_staff(request):
 def info_staff(request):
     event = Event.objects.get(default=True)
     context = {"staff": None, "event": event}
-    try:
-        staffId = request.session["staff_id"]
-    except Exception as e:
+
+    staff_id = request.session.get("staff_id")
+    if staff_id is None:
         return render(request, "registration/staff/staff-payment.html", context)
 
-    staff = Staff.objects.get(id=staffId)
+    staff = Staff.objects.get(id=staff_id)
     if staff:
         staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
@@ -216,13 +218,11 @@ def add_staff(request):
         logger.error("Unable to decode JSON for add_staff()")
         return JsonResponse({"success": False})
 
-    event = Event.objects.get(default=True)
-
     # create attendee from request post
     pda = postData["attendee"]
     pds = postData["staff"]
     pdp = postData["priceLevel"]
-    evt = postData["event"]
+    evt = postData.get("event")
 
     if evt:
         event = Event.objects.get(name=evt)

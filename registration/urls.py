@@ -77,7 +77,7 @@ urlpatterns = [
     url(
         r"^newstaff/(?P<guid>\w+)/?$",
         registration.views.staff.new_staff,
-        name="newstaff",
+        name="new_staff",
     ),
     url(r"^dealer/?$", registration.views.dealers.newDealer, name="newDealer"),
     url(
