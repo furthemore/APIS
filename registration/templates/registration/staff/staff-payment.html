@@ -70,7 +70,6 @@
         </div>
       </div>
       {% csrf_token %}
-      </div>
     </form>
 
   {% endif %}
@@ -150,7 +149,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:addStaff' %}",
+              "url": "{% url 'registration:add_staff' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");

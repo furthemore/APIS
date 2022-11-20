@@ -2,13 +2,16 @@ import json
 import logging
 from datetime import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
 from django.http import (
+    Http404,
     HttpResponseNotFound,
     HttpResponseServerError,
     JsonResponse,
 )
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
 import registration.emails
 from registration.models import *
@@ -26,39 +29,40 @@ from .ordering import doCheckout, doZeroCheckout, getTotal
 logger = logging.getLogger(__name__)
 
 
-def newStaff(request, guid):
+def new_staff(request, guid):
     event = Event.objects.get(default=True)
     context = {"token": guid, "event": event}
     return render(request, "registration/staff/staff-new.html", context)
 
 
-def findNewStaff(request):
+def find_new_staff(request):
     try:
-        postData = json.loads(request.body)
-        email = postData["email"]
-        token = postData["token"]
+        post_data = json.loads(request.body)
+        email = post_data["email"]
+        token = post_data["token"]
 
         token = TempToken.objects.get(email__iexact=email, token=token)
         if not token:
-            return HttpResponseNotFound("No Staff Found")
+            return abort(404, "No Staff Found")
 
         if token.validUntil < timezone.now():
-            return HttpResponseServerError("Invalid Token")
+            return abort(400, "Invalid Token")
         if token.used:
-            return HttpResponseServerError("Token Used")
+            return abort(400, "Token Used")
 
-        request.session["newStaff"] = token.token
+        request.session["new_staff"] = token.token
 
         return JsonResponse({"success": True, "message": "STAFF"})
-    except Exception as e:
-        logger.exception("Unable to find staff." + request.body)
-        return HttpResponseServerError(str(e))
+    except ObjectDoesNotExist:
+        return abort(404, "No staff found")
+    except json.JSONDecodeError as e:
+        return abort(400, e.msg)
 
 
-def infoNewStaff(request):
+def info_new_staff(request):
     event = Event.objects.get(default=True)
     try:
-        tokenValue = request.session["newStaff"]
+        tokenValue = request.session["new_staff"]
         token = TempToken.objects.get(token=tokenValue)
     except Exception as e:
         token = None
@@ -66,7 +70,7 @@ def infoNewStaff(request):
     return render(request, "registration/staff/staff-new-payment.html", context)
 
 
-def addNewStaff(request):
+def add_new_staff(request):
     postData = json.loads(request.body)
     # create attendee from request post
     pda = postData["attendee"]
@@ -144,38 +148,40 @@ def addNewStaff(request):
     return JsonResponse({"success": True})
 
 
-def staff(request, guid):
+def staff_index(request, guid):
     event = Event.objects.get(default=True)
     context = {"token": guid, "event": event}
     return render(request, "registration/staff/staff-locate.html", context)
 
 
-def staffDone(request):
+def staff_done(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/staff/staff-done.html", context)
 
 
-def findStaff(request):
+@require_POST
+def find_staff(request):
     try:
-        postData = json.loads(request.body)
-        email = postData["email"]
-        token = postData["token"]
+        post_data = json.loads(request.body)
+        email = post_data["email"]
+        token = post_data["token"]
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.warning(f"Unable to find staff: bad request - {request.body}")
+        return abort(400, str(e))
 
+    try:
         staff = Staff.objects.get(
             attendee__email__iexact=email, registrationToken=token
         )
-        if not staff:
-            return HttpResponseNotFound("No Staff Found")
+    except ObjectDoesNotExist:
+        return abort(404, "Staff matching query does not exist.")
 
-        request.session["staff_id"] = staff.id
-        return JsonResponse({"success": True, "message": "STAFF"})
-    except Exception as e:
-        logger.warning(f"Unable to find staff. {request.body}")
-        return HttpResponseServerError(str(e))
+    request.session["staff_id"] = staff.id
+    return JsonResponse({"success": True, "message": "STAFF"})
 
 
-def infoStaff(request):
+def info_staff(request):
     event = Event.objects.get(default=True)
     context = {"staff": None, "event": event}
     try:
@@ -203,11 +209,11 @@ def infoStaff(request):
     return render(request, "registration/staff/staff-payment.html", context)
 
 
-def addStaff(request):
+def add_staff(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for addStaff()")
+        logger.error("Unable to decode JSON for add_staff()")
         return JsonResponse({"success": False})
 
     event = Event.objects.get(default=True)
@@ -313,7 +319,7 @@ def addStaff(request):
     return JsonResponse({"success": True})
 
 
-def getStaffTotal(orderItems, discount, staff):
+def get_staff_total(orderItems, discount, staff):
     badge = Badge.objects.get(attendee=staff.attendee, event=staff.event)
 
     if badge.effectiveLevel():
@@ -327,7 +333,7 @@ def getStaffTotal(orderItems, discount, staff):
     return total
 
 
-def checkoutStaff(request):
+def checkout_staff(request):
     sessionItems = request.session.get("order_items", [])
     pdisc = request.session.get("discount", "")
     staffId = request.session["staff_id"]
@@ -335,13 +341,13 @@ def checkoutStaff(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for checkoutStaff()")
+        logger.error("Unable to decode JSON for checkout_staff()")
         return JsonResponse({"success": False})
 
     event = Event.objects.get(default=True)
     discount = event.staffDiscount
     staff = Staff.objects.get(id=staffId)
-    subtotal = getStaffTotal(orderItems, discount, staff)
+    subtotal = get_staff_total(orderItems, discount, staff)
 
     if subtotal == 0:
         status, message, order = doZeroCheckout(discount, None, orderItems)
@@ -353,7 +359,7 @@ def checkoutStaff(request):
             registration.emails.send_staff_registration_email(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
-            staffEmail = getStaffEmail()
+            staffEmail = get_staff_email()
             return JsonResponse(
                 {
                     "success": False,
@@ -385,10 +391,11 @@ def checkoutStaff(request):
             registration.emails.send_staff_registration_email(order.id)
         except Exception as e:
             logger.exception("Error emailing StaffRegistrationEmail.")
-            staffEmail = getStaffEmail()
+            staffEmail = get_staff_email()
             return abort(
                 400,
-                "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0} to get your confirmation number.".format(
+                "Your registration succeeded but we may have been unable to send you a confirmation email. If you "
+                "have any questions, please contact {0} to get your confirmation number.".format(
                     staffEmail
                 ),
             )
@@ -398,7 +405,7 @@ def checkoutStaff(request):
         return abort(400, message)
 
 
-def getStaffEmail(event=None):
+def get_staff_email(event=None):
     """
     Retrieves the email address to show on error messages in the staff
     registration form for a specified event.  If no event specified, uses

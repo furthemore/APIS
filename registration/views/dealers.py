@@ -352,7 +352,7 @@ def addDealer(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for addStaff()")
+        logger.error("Unable to decode JSON for add_staff()")
         logger.exception(e)
         return JsonResponse({"success": False})
 

@@ -145,7 +145,7 @@ def send_staff_registration_email(orderId):
     msg_txt = render_to_string("registration/emails/staffRegistration.txt", data)
     msg_html = render_to_string("registration/emails/staffRegistration.html", data)
     event = Event.objects.get(default=True)
-    staff_email = registration.views.staff.getStaffEmail(event)
+    staff_email = registration.views.staff.get_staff_email(event)
     send_email(
         staff_email,
         [email],
@@ -159,7 +159,7 @@ def send_staff_promotion_email(staff):
     data = {"registrationToken": staff.registrationToken, "event": staff.event}
     msg_txt = render_to_string("registration/emails/staffPromotion.txt", data)
     msg_html = render_to_string("registration/emails/staffPromotion.html", data)
-    staff_email = registration.views.staff.getStaffEmail(staff.event)
+    staff_email = registration.views.staff.get_staff_email(staff.event)
     send_email(
         staff_email,
         [staff.attendee.email],
@@ -172,9 +172,9 @@ def send_staff_promotion_email(staff):
 def send_new_staff_email(token):
     event = Event.objects.get(default=True)
     data = {"registrationToken": token.token, "event": event}
-    msg_txt = render_to_string("registration/emails/newStaff.txt", data)
-    msg_html = render_to_string("registration/emails/newStaff.html", data)
-    staff_email = registration.views.staff.getStaffEmail(event)
+    msg_txt = render_to_string("registration/emails/new-staff.txt", data)
+    msg_html = render_to_string("registration/emails/new-staff.html", data)
+    staff_email = registration.views.staff.get_staff_email(event)
     send_email(
         staff_email,
         [token.email],

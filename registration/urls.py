@@ -53,24 +53,30 @@ urlpatterns = [
     url(
         r"^upgrade/(?P<guid>\w+)/?$", registration.views.upgrade.upgrade, name="upgrade"
     ),
-    url(r"^staff/done/?$", registration.views.staff.staffDone, name="doneStaff"),
-    url(r"^staff/lookup/?$", registration.views.staff.findStaff, name="findStaff"),
-    url(r"^staff/info/?$", registration.views.staff.infoStaff, name="infoStaff"),
-    url(r"^staff/add/?$", registration.views.staff.addStaff, name="addStaff"),
-    url(r"^staff/(?P<guid>\w+)/?$", registration.views.staff.staff, name="staff"),
-    url(r"^newstaff/done/?$", registration.views.staff.staffDone, name="doneNewStaff"),
+    url(r"^staff/done/?$", registration.views.staff.staff_done, name="doneStaff"),
+    url(r"^staff/lookup/?$", registration.views.staff.find_staff, name="find_staff"),
+    url(r"^staff/info/?$", registration.views.staff.info_staff, name="info_staff"),
+    url(r"^staff/add/?$", registration.views.staff.add_staff, name="add_staff"),
+    url(r"^staff/(?P<guid>\w+)/?$", registration.views.staff.staff_index, name="staff"),
+    url(r"^newstaff/done/?$", registration.views.staff.staff_done, name="doneNewStaff"),
     url(
         r"^newstaff/lookup/?$",
-        registration.views.staff.findNewStaff,
-        name="findNewStaff",
+        registration.views.staff.find_new_staff,
+        name="find_new_staff",
     ),
     url(
-        r"^newstaff/info/?$", registration.views.staff.infoNewStaff, name="infoNewStaff"
+        r"^newstaff/info/?$",
+        registration.views.staff.info_new_staff,
+        name="info_new_staff",
     ),
-    url(r"^newstaff/add/?$", registration.views.staff.addNewStaff, name="addNewStaff"),
+    url(
+        r"^newstaff/add/?$",
+        registration.views.staff.add_new_staff,
+        name="add_new_staff",
+    ),
     url(
         r"^newstaff/(?P<guid>\w+)/?$",
-        registration.views.staff.newStaff,
+        registration.views.staff.new_staff,
         name="newstaff",
     ),
     url(r"^dealer/?$", registration.views.dealers.newDealer, name="newDealer"),
