@@ -138,7 +138,7 @@ def abort(status=400, reason="Bad request"):
     status: A valid HTTP status code
     reason: Human-readable explanation
     """
-    logger.error("JSON {0}: {1}".format(status, reason))
+    logger.info("JSON {0}: {1}".format(status, reason))
     return JsonResponse({"success": False, "reason": reason}, status=status)
 
 
