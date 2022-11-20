@@ -413,10 +413,7 @@ def get_staff_email(event=None):
     default of APIS_DEFAULT_EMAIL in settings.py.
     """
     if event is None:
-        try:
-            event = Event.objects.get(default=True)
-        except BaseException:
-            return settings.APIS_DEFAULT_EMAIL
+        event = Event.objects.get(default=True)
     if event.staffEmail == "":
         return settings.APIS_DEFAULT_EMAIL
     return event.staffEmail

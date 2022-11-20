@@ -53,7 +53,7 @@ urlpatterns = [
     url(
         r"^upgrade/(?P<guid>\w+)/?$", registration.views.upgrade.upgrade, name="upgrade"
     ),
-    url(r"^staff/done/?$", registration.views.staff.staff_done, name="doneStaff"),
+    url(r"^staff/done/?$", registration.views.staff.staff_done, name="staff_done"),
     url(r"^staff/lookup/?$", registration.views.staff.find_staff, name="find_staff"),
     url(r"^staff/info/?$", registration.views.staff.info_staff, name="info_staff"),
     url(r"^staff/add/?$", registration.views.staff.add_staff, name="add_staff"),

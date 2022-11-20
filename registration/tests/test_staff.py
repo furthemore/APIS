@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from registration.models import *
 from registration.tests.common import OrdersTestCase
+from registration.views import staff
 
 tz = timezone.get_current_timezone()
 now = timezone.now()
@@ -15,8 +16,9 @@ one_day = timedelta(days=1)
 ten_days = timedelta(days=10)
 
 
-class StaffTestCase(TestCase):
+class StaffTestCase(OrdersTestCase):
     def setUp(self):
+        super().setUp()
         self.token = TempToken.objects.create(
             email="apis-staff-test@mailinator.com", validUntil=now + one_hour
         )
@@ -27,19 +29,38 @@ class StaffTestCase(TestCase):
             email="apis-staff-test@mailinator.com", validUntil=now - one_hour
         )
 
-        self.event = Event.objects.create(
-            default=True,
-            name="Test Event 2020!",
-            dealerRegStart=now - ten_days,
-            dealerRegEnd=now + ten_days,
-            staffRegStart=now - ten_days,
-            staffRegEnd=now + ten_days,
-            attendeeRegStart=now - ten_days,
-            attendeeRegEnd=now + ten_days,
-            onsiteRegStart=now - ten_days,
-            onsiteRegEnd=now + ten_days,
-            eventStart=now + one_day,
-            eventEnd=now + ten_days,
+        self.attendee = Attendee.objects.create(
+            firstName="Staffer",
+            lastName="Testerson",
+            address1="123 Somewhere St",
+            city="Place",
+            state="PA",
+            country="US",
+            postalCode=12345,
+            phone="1112223333",
+            email="apis@mailinator.org",
+            birthdate="1990-01-01",
+        )
+        self.staff = Staff.objects.create(attendee=self.attendee, event=self.event)
+
+        self.badge = Badge.objects.create(
+            attendee=self.attendee, event=self.event, badgeName="DisStaff"
+        )
+        self.attendee2 = Attendee.objects.create(
+            firstName="Staph",
+            lastName="Testerson",
+            address1="123 Somewhere St",
+            city="Place",
+            state="PA",
+            country="US",
+            postalCode=12345,
+            phone="1112223333",
+            email="apis@mailinator.org",
+            birthdate="1990-01-01",
+        )
+        self.staff2 = Staff.objects.create(attendee=self.attendee2, event=self.event)
+        self.badge2 = Badge.objects.create(
+            attendee=self.attendee2, event=self.event, badgeName="AnotherStaff"
         )
 
 
@@ -138,19 +159,7 @@ class TestInfoNewStaff(StaffTestCase):
         self.assertEqual(result.context["token"].token, self.token.token)
 
 
-class TestAddNewStaff(OrdersTestCase):
-    def setUp(self):
-        super().setUp()
-        self.token = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now + one_hour
-        )
-        self.token_used = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True
-        )
-        self.token_expired = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now - one_hour
-        )
-
+class TestAddNewStaff(StaffTestCase):
     def test_add_new_staff(self):
         body = {
             "attendee": {
@@ -196,48 +205,37 @@ class TestAddNewStaff(OrdersTestCase):
         )
 
 
-class TestAddStaff(OrdersTestCase):
+class TestStaffIndex(StaffTestCase):
+    def test_staff_index(self):
+        result = self.client.get(reverse("registration:staff", args=("foo",)))
+        self.assertEqual(result.status_code, 200)
+
+    def test_staff_done(self):
+        result = self.client.get(reverse("registration:staff_done"))
+        self.assertEqual(result.status_code, 200)
+
+
+class TestInfoStaff(StaffTestCase):
+    def test_info_staff_blank(self):
+        result = self.client.get(reverse("registration:info_staff"))
+        self.assertEqual(result.status_code, 200)
+
+    def test_info_staff(self):
+        session = self.client.session
+        session["staff_id"] = self.staff.id
+        session.save()
+        result = self.client.get(reverse("registration:info_staff"))
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.context["staff"], self.staff)
+
+
+class TestAddStaff(StaffTestCase):
     @tag("square")
     def test_staff(self):
-        attendee = Attendee(
-            firstName="Staffer",
-            lastName="Testerson",
-            address1="123 Somewhere St",
-            city="Place",
-            state="PA",
-            country="US",
-            postalCode=12345,
-            phone="1112223333",
-            email="apis@mailinator.org",
-            birthdate="1990-01-01",
-        )
-        attendee.save()
-        staff = Staff(attendee=attendee, event=self.event)
-        staff.save()
-        badge = Badge(attendee=attendee, event=self.event, badgeName="DisStaff")
-        badge.save()
-        attendee2 = Attendee(
-            firstName="Staph",
-            lastName="Testerson",
-            address1="123 Somewhere St",
-            city="Place",
-            state="PA",
-            country="US",
-            postalCode=12345,
-            phone="1112223333",
-            email="apis@mailinator.org",
-            birthdate="1990-01-01",
-        )
-        attendee2.save()
-        staff2 = Staff(attendee=attendee2, event=self.event)
-        staff2.save()
-        badge2 = Badge(attendee=attendee2, event=self.event, badgeName="AnotherStaff")
-        badge2.save()
-
         # Failed lookup
         postData = {
             "email": "nottherightemail@somewhere.com",
-            "token": staff.registrationToken,
+            "token": self.staff.registrationToken,
         }
         response = self.client.post(
             reverse("registration:find_staff"),
@@ -251,7 +249,7 @@ class TestAddStaff(OrdersTestCase):
         )
 
         # Regular staff reg
-        postData = {"email": attendee.email, "token": staff.registrationToken}
+        postData = {"email": self.attendee.email, "token": self.staff.registrationToken}
         response = self.client.post(
             reverse("registration:find_staff"),
             json.dumps(postData),
@@ -263,7 +261,7 @@ class TestAddStaff(OrdersTestCase):
 
         postData = {
             "attendee": {
-                "id": attendee.id,
+                "id": self.attendee.id,
                 "firstName": "Staffer",
                 "lastName": "Testerson",
                 "address1": "123 Somewhere St",
@@ -279,7 +277,7 @@ class TestAddStaff(OrdersTestCase):
                 "emailsOk": "true",
             },
             "staff": {
-                "id": staff.id,
+                "id": self.staff.id,
                 "department": self.department1.id,
                 "title": "Something Cool",
                 "twitter": "@twitstaff",
@@ -320,7 +318,7 @@ class TestAddStaff(OrdersTestCase):
         response = self.checkout("cnon:card-nonce-ok")
         self.assertEqual(response.status_code, 200)
 
-        badge = Badge.objects.get(attendee=attendee, event=self.event)
+        badge = Badge.objects.get(attendee=self.attendee, event=self.event)
         orderItem = badge.orderitem_set.first()
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
@@ -334,7 +332,10 @@ class TestAddStaff(OrdersTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Staff zero-sum
-        postData = {"email": attendee2.email, "token": staff2.registrationToken}
+        postData = {
+            "email": self.attendee2.email,
+            "token": self.staff2.registrationToken,
+        }
         response = self.client.post(
             reverse("registration:find_staff"),
             json.dumps(postData),
@@ -346,7 +347,7 @@ class TestAddStaff(OrdersTestCase):
 
         postData = {
             "attendee": {
-                "id": attendee2.id,
+                "id": self.attendee2.id,
                 "firstName": "Staffer",
                 "lastName": "Testerson",
                 "address1": "123 Somewhere St",
@@ -362,7 +363,7 @@ class TestAddStaff(OrdersTestCase):
                 "emailsOk": "true",
             },
             "staff": {
-                "id": staff2.id,
+                "id": self.staff2.id,
                 "department": self.department2.id,
                 "title": "Something Cool",
                 "twitter": "@twitstaff",
@@ -404,7 +405,7 @@ class TestAddStaff(OrdersTestCase):
         response = self.zero_checkout()
         self.assertEqual(response.status_code, 200)
 
-        badge = Badge.objects.get(attendee=attendee2, event=self.event)
+        badge = Badge.objects.get(attendee=self.attendee2, event=self.event)
         orderItem = OrderItem.objects.get(badge=badge)
         self.assertNotEqual(orderItem.order, None)
         order = orderItem.order
@@ -414,3 +415,15 @@ class TestAddStaff(OrdersTestCase):
 
         response = self.client.get(reverse("registration:flush"))
         self.assertEqual(response.status_code, 200)
+
+
+class TestStaffEmail(StaffTestCase):
+    def test_get_staff_email(self):
+        email = staff.get_staff_email()
+        self.assertEqual(email, self.event.staffEmail)
+
+    def test_get_staff_email_empty(self):
+        self.event.staffEmail = ""
+        self.event.save()
+        email = staff.get_staff_email()
+        self.assertEqual(email, settings.APIS_DEFAULT_EMAIL)

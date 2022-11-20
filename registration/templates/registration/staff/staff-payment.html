@@ -165,7 +165,7 @@
               },
               "success": function (result, status) {
                   if (result.success) {
-                      window.location = "{% url 'registration:cart' %}";
+                      window.location = "{% url 'registration:staff_done' %}";
                   } else {
                       alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
                   }
