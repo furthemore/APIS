@@ -4,12 +4,7 @@ from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
-from django.http import (
-    Http404,
-    HttpResponseNotFound,
-    HttpResponseServerError,
-    JsonResponse,
-)
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
@@ -71,6 +66,22 @@ def info_new_staff(request):
     return render(request, "registration/staff/staff-new-payment.html", context)
 
 
+def staff_from_post_data(pds, attendee, event):
+    shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
+    staff = Staff(attendee=attendee, event=event)
+    staff.twitter = pds["twitter"]
+    staff.telegram = pds["telegram"]
+    staff.shirtsize = shirt
+    staff.specialSkills = pds["specialSkills"]
+    staff.specialFood = pds["specialFood"]
+    staff.specialMedical = pds["specialMedical"]
+    staff.contactName = pds["contactName"]
+    staff.contactPhone = pds["contactPhone"]
+    staff.contactRelation = pds["contactRelation"]
+    staff.save()
+    return staff
+
+
 @require_POST
 def add_new_staff(request):
     postData = json.loads(request.body)
@@ -108,35 +119,23 @@ def add_new_staff(request):
     badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
     badge.save()
 
-    shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
+    staff_from_post_data(pds, attendee, event)
 
-    staff = Staff(attendee=attendee, event=event)
-    staff.twitter = pds["twitter"]
-    staff.telegram = pds["telegram"]
-    staff.shirtsize = shirt
-    staff.specialSkills = pds["specialSkills"]
-    staff.specialFood = pds["specialFood"]
-    staff.specialMedical = pds["specialMedical"]
-    staff.contactName = pds["contactName"]
-    staff.contactPhone = pds["contactPhone"]
-    staff.contactRelation = pds["contactRelation"]
-    staff.save()
+    price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
-    priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
-
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
+    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
+    order_item.save()
 
     for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendeeOption = AttendeeOptions(
-            option=plOption, orderItem=orderItem, optionValue=option["value"]
+        pl_option = PriceLevelOption.objects.get(id=int(option["id"]))
+        attendee_option = AttendeeOptions(
+            option=pl_option, orderItem=order_item, optionValue=option["value"]
         )
-        attendeeOption.save()
+        attendee_option.save()
 
-    orderItems = request.session.get("order_items", [])
-    orderItems.append(orderItem.id)
-    request.session["order_items"] = orderItems
+    order_items = request.session.get("order_items", [])
+    order_items.append(order_item.id)
+    request.session["order_items"] = order_items
 
     discount = event.newStaffDiscount
     if discount:
@@ -264,16 +263,7 @@ def add_staff(request):
     if not staff:
         return JsonResponse({"success": False, "message": "Staff record not found"})
 
-    shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
-    staff.twitter = pds["twitter"]
-    staff.telegram = pds["telegram"]
-    staff.shirtsize = shirt
-    staff.specialSkills = pds["specialSkills"]
-    staff.specialFood = pds["specialFood"]
-    staff.specialMedical = pds["specialMedical"]
-    staff.contactName = pds["contactName"]
-    staff.contactPhone = pds["contactPhone"]
-    staff.contactRelation = pds["contactRelation"]
+    staff_from_post_data(pds, attendee, event)
 
     try:
         staff.save()
@@ -294,21 +284,21 @@ def add_staff(request):
         logger.exception("Error saving staff badge record.")
         return JsonResponse({"success": False, "message": "Badge not saved: " + str(e)})
 
-    priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
+    price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
+    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
+    order_item.save()
 
     for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendeeOption = AttendeeOptions(
-            option=plOption, orderItem=orderItem, optionValue=option["value"]
+        pl_option = PriceLevelOption.objects.get(id=int(option["id"]))
+        attendee_option = AttendeeOptions(
+            option=pl_option, orderItem=order_item, optionValue=option["value"]
         )
-        attendeeOption.save()
+        attendee_option.save()
 
-    orderItems = request.session.get("order_items", [])
-    orderItems.append(orderItem.id)
-    request.session["order_items"] = orderItems
+    order_items = request.session.get("order_items", [])
+    order_items.append(order_item.id)
+    request.session["order_items"] = order_items
 
     discount = event.staffDiscount
     if discount:
@@ -324,9 +314,9 @@ def get_staff_total(orderItems, discount, staff):
 
     if badge.effectiveLevel():
         discount = None
-    subTotal = getTotal(orderItems, discount)
-    alreadyPaid = badge.paidTotal()
-    total = subTotal - alreadyPaid
+    sub_total = getTotal(orderItems, discount)
+    already_paid = badge.paidTotal()
+    total = sub_total - already_paid
 
     if total < 0:
         return 0

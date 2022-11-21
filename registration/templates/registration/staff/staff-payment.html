@@ -92,6 +92,7 @@
           $("form").validator('validate');
           let errorCount = $(".has-error").length;
           if (errorCount > 0) {
+              $(this).one('click', doRegister);
               return;
           }
 
@@ -101,12 +102,13 @@
               $(this).one('click', doRegister);
               return;
           }
+          let birthdate;
           if (Modernizr.inputtypes.date) {
               // native datepicker - expect ISO date
-              let birthdate = parseDate($("#birthDate").val());
+              birthdate = parseDate($("#birthDate").val());
           } else {
               // American middle-endian format put out by datepicker javascript
-              let birthdate = new Date(Date.parse($("#birthDate").val()));
+              birthdate = new Date(Date.parse($("#birthDate").val()));
           }
           let age = getAgeByEventStart(birthdate);
           if (age < 18) {
@@ -165,7 +167,7 @@
               },
               "success": function (result, status) {
                   if (result.success) {
-                      window.location = "{% url 'registration:staff_done' %}";
+                      window.location = "{% url 'registration:cart' %}";
                   } else {
                       alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.registrationEmail }} for assistance.")
                   }
@@ -174,7 +176,9 @@
           });
       }
 
-      $("#register").one('click', doRegister);
+      $(document).ready(function () {
+          $("#register").one('click', doRegister);
+      });
 
   </script>
 
