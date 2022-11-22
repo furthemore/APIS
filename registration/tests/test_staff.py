@@ -227,6 +227,7 @@ class TestInfoStaff(StaffTestCase):
         result = self.client.get(reverse("registration:info_staff"))
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.context["staff"], self.staff)
+        self.assertEqual(result.context["paid_total"], 0)
 
 
 class TestAddStaff(StaffTestCase):

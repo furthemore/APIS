@@ -199,8 +199,10 @@ def info_staff(request):
         badges = Badge.objects.filter(attendee=staff.attendee, event=staff.event)
 
         badge = {}
+        paid_total = 0
         if badges.count() > 0:
             badge = badges[0]
+            paid_total = badge.paidTotal()
 
         context = {
             "staff": staff,
@@ -208,7 +210,7 @@ def info_staff(request):
             "jsonAttendee": json.dumps(attendee_dict, default=handler),
             "badge": badge,
             "event": event,
-            "paid_total": badge.paidTotal(),
+            "paid_total": paid_total,
         }
     return render(request, "registration/staff/staff-payment.html", context)
 
