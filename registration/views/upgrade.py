@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404, render
 import registration.emails
 from registration.models import *
 
+from . import common
 from .common import (
     clear_session,
     get_client_ip,
@@ -185,50 +186,44 @@ def send_upgrade_email(request, attendee, order):
 
 
 def checkout_upgrade(request):
+    session_items = request.session.get("order_items", [])
+    order_items = list(OrderItem.objects.filter(id__in=session_items))
+    if "attendee_id" not in request.session:
+        return HttpResponseBadRequest("Session expired")
+
+    attendee = Attendee.objects.get(id=request.session.get("attendee_id"))
     try:
-        session_items = request.session.get("order_items", [])
-        order_items = list(OrderItem.objects.filter(id__in=session_items))
-        if "attendee_id" not in request.session:
-            return HttpResponseBadRequest("Session expired")
+        post_data = json.loads(request.body)
+    except ValueError as e:
+        logger.error("Unable to decode JSON for checkout_upgrade()")
+        return common.abort(400, "Unable to parse input options")
 
-        attendee = Attendee.objects.get(id=request.session.get("attendee_id"))
-        try:
-            post_data = json.loads(request.body)
-        except ValueError as e:
-            logger.error("Unable to decode JSON for checkout_upgrade()")
-            return JsonResponse({"success": False})
+    subtotal, total_discount = get_total([], order_items)
 
-        subtotal, total_discount = get_total([], order_items)
+    if subtotal == 0:
+        status, message, order = doZeroCheckout(None, None, order_items)
 
-        if subtotal == 0:
-            status, message, order = doZeroCheckout(None, None, order_items)
+        if not status:
+            return common.abort(400, message)
 
-            if not status:
-                return JsonResponse({"success": False, "message": message})
+        return send_upgrade_email(request, attendee, order)
 
-            return send_upgrade_email(request, attendee, order)
+    porg = Decimal(post_data.get("orgDonation") or "0.00")
+    pcharity = Decimal(post_data.get("charityDonation") or "0.00")
+    if porg < 0:
+        porg = 0
+    if pcharity < 0:
+        pcharity = 0
 
-        porg = Decimal(post_data.get("orgDonation") or "0.00")
-        pcharity = Decimal(post_data.get("charityDonation") or "0.00")
-        if porg < 0:
-            porg = 0
-        if pcharity < 0:
-            pcharity = 0
+    total = subtotal + porg + pcharity
 
-        total = subtotal + porg + pcharity
+    pbill = post_data["billingData"]
+    status, message, order = do_checkout(
+        pbill, total, None, [], order_items, porg, pcharity
+    )
 
-        pbill = post_data["billingData"]
-        ip = get_client_ip(request)
-        status, message, order = do_checkout(
-            pbill, total, None, [], order_items, porg, pcharity
-        )
-
-        if status:
-            return send_upgrade_email(request, attendee, order)
-        else:
-            order.delete()
-            return JsonResponse({"success": False, "message": message})
-
-    except Exception as e:
-        logger.exception("Error in attendee upgrade.")
-        return HttpResponseServerError(str(e))
+    if status:
+        return send_upgrade_email(request, attendee, order)
+    else:
+        order.delete()
+        return common.abort(400, message)
