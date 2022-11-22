@@ -210,6 +210,7 @@
 
 
 {% block javascript %}
+  {% if dealer %}
   {% if SQUARE_ENVIRONMENT == "sandbox" %}
     <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
   {% else %}
@@ -233,9 +234,11 @@
       /* Application data */
 
       const DEALER_EMAIL = "{{event.dealerEmail}}";
+
       const dealer_id = {{dealer.id}};
       const maxPartners = {{dealer.tableSize.partnerMax}};
       const dealer_assistants = {{json_assistants|safe}};
+
 
       $("body").ready(function () {
           $("form").fadeIn();
@@ -246,4 +249,5 @@
   <script type="application/javascript" src="{% static 'js/dealers/dealerasst-add.js' %}"></script>
   <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
   <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+  {% endif %}
 {% endblock %}
