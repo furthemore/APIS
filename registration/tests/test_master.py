@@ -247,7 +247,8 @@ class TestAttendeeCheckout(OrdersTestCase):
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(response.content)
         self.assertEqual(
-            response_json, {"message": "That discount is not valid.", "success": False},
+            response_json,
+            {"message": "That discount is not valid.", "success": False},
         )
 
         postData = {"discount": "Bogus"}
@@ -259,7 +260,8 @@ class TestAttendeeCheckout(OrdersTestCase):
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(response.content)
         self.assertEqual(
-            response_json, {"message": "That discount is not valid.", "success": False},
+            response_json,
+            {"message": "That discount is not valid.", "success": False},
         )
 
     def test_discount_zero_sum(self):
@@ -488,7 +490,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         dealer = Dealer.objects.get(attendee=attendee)
         postData = {"token": dealer.registrationToken, "email": attendee.email}
         response = self.client.post(
-            reverse("registration:findDealer"),
+            reverse("registration:find_dealer"),
             json.dumps(postData),
             content_type="application/json",
         )
@@ -499,12 +501,12 @@ class TestAttendeeCheckout(OrdersTestCase):
         dealer_pay["priceLevel"] = {"id": self.price_45.id, "options": []}
 
         response = self.client.post(
-            reverse("registration:addDealer"),
+            reverse("registration:add_dealer"),
             json.dumps(dealer_pay),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(reverse("registration:invoiceDealer"))
+        response = self.client.get(reverse("registration:invoice_dealer"))
         self.assertEqual(response.status_code, 200)
         cart = response.context["orderItems"]
         self.assertEqual(len(cart), 1)
@@ -531,7 +533,7 @@ class TestAttendeeCheckout(OrdersTestCase):
         assistant.save()
 
         response = self.client.post(
-            reverse("registration:checkoutDealer"),
+            reverse("registration:checkout_dealer"),
             json.dumps(checkout_post_data),
             content_type="application/json",
         )

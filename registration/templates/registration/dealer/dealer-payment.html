@@ -260,8 +260,8 @@
       let discount = {{event.dealerDiscount.amountOff|default:0.0}};
       let adult = true;
   </script>
-  <script type="text/javascript" src="{% static "js/main.js" %}></script>
-  <script type="text/javascript" src="{% static "js/price-types.js" %}></script>
+  <script type="text/javascript" src="{% static "js/main.js" %}"></script>
+  <script type="text/javascript" src="{% static "js/templates/price-types.js" %}"></script>
   <script type="text/javascript">
       let dealer = {{ jsonDealer|safe }};
       let attendee = {{ jsonAttendee|safe }};
@@ -376,7 +376,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:addDealer' %}",
+              "url": "{% url 'registration:add_dealer' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -392,7 +392,7 @@
               },
               "success": function (result, status) {
                   if (result.success) {
-                      window.location = "{% url 'registration:invoiceDealer' %}";
+                      window.location = "{% url 'registration:invoice_dealer' %}";
                   } else {
                       $("#checkout").removeAttr("disabled");
                       alert("An error has occurred: " + result.message + " Please check the form an your payment information for errors. If this error continues, please contact {{event.dealerEmail}} for assistence.");

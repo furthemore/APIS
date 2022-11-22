@@ -189,7 +189,7 @@ def send_dealer_application_email(dealerId):
     data = {"event": dealer.event, "dealer": dealer}
     msg_txt = render_to_string("registration/emails/dealer/dealer.txt", data)
     msg_html = render_to_string("registration/emails/dealer/dealer.html", data)
-    dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
+    dealer_email = registration.views.dealers.get_dealer_email(dealer.event)
     send_email(
         dealer_email,
         [dealer.attendee.email],
@@ -215,7 +215,7 @@ def send_dealer_assistant_form_email(dealer):
     data = {"dealer": dealer, "event": dealer.event}
     msg_txt = render_to_string("registration/emails/dealer/assistant-form.txt", data)
     msg_html = render_to_string("registration/emails/dealer/assistant-form.html", data)
-    dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
+    dealer_email = registration.views.dealers.get_dealer_email(dealer.event)
     send_email(
         dealer_email,
         [dealer.attendee.email],
@@ -230,7 +230,7 @@ def send_dealer_assistant_email(dealer_id):
     data = {"dealer": dealer, "event": dealer.event}
     msg_txt = render_to_string("registration/emails/dealer/assistant.txt", data)
     msg_html = render_to_string("registration/emails/dealer/assistant.html", data)
-    dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
+    dealer_email = registration.views.dealers.get_dealer_email(dealer.event)
     send_email(
         dealer_email,
         [dealer.attendee.email],
@@ -248,7 +248,7 @@ def send_dealer_assistant_registration_invite(assistant):
     msg_html = render_to_string(
         "registration/emails/dealer/assistant-register.html", data
     )
-    dealer_email = registration.views.dealers.getDealerEmail(assistant.event)
+    dealer_email = registration.views.dealers.get_dealer_email(assistant.event)
     send_email(
         dealer_email,
         [assistant.email],
@@ -272,7 +272,7 @@ def send_dealer_payment_email(dealer, order):
     }
     msg_txt = render_to_string("registration/emails/dealer/payment.txt", data)
     msg_html = render_to_string("registration/emails/dealer/payment.html", data)
-    dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
+    dealer_email = registration.views.dealers.get_dealer_email(dealer.event)
 
     send_email(
         dealer_email,
@@ -292,7 +292,7 @@ def send_dealer_approval_email(dealerQueryset):
         msg_html = render_to_string(
             "registration/emails/dealer/dealer-approval.html", data
         )
-        dealer_email = registration.views.dealers.getDealerEmail(dealer.event)
+        dealer_email = registration.views.dealers.get_dealer_email(dealer.event)
         send_email(
             dealer_email,
             [dealer.attendee.email],

@@ -316,7 +316,7 @@
 {% block javascript %}
   <script type="text/javascript">
       var DEALER_EMAIL = "{{event.dealerEmail}}";
-      var URL_DONE_AST_DEALER = "{% url 'registration:doneAsstDealer' %}";
+      var URL_DONE_AST_DEALER = "{% url 'registration:done_asst_dealer' %}";
       var URL_ADD_ASSISTANTS_CHECKOUT = "{% url 'registration:add_assistants_checkout' %}";
       var dealer_id = {{dealer.id}};
       var maxPartners = {{dealer.tableSize.partnerMax}};

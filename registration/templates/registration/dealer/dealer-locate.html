@@ -62,30 +62,33 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
   </form>
-  </div>
 {% endblock %}
 
 {% block javascript %}
 
   <script type="text/javascript">
+      $(document).ready(function () {
+          $("#lookup").click(doRegister);
+      });
 
-      $("#lookup").click(doRegister);
 
       function doRegister() {
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          let errorCount = $(".has-error").length;
           if (errorCount > 0) {
               return;
           }
 
-          var data = {
+          let data = {
               'email': $("#email").val(), 'token': $("#token").val()
           };
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:findDealer' %}",
+              "url": "{% url 'registration:find_dealer' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -99,38 +102,10 @@
                   }
               },
               "success": function () {
-                  window.location = "{% url 'registration:infoDealer' %}";
+                  window.location = "{% url 'registration:info_dealer' %}";
               }
           });
       }
-
-
-      function getCookie(name) {
-          var cookieValue = null;
-          if (document.cookie && document.cookie != '') {
-              var cookies = document.cookie.split(';');
-              for (var i = 0; i < cookies.length; i++) {
-                  var cookie = jQuery.trim(cookies[i]);
-                  // Does this cookie string begin with the name we want?
-                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                      break;
-                  }
-              }
-          }
-          return cookieValue;
-      }
-
-      $.ajaxSetup({
-          beforeSend: function (xhr, settings) {
-              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                  // Only send the token to relative URLs i.e. locally.
-                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-              }
-          }
-      });
-
-
   </script>
 
 {% endblock %}

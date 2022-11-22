@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 console.log(paymentResults.reason);
             }
 
-            console.debug('Payment Success', paymentResults);
+            console.debug('Payment result:', paymentResults);
             cardButton.disabled = false;
         } catch (err) {
             if (err instanceof PaymentError) {

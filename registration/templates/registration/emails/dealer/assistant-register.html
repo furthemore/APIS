@@ -3,6 +3,6 @@
 
 <p>Your sponsoring dealer, {{ assistant.dealer.businessName }}, has paid for your registration at <b>{{event}}.</b></p>
 
-<p>Please use this link to register: <a href="https://{% current_domain %}{% url 'registration:dealerAsst' guid=assistant.registrationToken %}">https://{% current_domain %}{% url 'registration:dealerAsst' guid=assistant.registrationToken %}</a></p>
+<p>Please use this link to register: <a href="https://{% current_domain %}{% url 'registration:dealer_asst' guid=assistant.registrationToken %}">https://{% current_domain %}{% url 'registration:dealer_asst' guid=assistant.registrationToken %}</a></p>
 
 <p>Thanks!</p>
