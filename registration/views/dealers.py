@@ -176,7 +176,10 @@ def find_asst_dealer(request):
         )
 
     request.session["assistant_id"] = dealer_assistant.id
-    request.session["discount"] = dealer_assistant.event.assistantDiscount.codeName
+    discount = dealer_assistant.event.assistantDiscount
+    if discount:
+        request.session["discount"] = discount.codeName
+
     return JsonResponse(
         {
             "success": True,
