@@ -16,12 +16,12 @@ from registration.models import *
 from .common import (
     clear_session,
     get_client_ip,
+    get_registration_email,
     getOptionsDict,
-    getRegistrationEmail,
     handler,
     logger,
 )
-from .ordering import doCheckout, doZeroCheckout, getTotal
+from .ordering import do_checkout, doZeroCheckout, get_total
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +145,7 @@ def invoice_upgrade(request):
             lvl = badge.effectiveLevel()
             lvl_dict = {"basePrice": lvl.basePrice}
             orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-            total, total_discount = getTotal([], orderItems)
+            total, total_discount = get_total([], orderItems)
             context = {
                 "orderItems": orderItems,
                 "total": total,
@@ -170,7 +170,7 @@ def send_upgrade_email(request, attendee, order):
         registration.emails.send_upgrade_payment_email(attendee, order)
     except Exception as e:
         logger.exception("Error sending UpgradePaymentEmail")
-        registration_email = getRegistrationEmail(event)
+        registration_email = get_registration_email(event)
         return JsonResponse(
             {
                 "success": False,
@@ -198,7 +198,7 @@ def checkout_upgrade(request):
             logger.error("Unable to decode JSON for checkout_upgrade()")
             return JsonResponse({"success": False})
 
-        subtotal, total_discount = getTotal([], order_items)
+        subtotal, total_discount = get_total([], order_items)
 
         if subtotal == 0:
             status, message, order = doZeroCheckout(None, None, order_items)
@@ -219,7 +219,7 @@ def checkout_upgrade(request):
 
         pbill = post_data["billingData"]
         ip = get_client_ip(request)
-        status, message, order = doCheckout(
+        status, message, order = do_checkout(
             pbill, total, None, [], order_items, porg, pcharity
         )
 

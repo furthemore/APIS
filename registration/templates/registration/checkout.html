@@ -31,7 +31,7 @@
           {% else %}
             <div class="col-sm-5 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</div>
           {% endif %}
-          <div class="col-sm-2">${{ item.priceLevel.basePrice }}</div>
+          <div class="col-sm-2">&nbsp;&nbsp;${{ item.priceLevel.basePrice }}</div>
           <div class="col-sm-2">
             <a class="deleteAttendee" id="delete_{{ item.id }}">&times; Remove</a>
           </div>
@@ -44,13 +44,18 @@
               <div class="col-sm-5 col-sm-offset-1">{{ option.name }}</div>
             {% endif %}
             {% if option.total == 0 %}
-              <div class="col-sm-2">Free</div>
+              <div class="col-sm-2">&nbsp;&nbsp;Free</div>
             {% else %}
-              <div class="col-sm-2">${{ option.total }}</div>
+              <div class="col-sm-2">&nbsp;&nbsp;${{ option.total }}</div>
             {% endif %}
-
           </div>
         {% endfor %}
+        {% if paid_total > 0 %}
+          <div class="row">
+            <div class="col-sm-5 col-sm-offset-1">Previous Payment</div>
+            <div class="col-sm-2">- ${{ paid_total }}</div>
+          </div>
+        {% endif %}
         {% if discount %}
           <div class="row">
             <div class="col-sm-5 col-sm-offset-1">Discount - {{ discount.codeName }}</div>
@@ -307,6 +312,7 @@
 
       /* Application data */
       let cart_total = {{ total|default:0 }};
+      let paid_total = {{ paid_total|default:0 }};
   </script>
   <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
   {% if total > 0 %}

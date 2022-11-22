@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from time import timezone
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
@@ -19,7 +20,7 @@ from .common import (
     logger,
     success,
 )
-from .ordering import doCheckout, doZeroCheckout, getTotal
+from .ordering import do_checkout, doZeroCheckout, get_total
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +67,10 @@ def info_new_staff(request):
     return render(request, "registration/staff/staff-new-payment.html", context)
 
 
-def staff_from_post_data(pds, attendee, event):
+def staff_from_post_data(pds, attendee, event, staff):
     shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
-    staff = Staff(attendee=attendee, event=event)
+    if not staff:
+        staff = Staff(attendee=attendee, event=event)
     staff.twitter = pds["twitter"]
     staff.telegram = pds["telegram"]
     staff.shirtsize = shirt
@@ -119,7 +121,7 @@ def add_new_staff(request):
     badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
     badge.save()
 
-    staff_from_post_data(pds, attendee, event)
+    staff_from_post_data(pds, attendee, event, None)
 
     price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
@@ -263,7 +265,7 @@ def add_staff(request):
     if not staff:
         return JsonResponse({"success": False, "message": "Staff record not found"})
 
-    staff_from_post_data(pds, attendee, event)
+    staff_from_post_data(pds, attendee, event, staff)
 
     try:
         staff.save()
@@ -314,7 +316,7 @@ def get_staff_total(orderItems, discount, staff):
 
     if badge.effectiveLevel():
         discount = None
-    sub_total = getTotal(orderItems, discount)
+    sub_total = get_total(orderItems, discount)
     already_paid = badge.paidTotal()
     total = sub_total - already_paid
 

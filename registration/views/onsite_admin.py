@@ -31,8 +31,8 @@ from registration.models import (
 )
 from registration.pushy import PushyAPI, PushyError
 from registration.views.ordering import (
-    getDiscountTotal,
-    getOrderItemOptionTotal,
+    get_discount_total,
+    get_order_item_option_total,
 )
 
 from ..mqtt import send_mqtt_message
@@ -821,7 +821,7 @@ def onsite_admin_cart(request):
         for item in oi:
             level = item.priceLevel
             attendee_options.append(get_line_items(item.getOptions()))
-            level_subtotal += getOrderItemOptionTotal(item.getOptions())
+            level_subtotal += get_order_item_option_total(item.getOptions())
 
             if level is None:
                 effectiveLevel = None
@@ -840,7 +840,8 @@ def onsite_admin_cart(request):
             holdType = badge.attendee.holdType.name
 
         level_discount = (
-            Decimal(getDiscountTotal(order.discount, level_subtotal) * 100) * TWOPLACES
+            Decimal(get_discount_total(order.discount, level_subtotal) * 100)
+            * TWOPLACES
         )
         total_discount += level_discount
 

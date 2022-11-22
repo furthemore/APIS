@@ -7,7 +7,7 @@ Thank you for your payment.
   Price      - ${{oi.priceLevel.basePrice}}
   {% for ao in options %}
     {% if ao.option.optionExtraType == 'int'%}
-    Option: {{ao.option.optionName}} x{{ao.optionValue}} - ${{ao.getTotal}}
+    Option: {{ao.option.optionName}} x{{ao.optionValue}} - ${{ao.get_total}}
     {% else %}
     Option: {{ao.option.optionName}} - ${{ao.option.optionPrice}}
     {% endif %}

@@ -16,7 +16,7 @@ import registration.emails
 from registration.models import *
 
 from .common import clear_session, get_client_ip, handler, logger
-from .ordering import doCheckout, doZeroCheckout, getDiscountTotal
+from .ordering import do_checkout, doZeroCheckout, get_discount_total
 
 logger = logging.getLogger(__name__)
 
@@ -312,7 +312,7 @@ def add_assistants_checkout(request):
             status=500,
         )
 
-    status, message, order = doCheckout(
+    status, message, order = do_checkout(
         billing_data, total, None, [], [order_item], 0, 0
     )
 
@@ -486,7 +486,7 @@ def checkoutDealer(request):
     total = subtotal + porg + pcharity
 
     pbill = postData["billingData"]
-    status, message, order = doCheckout(
+    status, message, order = do_checkout(
         pbill, total, discount, None, orderItems, porg, pcharity
     )
 
@@ -672,7 +672,7 @@ def getDealerTotal(orderItems, discount, dealer):
         power = 0
     paidTotal = dealer.paidTotal()
     if discount:
-        itemSubTotal = getDiscountTotal(discount, itemSubTotal)
+        itemSubTotal = get_discount_total(discount, itemSubTotal)
     total = (
         itemSubTotal
         + 55 * unpaidPartnerCount

@@ -15,7 +15,7 @@ from registration.models import (
 )
 from registration.views.common import clear_session
 
-from .ordering import getTotal
+from .ordering import get_total
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def onsite_cart(request):
             discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0:
                 discount = discount.first()
-        total, total_discount = getTotal(cartItems, [], discount)
+        total, total_discount = get_total(cartItems, [], discount)
 
         hasMinors = False
         for cart in cartItems:

@@ -19,7 +19,7 @@ $("body").ready(function () {
         $.each(data, function (key, val) {
             var price = val.base_price;
             if (discount) {
-                price = val.base_price - discount;
+                price = Math.max(val.base_price - discount, 0);
             }
             levelTemplateData.push({
                 name: val.name,

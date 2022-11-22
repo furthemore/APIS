@@ -315,11 +315,11 @@ urlpatterns = [
         registration.views.attendee.get_free_price_levels,
         name="freepricelevels",
     ),
-    url(r"^shirts/?$", registration.views.common.getShirtSizes, name="shirtsizes"),
+    url(r"^shirts/?$", registration.views.common.get_shirt_sizes, name="shirtsizes"),
     url(r"^tables/?$", registration.views.dealers.getTableSizes, name="tablesizes"),
     url(
         r"^addresses/?$",
-        registration.views.common.getSessionAddresses,
+        registration.views.common.get_session_addresses,
         name="addresses",
     ),
     url(

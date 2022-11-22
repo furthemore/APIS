@@ -16,9 +16,9 @@ def get_cart(request):
     sessionItems = request.session.get("cart_items", [])
     sessionOrderItems = request.session.get("order_items", [])
     discount = request.session.get("discount", "")
-    event = None
+    event = Event.objects.get(default=True)
     if not sessionItems and not sessionOrderItems:
-        context = {"orderItems": [], "total": 0, "discount": {}}
+        context = {"orderItems": [], "total": 0, "discount": {}, "event": event}
         request.session.flush()
     elif sessionOrderItems:
         orderItems = list(OrderItem.objects.filter(id__in=sessionOrderItems))
@@ -26,7 +26,7 @@ def get_cart(request):
             discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0:
                 discount = discount.first()
-        total, total_discount = ordering.getTotal([], orderItems, discount)
+        total, total_discount = ordering.get_total([], orderItems, discount)
 
         hasMinors = False
         for item in orderItems:
@@ -34,12 +34,14 @@ def get_cart(request):
                 hasMinors = True
                 break
 
-        event = Event.objects.get(default=True)
+        paid_total = item.badge.paidTotal()
+
         context = {
             "event": event,
             "orderItems": orderItems,
             "total": total,
             "total_discount": total_discount,
+            "paid_total": paid_total,
             "discount": discount,
             "hasMinors": hasMinors,
         }
@@ -51,7 +53,7 @@ def get_cart(request):
             discount = Discount.objects.filter(codeName=discount)
             if discount.count() > 0:
                 discount = discount.first()
-        total, total_discount = ordering.getTotal(cartItems, [], discount)
+        total, total_discount = ordering.get_total(cartItems, [], discount)
 
         hasMinors = False
         for idx, cart in enumerate(cartItems):
@@ -107,8 +109,6 @@ def get_cart(request):
             }
             orderItems.append(orderItem)
 
-        if event is None:
-            event = Event.objects.get(default=True)
         context = {
             "event": event,
             "orderItems": orderItems,
@@ -221,7 +221,7 @@ def add_to_cart(request):
     banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
         logger.error("***ban list registration attempt***")
-        registrationEmail = common.getRegistrationEmail()
+        registrationEmail = common.get_registration_email()
         return common.abort(
             403,
             f"We are sorry, but you are unable to register for {event}. If you have any questions, or would like "

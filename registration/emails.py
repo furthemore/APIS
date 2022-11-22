@@ -24,7 +24,7 @@ def send_registration_email(order, email, send_vip=True):
 
     # send registration confirmations to all people in the order
     for oi in order_items:
-        registration_email = registration.views.common.getRegistrationEmail(
+        registration_email = registration.views.common.get_registration_email(
             oi.badge.event
         )
         if oi.badge.attendee.email == email:
@@ -84,7 +84,7 @@ def send_registration_email(order, email, send_vip=True):
 
 def send_upgrade_instructions(badge):
     event = Event.objects.get(default=True)
-    registration_email = registration.views.common.getRegistrationEmail(event)
+    registration_email = registration.views.common.get_registration_email(event)
 
     data = {
         "event": event,
@@ -111,7 +111,7 @@ def send_upgrade_payment_email(attendee, order):
     }
     msg_txt = render_to_string("registration/emails/upgrade.txt", data)
     msg_html = render_to_string("registration/emails/upgrade.html", data)
-    registration_email = registration.views.common.getRegistrationEmail(event)
+    registration_email = registration.views.common.get_registration_email(event)
 
     send_email(
         registration_email,
@@ -202,7 +202,9 @@ def send_dealer_application_email(dealerId):
     msg_html = render_to_string("registration/emails/dealer/dealer-notice.html", data)
     send_email(
         dealer_email,
-        [dealer_email,],
+        [
+            dealer_email,
+        ],
         "{0} Dealer Application Received".format(dealer.event.name),
         msg_txt,
         msg_html,
