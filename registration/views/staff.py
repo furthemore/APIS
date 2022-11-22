@@ -1,14 +1,13 @@
 import json
 import logging
 from datetime import datetime
+from time import timezone
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
-from django.http import (
-    HttpResponseNotFound,
-    HttpResponseServerError,
-    JsonResponse,
-)
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
 import registration.emails
 from registration.models import *
@@ -21,58 +20,78 @@ from .common import (
     logger,
     success,
 )
-from .ordering import doCheckout, doZeroCheckout, getTotal
+from .ordering import do_checkout, doZeroCheckout, get_total
 
 logger = logging.getLogger(__name__)
 
 
-def newStaff(request, guid):
+def new_staff(request, guid):
     event = Event.objects.get(default=True)
     context = {"token": guid, "event": event}
     return render(request, "registration/staff/staff-new.html", context)
 
 
-def findNewStaff(request):
+@require_POST
+def find_new_staff(request):
     try:
-        postData = json.loads(request.body)
-        email = postData["email"]
-        token = postData["token"]
+        post_data = json.loads(request.body)
+        email = post_data["email"]
+        token = post_data["token"]
 
         token = TempToken.objects.get(email__iexact=email, token=token)
-        if not token:
-            return HttpResponseNotFound("No Staff Found")
 
         if token.validUntil < timezone.now():
-            return HttpResponseServerError("Invalid Token")
+            return abort(400, "Invalid Token")
         if token.used:
-            return HttpResponseServerError("Token Used")
+            return abort(400, "Token Used")
 
-        request.session["newStaff"] = token.token
+        request.session["new_staff"] = token.token
 
         return JsonResponse({"success": True, "message": "STAFF"})
-    except Exception as e:
-        logger.exception("Unable to find staff." + request.body)
-        return HttpResponseServerError(str(e))
+    except ObjectDoesNotExist:
+        return abort(404, "No staff found")
+    except json.JSONDecodeError as e:
+        return abort(400, e.msg)
 
 
-def infoNewStaff(request):
+def info_new_staff(request):
     event = Event.objects.get(default=True)
+    token_value = request.session.get("new_staff")
+    context = {"staff": None, "event": event}
     try:
-        tokenValue = request.session["newStaff"]
-        token = TempToken.objects.get(token=tokenValue)
-    except Exception as e:
-        token = None
-    context = {"staff": None, "event": event, "token": token}
+        context["token"] = TempToken.objects.get(token=token_value)
+    except ObjectDoesNotExist:
+        return render(
+            request, "registration/staff/staff-new-payment.html", context, status=404
+        )
     return render(request, "registration/staff/staff-new-payment.html", context)
 
 
-def addNewStaff(request):
+def staff_from_post_data(pds, attendee, event, staff):
+    shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
+    if not staff:
+        staff = Staff(attendee=attendee, event=event)
+    staff.twitter = pds["twitter"]
+    staff.telegram = pds["telegram"]
+    staff.shirtsize = shirt
+    staff.specialSkills = pds["specialSkills"]
+    staff.specialFood = pds["specialFood"]
+    staff.specialMedical = pds["specialMedical"]
+    staff.contactName = pds["contactName"]
+    staff.contactPhone = pds["contactPhone"]
+    staff.contactRelation = pds["contactRelation"]
+    staff.save()
+    return staff
+
+
+@require_POST
+def add_new_staff(request):
     postData = json.loads(request.body)
     # create attendee from request post
     pda = postData["attendee"]
     pds = postData["staff"]
     pdp = postData["priceLevel"]
-    evt = postData["event"]
+    evt = postData.get("event")
 
     if evt:
         event = Event.objects.get(name=evt)
@@ -102,35 +121,23 @@ def addNewStaff(request):
     badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
     badge.save()
 
-    shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
+    staff_from_post_data(pds, attendee, event, None)
 
-    staff = Staff(attendee=attendee, event=event)
-    staff.twitter = pds["twitter"]
-    staff.telegram = pds["telegram"]
-    staff.shirtsize = shirt
-    staff.specialSkills = pds["specialSkills"]
-    staff.specialFood = pds["specialFood"]
-    staff.specialMedical = pds["specialMedical"]
-    staff.contactName = pds["contactName"]
-    staff.contactPhone = pds["contactPhone"]
-    staff.contactRelation = pds["contactRelation"]
-    staff.save()
+    price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
-    priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
-
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
+    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
+    order_item.save()
 
     for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendeeOption = AttendeeOptions(
-            option=plOption, orderItem=orderItem, optionValue=option["value"]
+        pl_option = PriceLevelOption.objects.get(id=int(option["id"]))
+        attendee_option = AttendeeOptions(
+            option=pl_option, orderItem=order_item, optionValue=option["value"]
         )
-        attendeeOption.save()
+        attendee_option.save()
 
-    orderItems = request.session.get("order_items", [])
-    orderItems.append(orderItem.id)
-    request.session["order_items"] = orderItems
+    order_items = request.session.get("order_items", [])
+    order_items.append(order_item.id)
+    request.session["order_items"] = order_items
 
     discount = event.newStaffDiscount
     if discount:
@@ -144,54 +151,58 @@ def addNewStaff(request):
     return JsonResponse({"success": True})
 
 
-def staff(request, guid):
+def staff_index(request, guid):
     event = Event.objects.get(default=True)
     context = {"token": guid, "event": event}
     return render(request, "registration/staff/staff-locate.html", context)
 
 
-def staffDone(request):
+def staff_done(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/staff/staff-done.html", context)
 
 
-def findStaff(request):
+@require_POST
+def find_staff(request):
     try:
-        postData = json.loads(request.body)
-        email = postData["email"]
-        token = postData["token"]
+        post_data = json.loads(request.body)
+        email = post_data["email"]
+        token = post_data["token"]
+    except (json.JSONDecodeError, KeyError) as e:
+        logger.warning(f"Unable to find staff: bad request - {request.body}")
+        return abort(400, str(e))
 
+    try:
         staff = Staff.objects.get(
             attendee__email__iexact=email, registrationToken=token
         )
-        if not staff:
-            return HttpResponseNotFound("No Staff Found")
+    except ObjectDoesNotExist:
+        return abort(404, "Staff matching query does not exist.")
 
-        request.session["staff_id"] = staff.id
-        return JsonResponse({"success": True, "message": "STAFF"})
-    except Exception as e:
-        logger.warning(f"Unable to find staff. {request.body}")
-        return HttpResponseServerError(str(e))
+    request.session["staff_id"] = staff.id
+    return JsonResponse({"success": True, "message": "STAFF"})
 
 
-def infoStaff(request):
+def info_staff(request):
     event = Event.objects.get(default=True)
     context = {"staff": None, "event": event}
-    try:
-        staffId = request.session["staff_id"]
-    except Exception as e:
+
+    staff_id = request.session.get("staff_id")
+    if staff_id is None:
         return render(request, "registration/staff/staff-payment.html", context)
 
-    staff = Staff.objects.get(id=staffId)
+    staff = Staff.objects.get(id=staff_id)
     if staff:
         staff_dict = model_to_dict(staff)
         attendee_dict = model_to_dict(staff.attendee)
         badges = Badge.objects.filter(attendee=staff.attendee, event=staff.event)
 
         badge = {}
+        paid_total = 0
         if badges.count() > 0:
             badge = badges[0]
+            paid_total = badge.paidTotal()
 
         context = {
             "staff": staff,
@@ -199,24 +210,23 @@ def infoStaff(request):
             "jsonAttendee": json.dumps(attendee_dict, default=handler),
             "badge": badge,
             "event": event,
+            "paid_total": paid_total,
         }
     return render(request, "registration/staff/staff-payment.html", context)
 
 
-def addStaff(request):
+def add_staff(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for addStaff()")
+        logger.error("Unable to decode JSON for add_staff()")
         return JsonResponse({"success": False})
-
-    event = Event.objects.get(default=True)
 
     # create attendee from request post
     pda = postData["attendee"]
     pds = postData["staff"]
     pdp = postData["priceLevel"]
-    evt = postData["event"]
+    evt = postData.get("event")
 
     if evt:
         event = Event.objects.get(name=evt)
@@ -258,16 +268,7 @@ def addStaff(request):
     if not staff:
         return JsonResponse({"success": False, "message": "Staff record not found"})
 
-    shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
-    staff.twitter = pds["twitter"]
-    staff.telegram = pds["telegram"]
-    staff.shirtsize = shirt
-    staff.specialSkills = pds["specialSkills"]
-    staff.specialFood = pds["specialFood"]
-    staff.specialMedical = pds["specialMedical"]
-    staff.contactName = pds["contactName"]
-    staff.contactPhone = pds["contactPhone"]
-    staff.contactRelation = pds["contactRelation"]
+    staff_from_post_data(pds, attendee, event, staff)
 
     try:
         staff.save()
@@ -288,21 +289,21 @@ def addStaff(request):
         logger.exception("Error saving staff badge record.")
         return JsonResponse({"success": False, "message": "Badge not saved: " + str(e)})
 
-    priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
+    price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
-    orderItem.save()
+    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
+    order_item.save()
 
     for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendeeOption = AttendeeOptions(
-            option=plOption, orderItem=orderItem, optionValue=option["value"]
+        pl_option = PriceLevelOption.objects.get(id=int(option["id"]))
+        attendee_option = AttendeeOptions(
+            option=pl_option, orderItem=order_item, optionValue=option["value"]
         )
-        attendeeOption.save()
+        attendee_option.save()
 
-    orderItems = request.session.get("order_items", [])
-    orderItems.append(orderItem.id)
-    request.session["order_items"] = orderItems
+    order_items = request.session.get("order_items", [])
+    order_items.append(order_item.id)
+    request.session["order_items"] = order_items
 
     discount = event.staffDiscount
     if discount:
@@ -313,92 +314,21 @@ def addStaff(request):
     return JsonResponse({"success": True})
 
 
-def getStaffTotal(orderItems, discount, staff):
+def get_staff_total(orderItems, discount, staff):
     badge = Badge.objects.get(attendee=staff.attendee, event=staff.event)
 
     if badge.effectiveLevel():
         discount = None
-    subTotal = getTotal(orderItems, discount)
-    alreadyPaid = badge.paidTotal()
-    total = subTotal - alreadyPaid
+    sub_total = get_total(orderItems, discount)
+    already_paid = badge.paidTotal()
+    total = sub_total - already_paid
 
     if total < 0:
         return 0
     return total
 
 
-def checkoutStaff(request):
-    sessionItems = request.session.get("order_items", [])
-    pdisc = request.session.get("discount", "")
-    staffId = request.session["staff_id"]
-    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
-    try:
-        postData = json.loads(request.body)
-    except ValueError as e:
-        logger.error("Unable to decode JSON for checkoutStaff()")
-        return JsonResponse({"success": False})
-
-    event = Event.objects.get(default=True)
-    discount = event.staffDiscount
-    staff = Staff.objects.get(id=staffId)
-    subtotal = getStaffTotal(orderItems, discount, staff)
-
-    if subtotal == 0:
-        status, message, order = doZeroCheckout(discount, None, orderItems)
-        if not status:
-            return JsonResponse({"success": False, "message": message})
-
-        clear_session(request)
-        try:
-            registration.emails.send_staff_registration_email(order.id)
-        except Exception as e:
-            logger.exception("Error emailing StaffRegistrationEmail - zero sum.")
-            staffEmail = getStaffEmail()
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0} to get your confirmation number.".format(
-                        staffEmail
-                    ),
-                }
-            )
-        return JsonResponse({"success": True})
-
-    pbill = postData["billingData"]
-    porg = Decimal(postData["orgDonation"].strip() or "0.00")
-    pcharity = Decimal(postData["charityDonation"].strip() or "0.00")
-    if porg < 0:
-        porg = 0
-    if pcharity < 0:
-        pcharity = 0
-
-    total = subtotal + porg + pcharity
-    ip = get_client_ip(request)
-
-    status, message, order = doCheckout(
-        pbill, total, discount, orderItems, porg, pcharity, ip
-    )
-
-    if status:
-        clear_session(request)
-        try:
-            registration.emails.send_staff_registration_email(order.id)
-        except Exception as e:
-            logger.exception("Error emailing StaffRegistrationEmail.")
-            staffEmail = getStaffEmail()
-            return abort(
-                400,
-                "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0} to get your confirmation number.".format(
-                    staffEmail
-                ),
-            )
-        return success()
-    else:
-        order.delete()
-        return abort(400, message)
-
-
-def getStaffEmail(event=None):
+def get_staff_email(event=None):
     """
     Retrieves the email address to show on error messages in the staff
     registration form for a specified event.  If no event specified, uses
@@ -406,10 +336,7 @@ def getStaffEmail(event=None):
     default of APIS_DEFAULT_EMAIL in settings.py.
     """
     if event is None:
-        try:
-            event = Event.objects.get(default=True)
-        except BaseException:
-            return settings.APIS_DEFAULT_EMAIL
+        event = Event.objects.get(default=True)
     if event.staffEmail == "":
         return settings.APIS_DEFAULT_EMAIL
     return event.staffEmail

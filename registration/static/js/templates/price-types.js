@@ -19,14 +19,17 @@ $("body").ready(function () {
         $.each(data, function (key, val) {
             var price = val.base_price;
             if (discount) {
-                price = val.base_price - discount;
+                price = Math.max(val.base_price - discount - paid_total, 0);
             }
-            levelTemplateData.push({
-                name: val.name,
-                price: "$" + price,
-                levelId: "level_" + val.id,
-                selectText: "Select " + val.name
-            });
+
+            if (price >= 0) {
+                levelTemplateData.push({
+                    name: val.name,
+                    price: "$" + price,
+                    levelId: "level_" + val.id,
+                    selectText: "Select " + val.name
+                });
+            }
         });
         $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
         $(".changeLevel").hide();

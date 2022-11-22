@@ -70,7 +70,6 @@
         </div>
       </div>
       {% csrf_token %}
-      </div>
     </form>
 
   {% endif %}
@@ -81,6 +80,7 @@
   <script>
       let discount = {{event.staffDiscount.amountOff|default:0}};
       let adult = true;
+      let paid_total = {{ paid_total|default:0 }};
   </script>
   <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
   <script type="text/javascript" src="/static/js/templates/staff.js"></script>
@@ -93,6 +93,7 @@
           $("form").validator('validate');
           let errorCount = $(".has-error").length;
           if (errorCount > 0) {
+              $(this).one('click', doRegister);
               return;
           }
 
@@ -102,12 +103,13 @@
               $(this).one('click', doRegister);
               return;
           }
+          let birthdate;
           if (Modernizr.inputtypes.date) {
               // native datepicker - expect ISO date
-              let birthdate = parseDate($("#birthDate").val());
+              birthdate = parseDate($("#birthDate").val());
           } else {
               // American middle-endian format put out by datepicker javascript
-              let birthdate = new Date(Date.parse($("#birthDate").val()));
+              birthdate = new Date(Date.parse($("#birthDate").val()));
           }
           let age = getAgeByEventStart(birthdate);
           if (age < 18) {
@@ -150,7 +152,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:addStaff' %}",
+              "url": "{% url 'registration:add_staff' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -175,7 +177,9 @@
           });
       }
 
-      $("#register").one('click', doRegister);
+      $(document).ready(function () {
+          $("#register").one('click', doRegister);
+      });
 
   </script>
 

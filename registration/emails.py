@@ -24,7 +24,7 @@ def send_registration_email(order, email, send_vip=True):
 
     # send registration confirmations to all people in the order
     for oi in order_items:
-        registration_email = registration.views.common.getRegistrationEmail(
+        registration_email = registration.views.common.get_registration_email(
             oi.badge.event
         )
         if oi.badge.attendee.email == email:
@@ -37,10 +37,10 @@ def send_registration_email(order, email, send_vip=True):
                 "event": oi.badge.event,
             }
             msg_txt = render_to_string(
-                "registration/emails/registrationPayment.txt", data
+                "registration/emails/registration-payment.txt", data
             )
             msg_html = render_to_string(
-                "registration/emails/registrationPayment.html", data
+                "registration/emails/registration-payment.html", data
             )
             send_email(
                 registration_email,
@@ -69,9 +69,9 @@ def send_registration_email(order, email, send_vip=True):
         # send vip notification if necessary
         if oi.priceLevel.emailVIP and send_vip:
             data = {"badge": oi.badge, "event": oi.badge.event}
-            msg_txt = render_to_string("registration/emails/vipNotification.txt", data)
+            msg_txt = render_to_string("registration/emails/vip-notification.txt", data)
             msg_html = render_to_string(
-                "registration/emails/vipNotification.html", data
+                "registration/emails/vip-notification.html", data
             )
             send_email(
                 registration_email,
@@ -84,7 +84,7 @@ def send_registration_email(order, email, send_vip=True):
 
 def send_upgrade_instructions(badge):
     event = Event.objects.get(default=True)
-    registration_email = registration.views.common.getRegistrationEmail(event)
+    registration_email = registration.views.common.get_registration_email(event)
 
     data = {
         "event": event,
@@ -111,7 +111,7 @@ def send_upgrade_payment_email(attendee, order):
     }
     msg_txt = render_to_string("registration/emails/upgrade.txt", data)
     msg_html = render_to_string("registration/emails/upgrade.html", data)
-    registration_email = registration.views.common.getRegistrationEmail(event)
+    registration_email = registration.views.common.get_registration_email(event)
 
     send_email(
         registration_email,
@@ -124,9 +124,9 @@ def send_upgrade_payment_email(attendee, order):
     for oi in order_items:
         if oi.priceLevel.emailVIP:
             data = {"badge": oi.badge, "event": event}
-            msg_txt = render_to_string("registration/emails/vipNotification.txt", data)
+            msg_txt = render_to_string("registration/emails/vip-notification.txt", data)
             msg_html = render_to_string(
-                "registration/emails/vipNotification.html", data
+                "registration/emails/vip-notification.html", data
             )
             send_email(
                 registration_email,
@@ -142,10 +142,10 @@ def send_staff_registration_email(orderId):
     email = order.billingEmail
     event = Event.objects.get(default=True)
     data = {"reference": order.reference, "event": event}
-    msg_txt = render_to_string("registration/emails/staffRegistration.txt", data)
-    msg_html = render_to_string("registration/emails/staffRegistration.html", data)
+    msg_txt = render_to_string("registration/emails/staff/registration.txt", data)
+    msg_html = render_to_string("registration/emails/staff/registration.html", data)
     event = Event.objects.get(default=True)
-    staff_email = registration.views.staff.getStaffEmail(event)
+    staff_email = registration.views.staff.get_staff_email(event)
     send_email(
         staff_email,
         [email],
@@ -157,9 +157,9 @@ def send_staff_registration_email(orderId):
 
 def send_staff_promotion_email(staff):
     data = {"registrationToken": staff.registrationToken, "event": staff.event}
-    msg_txt = render_to_string("registration/emails/staffPromotion.txt", data)
-    msg_html = render_to_string("registration/emails/staffPromotion.html", data)
-    staff_email = registration.views.staff.getStaffEmail(staff.event)
+    msg_txt = render_to_string("registration/emails/staff/promotion.txt", data)
+    msg_html = render_to_string("registration/emails/staff/promotion.html", data)
+    staff_email = registration.views.staff.get_staff_email(staff.event)
     send_email(
         staff_email,
         [staff.attendee.email],
@@ -172,9 +172,9 @@ def send_staff_promotion_email(staff):
 def send_new_staff_email(token):
     event = Event.objects.get(default=True)
     data = {"registrationToken": token.token, "event": event}
-    msg_txt = render_to_string("registration/emails/newStaff.txt", data)
-    msg_html = render_to_string("registration/emails/newStaff.html", data)
-    staff_email = registration.views.staff.getStaffEmail(event)
+    msg_txt = render_to_string("registration/emails/staff/new.txt", data)
+    msg_html = render_to_string("registration/emails/staff/new.html", data)
+    staff_email = registration.views.staff.get_staff_email(event)
     send_email(
         staff_email,
         [token.email],
@@ -202,7 +202,9 @@ def send_dealer_application_email(dealerId):
     msg_html = render_to_string("registration/emails/dealer/dealer-notice.html", data)
     send_email(
         dealer_email,
-        [dealer_email,],
+        [
+            dealer_email,
+        ],
         "{0} Dealer Application Received".format(dealer.event.name),
         msg_txt,
         msg_html,

@@ -73,9 +73,9 @@
 
 {% block javascript %}
   <script>
-      var discount =
-      {{event.newStaffDiscount.amountOff}}
-      var adult = true;
+      let discount = {{event.newStaffDiscount.amountOff}};
+      let adult = true;
+      let paid_total = {{ paid_total|default:0 }};
   </script>
   <script type="text/javascript" src="/static/js/templates/price-types.js"></script>
   <script type="text/javascript" src="/static/js/templates/staff.js"></script>
@@ -84,7 +84,7 @@
       function doRegister(e) {
           e.preventDefault();
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          let errorCount = $(".has-error").length;
           if (errorCount > 0) {
               $(this).one(doRegister)
               return;
@@ -96,14 +96,16 @@
               $(this).one(doRegister)
               return;
           }
+
+          let birthdate;
           if (Modernizr.inputtypes.date) {
               // native datepicker - expect ISO date
-              var birthdate = parseDate($("#birthDate").val());
+              birthdate = parseDate($("#birthDate").val());
           } else {
               // American middle-endian format put out by datepicker javascript
-              var birthdate = new Date(Date.parse($("#birthDate").val()));
+              birthdate = new Date(Date.parse($("#birthDate").val()));
           }
-          var age = getAgeByEventStart(birthdate);
+          let age = getAgeByEventStart(birthdate);
           if (age < 18) {
               alert("You must be 18 by the first day of the event to register online.");
               $(this).one(doRegister)
@@ -112,7 +114,7 @@
 
           $("#register").attr("disabled", "disabled");
 
-          var data = {
+          let data = {
               'attendee': {
                   'firstName': $("#firstName").val(),
                   'lastName': $("#lastName").val(),
@@ -143,7 +145,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:addNewStaff' %}",
+              "url": "{% url 'registration:add_new_staff' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");

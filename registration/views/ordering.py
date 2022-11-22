@@ -14,7 +14,7 @@ from . import cart, common
 logger = logging.getLogger(__name__)
 
 
-def doCheckout(
+def do_checkout(
     billingData,
     total,
     discount,
@@ -134,7 +134,7 @@ def getCartItemOptionTotal(options):
     return optionTotal
 
 
-def getOrderItemOptionTotal(options):
+def get_order_item_option_total(options):
     optionTotal = 0
     for option in options:
         if option.option.optionExtraType == "int":
@@ -145,7 +145,7 @@ def getOrderItemOptionTotal(options):
     return optionTotal
 
 
-def getDiscountTotal(disc, subtotal):
+def get_discount_total(disc, subtotal):
     try:
         discount = Discount.objects.get(codeName=disc)
     except Discount.DoesNotExist:
@@ -158,46 +158,47 @@ def getDiscountTotal(disc, subtotal):
     return 0
 
 
-def getTotal(cartItems, orderItems, disc=""):
+def get_total(cartItems, orderItems, disc=""):
     total = 0
     total_discount = 0
     if not cartItems and not orderItems:
         return 0, 0
+
     for item in cartItems:
-        postData = json.loads(item.formData)
-        pdp = postData["priceLevel"]
-        priceLevel = PriceLevel.objects.get(id=pdp["id"])
-        itemTotal = priceLevel.basePrice
+        post_data = json.loads(item.formData)
+        pdp = post_data["priceLevel"]
+        price_level = PriceLevel.objects.get(id=pdp["id"])
+        item_total = price_level.basePrice
 
         options = pdp["options"]
-        itemTotal += getCartItemOptionTotal(options)
+        item_total += getCartItemOptionTotal(options)
 
         if disc:
-            discount = getDiscountTotal(disc, itemTotal)
+            discount = get_discount_total(disc, item_total)
             total_discount += discount
-            itemTotal -= discount
+            item_total -= discount
 
-        if itemTotal > 0:
-            total += itemTotal
+        if item_total > 0:
+            total += item_total
 
     for item in orderItems:
-        itemSubTotal = item.priceLevel.basePrice
-        effLevel = item.badge.effectiveLevel()
+        item_sub_total = item.priceLevel.basePrice
+        eff_level = item.badge.effectiveLevel()
 
-        if effLevel:
-            itemTotal = itemSubTotal - effLevel.basePrice
+        if eff_level:
+            item_total = item_sub_total - eff_level.basePrice
         else:
-            itemTotal = itemSubTotal
+            item_total = item_sub_total
 
-        itemTotal += getOrderItemOptionTotal(item.attendeeoptions_set.all())
+        item_total += get_order_item_option_total(item.attendeeoptions_set.all())
 
         if disc:
-            discount = getDiscountTotal(disc, itemTotal)
+            discount = get_discount_total(disc, item_total)
             total_discount += discount
-            itemTotal -= discount
+            item_total -= discount
 
-        if itemTotal > 0:
-            total += itemTotal
+        if item_total > 0:
+            total += item_total
 
     return total, total_discount
 
@@ -246,17 +247,17 @@ def add_attendee_to_assistant(request, attendee):
 @idempotency_key(optional=False)
 def checkout(request):
     event = Event.objects.get(default=True)
-    sessionItems = request.session.get("cart_items", [])
-    cartItems = list(Cart.objects.filter(id__in=sessionItems))
-    orderItems = request.session.get("order_items", [])
+    session_items = request.session.get("cart_items", [])
+    cart_items = list(Cart.objects.filter(id__in=session_items))
+    order_items = request.session.get("order_items", [])
     pdisc = request.session.get("discount", "")
 
     # Safety valve (in case session times out before checkout is complete)
-    if len(sessionItems) == 0 and len(orderItems) == 0:
+    if len(session_items) == 0 and len(order_items) == 0:
         common.abort(400, "Session expired or no session is stored for this client")
 
     try:
-        postData = json.loads(request.body)
+        post_data = json.loads(request.body)
     except ValueError as e:
         logger.exception(e)
         logger.error("Unable to decode JSON for checkout()")
@@ -268,16 +269,16 @@ def checkout(request):
     else:
         discount = None
 
-    if orderItems:
-        orderItems = list(OrderItem.objects.filter(id__in=orderItems))
+    if order_items:
+        order_items = list(OrderItem.objects.filter(id__in=order_items))
 
-    subtotal, _ = getTotal(cartItems, orderItems, discount)
+    subtotal, _ = get_total(cart_items, order_items, discount)
 
-    if not cartItems and not orderItems:
+    if not cart_items and not order_items:
         return common.abort(400, "There is nothing in your cart!")
 
     if subtotal == 0:
-        status, message, order = doZeroCheckout(discount, cartItems, orderItems)
+        status, message, order = doZeroCheckout(discount, cart_items, order_items)
         if not status:
             return common.abort(400, message)
 
@@ -290,19 +291,19 @@ def checkout(request):
         except Exception as e:
             logger.error("Error sending RegistrationEmail - zero sum.")
             logger.exception(e)
-            registrationEmail = common.getRegistrationEmail(event)
+            registration_email = common.get_registration_email(event)
             return common.abort(
                 400,
                 "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
                 "receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                    registrationEmail
+                    registration_email
                 ),
             )
         return common.success()
 
-    porg = Decimal(postData.get("orgDonation") or "0.00")
-    pcharity = Decimal(postData.get("charityDonation") or "0.00")
-    pbill = postData["billingData"]
+    porg = Decimal(post_data.get("orgDonation") or "0.00")
+    pcharity = Decimal(post_data.get("charityDonation") or "0.00")
+    pbill = post_data["billingData"]
 
     if porg < 0:
         porg = 0
@@ -311,7 +312,7 @@ def checkout(request):
 
     total = subtotal + porg + pcharity
 
-    onsite = postData["onsite"]
+    onsite = post_data["onsite"]
     if onsite:
         reference = common.get_unique_confirmation_token(Order)
         order = Order(
@@ -325,11 +326,11 @@ def checkout(request):
         order.status = "Onsite Pending"
         order.save()
 
-        if cartItems:
-            for item in cartItems:
-                orderItem = cart.saveCart(item)
-                orderItem.order = order
-                orderItem.save()
+        if cart_items:
+            for item in cart_items:
+                order_item = cart.saveCart(item)
+                order_item.order = order
+                order_item.save()
 
         if discount:
             discount.used = discount.used + 1
@@ -338,8 +339,8 @@ def checkout(request):
         status = True
         message = "Onsite success"
     else:
-        status, message, order = doCheckout(
-            pbill, total, discount, cartItems, orderItems, porg, pcharity, request
+        status, message, order = do_checkout(
+            pbill, total, discount, cart_items, order_items, porg, pcharity, request
         )
 
     if status:
@@ -347,14 +348,14 @@ def checkout(request):
         if existing_order_item:
             add_attendee_to_assistant(request, existing_order_item.badge.attendee)
         # Delete cart when done
-        cartItems = Cart.objects.filter(id__in=sessionItems)
-        cartItems.delete()
+        cart_items = Cart.objects.filter(id__in=session_items)
+        cart_items.delete()
         common.clear_session(request)
         try:
             registration.emails.send_registration_email(order, order.billingEmail)
         except Exception as e:
             event = Event.objects.get(default=True)
-            registrationEmail = common.getRegistrationEmail(event)
+            registration_email = common.get_registration_email(event)
 
             logger.error("Error sending RegistrationEmail.")
             logger.exception(e)
@@ -362,7 +363,7 @@ def checkout(request):
                 500,
                 "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
                 "receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                    registrationEmail
+                    registration_email
                 ),
             )
 

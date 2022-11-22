@@ -125,8 +125,8 @@ def get_price_levels(request):
     levels = PriceLevel.objects.filter(
         public=True, startDate__lte=now, endDate__gte=now
     ).order_by("basePrice")
-    if att and badge and badge.effectiveLevel():
-        levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
+    # if att and badge and badge.effectiveLevel():
+    #    levels = levels.exclude(basePrice__lt=badge.effectiveLevel().basePrice)
     data = get_price_level_list(levels)
     return HttpResponse(
         json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"

@@ -1,5 +1,5 @@
 default_language_version:
-    python: python3.8
+    python: python3
 
 exclude: venv/|static/
 
@@ -31,13 +31,13 @@ repos:
 #      - id: autopep8
 
   - repo: https://github.com/ambv/black
-    rev: 19.10b0
+    rev: 22.10.0
     hooks:
       - id: black
 
-# Not supported with Django templates right now :(
+## Not supported with Django templates right now :(
 #  - repo: https://github.com/prettier/prettier
-#    rev: "1.19.1"
+#    rev: "2.7.1"
 #    files: \.(js|css)$
 #    hooks:
 #      - id: prettier
