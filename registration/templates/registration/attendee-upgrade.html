@@ -168,11 +168,14 @@
                   prevLevel = parseFloat(currentLevel.basePrice);
               }
               $.each(data, function (key, val) {
-                  levelTemplateData.push({
-                      name: val.name,
-                      price: "$" + (val.base_price - prevLevel),
-                      levelId: "level_" + val.id,
-                  });
+                  let currentPrice = val.base_price - prevLevel;
+                  if (currentPrice > 0) {
+                      levelTemplateData.push({
+                          name: val.name,
+                          price: "$" + currentPrice,
+                          levelId: "level_" + val.id,
+                      });
+                  }
               });
               $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
               $(".changeLevel").hide();
