@@ -208,6 +208,7 @@ def info_staff(request):
             "jsonAttendee": json.dumps(attendee_dict, default=handler),
             "badge": badge,
             "event": event,
+            "paid_total": badge.paidTotal(),
         }
     return render(request, "registration/staff/staff-payment.html", context)
 
