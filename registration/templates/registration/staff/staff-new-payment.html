@@ -73,7 +73,7 @@
 
 {% block javascript %}
   <script>
-      let discount = {{event.newStaffDiscount.amountOff}};
+      let discount = {%  if event.newStaffDiscount.amountOff %}{{event.newStaffDiscount.amountOff}}{% else %}0{% endif %};
       let adult = true;
       let paid_total = {{ paid_total|default:0 }};
   </script>
