@@ -244,8 +244,8 @@ def add_assistants_checkout(request):
     try:
         form_data = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for add_assistants_checkout()")
-        return JsonResponse({"success": False})
+        logger.warning(f"Unable to decode JSON for add_assistants_checkout(): {e}")
+        return common.abort(400, str(e))
     billing_data = form_data["billingData"]
     assistants_form = form_data["assistants"]
     dealer_id = request.session["dealer_id"]
@@ -254,24 +254,24 @@ def add_assistants_checkout(request):
 
     badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
 
-    priceLevel = badge.effectiveLevel()
-    if priceLevel is None:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Dealer account has not been paid. Please pay for your table before adding assistants.",
-            }
+    price_level = badge.effectiveLevel()
+    if price_level is None:
+        return common.abort(
+            402,
+            "Dealer account has not been paid. Please pay for your table before adding assistants.",
         )
 
-    order_item = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
+    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
 
     for assistant in assistants_form:
         if assistant.get("id"):
             # Update an existing dealer assistant by ID
-            dealer_asst = DealerAsst.objects.get(dealer=dealer, id=assistant.get("id"))
+            dealer_asst_obj = DealerAsst.objects.get(
+                dealer=dealer, id=assistant.get("id")
+            )
         else:
             # Otherwise, create a new one:
-            dealer_asst = DealerAsst(
+            dealer_asst_obj = DealerAsst(
                 dealer=dealer,
                 event=event,
                 name=assistant["name"],
@@ -279,10 +279,10 @@ def add_assistants_checkout(request):
                 license=assistant["license"],
             )
         try:
-            dealer_asst.name = assistant["name"]
-            dealer_asst.email = assistant["email"]
-            dealer_asst.license = assistant["license"]
-            dealer_asst.save()
+            dealer_asst_obj.name = assistant["name"]
+            dealer_asst_obj.email = assistant["email"]
+            dealer_asst_obj.license = assistant["license"]
+            dealer_asst_obj.save()
         except KeyError:
             return JsonResponse(
                 {
@@ -295,20 +295,12 @@ def add_assistants_checkout(request):
 
     # FIXME: remove hardcoded costs
     total = Decimal(55 * unpaid_partner_count)
-    if billing_data["breakfast"]:
-        total = total + Decimal(60 * unpaid_partner_count)
 
     if total <= 0:
-        logger.error(
+        logger.warning(
             f"Error checking out dealer while adding assistants: total too low: {total} <= 0"
         )
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "An error occurred while adding your assistants.",
-            },
-            status=500,
-        )
+        return common.abort(500, "An error occurred while adding your assistants.")
 
     status, message, order = do_checkout(
         billing_data, total, None, [], [order_item], 0, 0
@@ -327,23 +319,19 @@ def add_assistants_checkout(request):
             for assistant in dealer.dealerasst_set.all().filter(attendee__isnull=True):
                 registration.emails.send_dealer_assistant_registration_invite(assistant)
         except Exception as e:
-            logger.error("Error emailing DealerAsstEmail.")
+            logger.error("Error emailing DealerAsstEmail")
             logger.exception(e)
             dealer_email = get_dealer_email()
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        f"Your payment succeeded but we may have been unable to send you a confirmation email. "
-                        f"If you do not receive one within the next hour, please contact {dealer_email} to get your "
-                        f"confirmation number."
-                    ),
-                }
+            return common.abort(
+                500,
+                f"Your payment succeeded but we may have been unable to send you a confirmation email. "
+                f"If you do not receive one within the next hour, please contact {dealer_email} to get your "
+                f"confirmation number.",
             )
-        return JsonResponse({"success": True})
+        return common.success()
     else:
         # Payment failed
-        return JsonResponse({"success": False, "message": message})
+        return common.abort(500, message)
 
 
 def add_dealer(request):

@@ -55,7 +55,7 @@ class PaymentError extends Error {
 }
 
 async function createPayment(token, url) {
-    const body = JSON.stringify({
+    const payload = {
         onsite: false,
         billingData: {
             cc_firstname: $("#fname").val(),
@@ -71,7 +71,15 @@ async function createPayment(token, url) {
         },
         charityDonation: $("#donateCharity").val(),
         orgDonation: $("#donateOrg").val()
-    });
+    };
+
+    try {
+        payload.assistants = getAssistants();
+    } catch (e) {
+        // Oh well!  ¯\_(ツ)_/¯
+    }
+
+    const body = JSON.stringify(payload);
 
     const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
     if (response.ok) {
@@ -142,6 +150,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 } catch (e) {
                     message = `<p>Sorry, your payment failed for a mysterious reason. If the problem persists, please ` +
                         `contact <a href="mailto:${EVENT_REGISTRATION_EMAIL}">${EVENT_REGISTRATION_EMAIL}</a> for assistance.</p>`;
+                    message += e;
                 }
 
                 displayPaymentResults('FAILURE', message);
