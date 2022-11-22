@@ -86,14 +86,14 @@
           $("form").validator('validate');
           let errorCount = $(".has-error").length;
           if (errorCount > 0) {
-              $(this).one(doRegister)
+              $(this).one("click", doRegister);
               return;
           }
 
           // Validate birthdate input
           if ($("#birthDate").val() == "") {
               alert("You must enter your birthdate to submit your registration.");
-              $(this).one(doRegister)
+              $(this).one("click", doRegister);
               return;
           }
 
@@ -171,7 +171,9 @@
       }
 
 
-      $("#register").one(doRegister);
+      $(document).ready(function () {
+        $("#register").one("click", doRegister);
+      });
 
   </script>
 
