@@ -41,21 +41,21 @@ class TestDealers(DealerTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_thanksDealer(self):
-        response = self.client.get(reverse("registration:thanksDealer"))
+        response = self.client.get(reverse("registration:thanks_dealer"))
         self.assertEqual(response.status_code, 200)
 
     def test_doneDealer(self):
-        response = self.client.get(reverse("registration:doneDealer"))
+        response = self.client.get(reverse("registration:done_dealer"))
         self.assertEqual(response.status_code, 200)
 
     def test_addNewDealer_open(self) -> None:
-        response = self.client.get(reverse("registration:newDealer"))
+        response = self.client.get(reverse("registration:new_dealer"))
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"closed", response.content)
 
     @freeze_time("2020-01-01")
     def test_addNewDealer_closed(self) -> None:
-        response = self.client.get(reverse("registration:newDealer"))
+        response = self.client.get(reverse("registration:new_dealer"))
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"closed", response.content)
 
@@ -67,12 +67,14 @@ class TestDealers(DealerTestCase):
         self.assertIn(b"FOOBAR", response.content)
 
     def test_dealerAsst(self):
-        response = self.client.get(reverse("registration:dealerAsst", args=("FOOBAR",)))
+        response = self.client.get(
+            reverse("registration:dealer_asst", args=("FOOBAR",))
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"FOOBAR", response.content)
 
     def test_doneAsstDealer(self):
-        response = self.client.get(reverse("registration:doneAsstDealer"))
+        response = self.client.get(reverse("registration:done_asst_dealer"))
         self.assertEqual(response.status_code, 200)
 
 

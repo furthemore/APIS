@@ -56,6 +56,8 @@
         const EVENT_NAME = "{{ event.name }}";
         const EVENT_REGISTRATION_EMAIL = "{{ event.registrationEmail }}";
         const EVENT_COLLECT_ADDRESS = {% if event.collectAddress %}true{% else %}false{% endif %};
+    {% else %}
+        const EVENT_COLLECT_ADDRESS = false;
     {% endif %}
     let IDEMPOTENCY_KEY = "{% idempotency_key %}";
 </script>

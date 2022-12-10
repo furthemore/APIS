@@ -1,93 +1,6 @@
 {% extends "registration/master.html" %}
 {% load settings static %}
 
-{% block head %}
-  {% if SQUARE_ENVIRONMENT == "sandbox" %}
-    <script type="text/javascript" src="https://js.squareupsandbox.com/v2/paymentform"></script>
-  {% else %}
-    <script type="text/javascript" src="https://js.squareup.com/v2/paymentform"></script>
-  {% endif %}
-
-  <script type="text/javascript">
-      var paymentForm = new SqPaymentForm({
-          // Initialize the payment form elements
-          applicationId: "{% settings_value 'SQUARE_APPLICATION_ID' %}",
-          locationId: "{% settings_value 'SQUARE_LOCATION_ID' %}",
-
-          inputClass: 'form-control',
-          // Initialize the credit card placeholders
-          cardNumber: {
-              elementId: 'sq-card-number',
-              placeholder: '•••• •••• •••• ••••'
-          },
-          cvv: {
-              elementId: 'sq-cvv',
-              placeholder: 'CVV'
-          },
-          expirationDate: {
-              elementId: 'sq-expiration-date',
-              placeholder: 'MM/YY'
-          },
-          postalCode: {
-              elementId: 'sq-postal-code',
-              placeholder: '•••••'
-          },
-          // SqPaymentForm callback functions
-          callbacks: {
-              /*
-               * callback function: cardNonceResponseReceived
-               * Triggered when: SqPaymentForm completes a card nonce request
-               */
-              cardNonceResponseReceived: function (errors, nonce, cardData) {
-                  if (errors) {
-                      var errorList = "";
-                      console.log("Encountered errors:");
-                      errors.forEach(function (error) {
-                          console.log('  ' + error.message);
-                          errorList += error.message + "; ";
-                      });
-                      alert("One or more Square payment errors have occurred: " + errorList);
-                      $("#checkout").removeAttr("disabled");
-                      return;
-                  }
-                  document.getElementById('card-nonce').value = nonce;
-                  doCheckout(cardData);
-              },
-              /*
-               * callback function: unsupportedBrowserDetected
-               * Triggered when: the page loads and an unsupported browser is detected
-               */
-              unsupportedBrowserDetected: function () {
-                  /* PROVIDE FEEDBACK TO SITE VISITORS */
-              },
-              inputEventReceived: function (inputEvent) {
-                  switch (inputEvent.eventType) {
-                      case 'focusClassAdded':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'focusClassRemoved':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'errorClassAdded':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'errorClassRemoved':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'cardBrandChanged':
-                          /* HANDLE AS DESIRED */
-                          break;
-                      case 'postalCodeChanged':
-                          /* HANDLE AS DESIRED */
-                          break;
-                  }
-              },
-          }
-      });
-
-  </script>
-{% endblock %}
-
 {% block content %}
   <style>
       .row {
@@ -140,25 +53,26 @@
               <div class="col-sm-9">
                 <div class="row">
                   {% for assistant in assistants %}
-                    <div class="partnerGroup">
-                      <input {% if assistant.paid %} disabled="disabled"{% endif %}
-                                                     type="text" id="name_existing_{{ assistant.id }}"
-                                                     class="form-control form-control-text"
-                                                     placeholder="Partner Name"
-                                                     value="{% if assistant.paid %}[PAID] {% endif %}{{ assistant.name }}"
-                      />
-                      <input {% if assistant.paid %} disabled="disabled"{% endif %}
-                                                     type="email" id="email_existing_{{ assistant.id }}"
-                                                     class="form-control form-control-text"
-                                                     placeholder="Partner Email"
-                                                     value="{{ assistant.email }}"
-                      />
-                      {% if not assistant.paid %}
-                        <input type="hidden" id="id_existing_{{ assistant.id }}" value="{{ assistant.id }}"/>
-                      {% endif %}
-                    </div>
-                  {% endfor %}{% for i in extra_assistants_range %}
-                  <div class="partnerGroup">
+                      <div class="partnerGroup col-md-12">
+                        <input {% if assistant.paid %} disabled="disabled"{% endif %}
+                                                       type="text" id="name_existing_{{ assistant.id }}"
+                                                       class="form-control form-control-text"
+                                                       placeholder="Partner Name"
+                                                       value="{% if assistant.paid %}[PAID] {% endif %}{{ assistant.name }}"
+                        />
+                        <input {% if assistant.paid %} disabled="disabled"{% endif %}
+                                                       type="email" id="email_existing_{{ assistant.id }}"
+                                                       class="form-control form-control-text"
+                                                       placeholder="Partner Email"
+                                                       value="{{ assistant.email }}"
+                        />
+                        {% if not assistant.paid %}
+                          <input type="hidden" id="id_existing_{{ assistant.id }}" value="{{ assistant.id }}"/>
+                        {% endif %}
+                      </div>
+                  {% endfor %}
+                  {% for i in extra_assistants_range %}
+                  <div class="partnerGroup col-md-12">
                     <input type="text" id="name_new_{{ i }}"
                            class="form-control form-control-text"
                            placeholder="Partner Name"
@@ -233,20 +147,15 @@
                 <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
               </div>
               <div class="form-group">
-                <label for="city" class="col-sm-3 control-label">City/State/ZIP</label>
-                <div class="col-sm-4">
+                <label for="city" class="col-sm-3 control-label">City/State</label>
+                <div class="col-sm-5">
                   <input type="text" name="city" id="city" placeholder="City" class="form-control"
                          value="{{ attendee.city }}" required data-error="City is required."/>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-4">
                   <select class="form-control bfh-states" id="state" data-country="US" data-state="VA"
                           name="state"></select>
                 </div>
-                <div class="col-sm-3">
-                  <input type="text" name="zip" id="zip" placeholder="ZIP Code" class="form-control"
-                         data-minlength="5" value="{{ attendee.postalCode }}" data-error="Zip code is required."/>
-                </div>
-                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
               </div>
               <div class="form-group">
                 <label for="country" class="col-sm-3 control-label">Country</label>
@@ -256,30 +165,17 @@
                 </div>
               </div>
               <hr/>
-              <div class="form-group">
-                <label for="ccNumber" class="col-sm-3 control-label">Credit Card Number</label>
-                <div class="col-sm-9">
-                  <div id="sq-card-number"></div>
-                </div>
-                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-              </div>
-              <div class="form-group">
-                <label for="ccMonth" class="col-sm-3 control-label">Expiration Date</label>
-                <div class="col-sm-2">
-                  <div id="sq-expiration-date"></div>
-                </div>
-                <label for="ccCVV" class="col-sm-1 control-label">CVV</label>
-                <div class="col-sm-2">
-                  <div id="sq-cvv"></div>
-                </div>
-                <label for="ccZip" class="col-sm-2 control-label">Zip Code</label>
-                <div class="col-sm-2">
-                  <div id="sq-postal-code"></div>
-                </div>
 
+              <input type="hidden" name="postal" id="postal" value="">
+              <div>
+                <form id="payment-form">
+                  <div id="card-container"></div>
+                </form>
+                <div id="payment-status-container"></div>
               </div>
               <br/>
-              <input type="hidden" id="card-nonce" name="nonce">
+
+
               {% csrf_token %}
               <div class="form-group" style="margin-right:0px;">
                 <button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">
@@ -314,18 +210,44 @@
 
 
 {% block javascript %}
+  {% if dealer %}
+  {% if SQUARE_ENVIRONMENT == "sandbox" %}
+    <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  {% else %}
+    <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+  {% endif %}
   <script type="text/javascript">
-      var DEALER_EMAIL = "{{event.dealerEmail}}";
-      var URL_DONE_AST_DEALER = "{% url 'registration:doneAsstDealer' %}";
-      var URL_ADD_ASSISTANTS_CHECKOUT = "{% url 'registration:add_assistants_checkout' %}";
-      var dealer_id = {{dealer.id}};
-      var maxPartners = {{dealer.tableSize.partnerMax}};
-      var dealer_assistants = {{json_assistants|safe}};
+      /* Square & Payments constants */
+      const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
+      const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
+
+      /* APIS URLs */
+      const URL_REGISTRATION_CHECKOUT = "{% url 'registration:add_assistants_checkout' %}";
+      const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
+      const URL_REGISTRATION_DONE = "{% url 'registration:done_asst_dealer' %}";
+      const URL_DONE_AST_DEALER = "{% url 'registration:done_asst_dealer' %}";
+      const URL_ADD_ASSISTANTS_CHECKOUT = "{% url 'registration:add_assistants_checkout' %}";
+      const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
+      const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+      const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:cancel_order' %}";
+
+      /* Application data */
+
+      const DEALER_EMAIL = "{{event.dealerEmail}}";
+
+      const dealer_id = {{dealer.id}};
+      const maxPartners = {{dealer.tableSize.partnerMax}};
+      const dealer_assistants = {{json_assistants|safe}};
+
+
       $("body").ready(function () {
           $("form").fadeIn();
           $("#state").val("{{attendee.state}}");
           $("#country").val("{{attendee.country}}");
       });
   </script>
-  <script src="{% static 'js/dealers/dealerasst-add.js' %}"></script>
+  <script type="application/javascript" src="{% static 'js/dealers/dealerasst-add.js' %}"></script>
+  <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
+  <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+  {% endif %}
 {% endblock %}

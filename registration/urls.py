@@ -79,30 +79,32 @@ urlpatterns = [
         registration.views.staff.new_staff,
         name="new_staff",
     ),
-    url(r"^dealer/?$", registration.views.dealers.newDealer, name="newDealer"),
+    url(r"^dealer/?$", registration.views.dealers.new_dealer, name="new_dealer"),
     url(
         r"^dealer/addNew/?$",
         registration.views.dealers.addNewDealer,
         name="addNewDealer",
     ),
-    url(r"^dealer/done/?$", registration.views.dealers.doneDealer, name="doneDealer"),
+    url(r"^dealer/done/?$", registration.views.dealers.done_dealer, name="done_dealer"),
     url(
         r"^dealer/thanks/?$",
-        registration.views.dealers.thanksDealer,
-        name="thanksDealer",
+        registration.views.dealers.thanks_dealer,
+        name="thanks_dealer",
     ),
-    url(r"^dealer/lookup/?$", registration.views.dealers.findDealer, name="findDealer"),
-    url(r"^dealer/add/?$", registration.views.dealers.addDealer, name="addDealer"),
-    url(r"^dealer/info/?$", registration.views.dealers.infoDealer, name="infoDealer"),
+    url(
+        r"^dealer/lookup/?$", registration.views.dealers.find_dealer, name="find_dealer"
+    ),
+    url(r"^dealer/add/?$", registration.views.dealers.add_dealer, name="add_dealer"),
+    url(r"^dealer/info/?$", registration.views.dealers.info_dealer, name="info_dealer"),
     url(
         r"^dealer/invoice/?$",
-        registration.views.dealers.invoiceDealer,
-        name="invoiceDealer",
+        registration.views.dealers.invoice_dealer,
+        name="invoice_dealer",
     ),
     url(
         r"^dealer/checkout/?$",
-        registration.views.dealers.checkoutDealer,
-        name="checkoutDealer",
+        registration.views.dealers.checkout_dealer,
+        name="checkout_dealer",
     ),
     url(
         r"^dealer/(?P<guid>\w+)/?$", registration.views.dealers.dealers, name="dealers"
@@ -129,18 +131,18 @@ urlpatterns = [
     ),
     url(
         r"^dealerassistant/(?P<guid>\w+)/?$",
-        registration.views.dealers.dealerAsst,
-        name="dealerAsst",
+        registration.views.dealers.dealer_asst,
+        name="dealer_asst",
     ),
     url(
         r"^dealerassistant/add/find/?$",
-        registration.views.dealers.findAsstDealer,
-        name="findAsstDealer",
+        registration.views.dealers.find_asst_dealer,
+        name="find_asst_dealer",
     ),
     url(
         r"^dealerassistant/add/done/?$",
-        registration.views.dealers.doneAsstDealer,
-        name="doneAsstDealer",
+        registration.views.dealers.done_asst_dealer,
+        name="done_asst_dealer",
     ),
     url(r"^onsite/?$", registration.views.onsite.onsite, name="onsite"),
     url(r"^onsite/cart/?$", registration.views.onsite.onsite_cart, name="onsite_cart"),

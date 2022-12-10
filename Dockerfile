@@ -1,6 +1,6 @@
-FROM ghcr.io/furthemore/apis:apis-base-98ee89a
+FROM ghcr.io/furthemore/apis:apis-base-b46b034
 
-LABEL org.opencontainers.image.source https://github.com/furthemore/APIS
+LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
 ARG SENTRY_RELEASE=local
 ENV SENTRY_RELEASE ${SENTRY_RELEASE}

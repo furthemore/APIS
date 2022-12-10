@@ -75,7 +75,7 @@
 
 {% block javascript %}
   <script>
-      let discount = {{event.newStaffDiscount.amountOff}};
+      let discount = {%  if event.newStaffDiscount.amountOff %}{{event.newStaffDiscount.amountOff}}{% else %}0{% endif %};
       let adult = true;
       let paid_total = {{ paid_total|default:0 }};
   </script>
@@ -88,14 +88,14 @@
           $("form").validator('validate');
           let errorCount = $(".has-error").length;
           if (errorCount > 0) {
-              $(this).one(doRegister)
+              $(this).one("click", doRegister);
               return;
           }
 
           // Validate birthdate input
           if ($("#birthDate").val() == "") {
               alert("You must enter your birthdate to submit your registration.");
-              $(this).one(doRegister)
+              $(this).one("click", doRegister);
               return;
           }
 
@@ -110,7 +110,7 @@
           let age = getAgeByEventStart(birthdate);
           if (age < 18) {
               alert("You must be 18 by the first day of the event to register online.");
-              $(this).one(doRegister)
+              $(this).one("click", doRegister)
               return;
           }
 
@@ -159,7 +159,7 @@
                   } else {
                       alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.staffEmail }} for assistance.")
                   }
-                  $("#register").removeAttr("disabled").one(doRegister);
+                  $("#register").removeAttr("disabled").one("click", doRegister);
               },
               "success": function (result, status) {
                   if (result.success) {
@@ -167,13 +167,15 @@
                   } else {
                       alert("An error has occurred. Please check the form for any error messages. If this error continues, please contact {{ event.staffEmail }} for assistance.")
                   }
-                  $("#register").removeAttr("disabled").one(doRegister);
+                  $("#register").removeAttr("disabled").one("click", doRegister);
               }
           });
       }
 
 
-      $("#register").one(doRegister);
+      $(document).ready(function () {
+        $("#register").one("click", doRegister);
+      });
 
   </script>
 

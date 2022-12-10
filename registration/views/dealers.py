@@ -15,7 +15,8 @@ from django.urls import reverse
 import registration.emails
 from registration.models import *
 
-from .common import clear_session, get_client_ip, handler, logger
+from . import common
+from .common import clear_session, handler, logger
 from .ordering import do_checkout, doZeroCheckout, get_discount_total
 
 logger = logging.getLogger(__name__)
@@ -27,13 +28,13 @@ def dealers(request, guid):
     return render(request, "registration/dealer/dealer-locate.html", context)
 
 
-def thanksDealer(request):
+def thanks_dealer(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/dealer/dealer-thanks.html", context)
 
 
-def doneDealer(request):
+def done_dealer(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/dealer/dealer-done.html", context)
@@ -49,23 +50,23 @@ def find_dealer_to_add_assistant(request, guid):
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
 
-def dealerAsst(request, guid):
+def dealer_asst(request, guid):
     event = Event.objects.get(default=True)
     context = {
         "token": guid,
         "event": event,
-        "next": reverse("registration:findAsstDealer"),
+        "next": reverse("registration:find_asst_dealer"),
     }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
 
-def doneAsstDealer(request):
+def done_asst_dealer(request):
     event = Event.objects.get(default=True)
     context = {"event": event}
     return render(request, "registration/dealer/dealerasst-done.html", context)
 
 
-def newDealer(request):
+def new_dealer(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
@@ -75,7 +76,7 @@ def newDealer(request):
     return render(request, "registration/dealer/dealer-closed.html", context)
 
 
-def infoDealer(request):
+def info_dealer(request):
     event = Event.objects.get(default=True)
     context = {"dealer": None, "event": event}
     try:
@@ -108,20 +109,20 @@ def infoDealer(request):
     return render(request, "registration/dealer/dealer-payment.html", context)
 
 
-def findDealer(request):
-    postData = json.loads(request.body)
-    email = postData["email"]
-    token = postData["token"]
+def find_dealer(request):
+    post_data = json.loads(request.body)
+    email = post_data["email"]
+    token = post_data["token"]
 
     try:
         dealer = Dealer.objects.get(
             attendee__email__iexact=email, registrationToken=token
         )
     except Dealer.DoesNotExist:
-        return HttpResponseNotFound("No Dealer Found " + email)
+        return common.abort(404, "No Dealer Found " + email)
 
     request.session["dealer_id"] = dealer.id
-    return JsonResponse({"success": True, "message": "DEALER"})
+    return common.success()
 
 
 def find_dealer_to_add_assistant_post(request):
@@ -130,17 +131,14 @@ def find_dealer_to_add_assistant_post(request):
     token = post_data.get("token")
 
     if email is None or token is None:
-        return JsonResponse(
-            {"success": False, "message": "Email or token missing from form data"},
-            status=400,
-        )
+        return common.abort(400, "Email or token missing from form data")
 
     try:
         dealer = Dealer.objects.get(
             attendee__email__iexact=email, registrationToken=token
         )
     except Dealer.DoesNotExist:
-        return HttpResponseNotFound("No dealer found")
+        return common.abort(404, "No dealer found")
 
     request.session["dealer_id"] = dealer.pk
     return JsonResponse(
@@ -152,7 +150,7 @@ def find_dealer_to_add_assistant_post(request):
     )
 
 
-def findAsstDealer(request):
+def find_asst_dealer(request):
     postData = json.loads(request.body)
     email = postData["email"]
     token = postData["token"]
@@ -178,7 +176,10 @@ def findAsstDealer(request):
         )
 
     request.session["assistant_id"] = dealer_assistant.id
-    request.session["discount"] = dealer_assistant.event.assistantDiscount.codeName
+    discount = dealer_assistant.event.assistantDiscount
+    if discount:
+        request.session["discount"] = discount.codeName
+
     return JsonResponse(
         {
             "success": True,
@@ -188,7 +189,7 @@ def findAsstDealer(request):
     )
 
 
-def invoiceDealer(request):
+def invoice_dealer(request):
     sessionItems = request.session.get("order_items", [])
     sessionDiscount = request.session.get("discount", "")
     if not sessionItems:
@@ -203,7 +204,7 @@ def invoiceDealer(request):
             dealer = Dealer.objects.get(id=dealerId)
             orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
             discount = Discount.objects.filter(codeName=sessionDiscount).first()
-            total = getDealerTotal(orderItems, discount, dealer)
+            total = get_dealer_total(orderItems, discount, dealer)
             context = {
                 "orderItems": orderItems,
                 "total": total,
@@ -246,8 +247,8 @@ def add_assistants_checkout(request):
     try:
         form_data = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for add_assistants_checkout()")
-        return JsonResponse({"success": False})
+        logger.warning(f"Unable to decode JSON for add_assistants_checkout(): {e}")
+        return common.abort(400, str(e))
     billing_data = form_data["billingData"]
     assistants_form = form_data["assistants"]
     dealer_id = request.session["dealer_id"]
@@ -256,24 +257,24 @@ def add_assistants_checkout(request):
 
     badge = Badge.objects.filter(attendee=dealer.attendee, event=dealer.event).last()
 
-    priceLevel = badge.effectiveLevel()
-    if priceLevel is None:
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Dealer account has not been paid. Please pay for your table before adding assistants.",
-            }
+    price_level = badge.effectiveLevel()
+    if price_level is None:
+        return common.abort(
+            402,
+            "Dealer account has not been paid. Please pay for your table before adding assistants.",
         )
 
-    order_item = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
+    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
 
     for assistant in assistants_form:
         if assistant.get("id"):
             # Update an existing dealer assistant by ID
-            dealer_asst = DealerAsst.objects.get(dealer=dealer, id=assistant.get("id"))
+            dealer_asst_obj = DealerAsst.objects.get(
+                dealer=dealer, id=assistant.get("id")
+            )
         else:
             # Otherwise, create a new one:
-            dealer_asst = DealerAsst(
+            dealer_asst_obj = DealerAsst(
                 dealer=dealer,
                 event=event,
                 name=assistant["name"],
@@ -281,10 +282,10 @@ def add_assistants_checkout(request):
                 license=assistant["license"],
             )
         try:
-            dealer_asst.name = assistant["name"]
-            dealer_asst.email = assistant["email"]
-            dealer_asst.license = assistant["license"]
-            dealer_asst.save()
+            dealer_asst_obj.name = assistant["name"]
+            dealer_asst_obj.email = assistant["email"]
+            dealer_asst_obj.license = assistant["license"]
+            dealer_asst_obj.save()
         except KeyError:
             return JsonResponse(
                 {
@@ -297,20 +298,12 @@ def add_assistants_checkout(request):
 
     # FIXME: remove hardcoded costs
     total = Decimal(55 * unpaid_partner_count)
-    if billing_data["breakfast"]:
-        total = total + Decimal(60 * unpaid_partner_count)
 
     if total <= 0:
-        logger.error(
+        logger.warning(
             f"Error checking out dealer while adding assistants: total too low: {total} <= 0"
         )
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "An error occurred while adding your assistants.",
-            },
-            status=500,
-        )
+        return common.abort(500, "An error occurred while adding your assistants.")
 
     status, message, order = do_checkout(
         billing_data, total, None, [], [order_item], 0, 0
@@ -329,26 +322,22 @@ def add_assistants_checkout(request):
             for assistant in dealer.dealerasst_set.all().filter(attendee__isnull=True):
                 registration.emails.send_dealer_assistant_registration_invite(assistant)
         except Exception as e:
-            logger.error("Error emailing DealerAsstEmail.")
+            logger.error("Error emailing DealerAsstEmail")
             logger.exception(e)
-            dealer_email = getDealerEmail()
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        f"Your payment succeeded but we may have been unable to send you a confirmation email. "
-                        f"If you do not receive one within the next hour, please contact {dealer_email} to get your "
-                        f"confirmation number."
-                    ),
-                }
+            dealer_email = get_dealer_email()
+            return common.abort(
+                500,
+                f"Your payment succeeded but we may have been unable to send you a confirmation email. "
+                f"If you do not receive one within the next hour, please contact {dealer_email} to get your "
+                f"confirmation number.",
             )
-        return JsonResponse({"success": True})
+        return common.success()
     else:
         # Payment failed
-        return JsonResponse({"success": False, "message": message})
+        return common.abort(500, message)
 
 
-def addDealer(request):
+def add_dealer(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
@@ -435,28 +424,27 @@ def addDealer(request):
     return JsonResponse({"success": True})
 
 
-def checkoutDealer(request):
-    sessionItems = request.session.get("order_items", [])
+def checkout_dealer(request):
+    session_items = request.session.get("order_items", [])
     pdisc = request.session.get("discount", "")
-    orderItems = list(OrderItem.objects.filter(id__in=sessionItems))
+    order_items = list(OrderItem.objects.filter(id__in=session_items))
     if "dealer_id" not in request.session:
-        return HttpResponseServerError("Session expired")
+        return common.abort(400, "Session expired")
 
     dealer = Dealer.objects.get(id=request.session.get("dealer_id"))
     try:
-        postData = json.loads(request.body)
+        post_data = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for checkoutDealer()")
-        return JsonResponse({"success": False})
+        logger.warning("Unable to decode JSON for checkout_dealer()")
+        return common.abort(400, str(e))
 
     discount = Discount.objects.filter(codeName=pdisc).first()
-    subtotal = getDealerTotal(orderItems, discount, dealer)
+    subtotal = get_dealer_total(order_items, discount, dealer)
 
     if subtotal == 0:
-
-        status, message, order = doZeroCheckout(discount, None, orderItems)
+        status, message, order = doZeroCheckout(discount, None, order_items)
         if not status:
-            return JsonResponse({"success": False, "message": message})
+            return common.abort(400, message)
 
         clear_session(request)
 
@@ -465,19 +453,16 @@ def checkoutDealer(request):
         except Exception as e:
             logger.error("Error sending DealerPaymentEmail - zero sum.")
             logger.exception(e)
-            dealerEmail = getDealerEmail()
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Your registration succeeded but we may have been unable to send you a confirmation email. If you have any questions, please contact {0}".format(
-                        dealerEmail
-                    ),
-                }
+            dealer_email = get_dealer_email()
+            return common.abort(
+                500,
+                "Your registration succeeded but we may have been unable to send you a confirmation "
+                f"email. If you have any questions, please contact {dealer_email}",
             )
         return JsonResponse({"success": True})
 
-    porg = Decimal(postData["orgDonation"].strip() or "0.00")
-    pcharity = Decimal(postData.get("charityDonation", "0.00").strip() or "0.00")
+    porg = Decimal(post_data["orgDonation"].strip() or "0.00")
+    pcharity = Decimal(post_data.get("charityDonation", "0.00").strip() or "0.00")
     if porg < 0:
         porg = 0
     if pcharity < 0:
@@ -485,9 +470,9 @@ def checkoutDealer(request):
 
     total = subtotal + porg + pcharity
 
-    pbill = postData["billingData"]
+    pbill = post_data["billingData"]
     status, message, order = do_checkout(
-        pbill, total, discount, None, orderItems, porg, pcharity
+        pbill, total, discount, None, order_items, porg, pcharity
     )
 
     if status:
@@ -502,18 +487,16 @@ def checkoutDealer(request):
         except Exception as e:
             logger.error("Error sending DealerPaymentEmail. " + request.body)
             logger.exception(e)
-            dealerEmail = getDealerEmail()
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Your registration succeeded but we may have been unable to send you a confirmation "
-                    f"email. If you have any questions, please contact {dealerEmail}",
-                }
+            dealer_email = get_dealer_email()
+            return common.abort(
+                500,
+                "Your registration succeeded but we may have been unable to send you a confirmation "
+                f"email. If you have any questions, please contact {dealer_email}",
             )
-        return JsonResponse({"success": True})
+        return common.success()
     else:
         order.delete()
-        return JsonResponse({"success": False, "message": message})
+        return common.abort(400, message)
 
 
 def addNewDealer(request):
@@ -597,7 +580,7 @@ def addNewDealer(request):
     except Exception as e:
         logger.error("Error sending DealerApplicationEmail.")
         logger.exception(e)
-        dealerEmail = getDealerEmail()
+        dealerEmail = get_dealer_email()
         return JsonResponse(
             {
                 "success": False,
@@ -630,7 +613,7 @@ def getTableSizes(request):
     return HttpResponse(json.dumps(data), content_type="application/json")
 
 
-def getDealerEmail(event=None):
+def get_dealer_email(event=None):
     """
     Retrieves the email address to show on error messages in the dealer
     registration form for a specified event.  If no event specified, uses
@@ -647,7 +630,7 @@ def getDealerEmail(event=None):
     return event.dealerEmail
 
 
-def getDealerTotal(orderItems, discount, dealer):
+def get_dealer_total(orderItems, discount, dealer):
     itemSubTotal = 0
     for item in orderItems:
         itemSubTotal = item.priceLevel.basePrice
