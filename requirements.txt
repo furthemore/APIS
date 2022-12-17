@@ -20,7 +20,7 @@ markuppy
 mock==3.0.5
 paho-mqtt==1.6.1
 Pillow>=5.3
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.5
 PyJWT~=2.4.0
 sentry-sdk
 squareup==22.0.0.20220921
