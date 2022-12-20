@@ -27,8 +27,12 @@ logger = logging.getLogger(__name__)
 
 def new_staff(request, guid):
     event = Event.objects.get(default=True)
+    tz = timezone.get_current_timezone()
+    today = tz.localize(datetime.now())
     context = {"token": guid, "event": event}
-    return render(request, "registration/staff/staff-new.html", context)
+    if event.staffRegStart <= today <= event.staffRegEnd:
+        return render(request, "registration/staff/staff-new.html", context)
+    return render(request, "registration/staff/staff-closed.html", context)
 
 
 @require_POST
