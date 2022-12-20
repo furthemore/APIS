@@ -153,8 +153,12 @@ def add_new_staff(request):
 
 def staff_index(request, guid):
     event = Event.objects.get(default=True)
+    tz = timezone.get_current_timezone()
+    today = tz.localize(datetime.now())
     context = {"token": guid, "event": event}
-    return render(request, "registration/staff/staff-locate.html", context)
+    if event.staffRegStart <= today <= event.staffRegEnd:
+        return render(request, "registration/staff/staff-locate.html", context)
+    return render(request, "registration/staff/staff-closed.html", context)
 
 
 def staff_done(request):

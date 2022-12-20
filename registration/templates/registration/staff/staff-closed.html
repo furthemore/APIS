@@ -1,0 +1,16 @@
+{% extends "registration/master.html" %}
+
+{% block content %}
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <h1>Staff Registration - {{ event }}</h1>
+      <hr>
+      <p>Staff Registration for {{ event }} is closed. If you have any questions please contact
+        <a href="mailto:{{ event.staffEmail }}">{{ event.staffEmail }}</a>
+      </p>
+      <p style="float:right;">
+        <a href="{% url 'registration:index' %}">Back to Main Page</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}
