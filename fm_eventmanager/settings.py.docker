@@ -86,7 +86,8 @@ LOGGING = {
 # Get loglevel from env
 LOGLEVEL = os.getenv('DJANGO_LOGLEVEL', 'info').upper()
 
-ADMINS = [(os.getenv("APIS_ADMIN_NAME", "Super Adminton"), os.getenv("APIS_ADMIN_EMAIL", "admin@example.com")),]
+if eval_bool(os.getenv("APIS_ADMIN_EMAIL_HANDLER", "False"))):
+    ADMINS = [(os.getenv("APIS_ADMIN_NAME", os.getenv("APIS_ADMIN_EMAIL")), os.getenv("APIS_ADMIN_EMAIL"),]
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "no-reply@example.com")
 
 ALLOWED_HOSTS = ['*']
