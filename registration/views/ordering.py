@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from json import JSONDecodeError
 
 from django.http import JsonResponse
 from idempotency_key.decorators import idempotency_key
@@ -258,7 +259,7 @@ def checkout(request):
 
     try:
         post_data = json.loads(request.body)
-    except ValueError as e:
+    except (ValueError, JSONDecodeError) as e:
         logger.exception(e)
         logger.error("Unable to decode JSON for checkout()")
         return common.abort(400, "Unable to parse input options")
