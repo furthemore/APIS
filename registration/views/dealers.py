@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from json import JSONDecodeError
 
 from django.forms import model_to_dict
 from django.http import (
@@ -434,7 +435,7 @@ def checkout_dealer(request):
     dealer = Dealer.objects.get(id=request.session.get("dealer_id"))
     try:
         post_data = json.loads(request.body)
-    except ValueError as e:
+    except (ValueError, JSONDecodeError) as e:
         logger.warning("Unable to decode JSON for checkout_dealer()")
         return common.abort(400, str(e))
 
@@ -503,8 +504,8 @@ def addNewDealer(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for addNewDealer()")
-        return JsonResponse({"success": False})
+        logger.warning(f"Unable to decode JSON for addNewDealer(): {e}")
+        return common.abort(400, "Unable to decode JSON")
 
     # create attendee from request post
     pda = postData["attendee"]
@@ -512,7 +513,11 @@ def addNewDealer(request):
     evt = postData["event"]
 
     tz = timezone.get_current_timezone()
-    birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    try:
+        birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    except ValueError as e:
+        logger.warning(f"Unable to parse birthdate: {birthdate} - {e}")
+        return common.abort(400, f"Unable to parse birthdate: {birthdate}")
     event = Event.objects.get(name=evt)
 
     attendee = Attendee(

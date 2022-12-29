@@ -547,11 +547,15 @@ send_staff_registration_email.short_description = "Send registration instruction
 
 
 class StaffResource(resources.ModelResource):
+    badgeName = fields.Field()
+    
     class Meta:
         model = Staff
         fields = (
             "id",
             "event__name",
+            "badgeName",
+            "attendee__preferredName",
             "attendee__firstName",
             "attendee__lastName",
             "attendee__address1",
@@ -578,6 +582,8 @@ class StaffResource(resources.ModelResource):
         export_order = (
             "id",
             "event__name",
+            "badgeName",
+            "attendee__preferredName",
             "attendee__firstName",
             "attendee__lastName",
             "attendee__address1",
@@ -601,6 +607,12 @@ class StaffResource(resources.ModelResource):
             "contactPhone",
             "contactRelation",
         )
+        
+    def dehydrate_badgeName(self, obj):
+        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
+        if badge is None:
+            return "--"
+        return badge.badgeName
 
 
 class StaffAdmin(ImportExportModelAdmin):
