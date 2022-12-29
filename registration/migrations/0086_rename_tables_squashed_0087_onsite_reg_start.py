@@ -18,31 +18,53 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterModelTable(
-            name="attendeeoptions", table="registration_attendee_options",
-        ),
-        migrations.AlterModelTable(name="banlist", table="registration_ban_list",),
-        migrations.AlterModelTable(
-            name="dealerasst", table="registration_dealer_asst",
-        ),
-        migrations.AlterModelTable(name="orderitem", table="registration_order_item",),
-        migrations.AlterModelTable(
-            name="pricelevel", table="registration_price_level",
+            name="attendeeoptions",
+            table="registration_attendee_options",
         ),
         migrations.AlterModelTable(
-            name="priceleveloption", table="registration_price_level_option",
+            name="banlist",
+            table="registration_ban_list",
         ),
         migrations.AlterModelTable(
-            name="reservedbadgenumbers", table="registration_reserved_badge_numbers",
+            name="dealerasst",
+            table="registration_dealer_asst",
         ),
         migrations.AlterModelTable(
-            name="shirtsizes", table="registration_shirt_sizes",
+            name="orderitem",
+            table="registration_order_item",
         ),
-        migrations.AlterModelTable(name="tablesize", table="registration_table_size",),
-        migrations.AlterModelTable(name="temptoken", table="registration_temp_token",),
+        migrations.AlterModelTable(
+            name="pricelevel",
+            table="registration_price_level",
+        ),
+        migrations.AlterModelTable(
+            name="priceleveloption",
+            table="registration_price_level_option",
+        ),
+        migrations.AlterModelTable(
+            name="reservedbadgenumbers",
+            table="registration_reserved_badge_numbers",
+        ),
+        migrations.AlterModelTable(
+            name="shirtsizes",
+            table="registration_shirt_sizes",
+        ),
+        migrations.AlterModelTable(
+            name="tablesize",
+            table="registration_table_size",
+        ),
+        migrations.AlterModelTable(
+            name="temptoken",
+            table="registration_temp_token",
+        ),
         migrations.RenameField(
-            model_name="event", old_name="onlineRegEnd", new_name="onsiteRegEnd",
+            model_name="event",
+            old_name="onlineRegEnd",
+            new_name="onsiteRegEnd",
         ),
         migrations.RenameField(
-            model_name="event", old_name="onlineRegStart", new_name="onsiteRegStart",
+            model_name="event",
+            old_name="onlineRegStart",
+            new_name="onsiteRegStart",
         ),
     ]

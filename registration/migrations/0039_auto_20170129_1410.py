@@ -18,5 +18,7 @@ class Migration(migrations.Migration):
         #    model_name='staffjersey',
         #    name='jersey_ptr',
         # ),
-        migrations.DeleteModel(name="StaffJersey",),
+        migrations.DeleteModel(
+            name="StaffJersey",
+        ),
     ]

@@ -59,7 +59,7 @@ def get_onsite_admin_token(firebase):
 def get_token(sub, exp=None, subs=None, publ=None):
     if exp is None:
         # Never expires
-        exp = 2 ** 31 - 1
+        exp = 2**31 - 1
 
     claims = {
         "sub": sub,

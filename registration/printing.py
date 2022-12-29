@@ -450,7 +450,12 @@ class _CUPS:
             f.close()
         printArgs.append(filename)  # append file to print.
 
-        ret = subprocess.check_call([LPR,] + printArgs)
+        ret = subprocess.check_call(
+            [
+                LPR,
+            ]
+            + printArgs
+        )
         if ret != 0:
             raise PrinterError(
                 "{0} exited non-zero ({1}).  Error spooling.".format(LPR, ret)

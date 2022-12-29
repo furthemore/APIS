@@ -15,7 +15,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AttendeeOnsite",
             fields=[],
-            options={"proxy": True,},
+            options={
+                "proxy": True,
+            },
             bases=("registration.attendee",),
         ),
         migrations.AddField(

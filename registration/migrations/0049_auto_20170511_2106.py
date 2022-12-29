@@ -12,7 +12,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="pricelevel", name="priceLevelOptions",),
+        migrations.RemoveField(
+            model_name="pricelevel",
+            name="priceLevelOptions",
+        ),
         migrations.AddField(
             model_name="pricelevel",
             name="priceLevelOptions",

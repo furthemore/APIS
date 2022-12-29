@@ -12,31 +12,106 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="order", name="billing_address_1",),
-        migrations.RemoveField(model_name="order", name="billing_address_2",),
-        migrations.RemoveField(model_name="order", name="billing_city",),
-        migrations.RemoveField(model_name="order", name="billing_country_area",),
-        migrations.RemoveField(model_name="order", name="billing_country_code",),
-        migrations.RemoveField(model_name="order", name="billing_email",),
-        migrations.RemoveField(model_name="order", name="billing_first_name",),
-        migrations.RemoveField(model_name="order", name="billing_last_name",),
-        migrations.RemoveField(model_name="order", name="billing_postcode",),
-        migrations.RemoveField(model_name="order", name="captured_amount",),
-        migrations.RemoveField(model_name="order", name="created",),
-        migrations.RemoveField(model_name="order", name="currency",),
-        migrations.RemoveField(model_name="order", name="customer_ip_address",),
-        migrations.RemoveField(model_name="order", name="delivery",),
-        migrations.RemoveField(model_name="order", name="description",),
-        migrations.RemoveField(model_name="order", name="extra_data",),
-        migrations.RemoveField(model_name="order", name="fraud_message",),
-        migrations.RemoveField(model_name="order", name="fraud_status",),
-        migrations.RemoveField(model_name="order", name="message",),
-        migrations.RemoveField(model_name="order", name="modified",),
-        migrations.RemoveField(model_name="order", name="status",),
-        migrations.RemoveField(model_name="order", name="tax",),
-        migrations.RemoveField(model_name="order", name="token",),
-        migrations.RemoveField(model_name="order", name="transaction_id",),
-        migrations.RemoveField(model_name="order", name="variant",),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_address_1",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_address_2",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_city",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_country_area",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_country_code",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_email",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_first_name",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_last_name",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="billing_postcode",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="captured_amount",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="created",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="currency",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="customer_ip_address",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="delivery",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="description",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="extra_data",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="fraud_message",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="fraud_status",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="message",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="modified",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="status",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="tax",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="token",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="transaction_id",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="variant",
+        ),
         migrations.AddField(
             model_name="attendee",
             name="registeredDate",
@@ -48,7 +123,9 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name="order", name="notes", field=models.TextField(blank=True),
+            model_name="order",
+            name="notes",
+            field=models.TextField(blank=True),
         ),
         migrations.AddField(
             model_name="order",

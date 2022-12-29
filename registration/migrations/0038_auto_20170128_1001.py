@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="jersey", name="number", field=models.CharField(max_length=3),
+            model_name="jersey",
+            name="number",
+            field=models.CharField(max_length=3),
         ),
     ]

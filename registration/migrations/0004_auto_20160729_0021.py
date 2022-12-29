@@ -20,13 +20,30 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name="order", old_name="createdDate", new_name="created",
+            model_name="order",
+            old_name="createdDate",
+            new_name="created",
         ),
-        migrations.RemoveField(model_name="order", name="authorizationCode",),
-        migrations.RemoveField(model_name="order", name="balance",),
-        migrations.RemoveField(model_name="order", name="notes",),
-        migrations.RemoveField(model_name="order", name="settledDate",),
-        migrations.RemoveField(model_name="order", name="transactionId",),
+        migrations.RemoveField(
+            model_name="order",
+            name="authorizationCode",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="balance",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="notes",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="settledDate",
+        ),
+        migrations.RemoveField(
+            model_name="order",
+            name="transactionId",
+        ),
         migrations.AddField(
             model_name="department",
             name="name",

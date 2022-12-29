@@ -12,8 +12,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="orderitem", name="confirmationCode",),
+        migrations.RemoveField(
+            model_name="orderitem",
+            name="confirmationCode",
+        ),
         migrations.AddField(
-            model_name="pricelevel", name="group", field=models.TextField(blank=True),
+            model_name="pricelevel",
+            name="group",
+            field=models.TextField(blank=True),
         ),
     ]

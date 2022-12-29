@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="discount", name="requiredPriceLevel",),
+        migrations.RemoveField(
+            model_name="discount",
+            name="requiredPriceLevel",
+        ),
         migrations.AddField(
             model_name="staff",
             name="attendee",
@@ -55,7 +58,9 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name="staff", name="notes", field=models.TextField(blank=True),
+            model_name="staff",
+            name="notes",
+            field=models.TextField(blank=True),
         ),
         migrations.AddField(
             model_name="staff",
@@ -64,7 +69,9 @@ class Migration(migrations.Migration):
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name="staff", name="specialFood", field=models.TextField(blank=True),
+            model_name="staff",
+            name="specialFood",
+            field=models.TextField(blank=True),
         ),
         migrations.AddField(
             model_name="staff",

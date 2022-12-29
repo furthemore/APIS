@@ -13,9 +13,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name="event", old_name="onlineRegEnd", new_name="onsiteRegEnd",
+            model_name="event",
+            old_name="onlineRegEnd",
+            new_name="onsiteRegEnd",
         ),
         migrations.RenameField(
-            model_name="event", old_name="onlineRegStart", new_name="onsiteRegStart",
+            model_name="event",
+            old_name="onlineRegStart",
+            new_name="onsiteRegStart",
         ),
     ]

@@ -12,16 +12,50 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="jersey", name="shirtSize",),
-        migrations.RemoveField(model_name="staffjersey", name="shirtSize",),
-        migrations.RemoveField(model_name="attendee", name="badgeName",),
-        migrations.RemoveField(model_name="attendee", name="badgeNumber",),
-        migrations.RemoveField(model_name="attendee", name="badgePrinted",),
-        migrations.RemoveField(model_name="attendee", name="event",),
-        migrations.RemoveField(model_name="attendee", name="printed",),
-        migrations.RemoveField(model_name="attendee", name="registeredDate",),
-        migrations.RemoveField(model_name="attendee", name="registrationToken",),
-        migrations.RemoveField(model_name="orderitem", name="attendee",),
-        migrations.DeleteModel(name="Jersey",),
-        migrations.DeleteModel(name="StaffJersey",),
+        migrations.RemoveField(
+            model_name="jersey",
+            name="shirtSize",
+        ),
+        migrations.RemoveField(
+            model_name="staffjersey",
+            name="shirtSize",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="badgeName",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="badgeNumber",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="badgePrinted",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="event",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="printed",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="registeredDate",
+        ),
+        migrations.RemoveField(
+            model_name="attendee",
+            name="registrationToken",
+        ),
+        migrations.RemoveField(
+            model_name="orderitem",
+            name="attendee",
+        ),
+        migrations.DeleteModel(
+            name="Jersey",
+        ),
+        migrations.DeleteModel(
+            name="StaffJersey",
+        ),
     ]

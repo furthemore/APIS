@@ -55,7 +55,10 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.RemoveField(model_name="priceleveloption", name="priceLevel",),
+        migrations.RemoveField(
+            model_name="priceleveloption",
+            name="priceLevel",
+        ),
         migrations.AddField(
             model_name="pricelevel",
             name="priceLevelOptions",
