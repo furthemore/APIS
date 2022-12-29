@@ -553,6 +553,7 @@ class StaffResource(resources.ModelResource):
         fields = (
             "id",
             "event__name",
+            "attendee__getFirst",
             "attendee__firstName",
             "attendee__lastName",
             "attendee__address1",
