@@ -3,6 +3,13 @@
 from django.db import migrations, models
 
 
+def blank_to_null(apps, schema_editor):
+    Order = apps.get_model("registration", "Order")
+    for order in Order.objects.filter(apiData=""):
+        order.apiData = None
+        order.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -29,6 +36,12 @@ class Migration(migrations.Migration):
                 ("headers", models.JSONField(verbose_name="Webhook headers")),
             ],
         ),
+        migrations.AlterField(
+            model_name="order",
+            name="apiData",
+            field=models.TextField(null=True, blank=True),
+        ),
+        migrations.RunPython(blank_to_null),
         migrations.AlterField(
             model_name="order",
             name="apiData",
