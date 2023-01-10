@@ -36,7 +36,16 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.RemoveField(model_name="attendeeoptions", name="optionValue2",),
-        migrations.RemoveField(model_name="priceleveloption", name="unique",),
-        migrations.RemoveField(model_name="priceleveloption", name="valueCount",),
+        migrations.RemoveField(
+            model_name="attendeeoptions",
+            name="optionValue2",
+        ),
+        migrations.RemoveField(
+            model_name="priceleveloption",
+            name="unique",
+        ),
+        migrations.RemoveField(
+            model_name="priceleveloption",
+            name="valueCount",
+        ),
     ]

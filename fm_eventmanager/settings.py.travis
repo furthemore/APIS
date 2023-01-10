@@ -206,6 +206,7 @@ SQUARE_ACCESS_TOKEN = os.environ['SQUARE_ACCESS_TOKEN']
 SQUARE_LOCATION_ID = os.environ['SQUARE_LOCATION_ID']
 SQUARE_CURRENCY = 'USD'
 SQUARE_ENVIRONMENT = 'sandbox'  # Or "production"
+SQUARE_WEBHOOK_SIGNATURE_KEY = os.getenv('SQUARE_WEBHOOK_SIGNATURE_KEY', 'unset')
 
 # Sandbox values - DO NOT check in production credentials
 EMAIL_HOST = 'smtp.mailgun.org'

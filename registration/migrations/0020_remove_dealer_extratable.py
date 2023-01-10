@@ -12,5 +12,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="dealer", name="extraTable",),
+        migrations.RemoveField(
+            model_name="dealer",
+            name="extraTable",
+        ),
     ]

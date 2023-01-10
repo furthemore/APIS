@@ -19,7 +19,9 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name="firebase", name="token", field=models.CharField(max_length=500),
+            model_name="firebase",
+            name="token",
+            field=models.CharField(max_length=500),
         ),
         migrations.AlterField(
             model_name="order",

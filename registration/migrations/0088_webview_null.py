@@ -23,6 +23,8 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name="tablesize", name="description", field=models.TextField(),
+            model_name="tablesize",
+            name="description",
+            field=models.TextField(),
         ),
     ]

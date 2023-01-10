@@ -12,11 +12,18 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="dealer", name="shareWith",),
-        migrations.AddField(
-            model_name="dealer", name="partners", field=models.TextField(blank=True),
+        migrations.RemoveField(
+            model_name="dealer",
+            name="shareWith",
         ),
         migrations.AddField(
-            model_name="dealer", name="tables", field=models.IntegerField(default=0),
+            model_name="dealer",
+            name="partners",
+            field=models.TextField(blank=True),
+        ),
+        migrations.AddField(
+            model_name="dealer",
+            name="tables",
+            field=models.IntegerField(default=0),
         ),
     ]

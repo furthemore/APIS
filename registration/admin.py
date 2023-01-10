@@ -1,9 +1,9 @@
-import cgi
 import copy
 import html
 import json
 import logging
 from datetime import date
+from io import BytesIO
 
 import qrcode
 from django import forms
@@ -17,12 +17,11 @@ from django.forms import NumberInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils.html import escape, format_html, urlencode
+from django.utils.html import format_html, urlencode
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedModelAdmin, NestedTabularInline
 from qrcode.image.svg import SvgPathImage
-from six import BytesIO
 
 import registration.emails
 import registration.views.printing
@@ -31,7 +30,7 @@ from registration.forms import FirebaseForm
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
 
-from . import printing, views
+from . import printing
 
 logger = logging.getLogger(__name__)
 
@@ -1397,20 +1396,16 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
         obj = kwargs.get("obj")
         if obj and obj.billingType == Order.CREDIT:
-            try:
-                api_data = json.loads(obj.apiData)
-                context["api_data"] = api_data
-            except ValueError as e:
+
+            context["api_data"] = obj.apiData
+            if not obj.apiData:
                 messages.warning(
                     request,
-                    "Error while loading JSON from apiData field for this order: {0}".format(
-                        e
-                    ),
+                    f"Error while loading JSON from apiData field for this order: {obj}",
                 )
-                logger.warn(
-                    "Error while loading JSON from api_data for order {0}".format(obj)
+                logger.warning(
+                    f"Error while loading JSON from api_data for order {obj}"
                 )
-                logger.error(e)
 
         return super(OrderAdmin, self).render_change_form(
             request, context, *args, **kwargs
@@ -1489,12 +1484,9 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
 
         order = Order.objects.get(id=order_id)
 
-        api_data = None
-        try:
-            api_data = json.loads(order.apiData)
-        except ValueError:
-            if order.billingType == Order.CREDIT:
-                messages.warning(request, "External payment data could not be decoded")
+        api_data = order.apiData
+        if not api_data and order.billingType == Order.CREDIT:
+            messages.warning(request, "External payment data could not be decoded")
 
         if "amount" in request.POST:
             if not request.user.has_perm("registration.issue_refund"):

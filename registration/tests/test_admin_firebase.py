@@ -115,7 +115,8 @@ class TestFirebaseAdmin(TestCase):
             b"You must be a superuser to access this URL", response.content
         )
         self.assertIn(
-            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ", response.content,
+            b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ",
+            response.content,
         )
         self.assertIn(b'height="77mm"', response.content)
 

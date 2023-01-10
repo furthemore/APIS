@@ -21,10 +21,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterModelOptions(
-            name="banlist", options={"verbose_name_plural": "Ban list"},
+            name="banlist",
+            options={"verbose_name_plural": "Ban list"},
         ),
         migrations.AlterModelOptions(
-            name="charity", options={"verbose_name_plural": "Charities"},
+            name="charity",
+            options={"verbose_name_plural": "Charities"},
         ),
         migrations.AlterModelOptions(
             name="dealerasst",
@@ -52,10 +54,12 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterModelOptions(
-            name="shirtsizes", options={"verbose_name_plural": "Shirt sizes"},
+            name="shirtsizes",
+            options={"verbose_name_plural": "Shirt sizes"},
         ),
         migrations.AlterModelOptions(
-            name="staff", options={"verbose_name_plural": "Staff"},
+            name="staff",
+            options={"verbose_name_plural": "Staff"},
         ),
         migrations.AddField(
             model_name="cashdrawer",

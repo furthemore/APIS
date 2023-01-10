@@ -136,7 +136,9 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=200)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="HoldType",
@@ -152,7 +154,9 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=200)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Order",
@@ -274,7 +278,9 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=200)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.CreateModel(
             name="Staff",

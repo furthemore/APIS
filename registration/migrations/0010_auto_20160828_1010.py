@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="orderitem", name="discount",),
+        migrations.RemoveField(
+            model_name="orderitem",
+            name="discount",
+        ),
         migrations.AddField(
             model_name="order",
             name="charityDonation",

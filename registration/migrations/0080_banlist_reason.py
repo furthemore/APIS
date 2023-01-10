@@ -13,6 +13,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="banlist", name="reason", field=models.TextField(blank=True),
+            model_name="banlist",
+            name="reason",
+            field=models.TextField(blank=True),
         ),
     ]

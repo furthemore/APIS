@@ -11,6 +11,7 @@ import registration.views.ordering
 import registration.views.printing
 import registration.views.staff
 import registration.views.upgrade
+import registration.views.webhooks
 
 app_name = "registration"
 
@@ -340,5 +341,10 @@ urlpatterns = [
         r"^firebase/lookup/?",
         registration.views.onsite_admin.firebase_lookup,
         name="firebase_lookup",
+    ),
+    url(
+        r"webhook/square/v2",
+        registration.views.webhooks.square_webhook,
+        name="square_webhook",
     ),
 ]

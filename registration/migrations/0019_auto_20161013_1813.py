@@ -24,7 +24,9 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name="dealer", name="chairs", field=models.IntegerField(default=0),
+            model_name="dealer",
+            name="chairs",
+            field=models.IntegerField(default=0),
         ),
         migrations.AddField(
             model_name="dealer",

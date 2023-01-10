@@ -13,8 +13,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="attendeeoptions", name="attendee",),
-        migrations.RemoveField(model_name="attendeeoptions", name="order",),
+        migrations.RemoveField(
+            model_name="attendeeoptions",
+            name="attendee",
+        ),
+        migrations.RemoveField(
+            model_name="attendeeoptions",
+            name="order",
+        ),
         migrations.AddField(
             model_name="attendeeoptions",
             name="orderItem",
