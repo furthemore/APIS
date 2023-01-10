@@ -12,7 +12,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.DeleteModel(name="AttendeeOnsite",),
+        migrations.DeleteModel(
+            name="AttendeeOnsite",
+        ),
         migrations.AddField(
             model_name="pricelevel",
             name="emailVIP",

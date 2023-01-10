@@ -175,6 +175,7 @@ SQUARE_ACCESS_TOKEN = 'sandbox-sq0atb-xxxxxxxxxxxxxxxxxxxxxx'
 SQUARE_LOCATION_ID = 'xxxxxxxxx...'
 SQUARE_CURRENCY = 'USD'
 SQUARE_ENVIRONMENT = 'production'  # Or "sandbox"
+SQUARE_WEBHOOK_SIGNATURE_KEY = 'xxx...'
 
 
 EMAIL_HOST = 'smtp.mailgun.org'

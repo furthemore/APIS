@@ -162,9 +162,16 @@ class TestUpgrades(OrdersTestCase):
         # add_upgrade()
         post_data = {
             "event": self.event.name,
-            "badge": {"id": badge.id,},
-            "attendee": {"id": attendee.id,},
-            "priceLevel": {"id": price_level.id, "options": [],},
+            "badge": {
+                "id": badge.id,
+            },
+            "attendee": {
+                "id": attendee.id,
+            },
+            "priceLevel": {
+                "id": price_level.id,
+                "options": [],
+            },
         }
         self.client.post(
             reverse("registration:add_upgrade"),

@@ -8,7 +8,8 @@ from square.client import Client
 from .models import *
 
 client = Client(
-    access_token=settings.SQUARE_ACCESS_TOKEN, environment=settings.SQUARE_ENVIRONMENT,
+    access_token=settings.SQUARE_ACCESS_TOKEN,
+    environment=settings.SQUARE_ENVIRONMENT,
 )
 payments_api = client.payments
 refunds_api = client.refunds
@@ -81,7 +82,7 @@ def charge_payment(order, cc_data, request=None):
     logger.debug(api_response)
 
     # Square still returns data for failed payments
-    order.apiData = json.dumps(api_response.body)
+    order.apiData = api_response.body
 
     if "payment" in api_response.body:
         order.lastFour = api_response.body["payment"]["card_details"]["card"]["last_4"]
@@ -116,9 +117,8 @@ def refresh_payment(order, store_api_data=None):
     if store_api_data:
         api_data = store_api_data
     else:
-        try:
-            api_data = json.loads(order.apiData)
-        except ValueError:
+        api_data = order.apiData
+        if not api_data:
             logger.warning("No order data yet for {0}".format(order.reference))
             return False, "No order data yet for {0}".format(order.reference)
     order_total = 0
@@ -191,7 +191,7 @@ def refresh_payment(order, store_api_data=None):
     if refund_errors:
         return False, "; ".join(refund_errors)
 
-    order.apiData = json.dumps(api_data)
+    order.apiData = api_data
     order.total = Decimal(order_total) / 100
 
     if order.orgDonation + order.charityDonation > order.total:
@@ -239,7 +239,7 @@ def refund_cash_payment(order, amount, reason=None):
 
 
 def refund_card_payment(order, amount, reason=None, request=None):
-    api_data = json.loads(order.apiData)
+    api_data = order.apiData
     payment_id = api_data["payment"]["id"]
     converted_amount = int(amount * 100)
 
@@ -269,7 +269,7 @@ def refund_card_payment(order, amount, reason=None, request=None):
     status = result.body["refund"]["status"]
     stored_refunds.append(result.body["refund"])
     api_data["refunds"] = stored_refunds
-    order.apiData = json.dumps(api_data)
+    order.apiData = api_data
 
     if status == "COMPLETED":
         order.status = Order.REFUNDED
@@ -306,7 +306,9 @@ def get_payments_from_order_id(order_id):
     """
 
     body = {
-        "order_ids": [order_id,],
+        "order_ids": [
+            order_id,
+        ],
         "location_id": settings.SQUARE_LOCATION_ID,
     }
 

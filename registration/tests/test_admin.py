@@ -64,20 +64,16 @@ class TestOrderAdmin(TestCase):
             status=Order.COMPLETED,
             reference="SQUARE_ORDER_1",
         )
-        self.square_order.apiData = """
-        {
+        self.square_order.apiData = {
             "payment": {
-                "amount_money": {
-                    "amount": 10000,
-                    "currency": "USD"
-                },
+                "amount_money": {"amount": 10000, "currency": "USD"},
                 "billing_address": {
                     "address_line_1": "Qui qui quasi amet ",
                     "address_line_2": "Sunt voluptas dolori",
                     "administrative_district_level_1": "",
                     "country": "FK",
                     "locality": "Quam earum Nam dolor",
-                    "postal_code": "13271"
+                    "postal_code": "13271",
                 },
                 "card_details": {
                     "avs_status": "AVS_ACCEPTED",
@@ -87,12 +83,12 @@ class TestOrderAdmin(TestCase):
                         "exp_month": 2,
                         "exp_year": 2021,
                         "fingerprint": "sq-1-DjCOZOf2iusD6RSZ3k7XEjS0rxZB24OMDtlav-NIIWmZazJHNYRRw8iK3DFQFSOfgA",
-                        "last_4": "1111"
+                        "last_4": "1111",
                     },
                     "cvv_status": "CVV_ACCEPTED",
                     "entry_method": "KEYED",
                     "statement_description": "SQ *DEFAULT TEST ACCOUNT",
-                    "status": "CAPTURED"
+                    "status": "CAPTURED",
                 },
                 "created_at": "2020-02-05T01:40:30.145Z",
                 "id": "bxMrD6jppRDNzVIDeou2qd24MCOZY",
@@ -100,12 +96,9 @@ class TestOrderAdmin(TestCase):
                 "order_id": "WsfpRocSvcmpVJn6CmkkoTVrOhMZY",
                 "processing_fee": [
                     {
-                        "amount_money": {
-                            "amount": 190,
-                            "currency": "USD"
-                        },
+                        "amount_money": {"amount": 190, "currency": "USD"},
                         "effective_at": "2020-02-05T03:40:31.000Z",
-                        "type": "INITIAL"
+                        "type": "INITIAL",
                     }
                 ],
                 "receipt_number": "bxMr",
@@ -116,26 +109,17 @@ class TestOrderAdmin(TestCase):
                     "bxMrD6jppRDNzVIDeou2qd24MCOZY_ELsVHdtGxFzZxvBNr7MgWWReFNNvxV1DyZwH6IVnccG",
                     "bxMrD6jppRDNzVIDeou2qd24MCOZY_LXmYcw4D8qdrGjQGpL0Iy0XuFSKfEzpNXgfgzfm49TJ",
                     "bxMrD6jppRDNzVIDeou2qd24MCOZY_sqoyKz6Dz4PADiP8IemxSaHaNJg0lL8qDU3BBu4ojxF",
-                    "bxMrD6jppRDNzVIDeou2qd24MCOZY_COroghYTDynfpIFO6RwXIP1sUxWa7eobswR1GOvYx1F"
+                    "bxMrD6jppRDNzVIDeou2qd24MCOZY_COroghYTDynfpIFO6RwXIP1sUxWa7eobswR1GOvYx1F",
                 ],
-                "refunded_money": {
-                    "amount": 4700,
-                    "currency": "USD"
-                },
+                "refunded_money": {"amount": 4700, "currency": "USD"},
                 "source_type": "CARD",
                 "status": "COMPLETED",
-                "total_money": {
-                    "amount": 5500,
-                    "currency": "USD"
-                },
-                "updated_at": "2020-02-06T11:28:31.883Z"
+                "total_money": {"amount": 5500, "currency": "USD"},
+                "updated_at": "2020-02-06T11:28:31.883Z",
             },
             "refunds": [
                 {
-                    "amount_money": {
-                        "amount": 1000,
-                        "currency": "USD"
-                    },
+                    "amount_money": {"amount": 1000, "currency": "USD"},
                     "created_at": "2020-02-06T10:59:34.855Z",
                     "id": "bxMrD6jppRDNzVIDeou2qd24MCOZY_ELsVHdtGxFzZxvBNr7MgWWReFNNvxV1DyZwH6IVnccG",
                     "location_id": "MESD3N22DWR0F",
@@ -143,23 +127,17 @@ class TestOrderAdmin(TestCase):
                     "payment_id": "bxMrD6jppRDNzVIDeou2qd24MCOZY",
                     "processing_fee": [
                         {
-                            "amount_money": {
-                                "amount": -29,
-                                "currency": "USD"
-                            },
+                            "amount_money": {"amount": -29, "currency": "USD"},
                             "effective_at": "2020-02-05T03:40:31.000Z",
-                            "type": "INITIAL"
+                            "type": "INITIAL",
                         }
                     ],
                     "reason": "testing second $10 refund",
                     "status": "COMPLETED",
-                    "updated_at": "2020-02-06T10:59:38.223Z"
+                    "updated_at": "2020-02-06T10:59:38.223Z",
                 },
                 {
-                    "amount_money": {
-                        "amount": 500,
-                        "currency": "USD"
-                    },
+                    "amount_money": {"amount": 500, "currency": "USD"},
                     "created_at": "2020-02-06T11:25:09.726Z",
                     "id": "bxMrD6jppRDNzVIDeou2qd24MCOZY_sqoyKz6Dz4PADiP8IemxSaHaNJg0lL8qDU3BBu4ojxF",
                     "location_id": "MESD3N22DWR0F",
@@ -167,13 +145,10 @@ class TestOrderAdmin(TestCase):
                     "payment_id": "bxMrD6jppRDNzVIDeou2qd24MCOZY",
                     "reason": " [rechner]",
                     "status": "PENDING",
-                    "updated_at": "2020-02-06T11:25:09.726Z"
+                    "updated_at": "2020-02-06T11:25:09.726Z",
                 },
                 {
-                    "amount_money": {
-                        "amount": 200,
-                        "currency": "USD"
-                    },
+                    "amount_money": {"amount": 200, "currency": "USD"},
                     "created_at": "2020-02-06T11:28:31.883Z",
                     "id": "bxMrD6jppRDNzVIDeou2qd24MCOZY_COroghYTDynfpIFO6RwXIP1sUxWa7eobswR1GOvYx1F",
                     "location_id": "MESD3N22DWR0F",
@@ -181,11 +156,10 @@ class TestOrderAdmin(TestCase):
                     "payment_id": "bxMrD6jppRDNzVIDeou2qd24MCOZY",
                     "reason": "Test $2 refund [rechner]",
                     "status": "PENDING",
-                    "updated_at": "2020-02-06T11:28:31.883Z"
-                }
-            ]
+                    "updated_at": "2020-02-06T11:28:31.883Z",
+                },
+            ],
         }
-        """
         self.square_order.save()
 
         self.square_order_bad_id = Order(
@@ -194,7 +168,7 @@ class TestOrderAdmin(TestCase):
             status=Order.COMPLETED,
             reference="SQUARE_ORDER_1",
         )
-        self.square_order_bad_id.apiData = '{"payment" : { "id" : "bad-payment-id" }}'
+        self.square_order_bad_id.apiData = {"payment": {"id": "bad-payment-id"}}
         self.square_order_bad_id.save()
 
         self.cash_order.save()
@@ -377,13 +351,18 @@ class TestOrderAdmin(TestCase):
             "idempotency_key": str(uuid.uuid4()),
             "source_id": nonce,
             "autocomplete": autocomplete,
-            "amount_money": {"amount": 10000, "currency": settings.SQUARE_CURRENCY,},
+            "amount_money": {
+                "amount": 10000,
+                "currency": settings.SQUARE_CURRENCY,
+            },
             "reference_id": order.reference,
-            "billing_address": {"postal_code": "94042",},
+            "billing_address": {
+                "postal_code": "94042",
+            },
             "location_id": settings.SQUARE_LOCATION_ID,
         }
         square_response = payments.payments_api.create_payment(body)
-        order.apiData = json.dumps(square_response.body)
+        order.apiData = square_response.body
         order.save()
         if nonce == "cnon:card-nonce-ok":
             self.assertTrue(square_response.is_success())
@@ -403,7 +382,9 @@ class TestOrderAdmin(TestCase):
 
         self.assertTrue(form.is_valid())
         response = self.client.post(
-            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+            reverse("admin:order_refund", args=(order.id,)),
+            form_data,
+            follow=True,
         )
 
         order = Order.objects.get(id=order.id)
@@ -426,7 +407,9 @@ class TestOrderAdmin(TestCase):
         form = OrderAdmin.RefundForm(data=form_data)
         self.assertTrue(form.is_valid())
         response = self.client.post(
-            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+            reverse("admin:order_refund", args=(order.id,)),
+            form_data,
+            follow=True,
         )
 
         order = Order.objects.get(id=order.id)
@@ -443,7 +426,9 @@ class TestOrderAdmin(TestCase):
         form = OrderAdmin.RefundForm(data=form_data)
         self.assertTrue(form.is_valid())
         response = self.client.post(
-            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+            reverse("admin:order_refund", args=(order.id,)),
+            form_data,
+            follow=True,
         )
         order = Order.objects.get(id=order.id)
         self.assertContains(
@@ -468,7 +453,8 @@ class TestOrderAdmin(TestCase):
             reverse("admin:registration_order_change", args=(self.credit_order.id,)),
         )
         self.assertContains(
-            response, "Error while loading JSON from apiData field for this order",
+            response,
+            "Error while loading JSON from apiData field for this order",
         )
 
         # Test with bad square ID:
@@ -483,7 +469,8 @@ class TestOrderAdmin(TestCase):
             ),
         )
         self.assertContains(
-            response, "INVALID_REQUEST_ERROR - NOT_FOUND",
+            response,
+            "INVALID_REQUEST_ERROR - NOT_FOUND",
         )
         self.assertContains(response, "There was a problem")
 
@@ -493,7 +480,8 @@ class TestOrderAdmin(TestCase):
             reverse("admin:order_refresh", args=(order.id,)), follow=True
         )
         self.assertRedirects(
-            response, reverse("admin:registration_order_change", args=(order.id,)),
+            response,
+            reverse("admin:registration_order_change", args=(order.id,)),
         )
         order = Order.objects.get(id=order.id)
         self.assertEqual(order.status, order.FAILED)
@@ -503,7 +491,8 @@ class TestOrderAdmin(TestCase):
             reverse("admin:order_refresh", args=(order.id,)), follow=True
         )
         self.assertRedirects(
-            response, reverse("admin:registration_order_change", args=(order.id,)),
+            response,
+            reverse("admin:registration_order_change", args=(order.id,)),
         )
         order = Order.objects.get(id=order.id)
         self.assertEqual(order.status, order.CAPTURED)
@@ -518,7 +507,9 @@ class TestOrderAdmin(TestCase):
 
         self.assertTrue(form.is_valid())
         response = self.client.post(
-            reverse("admin:order_refund", args=(order.id,)), form_data, follow=True,
+            reverse("admin:order_refund", args=(order.id,)),
+            form_data,
+            follow=True,
         )
 
         order = Order.objects.get(id=order.id)
@@ -526,7 +517,8 @@ class TestOrderAdmin(TestCase):
             reverse("admin:order_refresh", args=(order.id,)), follow=True
         )
         self.assertRedirects(
-            response, reverse("admin:registration_order_change", args=(order.id,)),
+            response,
+            reverse("admin:registration_order_change", args=(order.id,)),
         )
         self.assertContains(
             response, "Refreshed order information from Square successfully"

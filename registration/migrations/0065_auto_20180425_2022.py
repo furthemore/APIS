@@ -13,9 +13,18 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(model_name="event", name="dealerAsstDiscount",),
-        migrations.RemoveField(model_name="event", name="dealerDiscount",),
-        migrations.RemoveField(model_name="event", name="staffDiscount",),
+        migrations.RemoveField(
+            model_name="event",
+            name="dealerAsstDiscount",
+        ),
+        migrations.RemoveField(
+            model_name="event",
+            name="dealerDiscount",
+        ),
+        migrations.RemoveField(
+            model_name="event",
+            name="staffDiscount",
+        ),
         migrations.AddField(
             model_name="event",
             name="dealerBasePriceLevel",

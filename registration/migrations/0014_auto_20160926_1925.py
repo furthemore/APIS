@@ -27,7 +27,9 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=200)),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.AddField(
             model_name="dealer",
@@ -85,7 +87,9 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name="dealer", name="notes", field=models.TextField(blank=True),
+            model_name="dealer",
+            name="notes",
+            field=models.TextField(blank=True),
         ),
         migrations.AddField(
             model_name="dealer",

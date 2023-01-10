@@ -177,7 +177,12 @@ class Event(LookupTable):
         verbose_name="Default",
         help_text="The first default event will be used as the basis for all current event configuration",
     )
-    venue = models.ForeignKey(Venue, null=True, blank=True, on_delete=models.SET_NULL,)
+    venue = models.ForeignKey(
+        Venue,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     newStaffDiscount = models.ForeignKey(
         Discount,
         null=True,
@@ -727,7 +732,7 @@ class Order(models.Model):
         verbose_name="Billing Type",
     )
     lastFour = models.CharField(max_length=4, blank=True, verbose_name="Last 4")
-    apiData = models.TextField(blank=True)
+    apiData = models.JSONField(null=True)
     onsite_reference = models.UUIDField(null=True, blank=True)
 
     def __str__(self):
@@ -742,6 +747,14 @@ class Order(models.Model):
             ("cash_admin", "Can open and close cash drawer amounts (manager)"),
             ("discount", "Can create discounts of arbitrary amount"),
         )
+
+
+class PaymentWebhookNotification(models.Model):
+    integration = models.CharField(max_length=50, default="square")
+    event_id = models.UUIDField(unique=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    body = models.JSONField("Webhook body")
+    headers = models.JSONField("Webhook headers")
 
 
 class OrderItem(models.Model):
@@ -764,7 +777,9 @@ class OrderItem(models.Model):
     def __str__(self):
         try:
             return '{} (${}) - "{}"'.format(
-                self.order.status, self.order.total, self.badge.badgeName,
+                self.order.status,
+                self.order.total,
+                self.badge.badgeName,
             )
         except BaseException:
             try:

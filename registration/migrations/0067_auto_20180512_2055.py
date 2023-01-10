@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(null=True),
         ),
         migrations.AlterField(
-            model_name="temptoken", name="validUntil", field=models.DateTimeField(),
+            model_name="temptoken",
+            name="validUntil",
+            field=models.DateTimeField(),
         ),
     ]

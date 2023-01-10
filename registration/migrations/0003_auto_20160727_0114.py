@@ -29,7 +29,9 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name="attendee", name="notes", field=models.TextField(blank=True),
+            model_name="attendee",
+            name="notes",
+            field=models.TextField(blank=True),
         ),
         migrations.AlterField(
             model_name="attendee",

@@ -37,15 +37,22 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"abstract": False,},
+            options={
+                "abstract": False,
+            },
         ),
         migrations.AlterModelOptions(
             name="order",
             options={"permissions": (("issue_refund", "Can create refunds"),)},
         ),
-        migrations.RemoveField(model_name="cart", name="ipAddress",),
+        migrations.RemoveField(
+            model_name="cart",
+            name="ipAddress",
+        ),
         migrations.AddField(
-            model_name="badge", name="printCount", field=models.IntegerField(default=0),
+            model_name="badge",
+            name="printCount",
+            field=models.IntegerField(default=0),
         ),
         migrations.AddField(
             model_name="event",
@@ -120,7 +127,9 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AddField(
-            model_name="order", name="apiData", field=models.TextField(blank=True),
+            model_name="order",
+            name="apiData",
+            field=models.TextField(blank=True),
         ),
         migrations.AlterField(
             model_name="attendee",

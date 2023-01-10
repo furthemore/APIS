@@ -182,7 +182,9 @@ class InfluxDBReporter(CronReporterABC):
             "measurement": topic,
             "tags": tags,
             "time": self.timestamp(),
-            "fields": {"count": value,},
+            "fields": {
+                "count": value,
+            },
         }
         self.json_body.append(document)
 
@@ -199,9 +201,14 @@ class InfluxDBReporter(CronReporterABC):
         json_body = [
             {
                 "measurement": topic,
-                "tags": {"event": event, "site": Site.objects.get_current().domain,},
+                "tags": {
+                    "event": event,
+                    "site": Site.objects.get_current().domain,
+                },
                 "time": self.timestamp(),
-                "fields": {"count": value,},
+                "fields": {
+                    "count": value,
+                },
             }
         ]
 
