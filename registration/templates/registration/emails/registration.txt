@@ -1,6 +1,6 @@
 Thank you for registering for {{ event }}!
 
-Your confirmation number is: {{reference}}
+Your order number is: {{reference}}
 Your badge name is: {{orderItem.badge.badgeName}}
 Your attending level is: {{orderItem.priceLevel.name}}
 
