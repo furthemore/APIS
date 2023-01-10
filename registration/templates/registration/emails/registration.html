@@ -1,6 +1,12 @@
-<h3>Thank you for registering</h3>
-<p>Your registration confirmation is: {{reference}}</p>
-<p>Your badge name is: {{orderItem.badge.badgeName}}</p>
-<p>Your attending level is: {{orderItem.priceLevel.name}}</p>
-<p>You my pick up your badge from the pre-reg line at the convention. If you have any questions regarding your registration, please contact <a href='mailto:{{event.registrationEmail}}'>{{event.registrationEmail}}</a>.</p>
-<p>See you at {{ event }}!</p>
+<h3>Thank you for registering for {{ event }}!<h3>
+<p>&nbsp;</p>
+<p>Your confirmation number is: {{reference}}<br />
+Your badge name is: {{orderItem.badge.badgeName}}<br />
+Your attending level is: {{orderItem.priceLevel.name}}</p>
+<p>&nbsp;</p>
+<p>This email is for your records only. You will not need the confirmation number to pick up your badge. <strong>In order to pick up your badge on-site, you will only need to bring your Government Issued Photo ID and Vaccine proof to the registration desk.</strong><br />
+If you have any questions regarding your registration, please contact {{ event.registrationEmail }}.</p>
+  <p>&nbsp;</p>
+  <p>See you there!</p>
+<p>&nbsp;</p>
+  <p>- {{ event }} Registration Team</p>
