@@ -8,3 +8,5 @@ This email is for your records only. You will not need the confirmation number t
 If you have any questions regarding your registration, please contact {{ event.registrationEmail }}.
 
 See you there!
+
+- {{ event }} Registration Team
