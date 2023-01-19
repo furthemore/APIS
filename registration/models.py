@@ -328,7 +328,11 @@ def getRegistrationToken():
 class TempToken(models.Model):
     token = models.CharField(max_length=200, default=getRegistrationToken)
     email = models.CharField(max_length=200)
-    ignore_time_window = models.BooleanField(default=False)
+    ignore_time_window = models.BooleanField(
+        default=False,
+        verbose_name="Ignore Registration Time Window",
+        help_text="Enabling this option will allow this invite code to disregard the open and close date and time specified in the event",
+    )
     validUntil = models.DateTimeField()
     used = models.BooleanField(default=False)
     usedDate = models.DateTimeField(null=True, blank=True)
