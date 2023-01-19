@@ -341,6 +341,9 @@ class TempToken(models.Model):
     class Meta:
         db_table = "registration_temp_token"
 
+    def __str__(self):
+        return self.token
+
 
 class Attendee(models.Model):
     firstName = models.CharField("Legal First Name", max_length=200)
