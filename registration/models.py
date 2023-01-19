@@ -328,6 +328,7 @@ def getRegistrationToken():
 class TempToken(models.Model):
     token = models.CharField(max_length=200, default=getRegistrationToken)
     email = models.CharField(max_length=200)
+    ignore_time_window = models.BooleanField(default=False)
     validUntil = models.DateTimeField()
     used = models.BooleanField(default=False)
     usedDate = models.DateTimeField(null=True, blank=True)
