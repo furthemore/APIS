@@ -331,7 +331,7 @@ class TempToken(models.Model):
     ignore_time_window = models.BooleanField(
         default=False,
         verbose_name="Ignore Registration Time Window",
-        help_text="Enabling this option will allow this invite code to disregard the open and close date and time specified in the event",
+        help_text="Enabling this option will allow this invite code to disregard the open and close date and time specified in the event. The Valid Until setting on this form will still apply",
     )
     validUntil = models.DateTimeField()
     used = models.BooleanField(default=False)
