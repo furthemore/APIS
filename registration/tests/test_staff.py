@@ -98,7 +98,7 @@ class TestNewStaff(StaffTestCase):
             "token": self.token.token,
         }
         response = self.client.get(
-            reverse("registration:new_staff", args=self.token.token),
+            reverse("registration:new_staff", args=(self.token.token,)),
             json.dumps(body),
             content_type="application/json",
         )
@@ -111,7 +111,7 @@ class TestNewStaff(StaffTestCase):
             "token": self.token_used.token,
         }
         response = self.client.get(
-            reverse("registration:new_staff"),
+            reverse("registration:new_staff", args=(self.token_used.token,)),
             json.dumps(body),
             content_type="application/json",
         )
@@ -124,7 +124,7 @@ class TestNewStaff(StaffTestCase):
             "token": self.token_expired.token,
         }
         response = self.client.get(
-            reverse("registration:new_staff"),
+            reverse("registration:new_staff", args=(self.token_expired.token,)),
             json.dumps(body),
             content_type="application/json",
         )
@@ -137,7 +137,7 @@ class TestNewStaff(StaffTestCase):
             "token": self.token_override.token,
         }
         response = self.client.get(
-            reverse("registration:new_staff"),
+            reverse("registration:new_staff", args=(self.token_override.token,)),
             json.dumps(body),
             content_type="application/json",
         )
@@ -150,7 +150,7 @@ class TestNewStaff(StaffTestCase):
             "token": self.token_used_override.token,
         }
         response = self.client.get(
-            reverse("registration:new_staff"),
+            reverse("registration:new_staff", args=(self.token_used_override.token,)),
             json.dumps(body),
             content_type="application/json",
         )
@@ -163,7 +163,7 @@ class TestNewStaff(StaffTestCase):
             "token": self.token_expired_override.token,
         }
         response = self.client.get(
-            reverse("registration:new_staff"),
+            reverse("registration:new_staff", args=(self.token_expired_override.token,)),
             json.dumps(body),
             content_type="application/json",
         )
