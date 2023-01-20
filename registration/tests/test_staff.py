@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 from django.test.utils import tag
 from django.urls import reverse
+from freezegun import freeze_time
 
 from registration.models import *
 from registration.tests.common import OrdersTestCase
@@ -117,32 +118,23 @@ class TestNewStaff(StaffTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"closed", response.content)
 
-    def test_new_staff_invite_used(self):
+    @freeze_time("2000-01-01")
+    def test_new_staff_invite_good_closed(self):
         body = {
-            "email": self.token_used.email,
-            "token": self.token_used.token,
+            "email": self.token.email,
+            "token": self.token.token,
         }
         response = self.client.post(
-            reverse("registration:new_staff", args=(self.token_used.token,)),
+            reverse("registration:new_staff", args=(self.token.token,)),
             json.dumps(body),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
+        self.assertIn(b"closed", response.content)
 
-    @freeze_time()
-    def test_new_staff_invite_expired(self):
-        body = {
-            "email": self.token_expired.email,
-            "token": self.token_expired.token,
-        }
-        response = self.client.post(
-            reverse("registration:new_staff", args=(self.token_expired.token,)),
-            json.dumps(body),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-
+    @freeze_time("2000-01-01")
     def test_new_staff_invite_override(self):
         body = {
             "email": self.token_override.email,
@@ -154,32 +146,7 @@ class TestNewStaff(StaffTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-
-    def test_new_staff_invite_used_override(self):
-        body = {
-            "email": self.token_used_override.email,
-            "token": self.token_used_override.token,
-        }
-        response = self.client.post(
-            reverse("registration:new_staff", args=(self.token_used_override.token,)),
-            json.dumps(body),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_new_staff_invite_expired_override(self):
-        body = {
-            "email": self.token_expired_override.email,
-            "token": self.token_expired_override.token,
-        }
-        response = self.client.post(
-            reverse(
-                "registration:new_staff", args=(self.token_expired_override.token,)
-            ),
-            json.dumps(body),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"closed", response.content)
 
 
 class TestFindNewStaff(StaffTestCase):
