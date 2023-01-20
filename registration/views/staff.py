@@ -27,10 +27,11 @@ logger = logging.getLogger(__name__)
 
 def new_staff(request, guid):
     event = Event.objects.get(default=True)
+    invite = TempToken.objects.get(token=guid)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {"token": guid, "event": event}
-    if event.staffRegStart <= today <= event.staffRegEnd:
+    if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
         return render(request, "registration/staff/staff-new.html", context)
     return render(request, "registration/staff/staff-closed.html", context)
 

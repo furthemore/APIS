@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 from django.test.utils import tag
 from django.urls import reverse
+from freezegun import freeze_time
 
 from registration.models import *
 from registration.tests.common import OrdersTestCase
@@ -20,13 +21,36 @@ class StaffTestCase(OrdersTestCase):
     def setUp(self):
         super().setUp()
         self.token = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now + one_hour
+            email="apis-staff-test@mailinator.com",
+            validUntil=now + one_hour,
+            ignore_time_window=False,
         )
         self.token_used = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True
+            email="apis-staff-test@mailinator.com",
+            validUntil=now + one_hour,
+            used=True,
+            ignore_time_window=False,
         )
         self.token_expired = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now - one_hour
+            email="apis-staff-test@mailinator.com",
+            validUntil=now - one_hour,
+            ignore_time_window=False,
+        )
+        self.token_override = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com",
+            validUntil=now + one_hour,
+            ignore_time_window=True,
+        )
+        self.token_used_override = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com",
+            validUntil=now + one_hour,
+            used=True,
+            ignore_time_window=True,
+        )
+        self.token_expired_override = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com",
+            validUntil=now - one_hour,
+            ignore_time_window=True,
         )
 
         self.attendee = Attendee.objects.create(
@@ -83,9 +107,46 @@ class TestFindStaff(TestCase):
 
 
 class TestNewStaff(StaffTestCase):
-    def test_new_staff(self):
-        response = self.client.get(reverse("registration:new_staff", args=("foobar",)))
+    def test_new_staff_invite_good(self):
+        body = {
+            "email": self.token.email,
+            "token": self.token.token,
+        }
+        response = self.client.post(
+            reverse("registration:new_staff", args=(self.token.token,)),
+            json.dumps(body),
+            content_type="application/json",
+        )
         self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"closed", response.content)
+
+    @freeze_time("2000-01-01")
+    def test_new_staff_invite_good_closed(self):
+        body = {
+            "email": self.token.email,
+            "token": self.token.token,
+        }
+        response = self.client.post(
+            reverse("registration:new_staff", args=(self.token.token,)),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"closed", response.content)
+
+    @freeze_time("2000-01-01")
+    def test_new_staff_invite_override(self):
+        body = {
+            "email": self.token_override.email,
+            "token": self.token_override.token,
+        }
+        response = self.client.post(
+            reverse("registration:new_staff", args=(self.token_override.token,)),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"closed", response.content)
 
 
 class TestFindNewStaff(StaffTestCase):
@@ -207,12 +268,19 @@ class TestAddNewStaff(StaffTestCase):
 
 class TestStaffIndex(StaffTestCase):
     def test_staff_index(self):
-        result = self.client.get(reverse("registration:staff", args=("foo",)))
-        self.assertEqual(result.status_code, 200)
+        response = self.client.get(reverse("registration:staff", args=("foo",)))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(b"closed", response.content)
+        
+    @freeze_time("2000-01-01")
+    def test_staff_index_closed(self):
+        response = self.client.get(reverse("registration:staff", args=("foo",)))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"closed", response.content)
 
     def test_staff_done(self):
-        result = self.client.get(reverse("registration:staff_done"))
-        self.assertEqual(result.status_code, 200)
+        response = self.client.get(reverse("registration:staff_done"))
+        self.assertEqual(response.status_code, 200)
 
 
 class TestInfoStaff(StaffTestCase):
