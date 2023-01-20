@@ -20,13 +20,22 @@ class StaffTestCase(OrdersTestCase):
     def setUp(self):
         super().setUp()
         self.token = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now + one_hour
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, ignore_time_window=False
         )
         self.token_used = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True, ignore_time_window=False
         )
         self.token_expired = TempToken.objects.create(
-            email="apis-staff-test@mailinator.com", validUntil=now - one_hour
+            email="apis-staff-test@mailinator.com", validUntil=now - one_hour, ignore_time_window=False
+        )
+        self.token_override = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, ignore_time_window=True
+        )
+        self.token_used_override = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now + one_hour, used=True, ignore_time_window=True
+        )
+        self.token_expired_override = TempToken.objects.create(
+            email="apis-staff-test@mailinator.com", validUntil=now - one_hour, ignore_time_window=True
         )
 
         self.attendee = Attendee.objects.create(
@@ -83,8 +92,81 @@ class TestFindStaff(TestCase):
 
 
 class TestNewStaff(StaffTestCase):
-    def test_new_staff(self):
-        response = self.client.get(reverse("registration:new_staff", args=("foobar",)))
+    def test_new_staff_invite_good(self):
+        body = {
+            "email": self.token.email,
+            "token": self.token.token,
+        }
+        response = self.client.get(
+            reverse("registration:new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        
+    def test_new_staff_invite_used(self):
+        body = {
+            "email": self.token_used.email,
+            "token": self.token_used.token,
+        }
+        response = self.client.get(
+            reverse("registration:new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        
+    def test_new_staff_invite_expired(self):
+        body = {
+            "email": self.token_expired.email,
+            "token": self.token_expired.token,
+        }
+        response = self.client.get(
+            reverse("registration:new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        
+    def test_new_staff_invite_override(self):
+        body = {
+            "email": self.token_override.email,
+            "token": self.token_override.token,
+        }
+        response = self.client.get(
+            reverse("registration:new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        
+    def test_new_staff_invite_used_override(self):
+        body = {
+            "email": self.token_used_override.email,
+            "token": self.token_used_override.token,
+        }
+        response = self.client.get(
+            reverse("registration:new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        
+        
+    def test_new_staff_invite_expired_override(self):
+        body = {
+            "email": self.token_expired_override.email,
+            "token": self.token_expired_override.token,
+        }
+        response = self.client.get(
+            reverse("registration:new_staff"),
+            json.dumps(body),
+            content_type="application/json",
+        )
         self.assertEqual(response.status_code, 200)
 
 
