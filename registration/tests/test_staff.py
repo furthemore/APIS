@@ -270,6 +270,13 @@ class TestStaffIndex(StaffTestCase):
     def test_staff_index(self):
         result = self.client.get(reverse("registration:staff", args=("foo",)))
         self.assertEqual(result.status_code, 200)
+        self.assertNotIn(b"closed", response.content)
+        
+    @freeze_time("2000-01-01")
+    def test_staff_index_closed(self):
+        result = self.client.get(reverse("registration:staff", args=("foo",)))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn(b"closed", response.content)
 
     def test_staff_done(self):
         result = self.client.get(reverse("registration:staff_done"))
