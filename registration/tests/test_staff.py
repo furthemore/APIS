@@ -99,6 +99,7 @@ class TestNewStaff(StaffTestCase):
         }
         response = self.client.get(
             reverse("registration:new_staff"),
+            args=self.token.token,
             json.dumps(body),
             content_type="application/json",
         )
