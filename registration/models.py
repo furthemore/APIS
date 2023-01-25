@@ -156,20 +156,19 @@ class Venue(models.Model):
 class Event(LookupTable):
     dealerRegStart = models.DateTimeField(
         verbose_name="Dealer Registration Start",
-        help_text="Start date and time for dealer applications",
     )
     dealerRegEnd = models.DateTimeField(verbose_name="Dealer Registration End")
     staffRegStart = models.DateTimeField(
-        verbose_name="Staff Registration Start", help_text="(Not currently enforced)"
+        verbose_name="Staff Registration Start",
     )
     staffRegEnd = models.DateTimeField(verbose_name="Staff Registration End")
-    attendeeRegStart = models.DateTimeField(verbose_name="Attendee Registration Start")
-    attendeeRegEnd = models.DateTimeField(verbose_name="Attendee Registration End")
+    attendeeRegStart = models.DateTimeField(verbose_name="Online Attendee Registration Start")
+    attendeeRegEnd = models.DateTimeField(verbose_name="Online Attendee Registration End")
     onsiteRegStart = models.DateTimeField(
-        "On-site Registration Start",
+        "On-Site Registration Start",
         help_text="Start time for /registration/onsite form",
     )
-    onsiteRegEnd = models.DateTimeField(verbose_name="On-site Registration End")
+    onsiteRegEnd = models.DateTimeField(verbose_name="On-Site Registration End")
     eventStart = models.DateField(verbose_name="Event Start Date")
     eventEnd = models.DateField(verbose_name="Event End Date")
     default = models.BooleanField(
