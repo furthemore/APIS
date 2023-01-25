@@ -42,7 +42,6 @@ admin.site.site_header = "APIS Backoffice"
 # Register your models here.
 admin.site.register(HoldType)
 admin.site.register(ShirtSizes)
-admin.site.register(Event)
 admin.site.register(Charity)
 admin.site.register(TableSize)
 admin.site.register(Cart)
@@ -524,6 +523,66 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
 
 admin.site.register(Dealer, DealerAdmin)
 
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('name', 'eventStart', 'eventEnd', 'default')
+    fieldsets = (
+        (
+            "Basic Event Info", {
+                'fields': (
+                    'default',
+                    'name',
+                    'eventStart',
+                    'eventEnd',
+                    'venue',
+                    'charity',
+                    'donations',
+                    ('codeOfConduct', 'badgeTheme'),
+                )
+            }
+        ),
+        (
+            "Registration Timing", {
+                #'classes': ('wide', ),
+                'fields': (
+                    ('attendeeRegStart', 'attendeeRegEnd'),
+                    ('onsiteRegStart', 'onsiteRegEnd'),
+                    ('staffRegStart', 'staffRegEnd'),
+                    ('dealerRegStart', 'dealerRegEnd'),
+                )
+            }
+        ),
+        (
+            "Online Registration Options", {
+                'fields': (
+                    'collectAddress',
+                    'collectBillingAddress',
+                    'allowOnlineMinorReg',
+                )
+            }
+        ),
+        (
+            "Contact Email Addresses", {
+                'fields': (
+                    'registrationEmail',
+                    'staffEmail',
+                    'dealerEmail',
+                )
+            }
+        ),
+        (
+            "Discounts", {
+                'classes': ('collapse', ),
+                'fields': (
+                    'staffDiscount',
+                    'newStaffDiscount',
+                    'dealerDiscount',
+                    'assistantDiscount',
+                )
+            }
+        ),
+    )
+
+admin.site.register(Event, EventAdmin)
 
 ########################################################
 #   Staff Admin
@@ -548,7 +607,7 @@ send_staff_registration_email.short_description = "Send registration instruction
 
 class StaffResource(resources.ModelResource):
     badgeName = fields.Field()
-    
+
     class Meta:
         model = Staff
         fields = (
@@ -607,7 +666,7 @@ class StaffResource(resources.ModelResource):
             "contactPhone",
             "contactRelation",
         )
-        
+
     def dehydrate_badgeName(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
         if badge is None:
