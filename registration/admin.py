@@ -523,64 +523,71 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
 
 admin.site.register(Dealer, DealerAdmin)
 
+
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'eventStart', 'eventEnd', 'default')
+    list_display = ("name", "eventStart", "eventEnd", "default")
     fieldsets = (
         (
-            "Basic Event Info", {
-                'fields': (
-                    'default',
-                    'name',
-                    'eventStart',
-                    'eventEnd',
-                    'venue',
-                    'charity',
-                    'donations',
-                    ('codeOfConduct', 'badgeTheme'),
+            "Basic Event Info",
+            {
+                "fields": (
+                    "default",
+                    "name",
+                    "eventStart",
+                    "eventEnd",
+                    "venue",
+                    "charity",
+                    "donations",
+                    ("codeOfConduct", "badgeTheme"),
                 )
-            }
+            },
         ),
         (
-            "Registration Timing", {
+            "Registration Timing",
+            {
                 #'classes': ('wide', ),
-                'fields': (
-                    ('attendeeRegStart', 'attendeeRegEnd'),
-                    ('onsiteRegStart', 'onsiteRegEnd'),
-                    ('staffRegStart', 'staffRegEnd'),
-                    ('dealerRegStart', 'dealerRegEnd'),
+                "fields": (
+                    ("attendeeRegStart", "attendeeRegEnd"),
+                    ("onsiteRegStart", "onsiteRegEnd"),
+                    ("staffRegStart", "staffRegEnd"),
+                    ("dealerRegStart", "dealerRegEnd"),
                 )
-            }
+            },
         ),
         (
-            "Online Registration Options", {
-                'fields': (
-                    'collectAddress',
-                    'collectBillingAddress',
-                    'allowOnlineMinorReg',
+            "Online Registration Options",
+            {
+                "fields": (
+                    "collectAddress",
+                    "collectBillingAddress",
+                    "allowOnlineMinorReg",
                 )
-            }
+            },
         ),
         (
-            "Contact Email Addresses", {
-                'fields': (
-                    'registrationEmail',
-                    'staffEmail',
-                    'dealerEmail',
+            "Contact Email Addresses",
+            {
+                "fields": (
+                    "registrationEmail",
+                    "staffEmail",
+                    "dealerEmail",
                 )
-            }
+            },
         ),
         (
-            "Discounts", {
-                'classes': ('collapse', ),
-                'fields': (
-                    'staffDiscount',
-                    'newStaffDiscount',
-                    'dealerDiscount',
-                    'assistantDiscount',
-                )
-            }
+            "Discounts",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "staffDiscount",
+                    "newStaffDiscount",
+                    "dealerDiscount",
+                    "assistantDiscount",
+                ),
+            },
         ),
     )
+
 
 admin.site.register(Event, EventAdmin)
 
@@ -973,6 +980,9 @@ def print_badges(modeladmin, request, queryset):
             )
             badge.printed = True
             badge.save()
+    if len(tags) == 0:
+        messages.warning(request, "None of the selected badges can be printed.")
+        return
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
@@ -1005,6 +1015,9 @@ def print_dealerasst_badges(modeladmin, request, queryset):
         )
         badge.printed = True
         badge.save()
+    if len(tags) == 0:
+        messages.warning(request, "None of the selected badges can be printed.")
+        return
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
@@ -1063,7 +1076,7 @@ print_dealer_badges.short_description = "Print Dealer Badges"
 
 def assign_staff_badge_numbers(modeladmin, request, queryset):
     staff = Attendee.objects.exclude(staff=None)
-    event = staff[0].event
+    event = queryset[0].event
     badges = Badge.objects.filter(attendee__in=staff, event=event)
     highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
     for badge in queryset.order_by("registeredDate"):

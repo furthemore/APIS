@@ -261,6 +261,7 @@
       let adult = true;
   </script>
   <script type="text/javascript" src="{% static "js/main.js" %}"></script>
+  {% if dealer %}
   <script type="text/javascript" src="{% static "js/templates/price-types.js" %}"></script>
   <script type="text/javascript">
       let dealer = {{ jsonDealer|safe }};
@@ -402,4 +403,5 @@
       }
 
   </script>
+  {% endif %}
 {% endblock %}
