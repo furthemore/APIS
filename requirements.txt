@@ -24,6 +24,6 @@ psycopg2-binary==2.9.5
 PyJWT~=2.4.0
 sentry-sdk
 squareup==22.0.0.20220921
-Werkzeug==2.2.2
+Werkzeug==2.2.3
 qrcode~=7.3.1
 pytz~=2022.6
