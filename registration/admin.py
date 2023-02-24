@@ -21,7 +21,7 @@ from django.utils.html import format_html, urlencode
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedModelAdmin, NestedTabularInline
-from qrcode.image.svg import SvgFillImage
+from qrcode.image.svg import SvgPathFillImage
 
 import registration.emails
 import registration.views.printing
@@ -142,7 +142,7 @@ class FirebaseAdmin(admin.ModelAdmin):
 
     @staticmethod
     def get_qrcode(data):
-        img = qrcode.make(data, image_factory=SvgFillImage)
+        img = qrcode.make(data, image_factory=SvgPathFillImage)
         buf = BytesIO()
         img.save(buf)
         return buf.getvalue()
