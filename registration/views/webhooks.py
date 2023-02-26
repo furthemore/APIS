@@ -12,6 +12,11 @@ from registration.views import common
 logger = logging.getLogger(__name__)
 
 
+def test_webhook(request):
+    notification_url = request.build_absolute_uri()
+    return common.success(200, notification_url)
+
+
 @require_POST
 def square_webhook(request):
     square_signature = request.headers.get("X-Square-HMACSHA256-Signature")
