@@ -17,6 +17,8 @@ def square_webhook(request):
     square_signature = request.headers.get("X-Square-HMACSHA256-Signature")
     notification_url = request.build_absolute_uri()
 
+    logger.warning(f"notification_url: {notification_url}")
+
     signature_valid = is_valid_webhook_event_signature(
         request.body.decode("utf-8"),
         square_signature,
