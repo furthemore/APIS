@@ -12,8 +12,8 @@ from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db import transaction
-from django.db.models import Max
-from django.forms import NumberInput
+from django.db.models import JSONField, Max
+from django.forms import NumberInput, widgets
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -1679,8 +1679,23 @@ class VenueAdmin(admin.ModelAdmin):
 admin.site.register(Venue, VenueAdmin)
 
 
+class PrettyJSONWidget(widgets.Textarea):
+    def format_value(self, value):
+        try:
+            value = json.dumps(json.loads(value), indent=2, sort_keys=True)
+            # these lines will try to adjust size of TextArea to fit to content
+            row_lengths = [len(r) for r in value.split("\n")]
+            self.attrs["rows"] = min(max(len(row_lengths) + 2, 10), 30)
+            self.attrs["cols"] = min(max(max(row_lengths) + 2, 40), 120)
+            return value
+        except Exception as e:
+            logger.warning("Error while formatting JSON: {}".format(e))
+            return super(PrettyJSONWidget, self).format_value(value)
+
+
 class PaymentWebhookAdmin(admin.ModelAdmin):
     list_display = ("event_id", "timestamp", "integration")
+    formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
 
 
 admin.site.register(PaymentWebhookNotification, PaymentWebhookAdmin)
