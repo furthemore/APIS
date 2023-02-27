@@ -3,6 +3,7 @@ import logging
 
 from django.conf import settings
 from django.db import IntegrityError
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from square.utilities.webhooks_helper import is_valid_webhook_event_signature
 
@@ -12,17 +13,11 @@ from registration.views import common
 logger = logging.getLogger(__name__)
 
 
-def test_webhook(request):
-    notification_url = request.build_absolute_uri()
-    return common.success(200, notification_url)
-
-
 @require_POST
+@csrf_exempt
 def square_webhook(request):
     square_signature = request.headers.get("X-Square-HMACSHA256-Signature")
     notification_url = request.build_absolute_uri()
-
-    logger.warning(f"notification_url: {notification_url}")
 
     signature_valid = is_valid_webhook_event_signature(
         request.body.decode("utf-8"),

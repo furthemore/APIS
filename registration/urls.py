@@ -347,9 +347,4 @@ urlpatterns = [
         registration.views.webhooks.square_webhook,
         name="square_webhook",
     ),
-    url(
-        r"webhook/test",
-        registration.views.webhooks.test_webhook,
-        name="test_webhook",
-    ),
 ]

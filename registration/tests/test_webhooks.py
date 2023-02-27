@@ -8,7 +8,14 @@ from registration.models import PaymentWebhookNotification
 
 class TestSquareWebhooks(TestCase):
     EVENT_ID = "9c7300fc-5b0d-3ffb-8cd0-c2987b21099c"
-    WEBHOOK_BODY = """{"merchant_id":"PXRNP8VV5DSQH","type":"refund.updated","event_id":"9c7300fc-5b0d-3ffb-8cd0-c2987b21099c","created_at":"2022-12-29T06:30:29.411Z","data":{"type":"refund","id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY_rui4h8ypOw5yihLEBc5UC2HqJS0xUl7gukSQ7lq1AuF","object":{"refund":{"amount_money":{"amount":9000,"currency":"USD"},"created_at":"2022-12-29T06:30:27.642Z","destination_type":"CARD","id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY_rui4h8ypOw5yihLEBc5UC2HqJS0xUl7gukSQ7lq1AuF","location_id":"MESD3N22DWR0F","order_id":"gzamDxDtniM1nKbkDYZHYH0xbEOZY","payment_id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY","reason":" [rechner]","status":"COMPLETED","updated_at":"2022-12-29T06:30:29.404Z","version":6}}}}"""
+    WEBHOOK_BODY = """{"merchant_id":"PXRNP8VV5DSQH","type":"refund.updated",
+    "event_id":"9c7300fc-5b0d-3ffb-8cd0-c2987b21099c","created_at":"2022-12-29T06:30:29.411Z",
+    "data":{"type":"refund","id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY_rui4h8ypOw5yihLEBc5UC2HqJS0xUl7gukSQ7lq1AuF",
+    "object":{"refund":{"amount_money":{"amount":9000,"currency":"USD"},"created_at":"2022-12-29T06:30:27.642Z",
+    "destination_type":"CARD","id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY_rui4h8ypOw5yihLEBc5UC2HqJS0xUl7gukSQ7lq1AuF",
+    "location_id":"MESD3N22DWR0F","order_id":"gzamDxDtniM1nKbkDYZHYH0xbEOZY",
+    "payment_id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY","reason":" [rechner]","status":"COMPLETED",
+    "updated_at":"2022-12-29T06:30:29.404Z","version":6}}}}"""
     SHA256_SIGNATURE = "iGNztY3PcgdIv2MD97jZ7oOpcSk5FnyLdPnmn2MRx64="
     SIGNATURE_KEY = "bj-4rZKxCc8_1CZtghoatg"
     NOTIFICATION_URL = "https://webhook.site/5477eda8-952e-4844-91db-8b10cf228833"
