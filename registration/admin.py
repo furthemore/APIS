@@ -1677,3 +1677,10 @@ class VenueAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Venue, VenueAdmin)
+
+
+class PaymentWebhookAdmin(admin.ModelAdmin):
+    list_display = ("event_id", "timestamp", "integration")
+
+
+admin.site.register(PaymentWebhookNotification, PaymentWebhookAdmin)
