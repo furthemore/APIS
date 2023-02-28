@@ -959,6 +959,15 @@ def print_badges(modeladmin, request, queryset):
         else:
             badgeNumber = "{:04}".format(badge.badgeNumber)
 
+        tags.append(
+            {
+                    "name": html.escape(badge.badgeName),
+                    "number": badgeNumber,
+                    #"level": html.escape(str(badge.effectiveLevel())), #add this later via badge type check
+                    "title": "",
+                    "age": get_attendee_age(badge.attendee),
+            }
+        )
         # Exclude staff badges
         try:
             staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
@@ -969,15 +978,7 @@ def print_badges(modeladmin, request, queryset):
                 ),
             )
         except Staff.DoesNotExist:
-            tags.append(
-                {
-                    "name": html.escape(badge.badgeName),
-                    "number": badgeNumber,
-                    "level": html.escape(str(badge.effectiveLevel())),
-                    "title": "",
-                    "age": get_attendee_age(badge.attendee),
-                }
-            )
+
             badge.printed = True
             badge.save()
     if len(tags) == 0:
@@ -1074,6 +1075,7 @@ def print_dealer_badges(modeladmin, request, queryset):
 print_dealer_badges.short_description = "Print Dealer Badges"
 
 
+#TODO: delete this function
 def assign_staff_badge_numbers(modeladmin, request, queryset):
     staff = Attendee.objects.exclude(staff=None)
     event = queryset[0].event
@@ -1141,6 +1143,20 @@ def print_staff_badges(modeladmin, request, queryset):
 
 
 print_staff_badges.short_description = "Print Staff Badges"
+
+
+def get_badge_type(badge):
+    #check if staff
+    try:
+        staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
+    else:
+        return "Staff"
+    #check if dealer
+    try:
+        dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
+    else:
+        return "Dealer"
+    return "Attendee"
 
 
 class AttendeeOptionInline(NestedTabularInline):
@@ -1293,7 +1309,6 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         print_dealerasst_badges,
         assign_numbers_and_print,
         print_dealer_badges,
-        assign_staff_badge_numbers,
         print_staff_badges,
         send_upgrade_form_email,
         resend_confirmation_email,
