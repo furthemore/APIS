@@ -954,6 +954,13 @@ def print_badges(modeladmin, request, queryset):
     tags = []
     for badge in queryset:
         # print the badge
+        level = badge.effectiveLevel()
+        if level is None or level == Badge.UNPAID:
+            messages.warning(
+                request,
+                f"skipped printing {badge} a number beacuse it's registration level is {level}",
+            )
+            continue
         if badge.badgeNumber is None:
             badgeNumber = ""
         else:
@@ -993,157 +1000,6 @@ def print_badges(modeladmin, request, queryset):
 
 
 print_badges.short_description = "Print Badges"
-
-
-#TODO: delete this function
-def print_dealerasst_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:03}".format(badge.badgeNumber)
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": "Dealer",
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    if len(tags) == 0:
-        messages.warning(request, "None of the selected badges can be printed.")
-        return
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
-
-
-print_dealerasst_badges.short_description = "Print Dealer Assistant Badges"
-
-
-#TODO: delete this function
-def print_dealer_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:03}".format(badge.badgeNumber)
-        try:
-            dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
-        except Dealer.DoesNotExist:
-            messages.warning(
-                request,
-                "{0} is not a dealer, so we skipped printing a dealer badge for them".format(
-                    badge.badgeName
-                ),
-            )
-            continue
-
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": "Dealer",
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    if len(tags) > 0:
-        con.nametags(tags, theme=badge.event.badgeTheme)
-        # serve up this file
-        pdf_path = con.pdf.split("/")[-1]
-        response = HttpResponseRedirect(reverse("registration:print"))
-        url_params = {"file": pdf_path, "next": request.get_full_path()}
-        response["Location"] += "?{}".format(urlencode(url_params))
-        return response
-
-
-print_dealer_badges.short_description = "Print Dealer Badges"
-
-
-#TODO: delete this function
-def assign_staff_badge_numbers(modeladmin, request, queryset):
-    staff = Attendee.objects.exclude(staff=None)
-    event = queryset[0].event
-    badges = Badge.objects.filter(attendee__in=staff, event=event)
-    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-    for badge in queryset.order_by("registeredDate"):
-        if badge.badgeNumber:
-            continue
-        if badge.effectiveLevel() is None:
-            continue
-        highest = highest + 1
-        badge.badgeNumber = highest
-        badge.save()
-
-
-assign_staff_badge_numbers.short_description = "Assign staff badge numbers"
-
-
-def print_staff_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "S-{:03}".format(badge.badgeNumber)
-        try:
-            staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-        except Staff.DoesNotExist:
-            messages.warning(
-                request,
-                "{0} is not on staff, so we skipped printing a staff badge for them".format(
-                    badge.badgeName
-                ),
-            )
-            continue
-        except Staff.MultipleObjectsReturned:
-            messages.error(
-                request,
-                "{0} was added to staff multiple times! - dedupe and try again.".format(
-                    badge.attendee
-                ),
-            )
-            continue
-
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": "Staff",
-                "title": html.escape(staff.title),
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
-
-
-print_staff_badges.short_description = "Print Staff Badges"
 
 
 def get_badge_type(badge):
