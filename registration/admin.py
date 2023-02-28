@@ -1149,11 +1149,15 @@ def get_badge_type(badge):
     #check if staff
     try:
         staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
+    except:
+        pass
     else:
         return "Staff"
     #check if dealer
     try:
         dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
+    except:
+        pass
     else:
         return "Dealer"
     return "Attendee"
