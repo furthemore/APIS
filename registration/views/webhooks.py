@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from square.utilities.webhooks_helper import is_valid_webhook_event_signature
 
+from registration import payments
 from registration.models import PaymentWebhookNotification
 from registration.views import common
 
@@ -50,3 +51,13 @@ def square_webhook(request):
         return common.abort(409, f"Conflict: event_id {event_id} already exists")
 
     return common.success(200)
+
+
+def process_webhook(notification):
+    if notification.body["type"] == "refund.updated":
+        result = payments.process_webhook_update(notification)
+    elif notification.body["type"] == "refund.created":
+        result = payments.process_webhook_created(notification)
+
+    notification.processed = result
+    notification.save()

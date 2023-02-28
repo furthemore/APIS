@@ -207,6 +207,33 @@ def refresh_payment(order, store_api_data=None):
     return True, None
 
 
+def process_webhook_refund_updated(notification):
+    # Find matching order, if any:
+    payment_id = notification.body["data"]["object"]["payment_id"]
+    try:
+        order = Order.objets.get(apiData__payment__id=payment_id)
+    except Order.DoesNotExist:
+        logger.warning(
+            f"Got webhook for refund.update on payment.id = {payment_id}, but found no corresponding payment."
+        )
+        return False
+
+    stored_refunds = order.apiData["refunds"]
+    refund = notification.body["data"]["object"]["refund"]
+    if refund:
+        # Check if refund has already been stored (Refund created internally), and update in-place
+        order.apiData["refunds"].append(refund)
+        status = refund.get("status")
+        if status == "COMPLETED":
+            order.status = Order.REFUNDED
+        elif status == "PENDING":
+            order.status = Order.REFUND_PENDING
+
+
+def process_webhook_refund_created(notification):
+    pass
+
+
 def refund_payment(order, amount, reason=None, request=None):
     if order.status == Order.FAILED:
         return False, "Failed orders cannot be refunded."
