@@ -910,32 +910,7 @@ assign_badge_numbers.short_description = "Assign badge number"
 
 def assign_numbers_and_print(modeladmin, request, queryset):
     assign_badge_numbers(modeladmin, request, queryset)
-
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": html.escape(str(badge.effectiveLevel())),
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
+    response = print_badges(modeladmin, request, queryset)
     return response
 
 
