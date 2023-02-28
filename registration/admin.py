@@ -959,28 +959,27 @@ def print_badges(modeladmin, request, queryset):
         else:
             badgeNumber = "{:04}".format(badge.badgeNumber)
 
+        badge_type = get_badge_type(badge)
+        if badge_type == "Attendee":
+            printed_badge_level = html.escape(str(badge.effectiveLevel()))
+        elif badge_type == "Dealer":
+            printed_badge_level = "Dealer"
+        elif badge_type == "Staff":
+            printed_badge_level = "Staff"
+
         tags.append(
             {
-                    "name": html.escape(badge.badgeName),
-                    "number": badgeNumber,
-                    #"level": html.escape(str(badge.effectiveLevel())), #add this later via badge type check
-                    "title": "",
-                    "age": get_attendee_age(badge.attendee),
+                "name": html.escape(badge.badgeName),
+                "number": badgeNumber,
+                "level": printed_badge_level,
+                "title": "",
+                "age": get_attendee_age(badge.attendee),
             }
         )
-        # Exclude staff badges
-        try:
-            staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-            messages.warning(
-                request,
-                "{0} is on staff, so we skipped printing an attendee badge".format(
-                    badge.badgeName
-                ),
-            )
-        except Staff.DoesNotExist:
 
-            badge.printed = True
-            badge.save()
+        badge.printed = True
+        badge.save()
+
     if len(tags) == 0:
         messages.warning(request, "None of the selected badges can be printed.")
         return
@@ -996,6 +995,7 @@ def print_badges(modeladmin, request, queryset):
 print_badges.short_description = "Print Badges"
 
 
+#TODO: delete this function
 def print_dealerasst_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
@@ -1031,6 +1031,7 @@ def print_dealerasst_badges(modeladmin, request, queryset):
 print_dealerasst_badges.short_description = "Print Dealer Assistant Badges"
 
 
+#TODO: delete this function
 def print_dealer_badges(modeladmin, request, queryset):
     con = printing.Main(local=True)
     tags = []
@@ -1310,10 +1311,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     actions = [
         assign_badge_numbers,
         print_badges,
-        print_dealerasst_badges,
         assign_numbers_and_print,
-        print_dealer_badges,
-        print_staff_badges,
         send_upgrade_form_email,
         resend_confirmation_email,
         "cull_abandoned_carts",
