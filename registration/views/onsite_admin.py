@@ -158,18 +158,29 @@ def onsite_admin_search(request):
 
 @staff_member_required
 def close_terminal(request):
+    position_status_mqtt(request, "open")
     data = {"command": "close"}
     return send_message_to_terminal(request, data)
 
 
 @staff_member_required
 def open_terminal(request):
+    position_status_mqtt(request, "open")
     data = {"command": "open"}
     return send_message_to_terminal(request, data)
 
 
-def send_message_to_terminal(request, data):
-    request.session["heartbeat"] = time.time()  # Keep session alive
+def position_status_mqtt(request, status):
+    position = get_terminal_name_from_request(request)
+    # Send to corresponding MQTT topic as well (future migration)
+    topic = f"{mqtt.get_topic('admin', position.name)}/terminal/status"
+    try:
+        send_mqtt_message(topic, status)
+    except Exception as e:
+        logger.error(e)
+
+
+def get_terminal_name_from_request(request):
     url_terminal = request.GET.get("terminal", None)
     logger.info("Terminal from GET parameter: {0}".format(url_terminal))
     session_terminal = request.session.get("terminal", None)
@@ -202,10 +213,13 @@ def send_message_to_terminal(request, data):
         )
 
     logger.info("Terminal from session: {0}".format(request.session["terminal"]))
+    return active
 
-    to = [
-        active.token,
-    ]
+
+def send_message_to_terminal(request, data):
+    request.session["heartbeat"] = time.time()  # Keep session alive
+    active = get_terminal_name_from_request(request)
+    to = [active.token]
 
     try:
         PushyAPI.send_push_notification(data, to, None)
