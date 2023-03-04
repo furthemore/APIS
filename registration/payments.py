@@ -359,4 +359,74 @@ def get_payments_from_order_id(order_id):
         return None
 
 
+def process_webhook_refund_update(notification) -> bool:
+    # Find matching order based on refund ID:
+    refund_id = notification.request_body["data"]["id"]
+    try:
+        order = Order.objects.get(apiData__refunds__contains=[{"id": refund_id}])
+    except Order.DoesNotExist:
+        logger.warning(f"Got refund.updated webhook update for a refund id not found: {refund_id}")
+        return False
+
+    webhook_refund = notification.request_body["data"]["object"]["refund"]
+
+    output = []
+    refunds_list = order.apiData["refunds"]
+    for refund in refunds_list:
+        if refund["id"] == refund_id:
+            output.append(webhook_refund)
+        else:
+            output.append(refund)
+
+    if webhook_refund["status"] == "COMPLETED":
+        order.status = Order.REFUNDED
+
+    order.apiData["refunds"] = output
+    order.save()
+    return True
 # vim: ts=4 sts=4 sw=4 expandtab smartindent
+
+
+def process_webhook_refund_created(notification) -> bool:
+    # Find matching order based on refund ID:
+    refund_id = notification.request_body["data"]["id"]
+    webhook_refund = notification.request_body["data"]["object"]["refund"]
+    payment_id = webhook_refund["payment_id"]
+    try:
+        order = Order.objects.get(apiData__payment={"id": payment_id})
+    except Order.DoesNotExist:
+        logger.warning(f"Got refund.created webhook update for a payment id not found: {payment_id}")
+        return False
+
+    # Skip processing if we already have this refund id stored:
+    refund_exists = Order.objects.filter(apiData__refunds__contains=[{"id": refund_id}])
+    if len(refund_exists) > 0:
+        logger.info(f"Refund {refund_id} already exists, skipping processing...")
+        return True
+
+    # Store refund in api data
+
+    order.apiData["refunds"].append(webhook_refund)
+
+    status = webhook_refund["status"]
+    if status == "COMPLETED":
+        order.status = Order.REFUNDED
+    if status == "PENDING":
+        order.status = Order.REFUND_PENDING
+
+    if status in ("COMPLETED", "PENDING"):
+        order.total -= Decimal(webhook_refund["amount_money"]["amount"]) / 100
+        # Reset org & charity donations if the remaining total isn't enough to cover them:
+        if order.orgDonation + order.charityDonation > order.total:
+            order.orgDonation = 0
+            order.charityDonation = order.total
+            logger.warning(
+                "Refunded order has caused charity and organization donation amounts to reset."
+            )
+            order.notes += "\nWarning: Refunded order has caused charity and organization donation amounts to reset.\n"
+
+    if status in ("REJECTED", "FAILED"):
+        order.status = Order.COMPLETED
+
+    order.save()
+    return True
