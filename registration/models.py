@@ -831,7 +831,7 @@ class BanList(models.Model):
 
 
 class Firebase(models.Model):
-    token = models.CharField(max_length=500)
+    token = models.CharField(max_length=500, help_text="Use 'none' to disable push")
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)

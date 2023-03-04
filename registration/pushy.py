@@ -3,6 +3,7 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from typing import Any
 
 from django.conf import settings
 
@@ -11,7 +12,11 @@ logger = logging.getLogger(__name__)
 
 class PushyAPI:
     @staticmethod
-    def send_push_notification(data, to, options):
+    def send_push_notification(data: Any, to: list[str], options: dict[str: str]) -> None:
+        logger.info(to)
+        if str(to[0].lower()) == "none":
+            return
+
         # Insert your Pushy Secret API Key here
         apiKey = settings.CLOUD_MESSAGING_KEY
 

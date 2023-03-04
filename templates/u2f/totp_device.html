@@ -10,7 +10,9 @@
       <h1>Two Factor Settings</h1>
       <p>{% trans 'Scan this in your authenticator app:' %}</p>
 
+      <div style="background-color: white; width: fit-content">
       {{ qr_svg|safe }}
+      </div>
 
       <p>
         {% trans "Or, if you can't scan a QR Code, enter this key as a time-based account:" %} <tt>{{ base32_key }}</tt>
