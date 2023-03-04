@@ -472,6 +472,8 @@ def complete_square_transaction(request):
     order.apiData = json.dumps(store_api_data)
     order.save()
 
+    admin_push_cart_refresh(request)
+
     if serverTransactionId:
         status, errors = payments.refresh_payment(order, store_api_data)
         if not status:
