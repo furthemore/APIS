@@ -46,7 +46,7 @@ def square_webhook(request):
         event_id=event_id, body=request_body, headers=dict(request.headers)
     )
     try:
-        notification.save()
+        process_webhook(notification)
     except IntegrityError:
         return common.abort(409, f"Conflict: event_id {event_id} already exists")
 
