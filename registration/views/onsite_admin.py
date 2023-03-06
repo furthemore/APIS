@@ -386,8 +386,9 @@ def onsite_print_badges(request):
 
 def admin_push_cart_refresh(request):
     terminal = get_active_terminal(request)
-    topic = f"{mqtt.get_topic('admin', terminal.name)}/refresh"
-    send_mqtt_message(topic, None)
+    if terminal:
+        topic = f"{mqtt.get_topic('admin', terminal.name)}/refresh"
+        send_mqtt_message(topic, None)
 
 
 def onsite_signature(request):
@@ -399,9 +400,10 @@ def onsite_signature(request):
 @csrf_exempt
 def complete_square_transaction(request):
     key = request.GET.get("key", "")
-    reference = request.GET.get("reference", None)
-    clientTransactionId = request.GET.get("clientTransactionId", None)
-    serverTransactionId = request.GET.get("serverTransactionId", None)
+    reference = request.GET.get("reference")
+    terminal_name = request.GET.get("terminal")
+    clientTransactionId = request.GET.get("clientTransactionId")
+    serverTransactionId = request.GET.get("serverTransactionId")
 
     if key != settings.REGISTER_KEY:
         return JsonResponse(
@@ -416,6 +418,12 @@ def complete_square_transaction(request):
             },
             status=400,
         )
+
+    try:
+        terminal = Firebase.objects.get(name=terminal_name)
+        request.session["terminal"] = terminal.id
+    except Firebase.DoesNotExist:
+        request.session["terminal"] = None
 
     # Things we need:
     #   orderID or reference (passed to square by metadata)
@@ -471,6 +479,8 @@ def complete_square_transaction(request):
 
     order.apiData = json.dumps(store_api_data)
     order.save()
+
+    admin_push_cart_refresh(request)
 
     if serverTransactionId:
         status, errors = payments.refresh_payment(order, store_api_data)
