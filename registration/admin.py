@@ -925,6 +925,15 @@ def get_attendee_age(attendee):
 
 
 def print_badges(modeladmin, request, queryset):
+    pdf_path = generate_badge_labels(queryset, request)
+
+    response = HttpResponseRedirect(reverse("registration:print"))
+    url_params = {"file": pdf_path, "next": request.get_full_path()}
+    response["Location"] += "?{}".format(urlencode(url_params))
+    return response
+
+
+def generate_badge_labels(queryset, request):
     con = printing.Main(local=True)
     tags = []
     for badge in queryset:
@@ -937,9 +946,9 @@ def print_badges(modeladmin, request, queryset):
             )
             continue
         if badge.badgeNumber is None:
-            badgeNumber = ""
+            badge_number = ""
         else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
+            badge_number = "{:04}".format(badge.badgeNumber)
 
         badge_type = get_badge_type(badge)
         if badge_type == "Attendee":
@@ -952,7 +961,7 @@ def print_badges(modeladmin, request, queryset):
         tags.append(
             {
                 "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
+                "number": badge_number,
                 "level": printed_badge_level,
                 "title": "",
                 "age": get_attendee_age(badge.attendee),
@@ -968,10 +977,7 @@ def print_badges(modeladmin, request, queryset):
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
+    return pdf_path
 
 
 print_badges.short_description = "Print Badges"
