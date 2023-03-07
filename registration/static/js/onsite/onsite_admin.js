@@ -1,18 +1,20 @@
+let refresh_cart;
+let cartData = [];
+let cartTemplateData = [];
 
-var refresh_cart;
-var cartData = [];
-var cartTemplateData = [];
-
-var get_printable = function () {
+let get_printable = function () {
     // Anything in the cart marked as paid is eligible for printing
-    var printQueue = [];
-    var skipped = [];
+    let printQueue = [];
+    let skipped = [];
     $.each(cartData.result, function(key, value) {
       if (value.printed) {
           skipped.push(value);
       }
 
-      if (((value.abandoned.toUpperCase() == "PAID") || (value.abandoned.toUpperCase() == "COMP")) &&
+      if (((value.abandoned.toUpperCase() === "PAID") ||
+              (value.abandoned.toUpperCase() === "COMP") ||
+              (value.abandoned.toUpperCase() === "STAFF") ||
+              (value.abandoned.toUpperCase() === "DEALER")) &&
          (value.holdType === null) &&
          (value.printed === false)) {
           printQueue.push(value);
@@ -28,10 +30,8 @@ var get_printable = function () {
     return printQueue;
 };
 
-var print_badges = function(e) {
-    var printQueue = get_printable();
-    var badge_preview = "";
-    var stop = false;
+let print_badges = function(e) {
+    let printQueue = get_printable();
 
     // assign badge numbers
     $.ajax(URL_REGISTRATION_ASSIGN_BADGE_NUMBER, {
@@ -42,7 +42,7 @@ var print_badges = function(e) {
     .done(function(data) {
         console.log(data.success);
     }).success(function (data) {
-       var printIDs = [];
+       let printIDs = [];
        $.each(printQueue, function(idx, badge) {
           printIDs.push(badge.id);
        });
@@ -74,9 +74,9 @@ $(document).ready(function () {
 
     $.addTemplateFormatter("PaidBadgeFormatter",
         function(value, template) {
-            if (value == "Paid") {
+            if (value === "Paid") {
                 return '<span class="label label-success">Paid</span>';
-            } else if (value == "Comp") {
+            } else if (value === "Comp") {
                 return '<span class="label label-info">Comp</span>';
             } else {
                 return '<span class="label label-warning">' + value + '</span>';
@@ -149,15 +149,15 @@ $(document).ready(function () {
       $("#cart-error").fadeOut();
       $.getJSON(URL_REGISTRATION_ONSITE_ADMIN_CART, function(data) {
         cartData = data;
-        var enable_print = false;
-        var onHold = false;
+        let enable_print = false;
+        let onHold = false;
         if (data.success) {
           cartTemplateData = [];
-          orderItemsData = {};
+          let orderItemsData = {};
           $.each( data.result, function( key, val ) {
-            var level = "?";
-            var price = "?";
-            var state = "danger";
+            let level = "?";
+            let price = "?";
+            let state = "danger";
             if (val.effectiveLevel != null) {
                     level = val.effectiveLevel.name;
                     price = val.effectiveLevel.price;
@@ -208,7 +208,7 @@ $(document).ready(function () {
               $("#order-items-"+key).loadTemplate($("#itemRowTemplate"), val);
           });
 
-          var price = parseFloat(data.total);
+          let price = parseFloat(data.total);
           if (((!isNaN(price))) && (!onHold)) {
               $("#total").loadTemplate($("#totalTemplate"), data);
               $("#cash_button").removeAttr("disabled");
@@ -218,7 +218,7 @@ $(document).ready(function () {
               $("#credit_button").attr("disabled", "disabled");
           }
 
-          if (isNaN(price) || (price == 0)) {
+          if (isNaN(price) || (price === 0)) {
               $("#cash_button").attr("disabled", "disabled");
               $("#credit_button").attr("disabled", "disabled");
           }
@@ -249,7 +249,7 @@ $(document).ready(function () {
 
     $(".add-badge").click(function (e) {
         e.preventDefault();
-        var id = $(this).data("id");
+        let id = $(this).data("id");
         $(this).attr("disabled", "disabled");
         $.getJSON(URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART, { id : id }, function (data) {
             if (data.success) {
@@ -281,15 +281,15 @@ $(document).ready(function () {
     
     $("#open-drawer").click(function (e) {
         e.preventDefault();
-        raw_amount = prompt("Enter initial amount in drawer");
+        let raw_amount = prompt("Enter initial amount in drawer");
         if (raw_amount == null || raw_amount === "") {
             return
         }
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        if (parsed == 0 || isNaN(parsed)) {
+        let parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed === 0 || isNaN(parsed)) {
             return
         }
-        data = {
+        let data = {
             'amount' : parsed
         }
         $.post(URL_REGISTRATION_OPEN_DRAWER, data, function (data) {
@@ -303,15 +303,15 @@ $(document).ready(function () {
 
     $("#cash-deposit").click(function (e) {
         e.preventDefault();
-        raw_amount = prompt("Enter amount added to drawer");
+        let raw_amount = prompt("Enter amount added to drawer");
         if (raw_amount == null || raw_amount === "") {
             return
         }
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        if (parsed == 0) {
+        let parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed === 0) {
             return
         }
-        data = {
+        let data = {
             'amount' : parsed
         }
         $.post(URL_REGISTRATION_CASH_DEPOSIT, data, function (data) {
@@ -326,15 +326,15 @@ $(document).ready(function () {
     $("#safe-drop").click(function (e) {
         e.preventDefault();
         $("#no-sale").trigger("click");
-        raw_amount = prompt("Enter amount dropped into safe");
+        let raw_amount = prompt("Enter amount dropped into safe");
         if (raw_amount == null || raw_amount === "") {
             return
         }
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        if (parsed == 0) {
+        let parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed === 0) {
             return
         }
-        data = {
+        let data = {
             'amount' : parsed,
         }
         $.post(URL_REGISTRATION_SAFE_DROP, data, function (data) {
@@ -349,15 +349,15 @@ $(document).ready(function () {
     $("#cash-pickup").click(function (e) {
         e.preventDefault();
         $("#no-sale").trigger("click");
-        raw_amount = prompt("Enter amount picked up from drawer");
+        let raw_amount = prompt("Enter amount picked up from drawer");
         if (raw_amount == null || raw_amount === "") {
             return
         }
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        if (parsed == 0) {
+        let parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed === 0) {
             return
         }
-        data = {
+        let data = {
             'amount' : parsed
         }
         $.post(URL_REGISTRATION_CASH_PICKUP, data, function (data) {
@@ -372,15 +372,15 @@ $(document).ready(function () {
     $("#close-drawer").click(function (e) {
         e.preventDefault();
         $("#no-sale").trigger("click");
-        raw_amount = prompt("Enter final amount in drawer");
+        let raw_amount = prompt("Enter final amount in drawer");
         if (raw_amount == null || raw_amount === "") {
             return
         }
-        parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
-        if (parsed == 0) {
+        let parsed = parseFloat(raw_amount.match(/(\d+).?(\d{0,2})?/));
+        if (parsed === 0) {
             return
         }
-        data = {
+        let data = {
             'amount' : parsed
         }
         $.post(URL_REGISTRATION_CLOSE_DRAWER, data, function (data) {
@@ -413,17 +413,17 @@ $(document).ready(function () {
 
     $("#cash_button").click(function (e) {
         e.preventDefault();
-        tendered = prompt("Enter tendered amount");
-        parsed = parseFloat(tendered.match(/(\d+).?(\d{0,2})?/));
-        total = parseFloat(cartData.total);
+        let tendered = prompt("Enter tendered amount");
+        let parsed = parseFloat(tendered.match(/(\d+).?(\d{0,2})?/));
+        let total = parseFloat(cartData.total);
         if (parsed < total) {
             alert("Insufficient payment. (Split tender unsupported)");
             return;
         }
 
-        change = parsed - total;
+        let change = parsed - total;
 
-        data = {
+        let data = {
             'reference' : cartData.reference,
             'total' : total,
             'tendered' : parsed
@@ -441,9 +441,9 @@ $(document).ready(function () {
     });
 
 
-    var remove_badge = function (e) {
+    let remove_badge = function (e) {
         e.preventDefault();
-        var id = $(this).attr("id").split("-")[1];
+        let id = $(this).attr("id").split("-")[1];
         $.getJSON(URL_REGISTRATION_ONSITE_REMOVE_FROM_CART, { id : id }, function (data) {
             if (data.success) {
                 refresh_cart();
@@ -455,14 +455,14 @@ $(document).ready(function () {
         });
     };
 
-    var link_badge = function (e) {
+    let link_badge = function (e) {
         e.preventDefault();
-        var id = $(this).attr("id").split("-")[1];
-        var url = URL_ADMIN_REGISTRATION_BADGE.replace('0', id);
+        let id = $(this).attr("id").split("-")[1];
+        let url = URL_ADMIN_REGISTRATION_BADGE.replace('0', id);
         window.open(url, '_blank');
     };
 
-    var add_discount = function(e) {
+    let add_discount = function(e) {
     }
 
     $("#pos").change(function () {
