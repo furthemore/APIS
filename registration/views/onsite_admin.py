@@ -326,51 +326,11 @@ def get_messages_list(request):
 @staff_member_required
 def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
-    con = printing.Main(local=True)
-    tags = []
-    theme = ""
-
-    logger.info(f"Printing badge ids: {badge_list}")
-
-    for badge_id in badge_list:
-        try:
-            badge = Badge.objects.get(id=badge_id)
-        except Badge.DoesNotExist:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Badge id {0} does not exist".format(badge_id),
-                },
-                status=404,
-            )
-
-        theme = badge.event.badgeTheme
-
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
-
-        tags.append(
-            {
-                "name": badge.badgeName,
-                "number": badgeNumber,
-                "level": str(badge.effectiveLevel()),
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-
+    queryset = Badge.objects.filter(id__in=badge_list)
+    pdf_path = admin.generate_badge_labels(queryset, request)
     # Async notify the frontend to refresh the cart
     logger.info("Refreshing admin cart")
     admin_push_cart_refresh(request)
-
-    if theme == "":
-        theme == "apis"
-    con.nametags(tags, theme=theme)
-    pdf_path = con.pdf.split("/")[-1]
 
     file_url = reverse("registration:print") + "?file={0}".format(pdf_path)
 
