@@ -21,6 +21,7 @@
       const SENTRY_USER_REPORTS = {% settings_value_bool 'SENTRY_USER_REPORTS' %};
       const SENTRY_FRONTEND_DSN = "{% settings_value 'SENTRY_FRONTEND_DSN' %}";
       const SENTRY_ENVIRONMENT = "{% settings_value 'SENTRY_ENVIRONMENT' %}";
+      const SENTRY_RELEASE = "{% settings_value 'SENTRY_RELEASE' %}";
   </script>
   <script src="{% static 'js/main-init-sentry.js' %}"></script>
 

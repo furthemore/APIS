@@ -910,32 +910,7 @@ assign_badge_numbers.short_description = "Assign badge number"
 
 def assign_numbers_and_print(modeladmin, request, queryset):
     assign_badge_numbers(modeladmin, request, queryset)
-
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": html.escape(str(badge.effectiveLevel())),
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
+    response = print_badges(modeladmin, request, queryset)
     return response
 
 
@@ -950,197 +925,80 @@ def get_attendee_age(attendee):
 
 
 def print_badges(modeladmin, request, queryset):
+    pdf_path = generate_badge_labels(queryset, request)
+
+    response = HttpResponseRedirect(reverse("registration:print"))
+    url_params = {"file": pdf_path, "next": request.get_full_path()}
+    response["Location"] += "?{}".format(urlencode(url_params))
+    return response
+
+
+def generate_badge_labels(queryset, request):
     con = printing.Main(local=True)
     tags = []
     for badge in queryset:
         # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:04}".format(badge.badgeNumber)
-
-        # Exclude staff badges
-        try:
-            staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
+        level = badge.effectiveLevel()
+        if level is None or level == Badge.UNPAID:
             messages.warning(
                 request,
-                "{0} is on staff, so we skipped printing an attendee badge".format(
-                    badge.badgeName
-                ),
+                f"skipped printing {badge} a number beacuse it's registration level is {level}",
             )
-        except Staff.DoesNotExist:
-            tags.append(
-                {
-                    "name": html.escape(badge.badgeName),
-                    "number": badgeNumber,
-                    "level": html.escape(str(badge.effectiveLevel())),
-                    "title": "",
-                    "age": get_attendee_age(badge.attendee),
-                }
-            )
-            badge.printed = True
-            badge.save()
+            continue
+        if badge.badgeNumber is None:
+            badge_number = ""
+        else:
+            badge_number = "{:04}".format(badge.badgeNumber)
+
+        badge_type = get_badge_type(badge)
+        if badge_type == "Attendee":
+            printed_badge_level = html.escape(str(badge.effectiveLevel()))
+        elif badge_type == "Dealer":
+            printed_badge_level = "Dealer"
+        elif badge_type == "Staff":
+            printed_badge_level = "Staff"
+
+        tags.append(
+            {
+                "name": html.escape(badge.badgeName),
+                "number": badge_number,
+                "level": printed_badge_level,
+                "title": "",
+                "age": get_attendee_age(badge.attendee),
+            }
+        )
+
+        badge.printed = True
+        badge.save()
+
     if len(tags) == 0:
         messages.warning(request, "None of the selected badges can be printed.")
         return
     con.nametags(tags, theme=badge.event.badgeTheme)
     # serve up this file
     pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
+    return pdf_path
 
 
 print_badges.short_description = "Print Badges"
 
 
-def print_dealerasst_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:03}".format(badge.badgeNumber)
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": "Dealer",
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    if len(tags) == 0:
-        messages.warning(request, "None of the selected badges can be printed.")
-        return
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
-
-
-print_dealerasst_badges.short_description = "Print Dealer Assistant Badges"
-
-
-def print_dealer_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "{:03}".format(badge.badgeNumber)
-        try:
-            dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
-        except Dealer.DoesNotExist:
-            messages.warning(
-                request,
-                "{0} is not a dealer, so we skipped printing a dealer badge for them".format(
-                    badge.badgeName
-                ),
-            )
-            continue
-
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": "Dealer",
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    if len(tags) > 0:
-        con.nametags(tags, theme=badge.event.badgeTheme)
-        # serve up this file
-        pdf_path = con.pdf.split("/")[-1]
-        response = HttpResponseRedirect(reverse("registration:print"))
-        url_params = {"file": pdf_path, "next": request.get_full_path()}
-        response["Location"] += "?{}".format(urlencode(url_params))
-        return response
-
-
-print_dealer_badges.short_description = "Print Dealer Badges"
-
-
-def assign_staff_badge_numbers(modeladmin, request, queryset):
-    staff = Attendee.objects.exclude(staff=None)
-    event = queryset[0].event
-    badges = Badge.objects.filter(attendee__in=staff, event=event)
-    highest = badges.aggregate(Max("badgeNumber"))["badgeNumber__max"]
-    for badge in queryset.order_by("registeredDate"):
-        if badge.badgeNumber:
-            continue
-        if badge.effectiveLevel() is None:
-            continue
-        highest = highest + 1
-        badge.badgeNumber = highest
-        badge.save()
-
-
-assign_staff_badge_numbers.short_description = "Assign staff badge numbers"
-
-
-def print_staff_badges(modeladmin, request, queryset):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        if badge.badgeNumber is None:
-            badgeNumber = ""
-        else:
-            badgeNumber = "S-{:03}".format(badge.badgeNumber)
-        try:
-            staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-        except Staff.DoesNotExist:
-            messages.warning(
-                request,
-                "{0} is not on staff, so we skipped printing a staff badge for them".format(
-                    badge.badgeName
-                ),
-            )
-            continue
-        except Staff.MultipleObjectsReturned:
-            messages.error(
-                request,
-                "{0} was added to staff multiple times! - dedupe and try again.".format(
-                    badge.attendee
-                ),
-            )
-            continue
-
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badgeNumber,
-                "level": "Staff",
-                "title": html.escape(staff.title),
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-        badge.printed = True
-        badge.save()
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    response = HttpResponseRedirect(reverse("registration:print"))
-    url_params = {"file": pdf_path, "next": request.get_full_path()}
-    response["Location"] += "?{}".format(urlencode(url_params))
-    return response
-
-
-print_staff_badges.short_description = "Print Staff Badges"
+def get_badge_type(badge):
+    #check if staff
+    try:
+        staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
+    except Staff.DoesNotExist:
+        pass
+    else:
+        return "Staff"
+    #check if dealer
+    try:
+        dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
+    except Dealer.DoesNotExist:
+        pass
+    else:
+        return "Dealer"
+    return "Attendee"
 
 
 class AttendeeOptionInline(NestedTabularInline):
@@ -1290,11 +1148,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     actions = [
         assign_badge_numbers,
         print_badges,
-        print_dealerasst_badges,
         assign_numbers_and_print,
-        print_dealer_badges,
-        assign_staff_badge_numbers,
-        print_staff_badges,
         send_upgrade_form_email,
         resend_confirmation_email,
         "cull_abandoned_carts",
