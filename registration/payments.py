@@ -361,14 +361,14 @@ def get_payments_from_order_id(order_id):
 
 def process_webhook_refund_update(notification) -> bool:
     # Find matching order based on refund ID:
-    refund_id = notification.request_body["data"]["id"]
+    refund_id = notification.body["data"]["id"]
     try:
         order = Order.objects.get(apiData__refunds__contains=[{"id": refund_id}])
     except Order.DoesNotExist:
         logger.warning(f"Got refund.updated webhook update for a refund id not found: {refund_id}")
         return False
 
-    webhook_refund = notification.request_body["data"]["object"]["refund"]
+    webhook_refund = notification.body["data"]["object"]["refund"]
 
     output = []
     refunds_list = order.apiData["refunds"]
@@ -389,8 +389,8 @@ def process_webhook_refund_update(notification) -> bool:
 
 def process_webhook_refund_created(notification) -> bool:
     # Find matching order based on refund ID:
-    refund_id = notification.request_body["data"]["id"]
-    webhook_refund = notification.request_body["data"]["object"]["refund"]
+    refund_id = notification.body["data"]["id"]
+    webhook_refund = notification.body["data"]["object"]["refund"]
     payment_id = webhook_refund["payment_id"]
     try:
         order = Order.objects.get(apiData__payment={"id": payment_id})
