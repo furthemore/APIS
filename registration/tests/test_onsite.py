@@ -522,7 +522,7 @@ class TestDrawers(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message["success"])
         self.assertEqual(message["status"], "CLOSED")
-        self.assertEqual(message["total"], "0")
+        self.assertEqual(Decimal(message["total"]), Decimal("0.00"))
 
     def test_drawerStatusOpen(self):
         Cashdrawer(total=100, action=Cashdrawer.OPEN).save()
@@ -531,7 +531,7 @@ class TestDrawers(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message["success"])
         self.assertEqual(message["status"], "OPEN")
-        self.assertEqual(message["total"], "100")
+        self.assertEqual(Decimal(message["total"]), Decimal("100.00"))
 
     def test_drawerStatusShort(self):
         Cashdrawer(total=100, action=Cashdrawer.OPEN).save()
@@ -541,7 +541,7 @@ class TestDrawers(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message["success"])
         self.assertEqual(message["status"], "SHORT")
-        self.assertEqual(message["total"], "-20")
+        self.assertEqual(Decimal(message["total"]), Decimal("-20.00"))
 
     @patch("registration.views.onsite_admin.send_mqtt_message")
     def test_open_drawer(self, mock_send_mqtt_message):
