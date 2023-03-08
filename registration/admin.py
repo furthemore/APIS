@@ -1548,7 +1548,7 @@ class PrettyJSONWidget(widgets.Textarea):
 
 
 class PaymentWebhookAdmin(admin.ModelAdmin):
-    list_display = ("event_id", "timestamp", "integration")
+    list_display = ("event_id", "event_type", "timestamp", "integration")
     formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
 
 

@@ -763,6 +763,7 @@ class Order(models.Model):
 class PaymentWebhookNotification(models.Model):
     integration = models.CharField(max_length=50, default="square")
     event_id = models.UUIDField(unique=True)
+    event_type = models.CharField(max_length=50, default="")
     timestamp = models.DateTimeField(auto_now_add=True)
     processed = models.BooleanField(default=False)
     body = models.JSONField("Webhook body")

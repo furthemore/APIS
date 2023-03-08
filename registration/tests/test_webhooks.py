@@ -35,6 +35,7 @@ class TestSquareWebhooks(TestCase):
         self.assertTrue(response.status_code, 200)
         webhook = PaymentWebhookNotification.objects.get(event_id=self.EVENT_ID)
         self.assertEqual(str(webhook.event_id), webhook.body["event_id"])
+        self.assertEqual(webhook.event_type, webhook.body["type"])
 
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("django.http.request.HttpRequest.build_absolute_uri")

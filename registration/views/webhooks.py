@@ -40,10 +40,11 @@ def square_webhook(request):
         return common.abort(400, "Missing event_id")
 
     event_id = request_body["event_id"]
+    event_type = request_body.get("type")
 
     # Store the verified event notification
     notification = PaymentWebhookNotification(
-        event_id=event_id, body=request_body, headers=dict(request.headers)
+        event_id=event_id, event_type=event_type, body=request_body, headers=dict(request.headers)
     )
     try:
         process_webhook(notification)
