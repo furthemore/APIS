@@ -54,6 +54,7 @@ def square_webhook(request):
 
 
 def process_webhook(notification):
+    result = False
     if notification.body["type"] == "refund.updated":
         result = payments.process_webhook_refund_update(notification)
     elif notification.body["type"] == "refund.created":
