@@ -3,9 +3,11 @@ import logging
 
 from django.conf import settings
 from django.db import IntegrityError
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from square.utilities.webhooks_helper import is_valid_webhook_event_signature
 
+from registration import payments
 from registration.models import PaymentWebhookNotification
 from registration.views import common
 
@@ -13,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @require_POST
+@csrf_exempt
 def square_webhook(request):
     square_signature = request.headers.get("X-Square-HMACSHA256-Signature")
     notification_url = request.build_absolute_uri()
@@ -37,14 +40,28 @@ def square_webhook(request):
         return common.abort(400, "Missing event_id")
 
     event_id = request_body["event_id"]
+    event_type = request_body.get("type")
 
     # Store the verified event notification
     notification = PaymentWebhookNotification(
-        event_id=event_id, body=request_body, headers=dict(request.headers)
+        event_id=event_id, event_type=event_type, body=request_body, headers=dict(request.headers)
     )
     try:
-        notification.save()
+        process_webhook(notification)
     except IntegrityError:
         return common.abort(409, f"Conflict: event_id {event_id} already exists")
 
     return common.success(200)
+
+
+def process_webhook(notification):
+    result = False
+    if notification.body["type"] == "refund.updated":
+        result = payments.process_webhook_refund_update(notification)
+    elif notification.body["type"] == "refund.created":
+        result = payments.process_webhook_refund_created(notification)
+    elif notification.body["type"] == "payment.updated":
+        result = payments.process_webhook_payment_updated(notification)
+
+    notification.processed = result
+    notification.save()

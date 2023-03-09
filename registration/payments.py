@@ -133,23 +133,7 @@ def refresh_payment(order, store_api_data=None):
     payment = payments_response.body.get("payment")
     if payments_response.is_success():
         api_data["payment"] = payment
-        try:
-            order.lastFour = api_data["payment"]["card_details"]["card"]["last_4"]
-        except KeyError:
-            logger.warning("Unable to update last_4 details for order")
-        status = payment.get("status")
-        if status == "COMPLETED":
-            order.status = Order.COMPLETED
-            order_total = payment["total_money"]["amount"]
-        elif status == "FAILED":
-            order.status = Order.FAILED
-        elif status == "APPROVED":
-            # Payment was only captured, approved, and never settled (not usually what we do)
-            # https://developer.squareup.com/docs/payments-api/overview#payments-api-workflow
-            order.status = Order.CAPTURED
-            order_total = payment["total_money"]["amount"]
-        elif status == "CANCELED":
-            order.status = Order.FAILED
+        order_total = update_order_payment_data(order, order_total, payment)
     else:
         return False, format_errors(payments_response.errors)
 
@@ -205,6 +189,50 @@ def refresh_payment(order, store_api_data=None):
 
     order.save()
     return True, None
+
+
+def update_order_payment_data(order, order_total, payment):
+    try:
+        order.lastFour = payment["card_details"]["card"]["last_4"]
+    except KeyError:
+        logger.warning("Unable to update last_4 details for order")
+    status = payment.get("status")
+    if status == "COMPLETED":
+        order.status = Order.COMPLETED
+        order_total = payment["total_money"]["amount"]
+    elif status == "FAILED":
+        order.status = Order.FAILED
+    elif status == "APPROVED":
+        # Payment was only captured, approved, and never settled (not usually what we do)
+        # https://developer.squareup.com/docs/payments-api/overview#payments-api-workflow
+        order.status = Order.CAPTURED
+        order_total = payment["total_money"]["amount"]
+    elif status == "CANCELED":
+        order.status = Order.FAILED
+    return order_total
+
+
+def process_webhook_refund_updated(notification):
+    # Find matching order, if any:
+    payment_id = notification.body["data"]["object"]["payment_id"]
+    try:
+        order = Order.objets.get(apiData__payment__id=payment_id)
+    except Order.DoesNotExist:
+        logger.warning(
+            f"Got webhook for refund.update on payment.id = {payment_id}, but found no corresponding payment."
+        )
+        return False
+
+    stored_refunds = order.apiData["refunds"]
+    refund = notification.body["data"]["object"]["refund"]
+    if refund:
+        # Check if refund has already been stored (Refund created internally), and update in-place
+        order.apiData["refunds"].append(refund)
+        status = refund.get("status")
+        if status == "COMPLETED":
+            order.status = Order.REFUNDED
+        elif status == "PENDING":
+            order.status = Order.REFUND_PENDING
 
 
 def refund_payment(order, amount, reason=None, request=None):
@@ -332,4 +360,89 @@ def get_payments_from_order_id(order_id):
         return None
 
 
-# vim: ts=4 sts=4 sw=4 expandtab smartindent
+def process_webhook_refund_update(notification) -> bool:
+    # Find matching order based on refund ID:
+    refund_id = notification.body["data"]["id"]
+    try:
+        order = Order.objects.get(apiData__refunds__contains=[{"id": refund_id}])
+    except Order.DoesNotExist:
+        logger.warning(f"Got refund.updated webhook update for a refund id not found: {refund_id}")
+        return False
+
+    webhook_refund = notification.body["data"]["object"]["refund"]
+
+    output = []
+    refunds_list = order.apiData["refunds"]
+    for refund in refunds_list:
+        if refund["id"] == refund_id:
+            output.append(webhook_refund)
+        else:
+            output.append(refund)
+
+    if webhook_refund["status"] == "COMPLETED":
+        order.status = Order.REFUNDED
+
+    order.apiData["refunds"] = output
+    order.save()
+    return True
+
+
+def process_webhook_payment_updated(notification: PaymentWebhookNotification) -> bool:
+    payment_id = notification.body["data"]["id"]
+    try:
+        order = Order.objects.get(apiData__payment={"id": payment_id})
+    except Order.DoesNotExist:
+        logger.warning(f"Got refund.updated webhook update for a payment id not found: {payment_id}")
+        return False
+
+    # Store order update in api data
+    payment = notification.body["data"]["object"]["payment"]
+    order.apiData["payment"] = payment
+    update_order_payment_data(order, None, payment)
+    order.save()
+    return True
+
+
+def process_webhook_refund_created(notification: PaymentWebhookNotification) -> bool:
+    # Find matching order based on refund ID:
+    refund_id = notification.body["data"]["id"]
+    webhook_refund = notification.body["data"]["object"]["refund"]
+    payment_id = webhook_refund["payment_id"]
+    try:
+        order = Order.objects.get(apiData__payment={"id": payment_id})
+    except Order.DoesNotExist:
+        logger.warning(f"Got refund.created webhook update for a payment id not found: {payment_id}")
+        return False
+
+    # Skip processing if we already have this refund id stored:
+    refund_exists = Order.objects.filter(apiData__refunds__contains=[{"id": refund_id}])
+    if len(refund_exists) > 0:
+        logger.info(f"Refund {refund_id} already exists, skipping processing...")
+        return True
+
+    # Store refund in api data
+
+    order.apiData["refunds"].append(webhook_refund)
+
+    status = webhook_refund["status"]
+    if status == "COMPLETED":
+        order.status = Order.REFUNDED
+    if status == "PENDING":
+        order.status = Order.REFUND_PENDING
+
+    if status in ("COMPLETED", "PENDING"):
+        order.total -= Decimal(webhook_refund["amount_money"]["amount"]) / 100
+        # Reset org & charity donations if the remaining total isn't enough to cover them:
+        if order.orgDonation + order.charityDonation > order.total:
+            order.orgDonation = 0
+            order.charityDonation = order.total
+            logger.warning(
+                "Refunded order has caused charity and organization donation amounts to reset."
+            )
+            order.notes += "\nWarning: Refunded order has caused charity and organization donation amounts to reset.\n"
+
+    if status in ("REJECTED", "FAILED"):
+        order.status = Order.COMPLETED
+
+    order.save()
+    return True

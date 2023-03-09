@@ -162,8 +162,12 @@ class Event(LookupTable):
         verbose_name="Staff Registration Start",
     )
     staffRegEnd = models.DateTimeField(verbose_name="Staff Registration End")
-    attendeeRegStart = models.DateTimeField(verbose_name="Online Attendee Registration Start")
-    attendeeRegEnd = models.DateTimeField(verbose_name="Online Attendee Registration End")
+    attendeeRegStart = models.DateTimeField(
+        verbose_name="Online Attendee Registration Start"
+    )
+    attendeeRegEnd = models.DateTimeField(
+        verbose_name="Online Attendee Registration End"
+    )
     onsiteRegStart = models.DateTimeField(
         "On-Site Registration Start",
         help_text="Start time for /registration/onsite form",
@@ -759,7 +763,9 @@ class Order(models.Model):
 class PaymentWebhookNotification(models.Model):
     integration = models.CharField(max_length=50, default="square")
     event_id = models.UUIDField(unique=True)
+    event_type = models.CharField(max_length=50, default="")
     timestamp = models.DateTimeField(auto_now_add=True)
+    processed = models.BooleanField(default=False)
     body = models.JSONField("Webhook body")
     headers = models.JSONField("Webhook headers")
 
