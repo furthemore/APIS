@@ -266,7 +266,7 @@ def refund_cash_payment(order, amount, reason=None):
     return True, None
 
 
-def refund_card_payment(order, amount, reason=None):
+def refund_card_payment(order, amount, reason=None, request=None):
     api_data = order.apiData
     payment_id = api_data["payment"]["id"]
     converted_amount = int(amount * 100)
