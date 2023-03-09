@@ -172,6 +172,12 @@ def open_terminal(request):
     return send_message_to_terminal(request, data)
 
 
+@staff_member_required
+def ready_terminal(request):
+    data = {"command": "ready"}
+    return send_message_to_terminal(request, data)
+
+
 def send_message_to_terminal(request, data):
     request.session["heartbeat"] = time.time()  # Keep session alive
     url_terminal = request.GET.get("terminal", None)
@@ -210,6 +216,13 @@ def send_message_to_terminal(request, data):
     to = [
         active.token,
     ]
+
+    command = data.get("command")
+    if command in ("open", "close", "ready", "gay"):
+        if command == "close":
+            command = "closed"
+        topic = f"{mqtt.get_topic('admin', active.name)}/terminal/state"
+        send_mqtt_message(topic, data.get("command"), True)
 
     try:
         PushyAPI.send_push_notification(data, to, None)

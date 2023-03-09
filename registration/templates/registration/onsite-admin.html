@@ -33,8 +33,9 @@
               <i class="fas fa-cog"></i><span class="sr-only">Terminal options</span>
             </button>
             <ul class="dropdown-menu" aria-labelledby="user">
-              <li><a href="#" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
-              <li><a href="#" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+              <li><a href="#" title="Alt+O" id="open-terminal">Open Position <i class="fas fa-check right"></i></a></li>
+              <li><a href="#" title="Alt+L" id="close-terminal">Close Position <i class="fas fa-window-close right"></i></a></li>
+              <li><a href="#" title="Alt+N" id="ready-terminal">Next Customer <i class="fas fa-forward right"></i></a></li>
               {% if perms.registration.cash_admin %}
                 <li role="separator" class="divider"></li>
                 <li><a href="#" id="open-drawer">Open Drawer <i class="fas fa-money-bill-wave right"></i></a></li>
@@ -163,7 +164,7 @@
           </div>
           <div class="col-md-4" style="margin-top: 20px">
             <a href="{% url 'registration:onsite_admin_clear_cart' %}?terminal={{ request.session.terminal }}&search={{ request.GET.search }}"
-               class="btn btn-danger right">Clear</a>
+               class="btn btn-danger right" id="clear-cart">Clear</a>
           </div>
         </div>
         <div id="cart"></div>
@@ -178,14 +179,14 @@
             {% endif %}
           </div>
           <div class="col-md-6">
-            <button class="btn btn-block btn-warning" id="credit_button" disabled>
+            <button class="btn btn-block btn-warning" id="credit_button" disabled title="Alt+C">
               <i class="fas fa-credit-card"></i> Credit/Debit
             </button>
           </div>
         </div>
         <div class="row button-group">
           <div class="col-md-6">
-            <button class="btn btn-block btn-primary" id="print_button" disabled>
+            <button class="btn btn-block btn-primary" id="print_button" disabled title="Alt+P">
               <i class="fas fa-print"></i> Print Badges
             </button>
           </div>
@@ -431,6 +432,7 @@
       const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsite_remove_from_cart' %}";
       const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:open_terminal' %}";
       const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:close_terminal' %}";
+      const URL_REGISTRATION_READY_TERMINAL = "{% url 'registration:ready_terminal' %}";
       const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:open_drawer' %}";
       const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cash_deposit' %}";
       const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safe_drop' %}";

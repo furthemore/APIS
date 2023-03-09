@@ -91,7 +91,7 @@ def format_topic(topic):
     return topic.lower()
 
 
-def send_mqtt_message(topic, payload={}):
+def send_mqtt_message(topic, payload={}, retain=False):
     payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
 
     logger.info(f"Sending MQTT message: {topic} ({payload_json})")
@@ -103,7 +103,7 @@ def send_mqtt_message(topic, payload={}):
     mqtt.single(
         topic,
         payload_json,
-        retain=False,
+        retain=retain,
         hostname=settings.MQTT_BROKER["host"],
         port=settings.MQTT_BROKER["port"],
         auth=auth,

@@ -184,6 +184,11 @@ urlpatterns = [
         name="close_terminal",
     ),
     url(
+        r"^onsite/admin/ready/?$",
+        registration.views.onsite_admin.ready_terminal,
+        name="ready_terminal",
+    ),
+    url(
         r"^onsite/admin/payment/?$",
         registration.views.onsite_admin.enable_payment,
         name="enable_payment",
