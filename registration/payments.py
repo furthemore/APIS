@@ -133,23 +133,7 @@ def refresh_payment(order, store_api_data=None):
     payment = payments_response.body.get("payment")
     if payments_response.is_success():
         api_data["payment"] = payment
-        try:
-            order.lastFour = api_data["payment"]["card_details"]["card"]["last_4"]
-        except KeyError:
-            logger.warning("Unable to update last_4 details for order")
-        status = payment.get("status")
-        if status == "COMPLETED":
-            order.status = Order.COMPLETED
-            order_total = payment["total_money"]["amount"]
-        elif status == "FAILED":
-            order.status = Order.FAILED
-        elif status == "APPROVED":
-            # Payment was only captured, approved, and never settled (not usually what we do)
-            # https://developer.squareup.com/docs/payments-api/overview#payments-api-workflow
-            order.status = Order.CAPTURED
-            order_total = payment["total_money"]["amount"]
-        elif status == "CANCELED":
-            order.status = Order.FAILED
+        order_total = update_order_payment_data(order, payment)
     else:
         return False, format_errors(payments_response.errors)
 
@@ -207,6 +191,27 @@ def refresh_payment(order, store_api_data=None):
     return True, None
 
 
+def update_order_payment_data(order, payment):
+    try:
+        order.lastFour = payment["card_details"]["card"]["last_4"]
+    except KeyError:
+        logger.warning("Unable to update last_4 details for order")
+    status = payment.get("status")
+    if status == "COMPLETED":
+        order.status = Order.COMPLETED
+        order_total = payment["total_money"]["amount"]
+    elif status == "FAILED":
+        order.status = Order.FAILED
+    elif status == "APPROVED":
+        # Payment was only captured, approved, and never settled (not usually what we do)
+        # https://developer.squareup.com/docs/payments-api/overview#payments-api-workflow
+        order.status = Order.CAPTURED
+        order_total = payment["total_money"]["amount"]
+    elif status == "CANCELED":
+        order.status = Order.FAILED
+    return order_total
+
+
 def process_webhook_refund_updated(notification):
     # Find matching order, if any:
     payment_id = notification.body["data"]["object"]["payment_id"]
@@ -228,10 +233,6 @@ def process_webhook_refund_updated(notification):
             order.status = Order.REFUNDED
         elif status == "PENDING":
             order.status = Order.REFUND_PENDING
-
-
-def process_webhook_refund_created(notification):
-    pass
 
 
 def refund_payment(order, amount, reason=None, request=None):
@@ -265,7 +266,7 @@ def refund_cash_payment(order, amount, reason=None):
     return True, None
 
 
-def refund_card_payment(order, amount, reason=None, request=None):
+def refund_card_payment(order, amount, reason=None):
     api_data = order.apiData
     payment_id = api_data["payment"]["id"]
     converted_amount = int(amount * 100)
@@ -384,10 +385,25 @@ def process_webhook_refund_update(notification) -> bool:
     order.apiData["refunds"] = output
     order.save()
     return True
-# vim: ts=4 sts=4 sw=4 expandtab smartindent
 
 
-def process_webhook_refund_created(notification) -> bool:
+def process_webhook_payment_updated(notification: PaymentWebhookNotification) -> bool:
+    payment_id = notification.body["data"]["id"]
+    try:
+        order = Order.objects.get(apiData__payment={"id": payment_id})
+    except Order.DoesNotExist:
+        logger.warning(f"Got refund.updated webhook update for a payment id not found: {payment_id}")
+        return False
+
+    # Store order update in api data
+    payment = notification.body["data"]["object"]["payment"]
+    order.apiData["payment"] = payment
+    update_order_payment_data(order, payment)
+    order.save()
+    return True
+
+
+def process_webhook_refund_created(notification: PaymentWebhookNotification) -> bool:
     # Find matching order based on refund ID:
     refund_id = notification.body["data"]["id"]
     webhook_refund = notification.body["data"]["object"]["refund"]

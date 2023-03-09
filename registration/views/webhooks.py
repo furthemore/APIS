@@ -60,6 +60,8 @@ def process_webhook(notification):
         result = payments.process_webhook_refund_update(notification)
     elif notification.body["type"] == "refund.created":
         result = payments.process_webhook_refund_created(notification)
+    elif notification.body["type"] == "payment.updated":
+        result = payments.process_webhook_payment_updated(notification)
 
     notification.processed = result
     notification.save()
