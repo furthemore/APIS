@@ -116,7 +116,8 @@ def onsite_admin(request):
                 {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
             )
 
-        if len(results) == 1:
+        cart = request.session.get("cart", None)
+        if cart and len(results) == 1 and results[0].id not in cart:
             onsite_add_id_to_cart(request, results[0].id)
 
     terminal = get_active_terminal(request)
