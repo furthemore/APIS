@@ -133,7 +133,7 @@ def refresh_payment(order, store_api_data=None):
     payment = payments_response.body.get("payment")
     if payments_response.is_success():
         api_data["payment"] = payment
-        order_total = update_order_payment_data(order, payment)
+        order_total = update_order_payment_data(order, order_total, payment)
     else:
         return False, format_errors(payments_response.errors)
 
@@ -191,7 +191,7 @@ def refresh_payment(order, store_api_data=None):
     return True, None
 
 
-def update_order_payment_data(order, payment):
+def update_order_payment_data(order, order_total, payment):
     try:
         order.lastFour = payment["card_details"]["card"]["last_4"]
     except KeyError:
@@ -398,7 +398,7 @@ def process_webhook_payment_updated(notification: PaymentWebhookNotification) ->
     # Store order update in api data
     payment = notification.body["data"]["object"]["payment"]
     order.apiData["payment"] = payment
-    update_order_payment_data(order, payment)
+    update_order_payment_data(order, None, payment)
     order.save()
     return True
 
