@@ -116,6 +116,10 @@ def onsite_admin(request):
                 {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
             )
 
+        cart = request.session.get("cart", None)
+        if cart and len(results) == 1 and results[0].id not in cart:
+            onsite_add_id_to_cart(request, results[0].id)
+
     terminal = get_active_terminal(request)
     mqtt_auth = None
     if terminal:
@@ -878,6 +882,10 @@ def onsite_signature_prompt(request):
 @staff_member_required
 def onsite_add_to_cart(request):
     id = request.GET.get("id", None)
+    return onsite_add_id_to_cart(request, id)
+
+
+def onsite_add_id_to_cart(request, id):
     if id is None or id == "":
         return JsonResponse(
             {"success": False, "reason": "Need ID parameter"}, status=400
