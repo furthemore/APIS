@@ -227,7 +227,10 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.client.logout()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_admin_cart_not_initialized(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_admin_cart_not_initialized(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:onsite_admin_cart"))
         message = response.json()
@@ -258,7 +261,10 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_admin_cart_no_donations(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_admin_cart_no_donations(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         # Stage registration
         options = [
             {"id": self.option_conbook.id, "value": "true"},
@@ -307,28 +313,41 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_admin_cart_with_donations(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_admin_cart_with_donations(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         pass
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_close_terminal_no_terminal(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_close_terminal_no_terminal(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:close_terminal"))
         self.assertEqual(response.status_code, 400)
-        mock_sendPushNotification.assert_not_called()
+        mock_send_push_notification.assert_not_called()
+        mock_send_mqtt_message.assert_not_called()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_close_terminal_happy_path(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_close_terminal_happy_path(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
             reverse("registration:close_terminal"),
             {"terminal": self.terminal.id},
         )
         self.assertEqual(response.status_code, 200)
-        mock_sendPushNotification.assert_called_once()
+        mock_send_push_notification.assert_called_once()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_open_terminal(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_open_terminal(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
             reverse("registration:open_terminal"),
@@ -336,7 +355,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        mock_sendPushNotification.assert_called_once()
+        mock_send_push_notification.assert_called_once()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_invalid_terminal(self, mock_sendPushNotification):
@@ -353,7 +372,10 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         mock_sendPushNotification.assert_not_called()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_terminal_dne(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_terminal_dne(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
             reverse("registration:open_terminal"),
@@ -367,10 +389,14 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             message["message"],
             "The payment terminal specified has not registered with the server",
         )
-        mock_sendPushNotification.assert_not_called()
+        mock_send_push_notification.assert_not_called()
+        mock_send_mqtt_message.assert_not_called()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_terminal_bad_request(self, mock_sendPushNotification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_onsite_terminal_bad_request(
+        self, mock_send_mqtt_message, mock_send_push_notification
+    ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
             reverse("registration:open_terminal"),
@@ -382,17 +408,17 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(
             message["message"], "No terminal specified and none in session"
         )
-        mock_sendPushNotification.assert_not_called()
+        mock_send_push_notification.assert_not_called()
+        mock_send_mqtt_message.assert_not_called()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_onsite_enabled_terminal(self, mock_sendPushNotification):
+    def test_onsite_enabled_terminal(self, mock_send_push_notification):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
             reverse("registration:enable_payment"),
             {"terminal": self.terminal.id},
         )
         self.assertEqual(response.status_code, 200)
-        # mock_sendPushNotification.assert_called_once()
 
     def test_firebase_register_bad_key(self):
         response = self.client.get(

@@ -222,7 +222,7 @@ def send_message_to_terminal(request, data):
         if command == "close":
             command = "closed"
         topic = f"{mqtt.get_topic('admin', active.name)}/terminal/state"
-        send_mqtt_message(topic, data.get("command"), True)
+        send_mqtt_message(topic, command, True)
 
     try:
         PushyAPI.send_push_notification(data, to, None)
