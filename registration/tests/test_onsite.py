@@ -330,10 +330,10 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         mock_send_push_notification.assert_not_called()
         mock_send_mqtt_message.assert_not_called()
 
+    @patch("paho.mqtt.publish.single")
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    @patch("registration.mqtt.send_mqtt_message")
     def test_onsite_close_terminal_happy_path(
-        self, mock_send_mqtt_message, mock_send_push_notification
+        self, mock_send_push_notification, mock_send_mqtt_single
     ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
@@ -342,11 +342,12 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
         self.assertEqual(response.status_code, 200)
         mock_send_push_notification.assert_called_once()
+        mock_send_mqtt_single.assert_called_once()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
-    @patch("registration.mqtt.send_mqtt_message")
+    @patch("paho.mqtt.publish.single")
     def test_onsite_open_terminal(
-        self, mock_send_mqtt_message, mock_send_push_notification
+        self, mock_send_mqtt_single, mock_send_push_notification
     ):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
@@ -356,6 +357,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         self.assertEqual(response.status_code, 200)
         mock_send_push_notification.assert_called_once()
+        mock_send_mqtt_single.assert_called_once()
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
     def test_onsite_invalid_terminal(self, mock_sendPushNotification):
