@@ -277,7 +277,50 @@ $(document).ready(function () {
             }
         });
     });
-    
+
+    $("#ready-terminal").click(function (e) {
+        e.preventDefault();
+        $.getJSON(URL_REGISTRATION_READY_TERMINAL, {}, function (data) {
+            if (!data.success) {
+                alert("Error while sending ready terminal message: " + data.message);
+            }
+        });
+    });
+
+    // Keyboard shortcut bindings
+    document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey == true) {
+            if (e.key.toLowerCase() == 'p') {
+                e.preventDefault();
+                $("#print_button").click();
+            }
+        }
+
+        if (e.altKey == true) {
+            if (e.key.toLowerCase() == 'c') {
+                e.preventDefault();
+                $("#credit_button").click();
+            } else if (e.key.toLowerCase() == 'p') {
+                e.preventDefault();
+                $("#print_button").click();
+            } else if (e.key.toLowerCase() == 'n') {
+                e.preventDefault();
+                $("#ready-terminal").click();
+            } else if (e.key.toLowerCase() == 'o') {
+                e.preventDefault();
+                $("#open-terminal").click();
+            } else if (e.key.toLowerCase() == 'l') {
+                e.preventDefault();
+                $("#close-terminal").click()
+            } else if (e.key.toLowerCase() == 'a') {
+                e.preventDefault();
+                $("#clear-cart").click();
+            } else if (e.key.toLowerCase() =='s') {
+                e.preventDefault();
+                $("#clear-scans-log").click();
+            }
+        }
+    })
     
     $("#open-drawer").click(function (e) {
         e.preventDefault();
