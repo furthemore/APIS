@@ -3,6 +3,7 @@ import datetime
 from django.template.loader import render_to_string
 from django.test import Client, TestCase
 from django.urls import reverse
+from http import HTTPStatus
 
 from registration.models import *
 from registration.templatetags import site as site_tags
@@ -72,3 +73,13 @@ class TestTemplateTags(TestCase):
     def test_js_date(self):
         date = datetime.date(2020, 10, 5)
         self.assertEqual(site_tags.js_date(date), "Date(2020, 9, 5)")
+
+
+class RobotsTest(TestCase):
+    def test_get(self):
+        response = self.client.get("/robots.txt")
+
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(response["content-type"], "text/plain")
+        lines = response.content.decode().splitlines()
+        self.assertEqual(lines[0], "User-Agent: *")
