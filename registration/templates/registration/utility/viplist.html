@@ -11,7 +11,7 @@
       <th scope="col">Level</th>
       <th scope="col">Status</th>
       <th scope="col">Badge Name</th>
-      <th scope="col">Real Name</th>
+      <th scope="col">Legal Name</th>
       <th scope="col">Address</th>
       <th scope="col">Phone</th>
       <th scope="col">Email</th>
@@ -25,7 +25,9 @@
         <td>{{ b.assoc }}</td>
         <td>{{ b.badge.badgeName }}</td>
         <td>{{ b.badge.attendee.firstName }} {{ b.badge.attendee.lastName }}</td>
-        <td>{{ b.badge.attendee.address1 }} {{ b.badge.attendee.city }} {{ b.badge.attendee.state }} {{ b.badge.attendee.postal }}
+        <td>{{ b.badge.attendee.address1 }}<br>
+          {{ b.badge.attendee.address2 }}<br>
+          {{ b.badge.attendee.city }}, {{ b.badge.attendee.state }} {{ b.badge.attendee.postalCode }}<br>
           {{ b.badge.attendee.country }}
         </td>
         <td>{{ b.badge.attendee.phone }}</td>
