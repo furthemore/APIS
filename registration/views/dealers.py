@@ -516,8 +516,8 @@ def addNewDealer(request):
     try:
         birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
     except ValueError as e:
-        logger.warning(f"Unable to parse birthdate: {birthdate} - {e}")
-        return common.abort(400, f"Unable to parse birthdate: {birthdate}")
+        logger.warning(f"Unable to parse birthdate: {pda['birthdate']} - {e}")
+        return common.abort(400, f"Unable to parse birthdate: {pda['birthdate']}")
     event = Event.objects.get(name=evt)
 
     attendee = Attendee(
