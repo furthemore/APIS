@@ -295,9 +295,9 @@
                   $("#partnerList").empty();
                   if (item.partnerMax > 0) {
                       for (var i = item.partnerMin; i <= item.partnerMax; i++) {
-                          var partner = '<div class="partnerGroup"><input type="text" id="name_' + i + '" class="form-control form-control-text" placeholder="Partner Name" />' +
-                              '<input type="email" id="email_' + i + '" class="form-control form-control-text" placeholder="Partner Email" />' +
-                              '<input type="text" id="license_' + i + '" placeholder="Partner Tax License" class="form-control form-control-text" />' +
+                          var partner = '<div class="partnerGroup"><input type="text" id="name_' + i + '" maxlength="400" class="form-control form-control-text" placeholder="Partner Name" />' +
+                              '<input type="email" id="email_' + i + '" maxlength="200" class="form-control form-control-text" placeholder="Partner Email" />' +
+                              '<input type="text" id="license_' + i + '" maxlength="50" placeholder="Partner Tax License" class="form-control form-control-text" />' +
                               '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label></div>'
                           $("#partnerList").append(partner);
                           if (i != item.partnerMax) {
