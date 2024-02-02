@@ -984,14 +984,14 @@ print_badges.short_description = "Print Badges"
 
 
 def get_badge_type(badge):
-    #check if staff
+    # check if staff
     try:
         staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
     except Staff.DoesNotExist:
         pass
     else:
         return "Staff"
-    #check if dealer
+    # check if dealer
     try:
         dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
     except Dealer.DoesNotExist:
@@ -1330,8 +1330,13 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                     f"Error while loading JSON from apiData field for this order: {obj}",
                 )
                 logger.warning(
-                    f"Error while loading JSON from api_data for order {obj}"
+                    f"Error while loading JSON from api_data for order {obj}",
                 )
+            else:
+                if "dispute" in obj.apiData:
+                    messages.warning(
+                        request, "This transaction has been disputed by the cardholder"
+                    )
 
         return super(OrderAdmin, self).render_change_form(
             request, context, *args, **kwargs

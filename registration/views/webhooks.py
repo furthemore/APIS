@@ -44,7 +44,10 @@ def square_webhook(request):
 
     # Store the verified event notification
     notification = PaymentWebhookNotification(
-        event_id=event_id, event_type=event_type, body=request_body, headers=dict(request.headers)
+        event_id=event_id,
+        event_type=event_type,
+        body=request_body,
+        headers=dict(request.headers),
     )
     try:
         process_webhook(notification)
@@ -62,6 +65,8 @@ def process_webhook(notification):
         result = payments.process_webhook_refund_created(notification)
     elif notification.body["type"] == "payment.updated":
         result = payments.process_webhook_payment_updated(notification)
+    elif notification.body["type"] in ("dispute.created", "dispute.updated"):
+        result = payments.process_webhook_dispute_created_or_updated(notification)
 
     notification.processed = result
     notification.save()
