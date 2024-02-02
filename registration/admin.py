@@ -1330,12 +1330,11 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                     f"Error while loading JSON from apiData field for this order: {obj}",
                 )
                 logger.warning(
-                    request,
                     f"Error while loading JSON from api_data for order {obj}",
                 )
             else:
                 if "dispute" in obj.apiData:
-                    messages.warning("This transaction has been disputed")
+                    messages.warning(request, "This transaction has been disputed")
 
         return super(OrderAdmin, self).render_change_form(
             request, context, *args, **kwargs

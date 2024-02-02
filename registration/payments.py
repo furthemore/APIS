@@ -392,10 +392,10 @@ def process_webhook_refund_update(notification) -> bool:
 def process_webhook_payment_updated(notification: PaymentWebhookNotification) -> bool:
     payment_id = notification.body["data"]["id"]
     try:
-        order = Order.objects.get(apiData__payment={"id": payment_id})
+        order = Order.objects.get(apiData__payment__id=payment_id)
     except Order.DoesNotExist:
         logger.warning(
-            f"Got refund.updated webhook update for a payment id not found: {payment_id}"
+            f"Got payment.updated webhook update for a payment id not found: {payment_id}"
         )
         return False
 
@@ -413,7 +413,7 @@ def process_webhook_refund_created(notification: PaymentWebhookNotification) -> 
     webhook_refund = notification.body["data"]["object"]["refund"]
     payment_id = webhook_refund["payment_id"]
     try:
-        order = Order.objects.get(apiData__payment={"id": payment_id})
+        order = Order.objects.get(apiData__payment__id=payment_id)
     except Order.DoesNotExist:
         logger.warning(
             f"Got refund.created webhook update for a payment id not found: {payment_id}"
