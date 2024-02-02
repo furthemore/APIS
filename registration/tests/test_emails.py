@@ -186,3 +186,17 @@ class TestDealerEmails(EmailTestCase):
         self.assertIn(self.assistant.registrationToken, html_text)
         self.assistant.refresh_from_db()
         self.assertTrue(self.assistant.sent)
+
+
+class TestChargebackEmail(EmailTestCase):
+    @patch("registration.emails.send_email")
+    def test_send_chargeback_notice_email(self, mock_send_email):
+        order = Order(
+            total="88.04",
+            status=Order.COMPLETED,
+            reference="FOOBAR",
+            billingEmail="apis@mailinator.com",
+            lastFour="1111",
+        )
+        emails.send_chargeback_notice_email(order)
+        mock_send_email.assert_called_once()

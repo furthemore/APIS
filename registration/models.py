@@ -22,6 +22,15 @@ class HoldType(LookupTable):
     pass
 
 
+def get_hold_type(hold_name) -> HoldType:
+    try:
+        dispute_hold = HoldType.objects.get(name=hold_name)
+    except HoldType.DoesNotExist:
+        dispute_hold = HoldType(name=hold_name)
+        dispute_hold.save()
+    return dispute_hold
+
+
 class ShirtSizes(LookupTable):
     class Meta:
         db_table = "registration_shirt_sizes"
@@ -685,6 +694,13 @@ class Order(models.Model):
     FAILED = "Failed"  # Card was rejected by online authorization
     REFUNDED = "Refunded"
     REFUND_PENDING = "Refund Pending"
+    DISPUTE_EVIDENCE_REQUIRED = (
+        "Dispute Evidence Required"  # Initial state of a dispute with evidence required
+    )
+    DISPUTE_PROCESSING = "Dispute Processing"  # Dispute evidence has been submitted and the bank is processing
+    DISPUTE_WON = "Dispute Won"  # The bank has completed processing the dispute and the seller has won
+    DISPUTE_LOST = "Dispute Lost"  # The bank has completed processing the dispute and the seller has lost
+    DISPUTE_ACCEPTED = "Dispute Accepted"  # The seller has accepted the dispute
     STATUS_CHOICES = (
         (PENDING, "Pending"),
         (CAPTURED, "Captured"),
@@ -692,7 +708,24 @@ class Order(models.Model):
         (REFUNDED, "Refunded"),
         (REFUND_PENDING, "Refund Pending"),
         (FAILED, "Failed"),
+        (DISPUTE_EVIDENCE_REQUIRED, "Dispute Evidence Required"),
+        (DISPUTE_PROCESSING, "Dispute Processing"),
+        (DISPUTE_WON, "Dispute Won"),
+        (DISPUTE_LOST, "Dispute Lost"),
+        (DISPUTE_ACCEPTED, "Dispute Accepted"),
     )
+    # Maps Square dispute status to above status choices
+    DISPUTE_STATUS_MAP = {
+        "EVIDENCE_REQUIRED": DISPUTE_EVIDENCE_REQUIRED,
+        "PROCESSING": DISPUTE_PROCESSING,
+        "WON": DISPUTE_WON,
+        "LOST": DISPUTE_LOST,
+        "ACCEPTED": DISPUTE_ACCEPTED,
+        # Not certain what these states are for?
+        "INQUIRY_EVIDENCE_REQUIRED": DISPUTE_EVIDENCE_REQUIRED,
+        "INQUIRY_PROCESSING": DISPUTE_PROCESSING,
+        "INQUIRY_CLOSED": DISPUTE_WON,
+    }
     total = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=PENDING)
     reference = models.CharField(max_length=50)

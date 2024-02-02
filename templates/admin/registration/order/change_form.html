@@ -2,9 +2,11 @@
 {% load i18n admin_urls %}
 {% block object-tools-items %}
     {% if perms.registration.issue_refund %}
-<li xmlns:admin="http://www.w3.org/1999/xhtml">
+      {% if not api_data.dispute %}
+    <li xmlns:admin="http://www.w3.org/1999/xhtml">
         <a href="{% url "admin:order_refund" original.pk %}" class="historylink">Refund</a>
     </li>
+      {% endif %}
     {% endif %}
     {% if api_data.payment.receipt_url %}
         <li>
@@ -56,6 +58,19 @@
                 <strong>Refund ID:</strong> {{ refund.id }}<br>
 
             {% endfor %}
+
+            {%  if api_data.dispute %}
+                <br><hr>
+                <h3 style="color: orange">${{ api_data.dispute.amount_money.amount|slugify|slice:":-2" }}.{{ api_data.dispute.amount_money.amount|slugify|slice:"-2:" }}
+                {{  api_data.dispute.amount_money.currency }}
+                  Disputed {{  api_data.dispute.state }}</h3>
+                <strong>Reason:</strong> {{ api_data.dispute.reason }}<br>
+                <strong>Created:</strong> {{ api_data.dispute.created_at }}<br>
+                <strong>Updated:</strong> {{ api_data.dispute.updated_at }}<br>
+                <strong>Reported:</strong> {{ api_data.dispute.reported_at }}<br>
+                <strong>Due at:</strong> {{ api_data.dispute.due_at }}<br>
+
+            {%  endif %}
             </p>
         </div>
     </fieldset>

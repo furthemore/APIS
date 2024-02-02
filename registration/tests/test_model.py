@@ -2,7 +2,13 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from registration.models import Attendee, Charity, Venue
+from registration.models import (
+    Attendee,
+    Charity,
+    HoldType,
+    Venue,
+    get_hold_type,
+)
 from registration.tests.common import DEFAULT_VENUE_ARGS, TEST_ATTENDEE_ARGS
 
 
@@ -41,3 +47,18 @@ class TestAttendee(TestCase):
         preferredName = "Someone else"
         self.attendee.preferredName = preferredName
         self.assertEqual(self.attendee.getFirst(), preferredName)
+
+
+class TestHoldType(TestCase):
+    def setUp(self):
+        self.existing_hold = HoldType(name="Existing Hold")
+        self.existing_hold.save()
+        self.existing_hold.refresh_from_db()
+
+    def test_get_hold_type_existing_hold(self):
+        hold = get_hold_type("Existing Hold")
+        self.assertEqual(self.existing_hold, hold)
+
+    def test_get_hold_type_new(self):
+        hold = get_hold_type("New Hold")
+        self.assertNotEqual(self.existing_hold, hold)
