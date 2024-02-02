@@ -1,4 +1,4 @@
-Hello {{ order.firstName }} {{ order.lastName}},
+Hello {{ order.billingName }},
 
 Our systems have detected a chargeback dispute initated in relation to your registration transaction.
 
