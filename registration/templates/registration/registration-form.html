@@ -81,10 +81,11 @@
         </div>
         <br/>
         <hr/>
-        <div>
-          <div>
+        <div class="form-group">
+          <div class="checkbox col-sm-12">
             <label>
-              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox" required>
+              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox"
+                     required data-error="You must agree to the code of conduct to register." />
               I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of
               Conduct</a>. By registering for {{ event }} you attest that you are not listed on any sexual offender
               registry.

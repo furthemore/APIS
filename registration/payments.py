@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+from datetime import datetime
 
 from django.conf import settings
 from square.client import Client
@@ -488,8 +489,9 @@ def process_webhook_dispute_created_or_updated(
                 firstName=attendee.firstName,
                 lastName=attendee.lastName,
                 email=attendee.email,
-                reason="Chargeback",
+                reason=f"Initiated chargeback [APIS {datetime.now().isoformat()}]",
             )
+
             ban.save()
 
     return True

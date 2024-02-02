@@ -2,9 +2,11 @@
 {% load i18n admin_urls %}
 {% block object-tools-items %}
     {% if perms.registration.issue_refund %}
-<li xmlns:admin="http://www.w3.org/1999/xhtml">
+      {% if not api_data.dispute %}
+    <li xmlns:admin="http://www.w3.org/1999/xhtml">
         <a href="{% url "admin:order_refund" original.pk %}" class="historylink">Refund</a>
     </li>
+      {% endif %}
     {% endif %}
     {% if api_data.payment.receipt_url %}
         <li>

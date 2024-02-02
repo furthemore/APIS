@@ -1334,7 +1334,9 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 )
             else:
                 if "dispute" in obj.apiData:
-                    messages.warning(request, "This transaction has been disputed")
+                    messages.warning(
+                        request, "This transaction has been disputed by the cardholder"
+                    )
 
         return super(OrderAdmin, self).render_change_form(
             request, context, *args, **kwargs
