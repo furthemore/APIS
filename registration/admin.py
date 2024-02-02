@@ -1330,7 +1330,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                     f"Error while loading JSON from apiData field for this order: {obj}",
                 )
                 logger.warning(
-                    f"Error while loading JSON from api_data for order {obj}"
+                    request,
+                    f"Error while loading JSON from api_data for order {obj}",
                 )
             else:
                 if "dispute" in obj.apiData:

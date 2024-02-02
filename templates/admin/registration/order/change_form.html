@@ -56,6 +56,19 @@
                 <strong>Refund ID:</strong> {{ refund.id }}<br>
 
             {% endfor %}
+
+            {%  if api_data.dispute %}
+                <br><hr>
+                <h3 style="color: orange">${{ api_data.dispute.amount_money.amount|slugify|slice:":-2" }}.{{ api_data.dispute.amount_money.amount|slugify|slice:"-2:" }}
+                {{  api_data.dispute.amount_money.currency }}
+                  Disputed {{  api_data.dispute.state }}</h3>
+                <strong>Reason:</strong> {{ api_data.dispute.reason }}<br>
+                <strong>Created:</strong> {{ api_data.dispute.created_at }}<br>
+                <strong>Updated:</strong> {{ api_data.dispute.updated_at }}<br>
+                <strong>Reported:</strong> {{ api_data.dispute.reported_at }}<br>
+                <strong>Due at:</strong> {{ api_data.dispute.due_at }}<br>
+
+            {%  endif %}
             </p>
         </div>
     </fieldset>
