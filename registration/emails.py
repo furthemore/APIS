@@ -302,7 +302,26 @@ def send_dealer_approval_email(dealerQueryset):
         )
 
 
-def send_email(reply_address, to_address_list, subject, message, html_message):
+def send_chargeback_notice_email(order):
+    event = Event.objects.get(default=True)
+    data = {
+        "event": event,
+        "order": order,
+    }
+    msg_txt = render_to_string("registration/emails/chargeback-notice.txt", data)
+    msg_html = render_to_string("registration/emails/chargeback-notice.html", data)
+    registration_email = registration.views.common.get_registration_email(event)
+    send_email(
+        registration_email,
+        [order.billingEmail],
+        f"Important information about your {event.name} registration.",
+        msg_txt,
+        msg_html,
+        bcc=[registration_email],
+    )
+
+
+def send_email(reply_address, to_address_list, subject, message, html_message, bcc=[]):
     logger.debug("Enter send_email...")
     mail_message = EmailMultiAlternatives(
         subject,
@@ -310,6 +329,7 @@ def send_email(reply_address, to_address_list, subject, message, html_message):
         settings.APIS_DEFAULT_EMAIL,
         to_address_list,
         reply_to=[reply_address],
+        bcc=bcc,
     )
     logger.debug("Message to: {0}".format(to_address_list))
     mail_message.attach_alternative(html_message, "text/html")
