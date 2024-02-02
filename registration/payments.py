@@ -6,6 +6,7 @@ from datetime import datetime
 from django.conf import settings
 from square.client import Client
 
+from . import emails
 from .models import *
 
 client = Client(
@@ -493,5 +494,8 @@ def process_webhook_dispute_created_or_updated(
             )
 
             ban.save()
+
+            # Send an email about it
+            emails.send_chargeback_notice_email(order)
 
     return True
