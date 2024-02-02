@@ -366,7 +366,9 @@ def process_webhook_refund_update(notification) -> bool:
     try:
         order = Order.objects.get(apiData__refunds__contains=[{"id": refund_id}])
     except Order.DoesNotExist:
-        logger.warning(f"Got refund.updated webhook update for a refund id not found: {refund_id}")
+        logger.warning(
+            f"Got refund.updated webhook update for a refund id not found: {refund_id}"
+        )
         return False
 
     webhook_refund = notification.body["data"]["object"]["refund"]
@@ -392,7 +394,9 @@ def process_webhook_payment_updated(notification: PaymentWebhookNotification) ->
     try:
         order = Order.objects.get(apiData__payment={"id": payment_id})
     except Order.DoesNotExist:
-        logger.warning(f"Got refund.updated webhook update for a payment id not found: {payment_id}")
+        logger.warning(
+            f"Got refund.updated webhook update for a payment id not found: {payment_id}"
+        )
         return False
 
     # Store order update in api data
@@ -411,7 +415,9 @@ def process_webhook_refund_created(notification: PaymentWebhookNotification) -> 
     try:
         order = Order.objects.get(apiData__payment={"id": payment_id})
     except Order.DoesNotExist:
-        logger.warning(f"Got refund.created webhook update for a payment id not found: {payment_id}")
+        logger.warning(
+            f"Got refund.created webhook update for a payment id not found: {payment_id}"
+        )
         return False
 
     # Skip processing if we already have this refund id stored:
@@ -445,4 +451,45 @@ def process_webhook_refund_created(notification: PaymentWebhookNotification) -> 
         order.status = Order.COMPLETED
 
     order.save()
+    return True
+
+
+def process_webhook_dispute_created_or_updated(
+    notification: PaymentWebhookNotification,
+) -> bool:
+    webhook_dispute = notification.body["data"]["object"]["dispute"]
+    payment_id = webhook_dispute["disputed_payment"]["payment_id"]
+    try:
+        order = Order.objects.get(apiData__payment__id=payment_id)
+    except Order.DoesNotExist:
+        logger.warning(
+            f"Got dispute.created webhook update for a payment id not found: {payment_id}"
+        )
+        return False
+
+    # Add the dispute API data to the order:
+    order.apiData["dispute"] = webhook_dispute
+    order.status = Order.DISPUTE_STATUS_MAP[webhook_dispute["state"]]
+    order.save()
+
+    # Place a hold on all new disputed orders, and add attendee to the ban list.  Should only do this once,
+    # when the dispute is created (with state EVIDENCE_REQUIRED).
+    if webhook_dispute["state"] == "EVIDENCE_REQUIRED":
+        dispute_hold = get_hold_type("Chargeback")
+        order_items = OrderItem.objects.filter(order=order)
+        # Add dispute hold to all attendees on the order
+        for oi in order_items:
+            attendee = oi.badge.attendee
+            attendee.holdType = dispute_hold
+            attendee.save()
+
+            # Add all attendees to the ban list
+            ban = BanList(
+                firstName=attendee.firstName,
+                lastName=attendee.lastName,
+                email=attendee.email,
+                reason="Chargeback",
+            )
+            ban.save()
+
     return True
