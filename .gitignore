@@ -16,3 +16,4 @@ localhost.key
 venv3/
 .env
 htmlcov/
+.DS_Store
