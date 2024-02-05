@@ -265,111 +265,113 @@
           });
       });
 
-      // scroll to top on all the next views
-      $("#next-personal").click(function () {
-          window.scrollTo(0, 0);
-      });
+      $(document).ready(function () {
+          // scroll to top on all the next views
+          $("#next-personal").click(function () {
+              window.scrollTo(0, 0);
+          });
 
-      $("#levelContainer").on('click', 'a.selectLevel', function () {
-          clearLevels();
-          var levelId = $(this).attr('id').split('_')[1];
-          $.each(levelTemplateData, function (key, val) {
-              var id = val.levelId.split('_')[1];
-              if (id == levelId) {
-                  $("#regLevel").val(val.name);
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                  $(".changeLevel").show();
-                  $(".selectLevel").text("Selected!");
-                  generateOptions(id);
+          $("#levelContainer").on('click', 'a.selectLevel', function () {
+              clearLevels();
+              var levelId = $(this).attr('id').split('_')[1];
+              $.each(levelTemplateData, function (key, val) {
+                  var id = val.levelId.split('_')[1];
+                  if (id == levelId) {
+                      $("#regLevel").val(val.name);
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                      $(".changeLevel").show();
+                      $(".selectLevel").text("Selected!");
+                      generateOptions(id);
+                      return false;
+                  }
+              });
+              $.each(minorLevelTemplateData, function (key, val) {
+                  var id = val.levelId.split('_')[1];
+                  if (id == levelId) {
+                      $("#regLevel").val(val.name);
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                      $(".changeLevel").show();
+                      $(".selectLevel").text("Selected!");
+                      generateOptions(id);
+                      return false;
+                  }
+              });
+              $.each(accompaniedLevelTemplateData, function (key, val) {
+                  var id = val.levelId.split('_')[1];
+                  if (id == levelId) {
+                      $("#regLevel").val(val.name);
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                      $(".changeLevel").show();
+                      $(".selectLevel").text("Selected!");
+                      generateOptions(id);
+                      return false;
+                  }
+              });
+              $.each(freeLevelTemplateData, function (key, val) {
+                  var id = val.levelId.split('_')[1];
+                  if (id == levelId) {
+                      $("#regLevel").val(val.name);
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                      $(".changeLevel").show();
+                      $(".selectLevel").text("Selected!");
+                      generateOptions(id);
+                      return false;
+                  }
+              });
+          });
+
+          $("body").on("click", '#next-personal', function () {
+              if (Modernizr.inputtypes.date) {
+                  // native datepicker - expect ISO date
+                  var birthdate = parseDate($("#birthDate").val());
+              } else {
+                  // American middle-endian format put out by datepicker javascript
+                  var birthdate = new Date(Date.parse($("#birthDate").val()));
+              }
+
+              try {
+                  var age = getAgeByEventStart(birthdate);
+              } catch (e) {
+                  console.log(e);
+                  alert(e);
+              }
+
+              var level_data = [];
+
+              if (age < 0) {
+                  alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
                   return false;
               }
-          });
-          $.each(minorLevelTemplateData, function (key, val) {
-              var id = val.levelId.split('_')[1];
-              if (id == levelId) {
-                  $("#regLevel").val(val.name);
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                  $(".changeLevel").show();
-                  $(".selectLevel").text("Selected!");
-                  generateOptions(id);
+
+              if (age < 7) {
+                  level_data = freeLevelTemplateData
+
+              } else if (age < 13) {
+                  level_data = accompaniedLevelTemplateData;
+
+              } else if (age < 18) {
+                  level_data = minorLevelTemplateData;
+
+              } else {
+                  level_data = levelTemplateData;
+              }
+
+              if (level_data.length == 0) {
+                  alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
                   return false;
               }
+
+              $("#levelContainer").loadTemplate($("#levelTemplate"), level_data);
+              $(".changeLevel").hide();
+
           });
-          $.each(accompaniedLevelTemplateData, function (key, val) {
-              var id = val.levelId.split('_')[1];
-              if (id == levelId) {
-                  $("#regLevel").val(val.name);
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                  $(".changeLevel").show();
-                  $(".selectLevel").text("Selected!");
-                  generateOptions(id);
-                  return false;
-              }
+
+
+          $("#levelContainer").on('click', 'a.changeLevel', function () {
+              $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+              $("#regLevel").val("");
+              $(".changeLevel").hide();
           });
-          $.each(freeLevelTemplateData, function (key, val) {
-              var id = val.levelId.split('_')[1];
-              if (id == levelId) {
-                  $("#regLevel").val(val.name);
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                  $(".changeLevel").show();
-                  $(".selectLevel").text("Selected!");
-                  generateOptions(id);
-                  return false;
-              }
-          });
-      });
-
-      $("body").on("click", '#next-personal', function () {
-          if (Modernizr.inputtypes.date) {
-              // native datepicker - expect ISO date
-              var birthdate = parseDate($("#birthDate").val());
-          } else {
-              // American middle-endian format put out by datepicker javascript
-              var birthdate = new Date(Date.parse($("#birthDate").val()));
-          }
-
-          try {
-              var age = getAgeByEventStart(birthdate);
-          } catch (e) {
-              console.log(e);
-              alert(e);
-          }
-
-          var level_data = [];
-
-          if (age < 0) {
-              alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
-              return false;
-          }
-
-          if (age < 7) {
-              level_data = freeLevelTemplateData
-
-          } else if (age < 13) {
-              level_data = accompaniedLevelTemplateData;
-
-          } else if (age < 18) {
-              level_data = minorLevelTemplateData;
-
-          } else {
-              level_data = levelTemplateData;
-          }
-
-          if (level_data.length == 0) {
-              alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
-              return false;
-          }
-
-          $("#levelContainer").loadTemplate($("#levelTemplate"), level_data);
-          $(".changeLevel").hide();
-
-      });
-
-
-      $("#levelContainer").on('click', 'a.changeLevel', function () {
-          $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-          $("#regLevel").val("");
-          $(".changeLevel").hide();
       });
 
       var clearLevels = function () {
@@ -546,7 +548,9 @@
           });
       }
 
-      $("#register").one('click', register_click);
+      $(document).ready(function () {
+          $("#register").one('click', register_click);
+      });
   </script>
 
   <script src="{% static 'js/date-entry.js' %}"></script>
