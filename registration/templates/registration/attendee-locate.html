@@ -57,7 +57,9 @@
 
   <script type="text/javascript">
 
-      $("#lookup").click(doRegister);
+      $(document).ready(function () {
+          $("#lookup").click(doRegister);
+      });
 
       function doRegister() {
           $("form").validator('validate');

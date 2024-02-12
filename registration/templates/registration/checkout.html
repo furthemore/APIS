@@ -164,18 +164,20 @@
             {% if event.collectBillingAddress %}
               <h3>Billing Information</h3>
 
-              {% if not hasMinors and event.collectAddress %}
+              {% if event.collectAddress %}
                 <div class="form-group">
                   <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
                   <div class="col-sm-9">
                     <select id="useFrom" class="form-control">
                       <option value="" selected>The Fields Below</option>
                       {% for oi in orderItems %}
+                        {% if not oi.attendee.isMinor %}
                         {% if oi.attendee %}
                           <option
                               value="{{ forloop.counter0 }}">{% attendee_get_first oi.attendee %} {{ oi.attendee.lastName }}</option>
                         {% else %}
                           <option value="{{ forloop.counter0 }}">{{ oi.badge.attendee }}</option>
+                        {% endif %}
                         {% endif %}
                       {% endfor %}
                     </select>
@@ -359,81 +361,79 @@
     </script>
   {% endif %}
   <script type="text/javascript">
+      $(document).ready(function () {
+         //$("#donateCharity").change(setTwoNumberDecimal);
+        //$("#donateOrg").change(setTwoNumberDecimal);
 
+        $(".deleteAttendee").click(function (e) {
+            const id = this.id.split('_')[1];
+            const data = {'id': id};
+            $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": URL_REGISTRATION_REMOVE_FROM_CART,
+                "data": JSON.stringify(data),
+                "beforeSend": function (xhr, settings) {
+                    console.log("Before Send");
+                    $.ajaxSettings.beforeSend(xhr, settings);
+                },
+                "error": function (result, status, error) {
+                    alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                },
+                "success": function (result, status) {
+                    if (result.success) {
+                        window.location.reload();
+                    } else {
+                        alert(`An error has occurred: ${result.message}. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                    }
+                }
+            });
+        });
 
-      //$("#donateCharity").change(setTwoNumberDecimal);
-      //$("#donateOrg").change(setTwoNumberDecimal);
+        $("#addAnother").click(function () {
+            window.location = URL_REGISTRATION_INDEX;
+        });
 
-      $(".deleteAttendee").click(function (e) {
-          const id = this.id.split('_')[1];
-          const data = {'id': id};
-          $.ajax({
-              "type": "POST",
-              "dataType": "json",
-              "url": URL_REGISTRATION_REMOVE_FROM_CART,
-              "data": JSON.stringify(data),
-              "beforeSend": function (xhr, settings) {
-                  console.log("Before Send");
-                  $.ajaxSettings.beforeSend(xhr, settings);
-              },
-              "error": function (result, status, error) {
-                  alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
-              },
-              "success": function (result, status) {
-                  if (result.success) {
-                      window.location.reload();
-                  } else {
-                      alert(`An error has occurred: ${result.message}. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
-                  }
-              }
-          });
+        $("#cancel").click(function () {
+            const cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.");
+            if (cancel == false) {
+                return;
+            }
+
+            $.getJSON(URL_REGISTRATION_CANCEL_ORDER, function (data) {
+                window.location = URL_REGISTRATION_INDEX;
+            });
+        });
+
+        $("#apply_discount").click(function (e) {
+            const discount = $("#discount").val();
+            if (discount == '') {
+                alert("You must enter a discount to apply.");
+                return;
+            }
+            const data = {'discount': discount};
+            $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": URL_REGISTRATION_DISCOUNT,
+                "data": JSON.stringify(data),
+                "beforeSend": function (xhr, settings) {
+                    console.log("Before Send");
+                    $.ajaxSettings.beforeSend(xhr, settings);
+                },
+                "error": function (result, status, error) {
+                    alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                },
+                "success": function (result, status) {
+                    if (result.success) {
+                        window.location.reload();
+                    } else {
+                        alert(`An error has occurred: ${result.message} If this error continues, please contact ` +
+                            `${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                    }
+                }
+            });
+        });
       });
-
-      $("#addAnother").click(function () {
-          window.location = URL_REGISTRATION_INDEX;
-      });
-
-      $("#cancel").click(function () {
-          const cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.");
-          if (cancel == false) {
-              return;
-          }
-
-          $.getJSON(URL_REGISTRATION_CANCEL_ORDER, function (data) {
-              window.location = URL_REGISTRATION_INDEX;
-          });
-      });
-
-      $("#apply_discount").click(function (e) {
-          const discount = $("#discount").val();
-          if (discount == '') {
-              alert("You must enter a discount to apply.");
-              return;
-          }
-          const data = {'discount': discount};
-          $.ajax({
-              "type": "POST",
-              "dataType": "json",
-              "url": URL_REGISTRATION_DISCOUNT,
-              "data": JSON.stringify(data),
-              "beforeSend": function (xhr, settings) {
-                  console.log("Before Send");
-                  $.ajaxSettings.beforeSend(xhr, settings);
-              },
-              "error": function (result, status, error) {
-                  alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
-              },
-              "success": function (result, status) {
-                  if (result.success) {
-                      window.location.reload();
-                  } else {
-                      alert(`An error has occurred: ${result.message} If this error continues, please contact ` +
-                          `${EVENT_REGISTRATION_EMAIL} for assistance.`);
-                  }
-              }
-          });
-      });
-
-
   </script>
 {% endblock %}
