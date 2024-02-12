@@ -370,6 +370,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": URL_REGISTRATION_REMOVE_FROM_CART,
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
@@ -414,6 +415,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": URL_REGISTRATION_DISCOUNT,
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {

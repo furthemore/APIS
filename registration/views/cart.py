@@ -220,7 +220,7 @@ def add_to_cart(request):
 
     banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
-        logger.error("***ban list registration attempt***")
+        logger.error(f"***ban list registration attempt: {pda['email']}***")
         registrationEmail = common.get_registration_email()
         return common.abort(
             403,

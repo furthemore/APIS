@@ -73,6 +73,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": "{% url 'registration:info_upgrade' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
