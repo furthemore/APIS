@@ -238,46 +238,6 @@
 
   <script type="text/javascript">
       var tableSizes = [];
-      $("body").ready(function () {
-          if (!Modernizr.inputtypes.date) {
-              $("#birthDate").datepicker({
-                  changeMonth: true,
-                  changeYear: true
-              });
-          }
-          $.getJSON("{% url 'registration:tablesizes' %}", function (data) {
-              tableSizes = data;
-              $.each(tableSizes, function (key, item) {
-                  $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
-                  if (key == 0) {
-                      $("#tableSizeDescription").text(item.description);
-                      setTableInfo(item.id);
-                  }
-              });
-          });
-      });
-      $("#tableSize").on("change", function () {
-          var id = $(this).val();
-          $.each(tableSizes, function (key, item) {
-              if (item.id == id) {
-                  $("#tableSizeDescription").text(item.description);
-                  setTableInfo(id);
-              }
-          });
-      });
-
-      $("#next-personal").click(function () {
-          window.scrollTo(0, 0);
-      });
-
-      $("#next-optional").click(function () {
-          window.scrollTo(0, 0);
-      });
-
-      $(document).ready(function () {
-          $("form").fadeIn();
-      });
-
 
       function setTableInfo(id) {
           $.each(tableSizes, function (key, item) {
@@ -311,23 +271,6 @@
           });
       };
 
-      $("#country").on("change", function () {
-          if ($(this).val() == "US") {
-              $("#state").val("VA").removeAttr("disabled").attr("required", "required");
-              $("#zip").val("").removeAttr("disabled").attr("required", "required");
-          } else {
-              $("#state").val("").attr("disabled", "disabled").removeAttr("required");
-              $("#zip").val("").attr("disabled", "disabled").removeAttr("required");
-          }
-      });
-
-      $("#tempLicense").on("click", function () {
-          if ($(this).is(":checked")) {
-              $("#license").val("temporary").attr("disabled", "disabled");
-          } else {
-              $("#license").val("").removeAttr("disabled");
-          }
-      });
 
       function partnerLicense() {
           var id = this.id.split('_')[1];
@@ -338,9 +281,6 @@
           }
       }
 
-      $("#register1").click(doRegister);
-
-      $("#register").click(doRegister);
 
       function getPartners() {
           var partners = [];
@@ -370,6 +310,7 @@
           });
           return partners;
       }
+
 
       function doRegister() {
           $("form").validator('validate');
@@ -460,15 +401,79 @@
           return cookieValue;
       }
 
-      $.ajaxSetup({
-          beforeSend: function (xhr, settings) {
-              if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                  // Only send the token to relative URLs i.e. locally.
-                  xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+      $(document).ready(function () {
+          $.ajaxSetup({
+              beforeSend: function (xhr, settings) {
+                  if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                      // Only send the token to relative URLs i.e. locally.
+                      xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                  }
               }
-          }
+          });
+
+          $("body").ready(function () {
+              if (!Modernizr.inputtypes.date) {
+                  $("#birthDate").datepicker({
+                      changeMonth: true,
+                      changeYear: true
+                  });
+              }
+              $.getJSON("{% url 'registration:tablesizes' %}", function (data) {
+                  tableSizes = data;
+                  $.each(tableSizes, function (key, item) {
+                      $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
+                      if (key == 0) {
+                          $("#tableSizeDescription").text(item.description);
+                          setTableInfo(item.id);
+                      }
+                  });
+              });
+          });
+          $("#tableSize").on("change", function () {
+              var id = $(this).val();
+              $.each(tableSizes, function (key, item) {
+                  if (item.id == id) {
+                      $("#tableSizeDescription").text(item.description);
+                      setTableInfo(id);
+                  }
+              });
+          });
+
+          $("#next-personal").click(function () {
+              window.scrollTo(0, 0);
+          });
+
+          $("#next-optional").click(function () {
+              window.scrollTo(0, 0);
+          });
+
+          $("#country").on("change", function () {
+              if ($(this).val() == "US") {
+                  $("#state").val("VA").removeAttr("disabled").attr("required", "required");
+                  $("#zip").val("").removeAttr("disabled").attr("required", "required");
+              } else {
+                  $("#state").val("").attr("disabled", "disabled").removeAttr("required");
+                  $("#zip").val("").attr("disabled", "disabled").removeAttr("required");
+              }
+          });
+
+          $("#tempLicense").on("click", function () {
+              if ($(this).is(":checked")) {
+                  $("#license").val("temporary").attr("disabled", "disabled");
+              } else {
+                  $("#license").val("").removeAttr("disabled");
+              }
+          });
+
+          $("#register1").click(doRegister);
+
+          $("#register").click(doRegister);
+
       });
 
+      $(document).ready(function () {
+          $("form").fadeIn();
+      });
 
   </script>
 
