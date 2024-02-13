@@ -472,6 +472,16 @@ def process_webhook_dispute_created_or_updated(
     # Add the dispute API data to the order:
     order.apiData["dispute"] = webhook_dispute
     order.status = Order.DISPUTE_STATUS_MAP[webhook_dispute["state"]]
+    if order.status in (Order.DISPUTE_LOST, Order.DISPUTE_ACCEPTED) and (
+        order.orgDonation > 0 or order.charityDonation > 0
+    ):
+        # If we've lost or accepted the dispute, reset charitable donation earmarks:
+        order.notes += (
+            f"\n\nOriginal charity donation of ${order.charityDonation} and organization donation "
+            + f"of ${order.orgDonation} were reset due to lost or accepted dispute state."
+        )
+        order.orgDonation = 0
+        order.charityDonation = 0
     order.save()
 
     # Place a hold on all new disputed orders, and add attendee to the ban list.  Should only do this once,
