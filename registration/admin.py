@@ -1282,7 +1282,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         "billingType",
         "status",
     )
-    search_fields = ["reference"]
+    list_filter = ("status", "billingType")
+    search_fields = ["reference", "lastFour"]
     readonly_fields = ("createdDate",)
     save_on_top = True
     inlines = [OrderItemInline]
