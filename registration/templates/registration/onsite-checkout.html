@@ -150,6 +150,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": "{% url 'registration:checkout' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
@@ -185,6 +186,7 @@
               $.ajax({
                   "type": "POST",
                   "dataType": "json",
+                  "contentType": "application/json; charset=utf-8",
                   "url": "{% url 'registration:remove_from_cart' %}",
                   "data": JSON.stringify(data),
                   "beforeSend": function (xhr, settings) {

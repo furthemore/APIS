@@ -532,6 +532,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": "{% url 'registration:add_to_cart' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
