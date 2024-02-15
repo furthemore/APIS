@@ -319,6 +319,7 @@ class DealerAsstAdmin(ImportExportModelAdmin):
         "asst_registered",
     )
     list_filter = ("event", "dealer__approved", "paid")
+    list_select_related = ("event", "dealer", "attendee")
     search_fields = ["name", "email"]
     readonly_fields = ["dealer_businessname", "dealer_approved", "registrationToken"]
     resource_class = DealerAsstResource
@@ -454,6 +455,7 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "event",
     )
     list_filter = ("event", "approved", "emailed")
+    list_select_related = ("tableSize", "event", "attendee")
     save_on_top = True
     inlines = [DealerAsstInline]
     resource_class = DealerResource
@@ -697,6 +699,7 @@ class StaffAdmin(ImportExportModelAdmin):
         "event",
     )
     list_filter = ("event", "department")
+    list_select_related = ("attendee", "department", "shirtsize", "event")
     search_fields = [
         "attendee__email",
         "attendee__lastName",
@@ -1124,6 +1127,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
+    list_select_related = ("event", "attendee")
     raw_id_fields = ("attendee",)
     list_display = (
         "attendee",
@@ -1254,6 +1258,7 @@ admin.site.register(AttendeeOptions)
 class OrderItemAdmin(ImportExportModelAdmin):
     raw_id_fields = ("order", "badge")
     readonly_fields = ("enteredBy",)
+    list_select_related = ("badge", "order")
 
     def save_model(self, request, obj, form, change):
         obj.enteredBy = request.user.username
@@ -1283,6 +1288,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         "status",
     )
     list_filter = ("status", "billingType")
+    list_select_related = ("discount",)
     search_fields = ["reference", "lastFour"]
     readonly_fields = ("createdDate",)
     save_on_top = True
@@ -1513,6 +1519,7 @@ admin.site.register(Department, DepartmentAdmin)
 
 class CashdrawerAdmin(ImportExportModelAdmin):
     list_display = ("timestamp", "action", "total", "tendered", "user", "position")
+    list_select_related = ("user", "position")
 
     def save_model(self, request, obj, form, change):
         if form.data["tendered"] == "":
