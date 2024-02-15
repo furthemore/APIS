@@ -322,9 +322,13 @@ LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
 LOGIN_URL = 'u2f:login'
 
 if DEBUG:
+    # Adds docker NAT routers and any internal upstream proxies as internal IPs to enable the debug toolbar
     import socket  # only if you haven't already imported this
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.0.4"]
+    INTERNAL_IPS = ["127.0.0.1"]
+    for proxy_host in (socket.gethostname(), os.getenv("INTERNAL_PROXY_HOST")):
+        if proxy_host:
+            hostname, _, ips = socket.gethostbyname_ex(proxy_host)
+            INTERNAL_IPS += [ip[: ip.rfind(".")] + ".1" for ip in ips] + ips
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
