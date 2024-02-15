@@ -1,6 +1,7 @@
+from unittest.mock import patch
+
 from django.core import mail
 from django.test import TestCase
-from mock import patch
 
 from registration import emails
 from registration.models import (
