@@ -58,7 +58,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', False)
+DEBUG = eval_bool(os.getenv('DJANGO_DEBUG', False))
 
 LOGGING = {
     'version': 1,
@@ -321,7 +321,14 @@ MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
 LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
 LOGIN_URL = 'u2f:login'
 
-INTERNAL_IPS = ['127.0.0.1']
+if DEBUG:
+    # Adds docker NAT routers and any internal upstream proxies as internal IPs to enable the debug toolbar
+    import socket  # only if you haven't already imported this
+    INTERNAL_IPS = ["127.0.0.1"]
+    for proxy_host in (socket.gethostname(), os.getenv("INTERNAL_PROXY_HOST")):
+        if proxy_host:
+            hostname, _, ips = socket.gethostbyname_ex(proxy_host)
+            INTERNAL_IPS += [ip[: ip.rfind(".")] + ".1" for ip in ips] + ips
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
