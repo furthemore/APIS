@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.admin import AdminSite
@@ -6,7 +7,6 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.test import TestCase
 from django.urls import reverse
-from mock import patch
 
 from registration.admin import FirebaseAdmin
 from registration.models import Firebase

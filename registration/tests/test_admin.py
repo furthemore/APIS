@@ -1,6 +1,7 @@
 import json
 import time
 import uuid
+from unittest.mock import patch
 
 from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
@@ -8,7 +9,6 @@ from django.core import mail
 from django.http import HttpRequest
 from django.test import Client, TestCase, tag
 from django.urls import reverse
-from mock import patch
 
 from registration import admin, payments
 from registration.admin import OrderAdmin
