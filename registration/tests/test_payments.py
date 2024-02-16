@@ -1,5 +1,6 @@
+from unittest.mock import patch
+
 from django.test import TestCase, tag
-from mock import patch
 
 from registration import payments
 

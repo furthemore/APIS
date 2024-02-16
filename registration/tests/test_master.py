@@ -2,12 +2,12 @@ import io
 import urllib.error
 import urllib.parse
 import urllib.request
+from unittest.mock import patch
 
 from django.conf import settings
 from django.test import Client, TestCase
 from django.test.utils import override_settings, tag
 from django.urls import reverse
-from mock import patch
 
 from registration.models import *
 from registration.pushy import PushyAPI, PushyError
