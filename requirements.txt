@@ -11,7 +11,7 @@ django-nested-inline~=0.4.6
 django-prometheus~=2.3.1
 django-redis~=5.4.0
 #django-u2f~=1.0.1
-git+https://github.com/gavinwahl/django-u2f.git@34410af
+git+https://github.com/rechner/django-u2f.git@23022f8
 django-widget-tweaks==1.5.0
 freezegun==1.4.0
 influxdb~=5.3.1          # Influx < v1.7

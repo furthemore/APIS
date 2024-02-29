@@ -122,12 +122,12 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'widget_tweaks',
     'mathfilters',
-    'nested_inline',
     'import_export',
     'django_extensions',
     'django_u2f',
     'maintenance_mode',
     'registration',
+    'nested_inline',
     'debug_toolbar',
     'django_prometheus',
 ]
