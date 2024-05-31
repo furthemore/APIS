@@ -58,11 +58,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DJANGO_DEBUG', False)
+DEBUG = eval_bool(os.getenv('DJANGO_DEBUG', "False"))
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
@@ -71,14 +81,19 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'INFO',
-            'filters': ['require_debug_true'],
+            #'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         '': {
             'handlers': ['console'],
             'level': 'DEBUG',
+        },
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
         },
     },
 }
@@ -107,12 +122,12 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'widget_tweaks',
     'mathfilters',
-    'nested_inline',
     'import_export',
     'django_extensions',
     'django_u2f',
     'maintenance_mode',
     'registration',
+    'nested_inline',
     'debug_toolbar',
     'django_prometheus',
 ]
@@ -174,6 +189,10 @@ DATABASES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# Enable persistent database connections
+# https://docs.djangoproject.com/en/3.2/ref/databases/#persistent-database-connections
+CONN_MAX_AGE = os.getenv("DJANGO_CONN_MAX_AGE", 0)
+
 
 # Cache
 # https://docs.djangoproject.com/en/3.2/topics/cache/
@@ -184,7 +203,8 @@ CACHES = {
         "LOCATION": os.getenv("DJANGO_REDIS_URL", "redis://redis:6379/1"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
+        "KEY_PREFIX": os.getenv('DJANGO_REDIS_KEY_PREFIX', 'apis'),
     }
 }
 
@@ -306,7 +326,14 @@ MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
 LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
 LOGIN_URL = 'u2f:login'
 
-INTERNAL_IPS = ['127.0.0.1']
+if DEBUG:
+    # Adds docker NAT routers and any internal upstream proxies as internal IPs to enable the debug toolbar
+    import socket  # only if you haven't already imported this
+    INTERNAL_IPS = ["127.0.0.1"]
+    for proxy_host in (socket.gethostname(), os.getenv("INTERNAL_PROXY_HOST")):
+        if proxy_host:
+            hostname, _, ips = socket.gethostbyname_ex(proxy_host)
+            INTERNAL_IPS += [ip[: ip.rfind(".")] + ".1" for ip in ips] + ips
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
@@ -317,6 +344,8 @@ STATIC_ROOT = '/app/apis/static/'
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 60*60*24  # 24hr
+# Write-through cache session (redis cache, persisted to db).
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Default email to display as part of error messages
 APIS_DEFAULT_EMAIL = os.getenv('APIS_DEFAULT_EMAIL', "registration@example.com")

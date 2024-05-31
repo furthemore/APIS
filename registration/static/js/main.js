@@ -60,7 +60,7 @@ async function postJSON(url, body) {
     })
 }
 
-$("body").ready(function (e) {
+$(document).ready(function (e) {
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {

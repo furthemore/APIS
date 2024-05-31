@@ -31,6 +31,7 @@ def get_cart(request):
         hasMinors = False
         for item in orderItems:
             if item.badge.isMinor():
+                item.isMinor = True
                 hasMinors = True
                 break
 
@@ -79,7 +80,9 @@ def get_cart(request):
                 - birthdate.year
                 - ((evt.month, evt.day) < (birthdate.month, birthdate.day))
             )
+            pda["isMinor"] = False
             if age_at_event < 18:
+                pda["isMinor"] = True
                 hasMinors = True
 
             pdp = cartJson["priceLevel"]
@@ -220,7 +223,7 @@ def add_to_cart(request):
 
     banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
     if banCheck:
-        logger.error("***ban list registration attempt***")
+        logger.error(f"***ban list registration attempt: {pda['email']}***")
         registrationEmail = common.get_registration_email()
         return common.abort(
             403,

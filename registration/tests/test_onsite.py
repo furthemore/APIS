@@ -1,8 +1,8 @@
 import uuid
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import TestCase
-from mock import patch
 
 from registration.models import *
 from registration.tests import common

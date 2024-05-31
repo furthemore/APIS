@@ -160,58 +160,61 @@
       var levelTemplateData = [];
       var shirtSizes = [];
 
-      $("body").ready(function () {
-          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
-              levelData = data;
-              var prevLevel = 50;
-              if (currentLevel && currentLevel.hasOwnProperty("basePrice")) {
-                  prevLevel = parseFloat(currentLevel.basePrice);
-              }
-              $.each(data, function (key, val) {
-                  let currentPrice = val.base_price - prevLevel;
-                  if (currentPrice > 0) {
-                      levelTemplateData.push({
-                          name: val.name,
-                          price: "$" + currentPrice,
-                          levelId: "level_" + val.id,
-                      });
+      $(document).ready(function () {
+          $("body").ready(function () {
+              $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+                  levelData = data;
+                  var prevLevel = 50;
+                  if (currentLevel && currentLevel.hasOwnProperty("basePrice")) {
+                      prevLevel = parseFloat(currentLevel.basePrice);
+                  }
+                  $.each(data, function (key, val) {
+                      let currentPrice = val.base_price - prevLevel;
+                      if (currentPrice > 0) {
+                          levelTemplateData.push({
+                              name: val.name,
+                              price: "$" + currentPrice,
+                              levelId: "level_" + val.id,
+                          });
+                      }
+                  });
+                  $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+                  $(".changeLevel").hide();
+                  if (shirtSizes.length > 0) {
+                      $(".selectLevel")[0].click();
+                  }
+
+              });
+              $.getJSON("{% url 'registration:shirtsizes' %}", function (data) {
+                  shirtSizes = data;
+                  if (levelTemplateData.length > 0) {
+                      $(".selectLevel")[0].click();
                   }
               });
+          });
+
+          $("#levelContainer").on('click', 'a.selectLevel', function () {
+              clearLevels();
+              var levelId = $(this).attr('id').split('_')[1];
+              $.each(levelTemplateData, function (key, val) {
+                  var id = val.levelId.split('_')[1];
+                  if (id == levelId) {
+                      $("#regLevel").val(val.name);
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                      $(".changeLevel").show();
+                      $(".selectLevel").text("Selected!");
+                      generateOptions(id);
+                      return false;
+                  }
+              });
+          });
+          $("#levelContainer").on('click', 'a.changeLevel', function () {
               $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+              $("#regLevel").val("");
               $(".changeLevel").hide();
-              if (shirtSizes.length > 0) {
-                  $(".selectLevel")[0].click();
-              }
-
-          });
-          $.getJSON("{% url 'registration:shirtsizes' %}", function (data) {
-              shirtSizes = data;
-              if (levelTemplateData.length > 0) {
-                  $(".selectLevel")[0].click();
-              }
           });
       });
 
-      $("#levelContainer").on('click', 'a.selectLevel', function () {
-          clearLevels();
-          var levelId = $(this).attr('id').split('_')[1];
-          $.each(levelTemplateData, function (key, val) {
-              var id = val.levelId.split('_')[1];
-              if (id == levelId) {
-                  $("#regLevel").val(val.name);
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                  $(".changeLevel").show();
-                  $(".selectLevel").text("Selected!");
-                  generateOptions(id);
-                  return false;
-              }
-          });
-      });
-      $("#levelContainer").on('click', 'a.changeLevel', function () {
-          $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-          $("#regLevel").val("");
-          $(".changeLevel").hide();
-      });
       var clearLevels = function () {
           $.each(levelTemplateData, function (key, val) {
               $("#" + val.levelId).text("Select " + val.name);
@@ -369,6 +372,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": "{% url 'registration:add_upgrade' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {

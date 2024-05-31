@@ -258,16 +258,18 @@
           });
       });
 
-      $("#levelContainer").on('click', 'a.selectLevel', function () {
-          clearLevels();
-          var levelId = $(this).attr('id').split('_')[1];
-          select_level(levelId);
-      });
+      $(document).ready(function () {
+          $("#levelContainer").on('click', 'a.selectLevel', function () {
+              clearLevels();
+              var levelId = $(this).attr('id').split('_')[1];
+              select_level(levelId);
+          });
 
-      $("#levelContainer").on('click', 'a.changeLevel', function () {
-          $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-          $("#regLevel").val("");
-          $(".changeLevel").hide();
+          $("#levelContainer").on('click', 'a.changeLevel', function () {
+              $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+              $("#regLevel").val("");
+              $(".changeLevel").hide();
+          });
       });
 
       var clearLevels = function () {
@@ -454,6 +456,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
+              "contentType": "application/json; charset=utf-8",
               "url": "{% url 'registration:add_to_cart' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
@@ -479,11 +482,10 @@
 
       $(document).ready(function (e) {
           $("#register").one('click', register_click);
-      });
 
-
-      $(document).on("click", ".open-image", function (event) {
-          window.open($(event.target).data("image"), "_blank", "width=750,height=750,left=35%,top=25%,menubar=no,statusbar=no");
+          $(document).on("click", ".open-image", function (event) {
+              window.open($(event.target).data("image"), "_blank", "width=750,height=750,left=35%,top=25%,menubar=no,statusbar=no");
+          });
       });
 
   </script>
