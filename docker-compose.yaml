@@ -1,4 +1,3 @@
-version: '2'
 services:
   app:
     image: ghcr.io/furthemore/apis:latest

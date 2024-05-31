@@ -29,7 +29,31 @@ Stack:
 ![Screenshot of Cash Register Position](https://i.imgur.com/7iJSS8E.png)
 
 ## Quick start
-### Running using Docker
+### Running Using Published Docker Images
+
+    # Install docker using the instructions at either:
+    # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 or
+    # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository.
+    
+    # Download docker-compose.yml and example.env files from this repo
+
+    # Create .env from template and edit relevant settings (API keys, etc)
+    cp example.env .env
+
+    # You’ll need a Square developer account to take payments: https://squareup.com/signup?country_code=us&v=developers
+    # If your hosting provider is not configured for a mail relay, you’ll want to populate these lines with SMTP account credentials with e.g. gmail or mailgun.
+
+    # Run in Docker
+    docker compose up -d
+
+    # Create superuser account
+    docker compose exec app /app/manage.py createsuperuser
+    # Respond to prompts as needed
+
+    # Go to http://localhost:8000/registration/ in a web browser and follow the setup directions.
+
+## Development Environment Setup
+### Building Docker Container
 The following was tested on a fresh installation of Ubuntu 20.04.
 
     # Get the software from Github
@@ -62,10 +86,10 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     make build-docker-image
 
     # Run in Docker
-    docker-compose up -d
+    docker compose up -d
 
-    # Docker-compose
-    docker-compose exec app /app/manage.py createsuperuser
+    # Create Superuser
+    docker compose exec app /app/manage.py createsuperuser
     # Respond to prompts as needed
 
     # OPTIONAL: If you intend to run APIS in production, configure your webserver to act as a reverse proxy.
