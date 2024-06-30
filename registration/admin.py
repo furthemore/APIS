@@ -1148,7 +1148,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "badgeName",
         "badgeNumber",
     ]
-    readonly_fields = ["get_age_range", "registrationToken", "signature_svg", "signature_bitmap"]
+    readonly_fields = ["get_age_range", "registrationToken", "image_signature"]
     actions = [
         assign_badge_numbers,
         print_badges,
@@ -1165,12 +1165,15 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
                     "printed",
                     ("badgeName", "badgeNumber", "get_age_range"),
                     ("registeredDate", "event", "registrationToken"),
-                    ("signature_svg", "signature_bitmap"),
+                    "image_signature",
                     "attendee",
                 )
             },
         ),
     )
+
+    def image_signature(self, obj):
+        return format_html('<img src="data:image/png;base64,{}">', obj.signature_bitmap)
 
     def get_age_range(self, obj):
         try:
