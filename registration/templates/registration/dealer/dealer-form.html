@@ -206,19 +206,7 @@
           </div>
         </div>
         <hr/>
-        <div class="form-group">
-            <div class="checkbox col-sm-12">
-            <label>
-              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control-checkbox"
-                     required data-error="You must agree to the event code of conduct to register.">
-              I have read and understand the rules pertaining to both {{ event.name }} and the Markeplace. I agree to
-              abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>. By
-              registering for {{ event }} you attest that you are not listed on any sexual offender registry.
-            </label>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-
+        {% include "templatetags/coc_sig.html" %}
 
         <div class="form-group">
           <div class="col-sm-9 col-sm-offset-3">
@@ -335,6 +323,14 @@
               return;
           }
 
+          let signature = $("#jsign_signature");
+          let nativeData = signature.jSignature("getData", "native");
+          if (nativeData.length < 2) {
+            alert("You must sign to acknowledge your acceptance of the Code of Conduct.");
+              $("#register").one('click', register_click);
+              return;
+          }
+
           var data = {
               'attendee': {
                   'firstName': $("#firstName").val(),
@@ -351,7 +347,9 @@
                   'birthdate': $("#birthDate").val(),
                   'emailsOk': $("#contact").is(':checked'),
                   'surveyOk': $("#survey").is(':checked'),
-                  'badgeName': $("#badgename").val()
+                  'badgeName': $("#badgename").val(),
+                  'signature_svg': signature.jSignature("getData", "svgbase64")[1],
+                  'signature_bitmap': signature.jSignature("getData", "image")[1]
               },
               'dealer': {
                   'businessName': $("#businessName").val(), 'website': $("#website").val(), 'logo': $("#logo").val(),
