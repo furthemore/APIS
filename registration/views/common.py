@@ -216,7 +216,12 @@ def index(request):
     context = {"event": event, "discount": discount}
     if event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, "registration/registration-form.html", context)
-    return render(request, "registration/closed.html", context)
+    elif event.attendeeRegStart >= today:
+        context["message"] = "is not yet open. Please stay tuned to our social media for updates!"
+        return render(request, "registration/closed.html", context)
+    elif event.attendeeRegEnd <= today:
+        context["message"] = "has ended."
+        return render(request, "registration/closed.html", context)
 
 
 @staff_member_required
