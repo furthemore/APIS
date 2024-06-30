@@ -27,7 +27,12 @@ def onsite(request):
     context = {"event": event, "onsite": True}
     if event.onsiteRegStart <= today <= event.onsiteRegEnd:
         return render(request, "registration/onsite.html", context)
-    return render(request, "registration/closed.html", context)
+    elif event.onsiteRegStart >= today:
+        context["message"] = "is not yet open. Please stay tuned to our social media for updates!"
+        return render(request, "registration/closed.html", context)
+    elif event.onsiteRegEnd <= today:
+        context["message"] = "has ended."
+        return render(request, "registration/closed.html", context)
 
 
 def onsite_cart(request):
