@@ -52,7 +52,7 @@
         <h3><a name="level"></a>Select your registration options and level.</h3>
         <hr>
         <div class="form-group">
-          <label for="firstName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
+          <label for="badgeName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
           <div class="col-sm-9">
             <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.."
                    class="form-control form-control-text" maxlength="25" required="required" autocomplete="nope">
@@ -60,7 +60,7 @@
           <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
         </div>
         <div class="form-group">
-          <label for="firstName" class="col-sm-3 control-label">Are you interested in volunteering?</label>
+          <label for="volunteer" class="col-sm-3 control-label">Are you interested in volunteering?</label>
           <div class="col-sm-9">
             <select id="volunteer" name="volunteer" class="form-control form-control-select">
               <option value="">No Thanks</option>
@@ -81,18 +81,8 @@
         </div>
         <br/>
         <hr/>
-        <div class="form-group">
-          <div class="checkbox col-sm-12">
-            <label>
-              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox"
-                     required data-error="You must agree to the code of conduct to register." />
-              I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of
-              Conduct</a>. By registering for {{ event }} you attest that you are not listed on any sexual offender
-              registry.
-            </label>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
+
+        {% include "templatetags/coc_sig.html" %}
         <div class="container-fluid">
           <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button> &nbsp;
         </div>
@@ -423,6 +413,14 @@
           }
           let birthdate = parseDate(birthdate_str);
 
+          let signature = $("#jsign_signature");
+          let nativeData = signature.jSignature("getData", "native");
+          if (nativeData.length < 2) {
+            alert("You must sign to acknowledge your acceptance of the Code of Conduct.");
+              $("#register").one('click', register_click);
+              return;
+          }
+
           {% if not event.allowOnlineMinorReg %}
               let age = getAgeByEventStart(birthdate);
               if (age < 18) {
@@ -450,6 +448,8 @@
                   'volDepts': $("#volunteer").val(),
                   'surveyOk': $("#survey").is(':checked'),
                   'asl': false,
+                  'signature_svg': signature.jSignature("getData", "svgbase64")[1],
+                  'signature_bitmap': signature.jSignature("getData", "image")[1]
               },
               'priceLevel': {'id': $(".selectLevel")[0].id.split('_')[1], 'options': getOptions()},
               'event': '{{event}}'

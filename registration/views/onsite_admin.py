@@ -367,11 +367,6 @@ def admin_push_cart_refresh(request):
         send_mqtt_message(topic, None)
 
 
-def onsite_signature(request):
-    context = {}
-    return render(request, "registration/signature.html", context)
-
-
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
 def complete_square_transaction(request):
@@ -878,17 +873,6 @@ def onsite_admin_cart(request):
     notify_terminal(request, data)
 
     return JsonResponse(data)
-
-
-@staff_member_required()
-def onsite_signature_prompt(request):
-    data = {
-        "command": "signature",
-        "name": "Kasper Finch",
-        "agreement": "I have read and agree to the FurTheMore 2020 Code of Conduct",
-        "badge_id": "5",
-    }
-    return send_message_to_terminal(request, data)
 
 
 @staff_member_required

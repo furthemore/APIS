@@ -428,12 +428,8 @@ class Badge(models.Model):
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
     printCount = models.IntegerField(default=0)
-    signature_svg = models.FileField(
-        upload_to=badge_signature_svg_path, null=True, blank=True
-    )
-    signature_bitmap = models.ImageField(
-        upload_to=badge_signature_bitmap_path, null=True, blank=True
-    )
+    signature_svg = models.TextField(null=True, blank=True)
+    signature_bitmap = models.TextField(null=True, blank=True)
 
     def __str__(self):
         if self.badgeNumber is not None or self.badgeNumber == "":
