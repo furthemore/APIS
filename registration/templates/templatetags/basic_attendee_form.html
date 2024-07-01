@@ -3,10 +3,12 @@
 <div class="form-group">
     <label for="firstName" class="col-sm-3 control-label">Full (Legal) Name <span style="color:red;">*</span></label>
     <div class="col-sm-4">
-        <input type="text" id="firstName" value="{{attendee.firstName}}" placeholder="Legal First Name" class="form-control" autofocus required="required" data-error="First name is required. ">
+        <input autocomplete="given-name" autofocus class="form-control" data-error="First name is required"
+               id="firstName" placeholder="Legal First Name" required type="text" value="{{attendee.firstName}}"/>
     </div>
     <div class="col-sm-5">
-        <input type="text" id="lastName" value="{{attendee.lastName}}" placeholder="Last Name" class="form-control" autofocus required="required" data-error="Last name is required.">
+        <input autocomplete="family-name" class="form-control" data-error="Last name is required" id="lastName" placeholder="Last Name"
+               required type="text" value="{{attendee.lastName}}"/>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
@@ -14,7 +16,8 @@
 <div class="form-group">
     <label for="preferredName" class="col-sm-3 control-label">Preferred First Name</label>
     <div class="col-sm-4">
-        <input type="text" id="preferredName" value="{{attendee.preferredName}}" placeholder="Preferred First Name" class="form-control">
+        <input autocomplete="off" class="form-control" id="preferredName" placeholder="Preferred First Name"
+               type="text" value="{{attendee.preferredName}}"/>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
@@ -22,7 +25,8 @@
 <div class="form-group">
     <label for="email" class="col-sm-3 control-label">Email <span style="color:red;">*</span></label>
     <div class="col-sm-9">
-        <input type="email" id="email" value="{{attendee.email}}" placeholder="Email" class="form-control" required="required" data-error="Email is required." />
+        <input autocomplete="email" class="form-control" data-error="Email is required" id="email" placeholder="Email" required
+               type="email" value="{{attendee.email}}"/>
     </div>
     <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 </div>
@@ -32,10 +36,10 @@
    <label class="col-sm-3">&nbsp;</label>
    <div class="col-sm-9">
        <label>
-           <input type="checkbox" id="contact"> <span class="control-label" >Please keep me up to date with convention related information.</span>
+           <input id="contact" type="checkbox"/><span class="control-label">Please keep me up to date with convention related information.</span>
        </label>
        <label>
-           <input type="checkbox" id="survey"> <span class="control-label" >Please send me the post-con survey.</span>
+           <input id="survey" type="checkbox"/><span class="control-label">Please send me the post-con survey.</span>
        </label>
    </div>
 </div>
@@ -44,7 +48,8 @@
 <div class="form-group">
     <label for="phone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
     <div class="col-sm-9">
-        <input type="tel" id="phone" value="{{attendee.phone}}" placeholder="Phone Number" class="form-control" required data-error="Phone number is required.">
+        <input autocomplete="tel" class="form-control" data-error="Phone number is required" id="phone" placeholder="Phone Number" required
+               type="tel" value="{{attendee.phone}}"/>
     </div>
     <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 </div>
@@ -53,7 +58,8 @@
 <div class="form-group">
     <label for="add1" class="col-sm-3 control-label">Address <span style="color:red;">*</span></label>
     <div class="col-sm-9">
-        <input type="text" name="add1" id="add1" value="{{attendee.address1}}" placeholder="Address Line 1" class="form-control" required data-error="Address is required.">
+        <input autocomplete="address-line1" class="form-control" data-error="Address is required" id="add1" name="add1"
+               placeholder="Address Line 1" required type="text" value="{{attendee.address1}}"/>
     </div>
     <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 </div>
@@ -61,7 +67,8 @@
 <div class="form-group">
     <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
     <div class="col-sm-9">
-        <input type="text" name="add2" id="add2" value="{{attendee.address2}}" placeholder="Address Line 2" class="form-control">
+        <input autocomplete="address-line2" class="form-control" id="add2" name="add2" placeholder="Address Line 2"
+               type="text" value="{{attendee.address2}}"/>
     </div>
     <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
 </div>
@@ -69,10 +76,12 @@
 <div class="form-group">
     <label for="city" class="col-sm-3 control-label">City/State <span style="color:red;">*</span></label>
     <div class="col-sm-4">
-        <input type="text" name="city" id="city" value="{{attendee.city}}" placeholder="City" class="form-control" required data-error="City is required. ">
+        <input autocomplete="address-level2" class="form-control" data-error="City is required" id="city" name="city" placeholder="City"
+               required type="text" value="{{attendee.city}}"/>
     </div>
     <div class="col-sm-5">
-        <select class="form-control bfh-states" id="state" data-country="country" data-state="VA" name="state"></select>
+        <select autocomplete="address-level3" class="form-control bfh-states" data-country="country" data-state="VA" id="state"
+                name="state" required></select>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
@@ -80,10 +89,13 @@
 <div class="form-group">
     <label for="country" class="col-sm-3 control-label">ZIP/Country <span style="color:red;">*</span></label>
     <div class="col-sm-3">
-        <input type="text" name="zip" id="zip" value="{{attendee.postalCode}}" placeholder="ZIP Code" class="form-control" data-minlength="1" data-error="Zip code is required.">
+        <input autocomplete="postal-code" class="form-control" data-error="Zip code is required" data-minlength="1" id="zip"
+               name="zip" placeholder="ZIP Code" required type="text"
+               value="{{attendee.postalCode}}"/>
     </div>
     <div class="col-sm-6">
-        <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+        <select autocomplete="country" class="form-control bfh-countries" data-country="US" id="country" name="country"
+                required></select>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
 </div>
@@ -101,11 +113,11 @@
     <label for="birthDate" class="col-sm-3 control-label">Date of Birth <span style="color:red;">*</span></label>
     <div class="col-sm-9">
         <div class="col-sm-3">
-          <input type="number" name="byear" id="byear" class="form-control" placeholder="Year" value="{{attendee.birthdate|date:"Y"}}" max="{% now "Y" %}" min="1900" maxlength="4" required>
+          <input type="number" name="byear" id="byear" class="form-control" placeholder="Year" value="{{attendee.birthdate|date:"Y"}}" max="{% now "Y" %}" min="1900" maxlength="4" required autocomplete="bday-year" />
         </div>
 
         <div class="col-sm-5">
-          <select id="bmonth" name="bmonth" class="form-control" required>
+          <select autocomplete="bday-month" class="form-control" id="bmonth" name="bmonth" required>
             <option value="">Month</option>
             <option value="01" {% selected_if_month attendee.birthdate 1 %}>January</option>
             <option value="02" {% selected_if_month attendee.birthdate 2 %}>February</option>
@@ -123,7 +135,7 @@
         </div>
 
         <div class="col-sm-3">
-          <select id="bday" name="bday" class="form-control" required disabled>
+          <select autocomplete="bday-day" class="form-control" disabled id="bday" name="bday" required>
               <option value="">Day</option>
             {% if attendee.birthdate %}
               <option value="{{attendee.birthdate|date:"d"}}" selected>{{attendee.birthdate|date:"d"}}</option>
