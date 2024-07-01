@@ -118,7 +118,7 @@ class TestNewStaff(StaffTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn(b"closed", response.content)
+        self.assertNotIn(b"not yet open", response.content)
 
     @freeze_time("2000-01-01")
     def test_new_staff_invite_good_closed(self):
@@ -132,7 +132,7 @@ class TestNewStaff(StaffTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"closed", response.content)
+        self.assertIn(b"not yet open", response.content)
 
     @freeze_time("2000-01-01")
     def test_new_staff_invite_override(self):
@@ -146,7 +146,7 @@ class TestNewStaff(StaffTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn(b"closed", response.content)
+        self.assertNotIn(b"not yet open", response.content)
 
 
 class TestFindNewStaff(StaffTestCase):
@@ -270,13 +270,13 @@ class TestStaffIndex(StaffTestCase):
     def test_staff_index(self):
         response = self.client.get(reverse("registration:staff", args=("foo",)))
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn(b"closed", response.content)
+        self.assertNotIn(b"not yet open", response.content)
         
     @freeze_time("2000-01-01")
     def test_staff_index_closed(self):
         response = self.client.get(reverse("registration:staff", args=("foo",)))
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"closed", response.content)
+        self.assertIn(b"not yet open", response.content)
 
     def test_staff_done(self):
         response = self.client.get(reverse("registration:staff_done"))

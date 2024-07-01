@@ -23,7 +23,7 @@ class Index(TestCase):
     def TestIndexClosed(self):
         response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "is closed. If you have any")
+        self.assertContains(response, "has ended")
 
     def TestIndexNoEvent(self):
         response = self.client.get(reverse("registration:index"))

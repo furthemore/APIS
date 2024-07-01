@@ -137,7 +137,7 @@ class TestOnsiteCart(OnsiteBaseTestCase):
         response = self.client.get(reverse("registration:onsite"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["event"], self.event)
-        self.assertIn(b"is closed", response.content)
+        self.assertIn(b"not yet open", response.content)
 
     def test_onsite_checkout_cost(self):
         options = [

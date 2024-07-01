@@ -51,13 +51,13 @@ class TestDealers(DealerTestCase):
     def test_addNewDealer_open(self) -> None:
         response = self.client.get(reverse("registration:new_dealer"))
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn(b"closed", response.content)
+        self.assertNotIn(b"not yet open", response.content)
 
     @freeze_time("2020-01-01")
     def test_addNewDealer_closed(self) -> None:
         response = self.client.get(reverse("registration:new_dealer"))
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"closed", response.content)
+        self.assertIn(b"not yet open", response.content)
 
     def test_find_dealer_to_add_assistant(self):
         response = self.client.get(
