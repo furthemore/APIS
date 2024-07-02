@@ -33,7 +33,12 @@ def new_staff(request, guid):
     context = {"token": guid, "event": event}
     if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
         return render(request, "registration/staff/staff-new.html", context)
-    return render(request, "registration/staff/staff-closed.html", context)
+    elif event.staffRegStart >= today:
+        context["message"] = "is not yet open. Please stay tuned to slack and email for updates!"
+        return render(request, "registration/staff/staff-closed.html", context)
+    elif event.staffRegEnd <= today:
+        context["message"] = "has ended."
+        return render(request, "registration/staff/staff-closed.html", context)
 
 
 @require_POST
@@ -163,7 +168,12 @@ def staff_index(request, guid):
     context = {"token": guid, "event": event}
     if event.staffRegStart <= today <= event.staffRegEnd:
         return render(request, "registration/staff/staff-locate.html", context)
-    return render(request, "registration/staff/staff-closed.html", context)
+    elif event.staffRegStart >= today:
+        context["message"] = "is not yet open. Please stay tuned to slack and email for updates!"
+        return render(request, "registration/staff/staff-closed.html", context)
+    elif event.staffRegEnd <= today:
+        context["message"] = "has ended."
+        return render(request, "registration/staff/staff-closed.html", context)
 
 
 def staff_done(request):

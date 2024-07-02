@@ -5,7 +5,8 @@
     <div role="tabpanel" class="tab-pane fade in active" id="personal">
       <h1>Registration - {{ event }}</h1>
       <hr>
-      <p>Registration for {{ event }} is closed. If you have any questions please contact
+      <p>Registration for {{ event }} {{ message }}</p>
+      <p>If you have any questions please contact
         <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
       </p>
       <p style="float:right;">
