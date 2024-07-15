@@ -131,13 +131,21 @@ class TestOnsiteCart(OnsiteBaseTestCase):
         self.assertEqual(response.context["event"], self.event)
         self.assertIn(b"Onsite Registration", response.content)
 
-    def test_onsite_closed(self):
+    def test_onsite_closed_upcoming(self):
         self.event.onsiteRegStart = now + one_day
         self.event.save()
         response = self.client.get(reverse("registration:onsite"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["event"], self.event)
-        self.assertIn(b"is closed", response.content)
+        self.assertIn(b"not yet open", response.content)
+
+    def test_onsite_closed_ended(self):
+        self.event.onsiteRegEnd = now - one_day
+        self.event.save()
+        response = self.client.get(reverse("registration:onsite"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["event"], self.event)
+        self.assertIn(b"has ended", response.content)
 
     def test_onsite_checkout_cost(self):
         options = [

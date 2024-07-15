@@ -74,7 +74,12 @@ def new_dealer(request):
     context = {"event": event}
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
-    return render(request, "registration/dealer/dealer-closed.html", context)
+    elif event.dealerRegStart >= today:
+        context["message"] = "is not yet open. Please stay tuned to our social media for updates!"
+        return render(request, "registration/dealer/dealer-closed.html", context)
+    elif event.dealerRegEnd <= today:
+        context["message"] = "has ended."
+        return render(request, "registration/dealer/dealer-closed.html", context)
 
 
 def info_dealer(request):

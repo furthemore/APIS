@@ -49,13 +49,13 @@
 
         {% show_attendee_form event=event emailOptions=True %}
 
-        <h3><a name="level"></a>Select your registration options and level.</h3>
+        <h3>Select your registration options and level.</h3>
         <hr>
         <div class="form-group">
           <label for="badgeName" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
           <div class="col-sm-9">
             <input type="text" id="badgeName" name="badgeName" placeholder="Your Name Here.."
-                   class="form-control form-control-text" maxlength="25" required="required" autocomplete="nope">
+                   class="form-control form-control-text" maxlength="25" autocomplete="off" required />
           </div>
           <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
         </div>
@@ -71,7 +71,6 @@
         <hr/>
         <div class="container-fluid">
           <div class="row" id="levelContainer">
-            <noscript>Javascript is required for this site.</noscript>
             <div id="levelContainerAlert" class="alert alert-danger" style="display:none">
               <b>No price levels have been set up yet!</b>
               If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add
@@ -84,7 +83,7 @@
 
         {% include "templatetags/coc_sig.html" %}
         <div class="container-fluid">
-          <button type="submit" class="btn btn-primary col-sm-6 pull-right" id="register">Register</button> &nbsp;
+          <button class="btn btn-primary col-sm-6 pull-right" id="register" type="submit">Register</button> &nbsp;
         </div>
       </div>
     </div>

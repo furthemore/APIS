@@ -20,10 +20,15 @@ class Index(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Welcome to the registration system")
 
-    def TestIndexClosed(self):
+    def TestIndexClosedUpcoming(self):
         response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "is closed. If you have any")
+        self.assertContains(response, "not yet open")
+
+    def TestIndexClosedEnded(self):
+        response = self.client.get(reverse("registration:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "has ended")
 
     def TestIndexNoEvent(self):
         response = self.client.get(reverse("registration:index"))
@@ -36,9 +41,14 @@ class Index(TestCase):
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
         self.TestIndex()
-        self.event.attendeeRegEnd = now - ten_days
+        self.event.attendeeRegStart = now + one_day
+        self.event.attendeeRegEnd = now + ten_days
         self.event.save()
-        self.TestIndexClosed()
+        self.TestIndexClosedUpcoming()
+        self.event.attendeeRegStart = now - ten_days
+        self.event.attendeeRegEnd = now - one_day
+        self.event.save()
+        self.TestIndexClosedEnded()
 
 
 class TestTemplateTags(TestCase):
