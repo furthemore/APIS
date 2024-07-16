@@ -31,7 +31,7 @@
             <td>{{ item.priceLevel }}</td>
             <td>${{ item.priceLevel.basePrice }} <a class="deleteAttendee" id="delete_{{ item.id }}">&times; Remove</a></td>
           {% else %}
-            <td class="col-sm-5 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</td>
+            <td>{{ item.badge.attendee }} - {{ item.priceLevel }}</td>
           {% endif %}
           </tr>
           {% for option in item.options %}
