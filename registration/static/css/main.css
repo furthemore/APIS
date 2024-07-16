@@ -15,6 +15,15 @@ hr {
     border-top: 2px solid black;
 }
 
+#total {
+    font-size: large;
+    font-weight: bolder;
+}
+
+#sub-item {
+    padding-left: 25px;
+}
+
 .containter {
     background: #CCCCCC !important;
 }
