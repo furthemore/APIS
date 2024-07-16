@@ -4,7 +4,6 @@
     **/
     min-height: 900px; /* So logo isn't cut off on short-content pages */
     padding-top: 20px;
-
 }
 
 body {
@@ -25,17 +24,16 @@ hr {
 }
 
 .containter {
-    background: #CCCCCC !important;
+    background: #EEEEEE !important;
 }
 
 #content-holder {
     background: white;
     padding: 3%;
-    box-shadow: 5px 5px 10px;
+    box-shadow: 5px 5px 10px black;
     border: 2px solid black;
     border-radius: 15px;
 }
-
 
 .badge {
     min-width: 500px;
