@@ -3,6 +3,7 @@
         background: url('../img/2017/logo.jpg') no-repeat top right;
     **/
     min-height: 900px; /* So logo isn't cut off on short-content pages */
+    padding-top: 20px;
 
 }
 
@@ -10,14 +11,20 @@ body {
     background: #3D67B1;
 }
 
+hr {
+    border-top: 2px solid black;
+}
+
 .containter {
-    background: #EEEEEE !important;
+    background: #CCCCCC !important;
 }
 
 #content-holder {
     background: white;
     padding: 3%;
-    border: #8EAFE9 5px solid;
+    box-shadow: 5px 5px 10px;
+    border: 2px solid black;
+    border-radius: 15px;
 }
 
 
