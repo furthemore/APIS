@@ -14,6 +14,10 @@ hr {
     border-top: 2px solid black;
 }
 
+.control-label {
+    padding-left: 10px;
+}
+
 #total {
     font-size: large;
     font-weight: bolder;
