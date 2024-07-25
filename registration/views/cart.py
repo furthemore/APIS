@@ -162,7 +162,7 @@ def saveCart(cart):
             )
     attendee.save()
 
-    badge = Badge(badgeName=pda["badgeName"], event=event, attendee=attendee, signature_svg=pda["signature_svg"], signature_bitmap=pda["signature_bitmap"])
+    badge = Badge(badgeName=pda["badgeName"], event=event, attendee=attendee, signature_svg=pda.get("signature_svg"), signature_bitmap=pda.get("signature_bitmap"))
     badge.save()
 
     priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
