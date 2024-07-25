@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.test.utils import override_settings
 from django.urls import reverse
 
@@ -31,6 +31,7 @@ class TestSquareRefundWebhooks(TestCase):
     SIGNATURE_KEY = "bj-4rZKxCc8_1CZtghoatg"
     NOTIFICATION_URL = "https://webhook.site/5477eda8-952e-4844-91db-8b10cf228833"
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_square_webhook(self, mock_build_absolute_uri):
@@ -48,6 +49,7 @@ class TestSquareRefundWebhooks(TestCase):
         self.assertEqual(str(webhook.event_id), webhook.body["event_id"])
         self.assertEqual(webhook.event_type, webhook.body["type"])
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_square_webhook_invalid_signature(self, mock_build_absolute_uri):
@@ -62,6 +64,7 @@ class TestSquareRefundWebhooks(TestCase):
 
         self.assertTrue(response.status_code, 403)
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("square.utilities.webhooks_helper.is_valid_webhook_event_signature")
     @patch("django.http.request.HttpRequest.build_absolute_uri")
@@ -81,6 +84,7 @@ class TestSquareRefundWebhooks(TestCase):
         self.assertTrue(response.status_code, 400)
         self.assertIn(b"Unable to decode JSON", response.content)
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("square.utilities.webhooks_helper.is_valid_webhook_event_signature")
     @patch("django.http.request.HttpRequest.build_absolute_uri")
@@ -100,6 +104,7 @@ class TestSquareRefundWebhooks(TestCase):
         self.assertTrue(response.status_code, 400)
         self.assertIn(b"Missing event_id", response.content)
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_square_webhook_idempotency(self, mock_build_absolute_uri):
@@ -246,6 +251,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
         self.order_item.save()
         self.order.refresh_from_db()
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_dispute_webhook(self, mock_build_absolute_uri):
@@ -275,6 +281,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
         self.assertEqual(self.attendee.firstName, ban_list.firstName)
         self.assertEqual(self.attendee.lastName, ban_list.lastName)
 
+    @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_dispute_payment_id_not_found(self, mock_build_absolute_uri):

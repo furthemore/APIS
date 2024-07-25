@@ -254,16 +254,6 @@ urlpatterns = [
         name="no_sale",
     ),
     url(
-        r"^onsite/signature/?$",
-        registration.views.onsite_admin.onsite_signature,
-        name="onsite_signature",
-    ),
-    url(
-        r"^onsite/admin/signature/?$",
-        registration.views.onsite_admin.onsite_signature_prompt,
-        name="onsite_signature_prompt",
-    ),
-    url(
         r"^onsite/admin/discount/create/?$",
         registration.views.onsite_admin.create_discount,
         name="onsite_create_discount",
