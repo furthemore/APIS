@@ -20,7 +20,7 @@ from django.urls import reverse
 from django.utils.html import format_html, urlencode
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
-from nested_inline.admin import NestedModelAdmin, NestedTabularInline
+from nested_admin import NestedModelAdmin, NestedTabularInline
 from qrcode.image.svg import SvgPathFillImage
 
 import registration.emails
