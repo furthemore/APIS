@@ -18,9 +18,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.html import format_html, urlencode
+from django.utils.safestring import mark_safe
 from import_export import fields, resources
 from import_export.admin import ImportExportModelAdmin
 from nested_inline.admin import NestedModelAdmin, NestedTabularInline
+from pygments import highlight
+from pygments.formatters.html import HtmlFormatter
+from pygments.lexers.data import JsonLexer
 from qrcode.image.svg import SvgPathFillImage
 
 import registration.emails
@@ -1564,11 +1568,37 @@ class PrettyJSONWidget(widgets.Textarea):
             return super(PrettyJSONWidget, self).format_value(value)
 
 
+def json_highlight_format_value(value):
+    doc = json.dumps(value, indent=2, sort_keys=True)
+    # Get the Pygments formatter
+    formatter = HtmlFormatter(style="default")
+
+    # Highlight the data
+    response = highlight(doc, JsonLexer(), formatter)
+
+    # Get the stylesheet
+    style = "<style>" + formatter.get_style_defs() + "</style><br>"
+
+    # Safe the output
+    return mark_safe(style + response)
+
+
 class PaymentWebhookAdmin(admin.ModelAdmin):
     list_display = ("event_id", "event_type", "timestamp", "integration", "processed")
     list_filter = ("event_type", "processed")
     search_fields = ["event_id"]
-    formfield_overrides = {JSONField: {"widget": PrettyJSONWidget}}
+    readonly_fields = ("processed", "body_highlighted", "headers_highlighted")
+    exclude = ("body", "headers")
+
+    def body_highlighted(self, instance):
+        return json_highlight_format_value(instance.body)
+
+    body_highlighted.short_description = "Body"
+
+    def headers_highlighted(self, instance):
+        return json_highlight_format_value(instance.headers)
+
+    body_highlighted.short_description = "Headers"
 
 
 admin.site.register(PaymentWebhookNotification, PaymentWebhookAdmin)
