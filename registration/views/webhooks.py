@@ -42,6 +42,13 @@ def square_webhook(request):
     event_id = request_body["event_id"]
     event_type = request_body.get("type")
 
+    # Check to see if webhook was already stored:
+    existing = PaymentWebhookNotification.objects.filter(
+        event_id=event_id, event_type=event_type
+    )
+    if existing.count() > 0:
+        return common.abort(409, f"Conflict: event_id {event_id} already_exists")
+
     # Store the verified event notification
     notification = PaymentWebhookNotification(
         event_id=event_id,
@@ -49,10 +56,7 @@ def square_webhook(request):
         body=request_body,
         headers=dict(request.headers),
     )
-    try:
-        process_webhook(notification)
-    except IntegrityError:
-        return common.abort(409, f"Conflict: event_id {event_id} already exists")
+    process_webhook(notification)
 
     return common.success(200)
 
