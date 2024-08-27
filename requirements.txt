@@ -25,3 +25,4 @@ sentry-sdk
 squareup==22.0.0.20220921
 qrcode~=7.4.2
 pytz~=2024.1
+Pygments~=2.18.0
