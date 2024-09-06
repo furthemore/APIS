@@ -381,7 +381,6 @@ def add_dealer(request):
     dealer.charityRaffle = pdd["charityRaffle"]
     dealer.breakfast = pdd["breakfast"]
     dealer.willSwitch = pdd["switch"]
-    dealer.buttonOffer = pdd["buttonOffer"]
     dealer.asstBreakfast = pdd["asstbreakfast"]
     dealer.event = event
 
@@ -569,7 +568,6 @@ def addNewDealer(request):
         willSwitch=pdd["switch"],
         tables=pdd["tables"],
         agreeToRules=pdd["agreeToRules"],
-        buttonOffer=pdd["buttonOffer"],
         asstBreakfast=pdd["asstbreakfast"],
     )
     dealer.save()
