@@ -788,6 +788,8 @@ class StaffAdmin(ImportExportModelAdmin):
                     staff_copy.attendee = staff.attendee
                     staff_copy.event = event
                     staff_copy.registrationToken = getRegistrationToken()
+                    staff_copy.shirtsize = None
+                    staff_copy.checkedIn = False
                     staff_copy.save()
                     count += 1
 
