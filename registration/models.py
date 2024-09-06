@@ -798,6 +798,9 @@ class PaymentWebhookNotification(models.Model):
     body = models.JSONField("Webhook body")
     headers = models.JSONField("Webhook headers")
 
+    def __str__(self):
+        return f"{self.integration} {self.event_type} {self.event_id}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, null=True, on_delete=models.CASCADE)
