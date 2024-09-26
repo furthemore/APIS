@@ -56,14 +56,14 @@
           <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
         </div>
         <div class="form-group">
-          <label for="license" class="col-sm-3 control-label">Virginia Tax License <span
+          <label for="license" class="col-sm-3 control-label">{{ venue.state }} Tax License <span
               style="color:red;">*</span></label>
           <div class="col-sm-9">
-            <input type="text" id="license" name="license" placeholder="VA Tax License"
+            <input type="text" id="license" name="license" placeholder="Tax License ID"
                    class="form-control form-control-text" required maxlength="50">
 
             <label>
-              <input type="checkbox" id="tempLicense"/> I need a temporary tax license for VA.
+              <input type="checkbox" id="tempLicense"/> I need a temporary tax license for {{ venue.state }}.
             </label>
           </div>
           <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
