@@ -69,9 +69,10 @@ def done_asst_dealer(request):
 
 def new_dealer(request):
     event = Event.objects.get(default=True)
+    venue = event.venue
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"event": event}
+    context = {"event": event, "venue": venue}
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
     elif event.dealerRegStart >= today:
