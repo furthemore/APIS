@@ -80,7 +80,7 @@
                required type="text" value="{{attendee.city}}"/>
     </div>
     <div class="col-sm-5">
-        <select autocomplete="address-level3" class="form-control bfh-states" data-country="{{attendee.country|default:event.venu.country }}"
+        <select autocomplete="address-level3" class="form-control bfh-states" data-country="{{attendee.country|default:event.venue.country }}"
                 data-state="{% if attendee %}{{ attendee.state }}{% else %}{{ event.venue.state }}{% endif %}"
                 id="state" name="state" required></select>
     </div>
