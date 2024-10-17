@@ -114,15 +114,19 @@
         <h2>Placement Options</h2>
         <p>The options below may limit where you can be placed in our Marketplace.</p>
         <hr/>
+        {% if event.dealerWifi %}
         <div class="form-group">
           <label for="wifi" class="col-sm-3 control-label">I need Wi-Fi</label>
           <div class="col-sm-9">
             <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox"/>
           </div>
-          <div class="col-sm-9 col-sm-offset-3 small">This option adds $50 to your table price. You will receive
+          <div class="col-sm-9 col-sm-offset-3 small">This option adds ${{ event.dealerWifiPrice   }} to your table price. You will receive
             Wi-Fi access details in your welcome packet at the con.
           </div>
         </div>
+        {% else %}
+          <input type="hidden" id="wifi" name="wifi" value="unchecked">
+        {%  endif %}
         <div class="form-group">
           <label for="switch" class="col-sm-3 control-label">I will consider different table types</label>
           <div class="col-sm-9">
@@ -209,7 +213,7 @@
                   }
                   $("#partnerList").empty();
                   if (item.partnerMax > 0) {
-                      for (var i = item.partnerMin; i <= item.partnerMax; i++) {
+                      for (var i = item.partnerMin; i < item.partnerMax; i++) {
                           var partner = '<div class="partnerGroup"><input type="text" id="name_' + i + '" maxlength="400" class="form-control form-control-text" placeholder="Partner Name" />' +
                               '<input type="email" id="email_' + i + '" maxlength="200" class="form-control form-control-text" placeholder="Partner Email" />' +
                               '<input type="text" id="license_' + i + '" maxlength="50" placeholder="Partner Tax License" class="form-control form-control-text" />' +
@@ -219,7 +223,7 @@
                               $("#partnerList").append("<br/>");
                           }
                       }
-                      $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandice, they must provide their license number or request a temporary license from the convention.</span>");
+                      $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandise, they must provide their license number or request a temporary license from the convention.</span>");
                       $(".partnerLicense").click(partnerLicense);
                   }
               }
@@ -326,7 +330,7 @@
                   'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
                   'reception': false, 'artShow': false,
                   'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
-                  'breakfast': $('#breakfast').is(':checked'), 'switch': $('#switch').is(':checked'),
+                  'breakfast': false, 'switch': $('#switch').is(':checked'),
                   'asstbreakfast': false
               },
               'event': '{{event}}'

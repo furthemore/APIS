@@ -293,6 +293,17 @@ class Event(LookupTable):
         default=0,
         help_text="External donations to add to metrics ",
     )
+    dealerWifi = models.BooleanField(
+        default=True,
+        verbose_name="Dealer Wifi",
+        help_text="Include option to purchase Wifi on dealers form",
+    )
+    dealerWifiPrice = models.DecimalField(
+        decimal_places=2, max_digits=6, default=50, verbose_name="Wifi Price"
+    )
+    dealerPartnerPrice = models.DecimalField(
+        decimal_places=2, max_digits=6, default=55, verbose_name="Partner Price"
+    )
 
 
 class TableSize(LookupTable):

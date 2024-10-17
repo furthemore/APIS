@@ -76,7 +76,9 @@ def new_dealer(request):
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
     elif event.dealerRegStart >= today:
-        context["message"] = "is not yet open. Please stay tuned to our social media for updates!"
+        context["message"] = (
+            "is not yet open. Please stay tuned to our social media for updates!"
+        )
         return render(request, "registration/dealer/dealer-closed.html", context)
     elif event.dealerRegEnd <= today:
         context["message"] = "has ended."
@@ -659,7 +661,7 @@ def get_dealer_total(orderItems, discount, dealer):
     wifi = 0
     power = 0
     if dealer.needWifi:
-        wifi = 50
+        wifi = dealer.event.dealerWifiPrice
     if dealer.needPower:
         power = 0
     paidTotal = dealer.paidTotal()
@@ -667,7 +669,7 @@ def get_dealer_total(orderItems, discount, dealer):
         itemSubTotal = get_discount_total(discount, itemSubTotal)
     total = (
         itemSubTotal
-        + 55 * unpaidPartnerCount
+        + dealer.event.dealerPartnerPrice * unpaidPartnerCount
         + partnerBreakfast
         + dealer.tableSize.basePrice
         + wifi
