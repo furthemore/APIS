@@ -592,6 +592,17 @@ class EventAdmin(admin.ModelAdmin):
                 ),
             },
         ),
+        (
+            "Dealers Configuration",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "dealerWifi",
+                    "dealerWifiPrice",
+                    "dealerPartnerPrice",
+                ),
+            },
+        ),
     )
 
 

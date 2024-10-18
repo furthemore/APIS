@@ -76,7 +76,9 @@ def new_dealer(request):
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
     elif event.dealerRegStart >= today:
-        context["message"] = "is not yet open. Please stay tuned to our social media for updates!"
+        context["message"] = (
+            "is not yet open. Please stay tuned to our social media for updates!"
+        )
         return render(request, "registration/dealer/dealer-closed.html", context)
     elif event.dealerRegEnd <= today:
         context["message"] = "has ended."
@@ -406,7 +408,10 @@ def add_dealer(request):
 
     attendee.save()
 
-    badge = Badge.objects.get(attendee=attendee, event=event)
+    badge = Badge.objects.get(
+        attendee=attendee,
+        event=event,
+    )
     badge.badgeName = pda["badgeName"]
 
     badge.save()
@@ -543,7 +548,13 @@ def addNewDealer(request):
     )
     attendee.save()
 
-    badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
+    badge = Badge(
+        attendee=attendee,
+        event=event,
+        badgeName=pda["badgeName"],
+        signature_svg=pda.get("signature_svg"),
+        signature_bitmap=pda.get("signature_bitmap"),
+    )
     badge.save()
 
     tablesize = TableSize.objects.get(id=pdd["tableSize"])
@@ -659,7 +670,7 @@ def get_dealer_total(orderItems, discount, dealer):
     wifi = 0
     power = 0
     if dealer.needWifi:
-        wifi = 50
+        wifi = dealer.event.dealerWifiPrice
     if dealer.needPower:
         power = 0
     paidTotal = dealer.paidTotal()
@@ -667,7 +678,7 @@ def get_dealer_total(orderItems, discount, dealer):
         itemSubTotal = get_discount_total(discount, itemSubTotal)
     total = (
         itemSubTotal
-        + 55 * unpaidPartnerCount
+        + dealer.event.dealerPartnerPrice * unpaidPartnerCount
         + partnerBreakfast
         + dealer.tableSize.basePrice
         + wifi

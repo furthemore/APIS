@@ -27,7 +27,7 @@
         {% if dealer.getUnpaidPartnerCount > 0 %}
           <div class="row">
             <div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getUnpaidPartnerCount }}</div>
-            <div class="col-sm-2">${{ dealer.getUnpaidPartnerCount|mul:55 }}.00</div>
+            <div class="col-sm-2">${{ dealer.getUnpaidPartnerCount|mul:event.dealerPartnerPrice }}</div>
             <div class="col-sm-2">
             </div>
           </div>
@@ -36,7 +36,7 @@
         {% if dealer.needWifi %}
           <div class="row">
             <div class="col-sm-6 col-sm-offset-1">Wifi</div>
-            <div class="col-sm-2">$50.00</div>
+            <div class="col-sm-2">${{ event.dealerWifiPrice }}</div>
             <div class="col-sm-2"></div>
           </div>
         {% endif %}
@@ -222,7 +222,7 @@
                        data-error="City is required."/>
               </div>
               <div class="col-sm-4">
-                <select class="form-control bfh-states" id="state" data-country="US" data-state="VA"
+                <select class="form-control bfh-states" id="state" data-country="US" data-state="{{ event.venue.state }}"
                         name="state"></select>
               </div>
               <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
