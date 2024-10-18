@@ -408,7 +408,12 @@ def add_dealer(request):
 
     attendee.save()
 
-    badge = Badge.objects.get(attendee=attendee, event=event)
+    badge = Badge.objects.get(
+        attendee=attendee,
+        event=event,
+        signature_svg=pda.get("signature_svg"),
+        signature_bitmap=pda.get("signature_bitmap"),
+    )
     badge.badgeName = pda["badgeName"]
 
     badge.save()
