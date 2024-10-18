@@ -411,8 +411,6 @@ def add_dealer(request):
     badge = Badge.objects.get(
         attendee=attendee,
         event=event,
-        signature_svg=pda.get("signature_svg"),
-        signature_bitmap=pda.get("signature_bitmap"),
     )
     badge.badgeName = pda["badgeName"]
 
@@ -550,7 +548,13 @@ def addNewDealer(request):
     )
     attendee.save()
 
-    badge = Badge(attendee=attendee, event=event, badgeName=pda["badgeName"])
+    badge = Badge(
+        attendee=attendee,
+        event=event,
+        badgeName=pda["badgeName"],
+        signature_svg=pda.get("signature_svg"),
+        signature_bitmap=pda.get("signature_bitmap"),
+    )
     badge.save()
 
     tablesize = TableSize.objects.get(id=pdd["tableSize"])
