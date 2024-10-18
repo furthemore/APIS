@@ -46,7 +46,6 @@ TEST_ATTENDEE_ARGS = dict(
     phone="1112223333",
     email="apis@mailinator.org",
     birthdate="1990-01-01",
-    signatureSvg=TEST_SIGNATURE_SVG,
 )
 
 DEFAULT_VENUE_ARGS = dict(
