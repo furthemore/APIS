@@ -44,3 +44,11 @@ def selected_if_month(date, value):
 @register.simple_tag
 def subtract_years(date, years):
     return date.replace(year=date.year - years).strftime("%B %e, %Y")
+
+
+@register.simple_tag
+def venue_country(event):
+    if event.venue:
+        return event.venue.country
+    else:
+        return ""

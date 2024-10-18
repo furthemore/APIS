@@ -80,8 +80,15 @@
                required type="text" value="{{attendee.city}}"/>
     </div>
     <div class="col-sm-5">
-        <select autocomplete="address-level3" class="form-control bfh-states" data-country="{{attendee.country|default:event.venue.country }}"
-                data-state="{% if attendee %}{{ attendee.state }}{% else %}{{ event.venue.state }}{% endif %}"
+        <select autocomplete="address-level3" class="form-control bfh-states"
+                {% if event.venue %}
+                data-country="{{attendee.country|default:event.venue.country }}"
+                data-state="{{attendee.state|default:event.venue.state }}"
+                {% else %}
+                data-country="{{ attendee.country }}"
+                data-state="{{ attendee.state }}"
+                {% endif %}
+
                 id="state" name="state" required></select>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
@@ -95,7 +102,12 @@
                value="{{attendee.postalCode}}"/>
     </div>
     <div class="col-sm-6">
-        <select autocomplete="country" class="form-control bfh-countries" data-country="{{ attendee.country|default:event.venue.country }}"
+        <select autocomplete="country" class="form-control bfh-countries"
+                {% if event.venue %}
+                data-country="{{ attendee.country|default:event.venue.country }}"
+                {% else %}
+                data-country="{{ attendee.country }}"
+                {% endif %}
                 id="country" name="country" required></select>
     </div>
     <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
