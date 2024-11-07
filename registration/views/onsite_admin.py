@@ -141,13 +141,23 @@ def onsite_admin(request):
             "mqtt": {
                 "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
                 "auth": mqtt_auth,
+                "supports_printing": getattr(settings, "PRINT_VIA_MQTT", False),
             },
             "urls": {
+                "assign_badge_number": reverse("registration:assign_badge_number"),
+                "onsite_print_badges": reverse("registration:onsite_print_badges"),
+                "complete_cash_transaction": reverse("registration:complete_cash_transaction"),
+                "enable_payment": reverse("registration:enable_payment"),
                 "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
                 "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
                 "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
+                "pdf": reverse("registration:pdf"),
+            },
+            "permissions": {
+                "cash": request.user.has_perm("registration.cash"),
+                "discount": request.user.has_perm("registration.discount"),
             }
         }),
     }
@@ -905,6 +915,13 @@ def onsite_add_id_to_cart(request, id):
     if id is None or id == "":
         return JsonResponse(
             {"success": False, "reason": "Need ID parameter"}, status=400
+        )
+
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
         )
 
     cart = request.session.get("cart", None)
