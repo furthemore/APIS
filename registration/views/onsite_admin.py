@@ -146,6 +146,8 @@ def onsite_admin(request):
                 "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
                 "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
                 "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
+                "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
+                "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
             }
         }),
     }

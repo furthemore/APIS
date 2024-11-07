@@ -1,4 +1,4 @@
-import { Accessor, Component, createSignal, For, Setter, Show } from "solid-js";
+import { Component, createSignal, For, Setter, Show } from "solid-js";
 import { render } from "solid-js/web";
 
 import { ApisConfig, ApisUrls } from "../entrypoints/admin";
@@ -12,16 +12,10 @@ const [cartEntries, setCartEntries] = createSignal<CartResponse | null>(null);
 
 class CartManager {
   urls: ApisUrls;
-  cartEntries: Accessor<CartResponse>;
   setCartEntries: Setter<CartResponse>;
 
-  constructor(
-    urls: ApisUrls,
-    cartEntries: Accessor<CartResponse>,
-    setCartEntries: Setter<CartResponse>
-  ) {
+  constructor(urls: ApisUrls, setCartEntries: Setter<CartResponse>) {
     this.urls = urls;
-    this.cartEntries = cartEntries;
     this.setCartEntries = setCartEntries;
   }
 
@@ -72,6 +66,30 @@ class CartManager {
 
     this.updateCart(data);
   }
+
+  async removeBadge(id: number) {
+    let url = new URL(this.urls.onsite_remove_from_cart, window.location.href);
+    url.search = new URLSearchParams({ id: id.toString() }).toString();
+
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "x-csrftoken": CSRF_TOKEN,
+      },
+    });
+    await resp.json();
+
+    await this.refreshCart();
+  }
+
+  urlForBadge(id: number): string {
+    let url = new URL(
+      this.urls.registration_badge_change,
+      window.location.href
+    );
+    url.pathname = url.pathname.replace("0", id.toString());
+    return url.toString();
+  }
 }
 
 interface FallibleResponse {
@@ -90,6 +108,7 @@ interface CartResponse extends FallibleResponse {
 }
 
 interface Badge {
+  id: number;
   abandoned: string;
   age: number;
   badgeName: string;
@@ -141,13 +160,15 @@ function Cart(cartManager: CartManager) {
       </div>
 
       <Show when={cartEntries()}>
-        <CartEntries cart={cartEntries()} />
+        <CartEntries manager={cartManager} cart={cartEntries()} />
       </Show>
     </div>
   );
 }
 
-const CartEntries: Component<{ cart: CartResponse }> = (props) => {
+const CartEntries: Component<{ manager: CartManager; cart: CartResponse }> = (
+  props
+) => {
   return (
     <>
       <div class="total">
@@ -180,13 +201,21 @@ const CartEntries: Component<{ cart: CartResponse }> = (props) => {
       </div>
 
       <For each={props.cart.result}>
-        {(badge, index) => <CartBadge data-index={index} badge={badge} />}
+        {(badge, index) => (
+          <CartBadge
+            data-index={index()}
+            manager={props.manager}
+            badge={badge}
+          />
+        )}
       </For>
     </>
   );
 };
 
-const CartBadge: Component<{ badge: Badge }> = (props) => {
+const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
+  props
+) => {
   return (
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -209,6 +238,29 @@ const CartBadge: Component<{ badge: Badge }> = (props) => {
           <span class="label label-danger" title="Already printed">
             <i class="fas fa-print" />
           </span>
+        </Show>
+
+        <Show when={props.badge.badgeNumber}>
+          <span class="label label-info">{props.badge.badgeNumber}</span>
+        </Show>
+
+        <a href={props.manager.urlForBadge(props.badge.id)} target="_blank">
+          {`${props.badge.firstName} ${props.badge.lastName}`}
+        </a>
+
+        <a
+          href="#"
+          style={"color: darkred;"}
+          onClick={(ev) => {
+            ev.preventDefault();
+            props.manager.removeBadge(props.badge.id);
+          }}
+        >
+          <i class="fas fa-trash-can"></i>
+        </a>
+
+        <Show when={props.badge.age < 18} fallback={"18+"}>
+          <span style={"color: red;"}>MINOR FORM REQUIRED</span>
         </Show>
       </div>
 
@@ -233,7 +285,7 @@ const CartBadge: Component<{ badge: Badge }> = (props) => {
 };
 
 export default function renderCart(config: ApisConfig) {
-  cartManager = new CartManager(config.urls, cartEntries, setCartEntries);
+  cartManager = new CartManager(config.urls, setCartEntries);
   window["cartManager"] = cartManager;
 
   render(() => Cart(cartManager), document.getElementById("cart"));

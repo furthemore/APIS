@@ -24,6 +24,9 @@ function sendNotification(message: string) {
   }
 }
 
+export let publishMessage: (topic: string, message: string) => void | null =
+  null;
+
 export function connectToMqtt(config: ApisMqttConfig) {
   const mqttErrorMessage = document.getElementById("mqtt-client-error");
 
@@ -39,6 +42,11 @@ export function connectToMqtt(config: ApisMqttConfig) {
     clientId: `${config.auth.user}-${randomClientId}`,
     clean: true,
   });
+
+  publishMessage = (topic, message) => {
+    console.debug(`Publishing to topic ${topic} with message: ${message}`);
+    client.publish(getTopic(topic), message);
+  };
 
   client.on("connect", () => {
     mqttErrorMessage?.classList?.add("d-none");
@@ -62,17 +70,19 @@ export function connectToMqtt(config: ApisMqttConfig) {
   });
 
   client.on("message", (topic, message) => {
-    console.debug("MQTT message", topic, message);
+    let data = message.toString();
+    console.debug("MQTT message", topic, data);
 
     let strippedTopic: MqttTopic;
     if (topic.startsWith(config.auth.base_topic)) {
-      strippedTopic = topic.slice(config.auth.base_topic.length + 1) as MqttTopic;
+      strippedTopic = topic.slice(
+        config.auth.base_topic.length + 1
+      ) as MqttTopic;
     } else {
       console.warn(`Got topic with unexpected prefix: ${topic}`);
       return;
     }
 
-    let data = message.toString();
     let payload = null;
     try {
       payload = JSON.parse(data);

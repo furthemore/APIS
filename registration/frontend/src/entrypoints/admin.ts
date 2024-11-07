@@ -21,9 +21,11 @@ export interface ApisMqttAuth {
 }
 
 export interface ApisUrls {
-  onsite_admin_clear_cart: string;
   onsite_add_to_cart: string;
   onsite_admin_cart: string;
+  onsite_admin_clear_cart: string;
+  onsite_remove_from_cart: string;
+  registration_badge_change: string;
 }
 
 declare global {
