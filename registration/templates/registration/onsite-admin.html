@@ -73,7 +73,7 @@
     <div class="alert alert-{{ error.type }}" role="alert">{{ error.text }}</div>
   {% endfor %}
 
-  <div class="alert alert-danger" id="client-error">
+  <div class="alert alert-danger" id="mqtt-client-error">
     <i class="fas fa-exclamation-triangle"></i>
     <span class="sr-only">Error:</span>
     <b>There was a problem while connecting to the server.</b>
@@ -141,15 +141,9 @@
         </div>
       </div>
 
-      <div class="panel panel-default" id="scan-panel">
-        <div class="panel-heading">
-          Scanner history
-          <button id="clear-scans-log" class="btn btn-xs btn-primary right">Clear</button>
-        </div>
-        <div id="scan-log"></div>
-      </div>
+      <div class="panel panel-default" id="scan-panel"></div>
     </div>
-    <div class="col-md-6">
+    <div id="cart">
       <div class="well">
         <div class="alert alert-danger" id="cart-error" role="alert">
           An error occurred.
@@ -167,7 +161,6 @@
                class="btn btn-danger right" id="clear-cart">Clear</a>
           </div>
         </div>
-        <div id="cart"></div>
         <div class="total" id="total"></div>
 
         <div class="row button-group">
@@ -422,43 +415,8 @@
 
 {% block javascript %}
   <script>
-      const DEBUG = {% settings_value_bool 'DEBUG' %};
-
-      const URL_REGISTRATION_ASSIGN_BADGE_NUMBER = "{% url 'registration:assign_badge_number' %}";
-      const URL_REGISTRATION_ONSITE_PRINT_BADGES = "{% url 'registration:onsite_print_badges' %}";
-      const URL_REGISTRATION_ONSITE_ADMIN_CLEAR_CART = "{% url 'registration:onsite_admin_clear_cart' %}";
-      const URL_REGISTRATION_ONSITE_ADMIN_CART = "{% url 'registration:onsite_admin_cart' %}";
-      const URL_REGISTRATION_ONSITE_ADMIN_ADD_TO_CART = "{% url 'registration:onsite_add_to_cart' %}";
-      const URL_REGISTRATION_ONSITE_REMOVE_FROM_CART = "{% url 'registration:onsite_remove_from_cart' %}";
-      const URL_REGISTRATION_OPEN_TERMINAL = "{% url 'registration:open_terminal' %}";
-      const URL_REGISTRATION_CLOSE_TERMINAL = "{% url 'registration:close_terminal' %}";
-      const URL_REGISTRATION_READY_TERMINAL = "{% url 'registration:ready_terminal' %}";
-      const URL_REGISTRATION_OPEN_DRAWER = "{% url 'registration:open_drawer' %}";
-      const URL_REGISTRATION_CASH_DEPOSIT = "{% url 'registration:cash_deposit' %}";
-      const URL_REGISTRATION_SAFE_DROP = "{% url 'registration:safe_drop' %}";
-      const URL_REGISTRATION_CASH_PICKUP = "{% url 'registration:cash_pickup' %}";
-      const URL_REGISTRATION_CLOSE_DRAWER = "{% url 'registration:close_drawer' %}";
-      const URL_REGISTRATION_NO_SALE = "{% url 'registration:no_sale' %}";
-      const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enable_payment' %}";
-      const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:complete_cash_transaction' %}";
-      const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
-      const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
-
-      // MQTT credentials for in-browser push notifications
-      const MQTT_ENABLED = {% if mqtt_auth %}true{% else %}false{% endif %};
-      const MQTT_OPTIONS = {
-          username: "{{ mqtt_auth.user }}",
-          password: "{{ mqtt_auth.token }}",
-          clientId: "{{ mqtt_auth.user}}-" + Math.random().toString(16).substr(2, 8),
-          clean: true,
-      };
-
-      const MQTT_BROKER = "{% settings_value 'MQTT_EXTERNAL_BROKER' %}";
-      const MQTT_BASE_TOPIC = "{{ mqtt_auth.base_topic }}";
-
+    const APIS_CONFIG = {{ settings|safe }};
   </script>
 
-  <script src="{% static 'js/mqtt.min.js' %}"></script>
-  <script src="{% static 'js/onsite/onsite_push.js' %}"></script>
-  <script src="{% static 'js/onsite/onsite_admin.js' %}"></script>
+  <script src="{% static 'admin.js' %}"></script>
 {% endblock %}

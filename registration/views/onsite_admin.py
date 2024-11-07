@@ -128,8 +128,26 @@ def onsite_admin(request):
         "terminals": terminals,
         "errors": errors,
         "results": results,
-        "printer_uri": settings.REGISTER_PRINTER_URI,
-        "mqtt_auth": mqtt_auth,
+        "settings": json.dumps({
+            "debug": getattr(settings, "DEBUG", False),
+            "sentry": {
+                "enabled": getattr(settings, "SENTRY_ENABLED", False),
+                "user_reports": getattr(settings, "SENTRY_USER_REPORTS", False),
+                "frontend_dsn": getattr(settings, "SENTRY_FRONTEND_DSN", None),
+                "environment": getattr(settings, "SENTRY_ENVIRONMENT", None),
+                "release": getattr(settings, "SENTRY_RELEASE", None),
+            },
+            "printer_uri": settings.REGISTER_PRINTER_URI,
+            "mqtt": {
+                "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
+                "auth": mqtt_auth,
+            },
+            "urls": {
+                "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
+                "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
+                "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
+            }
+        }),
     }
 
     return render(request, "registration/onsite-admin.html", context)
@@ -928,7 +946,7 @@ def onsite_remove_from_cart(request):
 def onsite_admin_clear_cart(request):
     request.session["cart"] = []
     send_message_to_terminal(request, {"command": "clear"})
-    return onsite_admin(request)
+    return JsonResponse({"success": True, "cart": []})
 
 
 def get_b32_uuid():
