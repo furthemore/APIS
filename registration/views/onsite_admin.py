@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
+from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models import Q, Sum, F, Value, Func
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -17,7 +18,6 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.postgres.search import TrigramSimilarity
 
 from registration import admin, mqtt, payments, printing
 from registration.admin import TWOPLACES
