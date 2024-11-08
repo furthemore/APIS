@@ -1,11 +1,7 @@
 import { Setter } from "solid-js";
 
-import { ApisUrls } from "../../entrypoints/admin";
-import emitter, { publishMessage } from "../mqtt";
-
-const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
-  "meta[name='csrf_token']"
-).content;
+import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
+import emitter from "../mqtt";
 
 export class CartManager {
   urls: ApisUrls;
@@ -15,9 +11,11 @@ export class CartManager {
     this.urls = urls;
     this.setCartEntries = setCartEntries;
 
-    // Only one CartManager should be active at a time.
-    emitter.off("refresh");
     emitter.on("refresh", this.refreshCart.bind(this));
+  }
+
+  close() {
+    emitter.off("refresh", this.refreshCart.bind(this));
   }
 
   private updateCart(data: CartResponse) {
@@ -30,7 +28,7 @@ export class CartManager {
     this.setCartEntries(data);
   }
 
-  public async addCartId(id: string) {
+  public async addCartId(id: number) {
     let url = new URL(this.urls.onsite_add_to_cart, window.location.href);
     url.search = new URLSearchParams({ id: id.toString() }).toString();
 
@@ -121,7 +119,9 @@ export class CartManager {
     return data;
   }
 
-  public async printBadges(ids: number[]): Promise<FallibleRequest | BadgePrintResponse> {
+  public async printBadges(
+    ids: number[]
+  ): Promise<FallibleRequest | BadgePrintResponse> {
     const assignResp = await fetch(this.urls.assign_badge_number, {
       method: "POST",
       headers: {
@@ -141,10 +141,7 @@ export class CartManager {
       return assignData;
     }
 
-    let url = new URL(
-      this.urls.onsite_print_badges,
-      window.location.href
-    );
+    let url = new URL(this.urls.onsite_print_badges, window.location.href);
     let params = new URLSearchParams();
     ids.forEach((id) => params.append("id", id.toString()));
     url.search = params.toString();

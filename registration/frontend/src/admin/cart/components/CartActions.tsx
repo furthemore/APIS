@@ -1,4 +1,12 @@
-import { Component, createEffect, createMemo, useContext } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  JSX,
+  Setter,
+  useContext,
+} from "solid-js";
 import { Big } from "big.js";
 
 import { BadgePrintResponse, CartManager, CartResponse } from "../cart-manager";
@@ -6,6 +14,19 @@ import { ConfigContext } from "../../providers/config-provider";
 import { publishMessage } from "../../mqtt";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
+
+type ActionButton = "cash" | "card" | "print";
+
+async function trackLoadingButton<T>(
+  setLoadingButton: Setter<ActionButton>,
+  button: ActionButton,
+  action: Promise<T>
+): Promise<T> {
+  setLoadingButton(button);
+  const resp = await action;
+  setLoadingButton(null);
+  return resp;
+}
 
 async function attemptCashPayment(
   manager: CartManager,
@@ -67,10 +88,13 @@ async function printBadges(
     let url = new URL(pdfUrl, window.location.href);
     url.searchParams.append("file", data.file);
 
-    publishMessage("action", JSON.stringify({
-      action: "print",
-      url,
-    }));
+    publishMessage(
+      "action",
+      JSON.stringify({
+        action: "print",
+        url,
+      })
+    );
   } else {
     window.open(data.url, "badge");
   }
@@ -82,13 +106,21 @@ export const CartActions: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext);
 
+  const [loadingButton, setLoadingButton] = createSignal<ActionButton | null>();
+
   const hasHold = createMemo(
     () =>
       props.cartEntries?.result?.some((entry) => !!entry.holdType) ||
       isNaN(parseFloat(props?.cartEntries?.total))
   );
 
-  const needsPayment = () => parseFloat(props.cartEntries?.total) > 0;
+  const needsPayment = createMemo(
+    () =>
+      parseFloat(props.cartEntries?.total) > 0 &&
+      props.cartEntries?.result.some(
+        (entry) => !PRINTABLE_STATUS.has(entry.abandoned)
+      )
+  );
 
   const printableBadgeIds = createMemo(
     () =>
@@ -104,64 +136,106 @@ export const CartActions: Component<{
         ?.map((badge) => badge.id) || []
   );
 
-  createEffect(() =>
-    console.log(
-      `hold: ${hasHold()}, needsPayment: ${needsPayment()}, printable: ${printableBadgeIds()}`
-    )
-  );
-
   const canTenderCash = () =>
     config.permissions.cash && !hasHold() && needsPayment();
   const canUseCard = () => !hasHold() && needsPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
-  const canApplyDiscount = () => config.permissions.discount && false;
 
   return (
-    <div>
-      <div class="row button-group">
-        <div class="col-md-6">
-          <button
-            class="btn btn-block btn-primary"
-            disabled={!canTenderCash()}
-            onClick={() =>
-              attemptCashPayment(
-                props.manager,
-                props.cartEntries.reference,
-                props.cartEntries.total
-              )
-            }
-          >
-            <i class="fas fa-money-bill-alt"></i> Tender Cash
-          </button>
-        </div>
-        <div class="col-md-6">
-          <button
-            class="btn btn-block btn-warning"
-            disabled={!canUseCard()}
-            onClick={() => enableCardPayment(props.manager)}
-          >
-            <i class="fas fa-credit-card"></i> Credit/Debit Card
-          </button>
-        </div>
+    <div class="control">
+      <div class="columns">
+        <LoadableButton
+          button="cash"
+          class="is-primary"
+          disabled={!canTenderCash()}
+          loadingButton={loadingButton()}
+          setLoadingButton={setLoadingButton}
+          action={() =>
+            attemptCashPayment(
+              props.manager,
+              props.cartEntries.reference,
+              props.cartEntries.total
+            )
+          }
+        >
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-money-bill-alt"></i>
+            </span>
+            <span>Tender Cash</span>
+          </span>
+        </LoadableButton>
+        <LoadableButton
+          button="card"
+          class="is-warning"
+          disabled={!canUseCard()}
+          loadingButton={loadingButton()}
+          setLoadingButton={setLoadingButton}
+          action={() => enableCardPayment(props.manager)}
+        >
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-credit-card"></i>
+            </span>
+            <span>Credit/Debit Card</span>
+          </span>
+        </LoadableButton>
       </div>
-      <div class="row button-group">
-        <div class="col-md-6">
-          <button
-            class="btn btn-block btn-primary"
-            disabled={!hasPrintableBadges()}
-            onClick={(ev) =>
-              printBadges(
-                props.manager,
-                printableBadgeIds(),
-                config.mqtt.supports_printing && !ev.shiftKey,
-                config.urls.pdf,
-              )
-            }
-          >
-            <i class="fas fa-print"></i> Print Badges
-          </button>
-        </div>
+      <div class="columns">
+        <LoadableButton
+          button="print"
+          class="is-primary"
+          disabled={!hasPrintableBadges()}
+          loadingButton={loadingButton()}
+          setLoadingButton={setLoadingButton}
+          action={(ev) =>
+            printBadges(
+              props.manager,
+              printableBadgeIds(),
+              config.mqtt.supports_printing && !ev.shiftKey,
+              config.urls.pdf
+            )
+          }
+        >
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-print"></i>
+            </span>
+            <span>Print Badges</span>
+          </span>
+        </LoadableButton>
       </div>
+    </div>
+  );
+};
+
+const LoadableButton: Component<{
+  button: ActionButton;
+  class: string;
+  disabled: boolean;
+  loadingButton: ActionButton | null;
+  setLoadingButton: Setter<ActionButton>;
+  action: (ev: MouseEvent) => Promise<void>;
+  children: JSX.Element;
+}> = (props) => {
+  let classes = `button is-fullwidth ${props.class}`;
+
+  return (
+    <div class="column">
+      <button
+        class={classes}
+        classList={{ "is-loading": props.loadingButton == props.button }}
+        disabled={props.loadingButton != null || props.disabled}
+        onClick={(ev) => {
+          trackLoadingButton(
+            props.setLoadingButton,
+            props.button,
+            props.action(ev)
+          );
+        }}
+      >
+        {props.children}
+      </button>
     </div>
   );
 };

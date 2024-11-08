@@ -1,0 +1,14 @@
+@use "bulma/sass";
+
+@use "@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@use "@fortawesome/fontawesome-free/scss/solid.scss" with (
+  $fa-font-path: "@fortawesome/fontawesome-free/webfonts"
+);
+
+.d-block {
+  display: block;
+}
+
+.has-text-nowrap {
+  text-wrap: nowrap;
+}

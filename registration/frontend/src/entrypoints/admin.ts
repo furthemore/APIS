@@ -1,6 +1,13 @@
-import { connectToMqtt } from "../admin/mqtt";
 import "../admin/scan-actions";
-import createCart from "../admin/cart";
+import { connectToMqtt } from "../admin/mqtt";
+import createActions from "../admin/navbar";
+import createOnsiteExperience from "../admin/onsite";
+
+import "../admin/index.scss";
+
+export const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
+  "meta[name='csrf_token']"
+).content;
 
 export interface ApisConfig {
   debug: boolean;
@@ -8,6 +15,7 @@ export interface ApisConfig {
   mqtt: ApisMqttConfig;
   urls: ApisUrls;
   permissions: ApisPermissions;
+  terminals: ApisTerminalSettings;
 }
 
 export interface ApisMqttConfig {
@@ -24,20 +32,42 @@ export interface ApisMqttAuth {
 
 export interface ApisUrls {
   assign_badge_number: string;
+  cash_deposit: string;
+  cash_pickup: string;
+  close_drawer: string;
+  close_terminal: string;
   complete_cash_transaction: string;
   enable_payment: string;
+  no_sale: string;
   onsite_add_to_cart: string;
   onsite_admin_cart: string;
   onsite_admin_clear_cart: string;
+  onsite_admin_search: string;
   onsite_print_badges: string;
   onsite_remove_from_cart: string;
-  registration_badge_change: string;
+  onsite: string;
+  open_drawer: string;
+  open_terminal: string;
   pdf: string;
+  ready_terminal: string;
+  registration_badge_change: string;
+  safe_drop: string;
 }
 
 export interface ApisPermissions {
   cash: boolean;
+  cash_admin: boolean;
   discount: boolean;
+}
+
+export interface ApisTerminalSettings {
+  selected?: number;
+  available: ApisTerminal[];
+}
+
+export interface ApisTerminal {
+  id: number;
+  name: string;
 }
 
 declare global {
@@ -48,4 +78,5 @@ if (APIS_CONFIG.mqtt) {
   connectToMqtt(APIS_CONFIG.mqtt)
 }
 
-createCart(APIS_CONFIG);
+createActions(APIS_CONFIG);
+createOnsiteExperience(APIS_CONFIG);

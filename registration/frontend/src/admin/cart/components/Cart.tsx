@@ -1,5 +1,5 @@
 import { Show } from "solid-js/web";
-import { Component, createEffect } from "solid-js";
+import { Component, createEffect, createResource } from "solid-js";
 
 import { CartManager, CartResponse } from "../cart-manager";
 import { CartEntries } from "./CartEntries";
@@ -9,47 +9,65 @@ export const Cart: Component<{
   cartManager: CartManager;
   cartEntries: CartResponse;
 }> = (props) => {
+  const [refresh, { refetch: refreshCart }] = createResource(async () => {
+    await props.cartManager.refreshCart();
+  });
+
+  const [clear, { refetch: clearCart }] = createResource(async () => {
+    await props.cartManager.clearCart();
+  });
+
+  const anythingLoading = () => refresh.loading || clear.loading;
+
   createEffect(() => {
-    props.cartManager.refreshCart();
+    refreshCart();
   });
 
   return (
-    <div class="col-md-6">
-      <div class="row">
-        <div class="col-md-8">
-          <h2>
-            Cart&nbsp;
-            <a
-              href="#"
-              onClick={(ev) => {
-                ev.preventDefault();
-                props.cartManager.refreshCart();
-              }}
-              style={"font-size: 50%;"}
-            >
-              <i class="fas fa-sync"></i>
-              <span class="sr-only">Refresh</span>
-            </a>
-          </h2>
+    <div class="panel is-info">
+      <div class="panel-heading">
+        <div class="columns">
+          <div class="column">Cart</div>
+
+          <div class="column is-narrow">
+            <div class="buttons">
+              <button
+                class="button is-primary is-small is-light"
+                classList={{ "is-loading": refresh.loading }}
+                disabled={anythingLoading()}
+                onClick={(ev) => {
+                  ev.preventDefault();
+                  refreshCart();
+                }}
+              >
+                <span class="icon">
+                  <i class="fas fa-sync"></i>
+                </span>
+              </button>
+
+              <button
+                class="button is-warning is-small is-light"
+                classList={{ "is-loading": clear.loading }}
+                disabled={anythingLoading()}
+                onClick={() => clearCart()}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="col-md-4">
-          <button
-            class="btn btn-danger right"
-            onClick={() => props.cartManager.clearCart()}
-          >
-            Clear
-          </button>
-        </div>
+      </div>
+
+      <div class="panel-block">
+        <CartActions
+          manager={props.cartManager}
+          cartEntries={props.cartEntries}
+        />
       </div>
 
       <Show when={props.cartEntries}>
         <CartEntries manager={props.cartManager} cart={props.cartEntries} />
       </Show>
-
-      <CartActions
-        manager={props.cartManager}
-        cartEntries={props.cartEntries}
-      />
     </div>
   );
 };

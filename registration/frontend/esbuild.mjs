@@ -1,4 +1,5 @@
 import * as esbuild from "esbuild";
+import { sassPlugin } from "esbuild-sass-plugin";
 import { solidPlugin } from "esbuild-plugin-solid";
 
 const IS_PROD = process.env.NODE_ENVIRONMENT === "production";
@@ -15,11 +16,15 @@ function buildOpts(entryPoints) {
     loader: {
       ".woff": "file",
       ".woff2": "file",
+      ".ttf": "file",
     },
-    plugins: [solidPlugin()],
+    plugins: [
+      sassPlugin({
+        quietDeps: ["bulma"],
+      }),
+      solidPlugin(),
+    ],
   };
 }
 
-await Promise.all([
-  esbuild.build(buildOpts(["src/entrypoints/admin.ts"])),
-]);
+await Promise.all([esbuild.build(buildOpts(["src/entrypoints/admin.ts"]))]);

@@ -61,10 +61,8 @@ def onsite_admin(request):
     # Modify a dummy session variable to keep it alive
     request.session["heartbeat"] = time.time()
 
-    event = Event.objects.get(default=True)
     terminals = list(Firebase.objects.all())
     term = request.session.get("terminal", None)
-    query = request.GET.get("search", None)
 
     errors = []
     results = None
@@ -103,22 +101,6 @@ def onsite_admin(request):
             # weren't passed an integer
             errors.append({"type": "danger", "text": "Invalid terminal specified"})
 
-    if query is not None:
-        results = Badge.objects.filter(
-            Q(attendee__lastName__icontains=query)
-            | Q(attendee__preferredName__icontains=query)
-            | Q(attendee__firstName__icontains=query),
-            Q(event=event),
-        )
-        if len(results) == 0:
-            errors.append(
-                {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
-            )
-
-        cart = request.session.get("cart", None)
-        if cart and len(results) == 1 and results[0].id not in cart:
-            onsite_add_id_to_cart(request, results[0].id)
-
     terminal = get_active_terminal(request)
     mqtt_auth = None
     if terminal:
@@ -145,20 +127,36 @@ def onsite_admin(request):
             },
             "urls": {
                 "assign_badge_number": reverse("registration:assign_badge_number"),
-                "onsite_print_badges": reverse("registration:onsite_print_badges"),
+                "cash_deposit": reverse("registration:cash_deposit"),
+                "cash_pickup": reverse("registration:cash_pickup"),
+                "close_drawer": reverse("registration:close_drawer"),
+                "close_terminal": reverse("registration:close_terminal"),
                 "complete_cash_transaction": reverse("registration:complete_cash_transaction"),
                 "enable_payment": reverse("registration:enable_payment"),
-                "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
+                "no_sale": reverse("registration:no_sale"),
                 "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
                 "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
+                "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
+                "onsite_admin_search": reverse("registration:onsite_admin_search"),
+                "onsite_print_badges": reverse("registration:onsite_print_badges"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
-                "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
+                "onsite": reverse("registration:onsite"),
+                "open_drawer": reverse("registration:open_drawer"),
+                "open_terminal": reverse("registration:open_terminal"),
                 "pdf": reverse("registration:pdf"),
+                "ready_terminal": reverse("registration:ready_terminal"),
+                "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
+                "safe_drop": reverse("registration:safe_drop"),
             },
             "permissions": {
                 "cash": request.user.has_perm("registration.cash"),
+                "cash_admin": request.user.has_perm("registration.cash_admin"),
                 "discount": request.user.has_perm("registration.discount"),
-            }
+            },
+            "terminals": {
+                "selected": terminal.id if terminal else None,
+                "available": [{"id": terminal.id, "name": terminal.name} for terminal in terminals],
+            },
         }),
     }
 
@@ -168,25 +166,32 @@ def onsite_admin(request):
 @staff_member_required
 def onsite_admin_search(request):
     event = Event.objects.get(default=True)
-    terminals = list(Firebase.objects.all())
     query = request.POST.get("search", None)
     if query is None:
         return redirect("registration:onsite_admin")
 
-    errors = []
     results = Badge.objects.filter(
         Q(attendee__lastName__icontains=query)
         | Q(attendee__preferredName__icontains=query)
         | Q(attendee__firstName__icontains=query),
         Q(event=event),
     ).prefetch_related("attendee", "event")
-    if len(results) == 0:
-        errors = [
-            {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
-        ]
 
-    context = {"terminals": terminals, "errors": errors, "results": results}
-    return render(request, "registration/onsite-admin.html", context)
+    data = []
+    for result in results:
+        data.append({
+            "id": result.id,
+            "edit_url": reverse("admin:registration_badge_change", args=(result.id,)),
+            "attendee": {
+                "firstName": result.attendee.firstName,
+                "lastName": result.attendee.lastName,
+                "preferredName": result.attendee.preferredName,
+            },
+            "badgeName": result.badgeName,
+            "abandoned": result.abandoned,
+        })
+
+    return JsonResponse({"success": True, "results": data})
 
 
 @staff_member_required
@@ -946,6 +951,13 @@ def onsite_remove_from_cart(request):
     if id is None or id == "":
         return JsonResponse(
             {"success": False, "reason": "Need ID parameter"}, status=400
+        )
+
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID must be integer"}, status=400
         )
 
     cart = request.session.get("cart", None)

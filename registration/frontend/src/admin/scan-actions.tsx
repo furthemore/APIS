@@ -1,13 +1,29 @@
-import { Component, createSignal, For, Show } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  JSX,
+  Show,
+  useContext,
+} from "solid-js";
+
 import emitter from "./mqtt";
-import { render } from "solid-js/web";
+import { differenceInYears } from "date-fns";
+import { ConfigContext } from "./providers/config-provider";
 
 interface IdData {
-  expirationDate: string;
-  dateOfBirth: string;
-  age: number;
-  givenName: string;
-  familyName: string;
+  first: string;
+  last: string;
+  dob: string;
+  expiry: string;
+  address: string;
+  address2: string;
+  city: string;
+  state: string;
+  ZIP: string;
+  country: string;
 }
 
 interface ShcData {
@@ -42,112 +58,226 @@ interface ShcMatch {
   dob: boolean;
 }
 
-const scanPanel = document.getElementById("scan-panel");
 const [scanLog, setScanLog] = createSignal<ScanLog>({
   url: undefined,
   id: undefined,
   shc: undefined,
 });
 
-function ScanPanel() {
-  const shcMatch = () => {
+export const ScanPanel: Component<{
+  gotScannedName(name: string): void;
+}> = (props) => {
+  const shcMatch = createMemo(() => {
     const data = scanLog();
-    if (!data.id || !data.shc) return { name: false, dob: false };
+    if (!data.id || !data.shc) return { name: true, dob: true };
 
-    const idName = `${data.id.givenName} ${data.id.familyName}`;
+    const idName = `${data.id.first} ${data.id.last}`;
     const name = idName.localeCompare(data.shc.name) === 0;
 
-    const dob = data.id.dateOfBirth === data.shc.birthday;
+    const dob = data.id.dob === data.shc.birthday;
 
     return { name, dob };
-  };
+  });
+
+  createEffect(() => {
+    const name = scanLog().id?.last;
+    if (name) {
+      props.gotScannedName(name);
+    }
+  });
+
+  const hasAnyScans = () => scanLog().id || scanLog().shc || scanLog().url;
 
   return (
-    <>
-      <div class="panel-heading">
-        Scanner History
-        <button
-          class="btn btn-xs btn-primary right"
-          onClick={() =>
-            setScanLog({ url: undefined, id: undefined, shc: undefined })
-          }
-        >
-          Clear
-        </button>
-      </div>
+    <div class="block">
+      <div class="panel is-info">
+        <div class="panel-heading">
+          <div class="columns">
+            <div class="column">Scanner Entries</div>
 
-      <div>
+            <div class="column is-narrow">
+              <button
+                class="button is-warning is-small is-light"
+                disabled={!hasAnyScans()}
+                onClick={() =>
+                  setScanLog({ url: undefined, id: undefined, shc: undefined })
+                }
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <Show when={!hasAnyScans()}>
+          <div class="panel-block">No items scanned.</div>
+        </Show>
+
         <Show when={scanLog().id}>
-          <IdEntry data={scanLog().id} />
+          <div class="panel-block">
+            <IdEntry data={scanLog().id} />
+          </div>
         </Show>
 
         <Show when={scanLog().shc}>
-          <ShcEntry data={scanLog().shc} shcMatch={shcMatch()} />
+          <div class="panel-block">
+            <ShcEntry data={scanLog().shc} shcMatch={shcMatch()} />
+          </div>
         </Show>
 
         <Show when={scanLog().url}>
-          <UrlEntry url={scanLog().url} />
+          <div class="panel-block">
+            <UrlEntry url={scanLog().url} />
+          </div>
         </Show>
       </div>
-    </>
+    </div>
   );
-}
+};
 
 const CloseButton: Component<{ close(): any }> = (props) => {
   return (
-    <button type="button" class="close close-panel" onClick={props.close}>
-      <span>&times;</span>
-    </button>
+    <button class="delete" aria-label="delete" onClick={props.close}></button>
+  );
+};
+
+const MismatchedData: Component<{
+  matched: boolean;
+  message: string;
+  children: JSX.Element;
+}> = (props) => {
+  return (
+    <Show when={!props.matched} fallback={props.children}>
+      <span class="icon-text has-text-warning" title={props.message}>
+        <span class="icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </span>
+        {props.children}
+      </span>
+    </Show>
+  );
+};
+
+const NameBirthday: Component<{
+  name: string;
+  birthday: string;
+  shcMatch?: ShcMatch;
+}> = (props) => {
+  const age = () => {
+    return differenceInYears(new Date(), props.birthday);
+  };
+
+  return (
+    <div class="columns">
+      <div class="column">
+        <MismatchedData
+          matched={!props.shcMatch || props.shcMatch?.name}
+          message="Name does not match ID"
+        >
+          <span class="has-text-weight-semibold">{props.name}</span>
+        </MismatchedData>
+      </div>
+      <div class="column has-text-right-desktop has-text-left-tablet">
+        <MismatchedData
+          matched={!props.shcMatch || props.shcMatch?.dob}
+          message="Birthday does not match ID"
+        >
+          <span class="icon-text">
+            <span class="icon">
+              <i class="fas fa-cake-candles"></i>
+            </span>
+            <span>{`${props.birthday} (${age()} years)`}</span>
+          </span>
+        </MismatchedData>
+      </div>
+    </div>
   );
 };
 
 const UrlEntry: Component<{ url: string }> = (props) => {
   return (
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <a href={props.url} target="_blank">
-          {props.url}
-        </a>
+    <article class="message is-link control">
+      <div class="message-header">
+        Link
         <CloseButton
           close={() => setScanLog({ ...scanLog(), url: undefined })}
         />
       </div>
-    </div>
+
+      <div class="message-body">
+        <a href={props.url} target="link">
+          {props.url}
+        </a>
+      </div>
+    </article>
   );
 };
 
 const IdEntry: Component<{ data: IdData }> = (props) => {
-  const expirationDate = new Date(props.data.expirationDate);
-  const expired = new Date() > expirationDate;
+  const config = useContext(ConfigContext);
 
-  const panelClasses = {
-    "panel-warning": expired,
-    "panel-primary": !expired,
+  const expirationDate = () => new Date(props.data.expiry);
+  const expired = () => new Date() > expirationDate();
+
+  const panelClasses = () => {
+    return {
+      "is-warning": expired(),
+      "is-success": !expired(),
+    };
   };
 
+  const regUrl = createMemo(() => {
+    let url = new URL(config.urls.onsite, window.location.href);
+    url.searchParams.set("firstName", props.data.first);
+    url.searchParams.set("lastName", props.data.last);
+    url.searchParams.set("dob", props.data.dob);
+    url.searchParams.set("address1", props.data.address);
+    if (props.data.address2)
+      url.searchParams.set("address2", props.data.address2);
+    url.searchParams.set("city", props.data.city);
+    url.searchParams.set("state", props.data.state);
+    url.searchParams.set("postalCode", props.data.ZIP.substring(0, 5));
+    return url.toString();
+  });
+
   return (
-    <div class="panel" classList={panelClasses}>
-      <div class="panel-heading">
-        <i class="fa-solid fa-id-card"></i>
-        <span>License Scanned</span>
-        <Show when={expired}>
-          <span>
+    <article class="message control" classList={panelClasses()}>
+      <div class="message-header">
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fa-solid fa-id-card"></i>
+          </span>
+          <span>ID Card</span>
+        </span>
+
+        <Show when={expired()}>
+          <span class="ml-2">
             <i class="fa-solid fa-calendar-xmark"></i>
-            {` Expired ${props.data.expirationDate}`}
+            {`Expired ${props.data.expiry}`}
           </span>
         </Show>
+
         <CloseButton
           close={() => setScanLog({ ...scanLog(), id: undefined })}
         />
       </div>
-      <div class="panel-body">
-        <strong>{`${props.data.givenName} ${props.data.familyName}`}</strong>
-        <span class="right">
-          <i class="fas fa-cake-candles"></i>
-          {` ${props.data.dateOfBirth} (${props.data.age} years)`}
-        </span>
+
+      <div class="message-body">
+        <NameBirthday
+          name={`${props.data.first} ${props.data.last}`}
+          birthday={props.data.dob}
+        />
+
+        <div>
+          <a href={regUrl()} class="button is-link" target="register">
+            <span class="icon">
+              <i class="fas fa-plus"></i>
+            </span>
+            <span>Create Attendee</span>
+          </a>
+        </div>
       </div>
-    </div>
+    </article>
   );
 };
 
@@ -163,36 +293,39 @@ const ShcEntry: Component<{ data: ShcData; shcMatch: ShcMatch }> = (props) => {
   };
 
   return (
-    <div
-      class="panel"
+    <article
+      class="message control"
       classList={{
-        success: props.data.verification.trusted,
-        danger: !props.data.verification.verified,
+        "is-success": props.data.verification.trusted,
+        "is-warning": !props.shcMatch.dob || !props.shcMatch.name,
+        "is-danger": !props.data.verification.verified,
       }}
     >
-      <div class="panel-heading">
-        <i class="fa-solid fa-syringe"></i> Vaccination Record - {status()}
+      <div class="message-header">
+        <span class="icon-text">
+          <span class="icon">
+            <i class="fa-solid fa-syringe"></i>
+          </span>
+          <span>Vaccination Record - {status()}</span>
+        </span>
+
         <CloseButton
           close={() => setScanLog({ ...scanLog(), shc: undefined })}
         />
       </div>
-      <div class="panel-body">
-        <Show
-          when={!props.shcMatch.name}
-          fallback={<strong>{props.data.name}</strong>}
-        >
-          <span class="text-warning" title="Name does not match ID">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <strong>{props.data.name}</strong>
-          </span>
-        </Show>
+      <div class="message-body">
+        <NameBirthday
+          name={props.data.name}
+          birthday={props.data.birthday}
+          shcMatch={props.shcMatch}
+        />
 
-        <table class="table table-condensed">
+        <table class="table is-narrow is-fullwidth">
           <thead>
             <tr>
-              <th>Date</th>
+              <th class="has-text-nowrap">Date</th>
               <th>Vaccine</th>
-              <th>Lot</th>
+              <th class="has-text-nowrap">Lot</th>
             </tr>
           </thead>
           <tbody>
@@ -200,9 +333,9 @@ const ShcEntry: Component<{ data: ShcData; shcMatch: ShcMatch }> = (props) => {
               {(vaccine, index) => {
                 return (
                   <tr data-index={index()}>
-                    <td>{vaccine.date}</td>
+                    <td class="has-text-nowrap">{vaccine.date}</td>
                     <td>{vaccine.name}</td>
-                    <td>{vaccine.lotNumber}</td>
+                    <td class="has-text-nowrap">{vaccine.lotNumber}</td>
                   </tr>
                 );
               }}
@@ -210,7 +343,7 @@ const ShcEntry: Component<{ data: ShcData; shcMatch: ShcMatch }> = (props) => {
           </tbody>
         </table>
       </div>
-    </div>
+    </article>
   );
 };
 
@@ -221,7 +354,7 @@ emitter.on("open", (payload) => {
     return;
   }
 
-  window.open(url, "_blank");
+  window.open(url, "link");
   setScanLog({
     ...scanLog(),
     url,
@@ -251,5 +384,3 @@ emitter.on("scan/shc", (payload: ShcData) => {
     shc: payload,
   });
 });
-
-render(ScanPanel, scanPanel);

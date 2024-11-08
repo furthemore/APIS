@@ -1,7 +1,22 @@
 import { Component, createMemo, For, Show } from "solid-js";
+import { Big } from "big.js";
 
 import { CartManager, CartResponse } from "../cart-manager";
 import { CartBadge } from "./CartBadge";
+
+export function cleanMoneyAmount(input: string): string {
+  if (input == "?") return "0.00";
+
+  let parsed: Big;
+  try {
+    parsed = new Big(input);
+  } catch (err) {
+    console.error(`Could not parse money: ${err}`);
+    return input;
+  }
+
+  return `$${parsed.toFixed(2)}`;
+}
 
 export const CartEntries: Component<{
   manager: CartManager;
@@ -15,8 +30,8 @@ export const CartEntries: Component<{
           options.push({
             quantity: 1,
             item: `Discount ${result.discount.name}`,
-            price: `-${result.discount.amount_off} / ${result.discount.percent_off}%`,
-            total: `-$${result.level_discount}`,
+            price: `-${cleanMoneyAmount(result.discount.amount_off)} / ${result.discount.percent_off}%`,
+            total: `-${cleanMoneyAmount(result.level_discount)}`,
           });
         }
         return options;
@@ -26,52 +41,40 @@ export const CartEntries: Component<{
 
   return (
     <>
-      <div class="total">
-        <table class="total-table">
+      <div class="panel-block">
+        <table class="table is-fullwidth is-condensed">
           <tbody>
             <tr>
               <td>Subtotal:</td>
-              <td>{props.cart.subtotal}</td>
+              <td style="width: 25%;">{cleanMoneyAmount(props.cart.subtotal)}</td>
             </tr>
             <tr>
               <td>Discounts:</td>
-              <td>{props.cart.total_discount}</td>
+              <td>{cleanMoneyAmount(props.cart.total_discount)}</td>
             </tr>
             <tr>
               <td>Donation to Charity:</td>
-              <td>{props.cart.charityDonation}</td>
+              <td>{cleanMoneyAmount(props.cart.charityDonation)}</td>
             </tr>
             <tr>
               <td>Donation to Convention:</td>
-              <td>{props.cart.orgDonation}</td>
+              <td>{cleanMoneyAmount(props.cart.orgDonation)}</td>
             </tr>
             <tr>
-              <td>
-                <b>Total:</b>
-              </td>
-              <td class="success">{`${props.cart.total}`}</td>
+              <td class="has-text-weight-semibold">Total:</td>
+              <td>{cleanMoneyAmount(props.cart.total)}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <For each={props.cart.result}>
-        {(badge, index) => (
-          <CartBadge
-            data-index={index()}
-            manager={props.manager}
-            badge={badge}
-          />
-        )}
-      </For>
-
       <Show when={orderItems()?.length > 0}>
-        <div class="panel panel-default">
-          <table class="table">
+        <div class="panel-block">
+          <table class="table is-fullwidth is-condensed">
             <thead>
               <tr>
                 <th>Order Item</th>
-                <th>Price</th>
+                <th style="width: 25%;">Price</th>
               </tr>
             </thead>
             <tbody>
@@ -88,6 +91,20 @@ export const CartEntries: Component<{
             </tbody>
           </table>
         </div>
+      </Show>
+
+      <Show when={props.cart.result.length > 0}>
+        <article class="panel-block d-block">
+          <For each={props.cart.result}>
+            {(badge, index) => (
+              <CartBadge
+                data-index={index()}
+                manager={props.manager}
+                badge={badge}
+              />
+            )}
+          </For>
+        </article>
       </Show>
     </>
   );
