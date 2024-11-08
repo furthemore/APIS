@@ -23,15 +23,15 @@ export const Cart: Component<{
   });
 
   return (
-    <div class="panel is-info">
+    <div class="panel is-dark">
       <div class="panel-heading">
         <div class="columns is-mobile">
-          <div class="column">Cart</div>
+          <div class="column is-align-self-center">Cart</div>
 
           <div class="column is-narrow">
             <div class="buttons">
               <button
-                class="button is-primary is-small is-light"
+                class="button is-primary is-small"
                 classList={{ "is-loading": refresh.loading }}
                 disabled={anythingLoading()}
                 onClick={(ev) => {
@@ -45,7 +45,7 @@ export const Cart: Component<{
               </button>
 
               <button
-                class="button is-warning is-small is-light"
+                class="button is-warning is-small"
                 classList={{ "is-loading": clear.loading }}
                 disabled={anythingLoading()}
                 onClick={() => clearCart()}

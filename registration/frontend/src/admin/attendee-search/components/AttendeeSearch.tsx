@@ -45,16 +45,16 @@ export const AttendeeSearch: Component<{
   return (
     <div class="block">
       <div class="block">
-        <div class="panel is-primary">
+        <div class="panel is-dark">
           <div class="panel-heading">
             <div class="columns is-mobile">
-              <div class="column">Attendee Search</div>
+              <div class="column is-align-self-center">Attendee Search</div>
 
               <div class="column is-narrow">
                 <a
                   href={config.urls.onsite}
                   target="edit"
-                  class="button is-link is-light is-small"
+                  class="button is-link is-small"
                 >
                   Add
                 </a>

@@ -75,14 +75,14 @@ export const ScanPanel: Component<{
 
   return (
     <div class="block">
-      <div class="panel is-info">
+      <div class="panel is-dark">
         <div class="panel-heading">
           <div class="columns is-mobile">
-            <div class="column">Scanner Entries</div>
+            <div class="column is-align-self-center">Scanner Entries</div>
 
             <div class="column is-narrow">
               <button
-                class="button is-warning is-small is-light"
+                class="button is-warning is-small"
                 disabled={!hasAnyScans()}
                 onClick={() => setStore({ id: null, shc: null, url: null })}
               >
