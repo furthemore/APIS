@@ -201,12 +201,19 @@ const Navbar: Component = () => {
           <div class="navbar-item">
             <form>
               <div class="select">
-                <select name="terminal">
+                <select
+                  name="terminal"
+                  onChange={(ev) => {
+                    let url = new URL(window.location.href);
+                    url.searchParams.set("terminal", ev.target.value);
+                    window.location.href = url.toString();
+                  }}
+                >
                   <For each={config.terminals.available}>
                     {(terminal, index) => (
                       <option
+                        value={terminal.id}
                         selected={terminal.id === config.terminals.selected}
-                        data-index={index()}
                       >
                         {terminal.name}
                       </option>
