@@ -10,13 +10,14 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, F, Value, Func
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.postgres.search import TrigramSimilarity
 
 from registration import admin, mqtt, payments, printing
 from registration.admin import TWOPLACES
@@ -170,26 +171,42 @@ def onsite_admin_search(request):
     if query is None:
         return redirect("registration:onsite_admin")
 
-    results = Badge.objects.filter(
-        Q(attendee__lastName__icontains=query)
-        | Q(attendee__preferredName__icontains=query)
-        | Q(attendee__firstName__icontains=query),
-        Q(event=event),
-    ).prefetch_related("attendee", "event")
-
     data = []
-    for result in results:
-        data.append({
-            "id": result.id,
-            "edit_url": reverse("admin:registration_badge_change", args=(result.id,)),
+
+    def collectBadges(badges):
+        for badge in badges:
+            data.append({
+            "id": badge.id,
+            "edit_url": reverse("admin:registration_badge_change", args=(badge.id,)),
             "attendee": {
-                "firstName": result.attendee.firstName,
-                "lastName": result.attendee.lastName,
-                "preferredName": result.attendee.preferredName,
+                "firstName": badge.attendee.firstName,
+                "lastName": badge.attendee.lastName,
+                "preferredName": badge.attendee.preferredName,
             },
-            "badgeName": result.badgeName,
-            "abandoned": result.abandoned,
+            "badgeName": badge.badgeName,
+            "abandoned": badge.abandoned,
         })
+
+    query = query.strip()
+
+    try:
+        badge_id = int(query)
+        badges = Badge.objects.filter(event=event, badgeNumber=badge_id)
+        collectBadges(badges)
+    except:
+        pass
+
+    fullName = Func(F("attendee__firstName"), Value(" "), F("attendee__lastName"), function="CONCAT")
+    greaterSimilarity = Func("name_similarity", "badge_similarity", function="GREATEST")
+
+    results = Badge.objects.annotate(
+        name_similarity=TrigramSimilarity(fullName, query),
+        badge_similarity=TrigramSimilarity("badgeName", query),
+    ).filter(
+        Q(event=event) & (Q(name_similarity__gte=0.1) | Q(badge_similarity__gte=0.1))
+    ).order_by(greaterSimilarity).reverse().prefetch_related("attendee")[:100]
+
+    collectBadges(results)
 
     return JsonResponse({"success": True, "results": data})
 

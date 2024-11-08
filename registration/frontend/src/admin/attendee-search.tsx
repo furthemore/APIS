@@ -145,16 +145,13 @@ export const AttendeeSearch: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext);
 
-  const [results, { refetch }] = createResource(
-    props.searchQuery,
-    async (query) => getSearchResults(config.urls, query)
+  const [results, { refetch }] = createResource(props.searchQuery, (query) =>
+    getSearchResults(config.urls, query)
   );
 
   let searchInputRef: HTMLInputElement;
 
   createEffect(() => {
-    console.log(`Updating search query: ${props.searchQuery()}`);
-
     if (props.searchQuery()) {
       searchInputRef.value = props.searchQuery();
     }
@@ -170,7 +167,7 @@ export const AttendeeSearch: Component<{
 
               <div class="column is-narrow">
                 <a
-                  href="#"
+                  href={config.urls.onsite}
                   target="edit"
                   class="button is-link is-light is-small"
                 >

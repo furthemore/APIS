@@ -80,9 +80,9 @@ export const ScanPanel: Component<{
   });
 
   createEffect(() => {
-    const name = scanLog().id?.last;
-    if (name) {
-      props.gotScannedName(name);
+    const id = scanLog()?.id;
+    if (id) {
+      props.gotScannedName(`${id.first} ${id.last}`);
     }
   });
 
