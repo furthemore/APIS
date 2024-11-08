@@ -9,11 +9,11 @@ import {
   useContext,
 } from "solid-js";
 
-import { ConfigContext } from "../../providers/config-provider";
-import { CartManager } from "../../cart";
-import { getSearchResults } from "..";
-import { BadgeTableRow } from "./BadgeTableRow";
 import { BadgeTableLoader } from "./BadgeTableLoader";
+import { BadgeTableRow } from "./BadgeTableRow";
+import { CartManager } from "../../cart";
+import { ConfigContext } from "../../providers/config-provider";
+import { getSearchResults } from "..";
 
 export const AttendeeSearch: Component<{
   cartManager: CartManager;
@@ -47,7 +47,7 @@ export const AttendeeSearch: Component<{
       <div class="block">
         <div class="panel is-primary">
           <div class="panel-heading">
-            <div class="columns">
+            <div class="columns is-mobile">
               <div class="column">Attendee Search</div>
 
               <div class="column is-narrow">

@@ -1,8 +1,8 @@
 import { Component, createMemo, For, Show } from "solid-js";
 import { Big } from "big.js";
 
-import { CartManager, CartResponse } from "../cart-manager";
 import { CartBadge } from "./CartBadge";
+import { CartManager, CartResponse } from "../cart-manager";
 
 export const CartEntries: Component<{
   manager: CartManager;
@@ -84,7 +84,7 @@ export const CartEntries: Component<{
       </Show>
 
       <Show when={props.cart.result.length > 0}>
-        <article class="panel-block d-block">
+        <article class="panel-block is-block">
           <For each={props.cart.result}>
             {(badge, index) => (
               <CartBadge

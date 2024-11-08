@@ -13,7 +13,7 @@ const Row: Component = () => {
     <tr>
       <td class="is-vcentered">
         <div class="is-skeleton">
-          <div>Full Name</div>
+          <div>Longer Full Name</div>
         </div>
       </td>
       <td class="is-vcentered">

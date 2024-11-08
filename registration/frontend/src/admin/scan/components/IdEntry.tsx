@@ -1,9 +1,9 @@
 import { Component, createMemo, Show, useContext } from "solid-js";
 
-import { ConfigContext } from "../../providers/config-provider";
 import { CloseButton } from "./CloseButton";
-import { NameBirthday } from "./ScanPii";
+import { ConfigContext } from "../../providers/config-provider";
 import { IdData } from "..";
+import { NameBirthday } from "./ScanPii";
 
 export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
   const config = useContext(ConfigContext);

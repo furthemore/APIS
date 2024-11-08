@@ -1,9 +1,16 @@
-import { Component, createMemo, createSignal, useContext } from "solid-js";
+import {
+  Component,
+  createMemo,
+  createSignal,
+  ErrorBoundary,
+  useContext,
+} from "solid-js";
 import { Big } from "big.js";
 
+import { ActionButton } from "./ActionButton";
 import { CartManager, CartResponse } from "../cart-manager";
 import { ConfigContext } from "../../providers/config-provider";
-import { ActionButton, ActionButtonKey } from "./ActionButton";
+import { CartActionsError } from "./CartActionsError";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
 
@@ -13,7 +20,7 @@ export const CartActions: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext);
 
-  const [loadingButton, setLoadingButton] = createSignal<ActionButtonKey>();
+  const [loading, setLoading] = createSignal<boolean>(false);
 
   const hasHold = createMemo(
     () =>
@@ -50,61 +57,70 @@ export const CartActions: Component<{
 
   return (
     <div class="control">
-      <div class="columns">
-        <ActionButton
-          button="cash"
-          class="is-primary"
-          disabled={!canTenderCash()}
-          loadingButton={loadingButton()}
-          setLoadingButton={setLoadingButton}
-          action={() =>
-            attemptCashPayment(
-              props.manager,
-              props.cartEntries.reference,
-              props.cartEntries.total
-            )
-          }
-        >
-          <span class="icon">
-            <i class="fas fa-money-bill-alt"></i>
-          </span>
-          <span>Tender Cash</span>
-        </ActionButton>
-        <ActionButton
-          button="card"
-          class="is-warning"
-          disabled={!canUseCard()}
-          loadingButton={loadingButton()}
-          setLoadingButton={setLoadingButton}
-          action={() => enableCardPayment(props.manager)}
-        >
-          <span class="icon">
-            <i class="fas fa-credit-card"></i>
-          </span>
-          <span>Credit/Debit Card</span>
-        </ActionButton>
-      </div>
-      <div class="columns">
-        <ActionButton
-          button="print"
-          class="is-primary"
-          disabled={!hasPrintableBadges()}
-          loadingButton={loadingButton()}
-          setLoadingButton={setLoadingButton}
-          action={(ev) =>
-            printBadges(
-              props.manager,
-              printableBadgeIds(),
-              config.mqtt.supports_printing && !ev.shiftKey
-            )
-          }
-        >
-          <span class="icon">
-            <i class="fas fa-print"></i>
-          </span>
-          <span>Print Badges</span>
-        </ActionButton>
-      </div>
+      <ErrorBoundary
+        fallback={(err, reset) => (
+          <CartActionsError
+            err={err}
+            reset={() => {
+              setLoading(undefined);
+              reset();
+            }}
+          />
+        )}
+      >
+        <div class="columns">
+          <ActionButton
+            class="is-primary"
+            disabled={!canTenderCash()}
+            loading={loading()}
+            setLoading={setLoading}
+            action={() =>
+              attemptCashPayment(
+                props.manager,
+                props.cartEntries.reference,
+                props.cartEntries.total
+              )
+            }
+          >
+            <span class="icon">
+              <i class="fas fa-money-bill-alt"></i>
+            </span>
+            <span>Tender Cash</span>
+          </ActionButton>
+          <ActionButton
+            class="is-warning"
+            disabled={!canUseCard()}
+            loading={loading()}
+            setLoading={setLoading}
+            action={() => enableCardPayment(props.manager)}
+          >
+            <span class="icon">
+              <i class="fas fa-credit-card"></i>
+            </span>
+            <span>Credit/Debit Card</span>
+          </ActionButton>
+        </div>
+        <div class="columns">
+          <ActionButton
+            class="is-primary"
+            disabled={!hasPrintableBadges()}
+            loading={loading()}
+            setLoading={setLoading}
+            action={(ev) =>
+              printBadges(
+                props.manager,
+                printableBadgeIds(),
+                config.mqtt.supports_printing && !ev.shiftKey
+              )
+            }
+          >
+            <span class="icon">
+              <i class="fas fa-print"></i>
+            </span>
+            <span>Print Badges</span>
+          </ActionButton>
+        </div>
+      </ErrorBoundary>
     </div>
   );
 };
@@ -161,7 +177,7 @@ async function printBadges(
     return;
   }
 
-  console.debug(`Got response from badge print: mqttPrint=${mqttPrint}, resp=${resp}`);
+  console.debug("Got response from badge print", mqttPrint, resp);
 
   if (!mqttPrint) {
     window.open(resp.url, "badge");

@@ -2,13 +2,15 @@ import { Component, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
 import { ApisConfig } from "../entrypoints/admin";
-import { ConfigContext } from "./providers/config-provider";
 import { AttendeeSearch } from "./attendee-search";
 import { Cart, CartManager } from "./cart";
+import { ConfigContext } from "./providers/config-provider";
 import { ScanPanel } from "./scan";
 import MqttClient from "./mqtt";
 
-const Onsite: Component<{ mqtt: MqttClient, cartManager: CartManager }> = (props) => {
+const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> = (
+  props
+) => {
   const [searchQuery, setSearchQuery] = createSignal<string>();
 
   return (

@@ -1,5 +1,5 @@
-import createActions from "../admin/navbar";
-import createOnsiteExperience from "../admin/onsite";
+import createActions from "../admin/Navbar";
+import createOnsiteExperience from "../admin/Onsite";
 
 import "../admin/index.scss";
 

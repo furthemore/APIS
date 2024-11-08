@@ -1,8 +1,8 @@
 import mqtt from "mqtt";
 import mitt, { Emitter } from "mitt";
 
-import { ApisMqttConfig } from "../entrypoints/admin";
 import { Accessor, createSignal, Setter } from "solid-js";
+import { ApisMqttConfig } from "../entrypoints/admin";
 
 export type MqttTopic =
   | "refresh"

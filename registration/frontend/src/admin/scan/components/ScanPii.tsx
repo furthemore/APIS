@@ -1,5 +1,5 @@
-import { differenceInYears } from "date-fns/differenceInYears";
 import { Component } from "solid-js";
+import { differenceInYears } from "date-fns/differenceInYears";
 
 import { MismatchedData } from "./MismatchedData";
 import { ShcMatch } from "..";

@@ -1,32 +1,48 @@
-import { Component, JSX, Setter } from "solid-js";
-
-export type ActionButtonKey = "cash" | "card" | "print";
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  JSX,
+  Setter,
+} from "solid-js";
 
 export type ActionButtonProps = {
-  button: ActionButtonKey;
   class: string;
   disabled: boolean;
-  loadingButton?: ActionButtonKey;
-  setLoadingButton: Setter<ActionButtonKey>;
+  loading: boolean;
+  setLoading: Setter<boolean>;
   action: (ev: MouseEvent) => Promise<any>;
   children: JSX.Element;
 };
 
 export const ActionButton: Component<ActionButtonProps> = (props) => {
-  let classes = `button is-fullwidth ${props.class}`;
+  const [triggerEvent, setTriggerEvent] = createSignal<MouseEvent>();
+  const [resource] = createResource(triggerEvent, async (ev) => {
+    console.debug("Attempting to perform button action");
+    props.setLoading(true);
+    const resp = await props.action(ev);
+    props.setLoading(false);
+    return resp;
+  });
+
+  createEffect(() => {
+    // When we have an error, throw it up. All of the buttons are wrapped in an
+    // error boundary so an appropriately sized message can display.
+    const err = resource.error;
+    if (err) {
+      throw err;
+    }
+  });
 
   return (
     <div class="column">
       <button
-        class={classes}
-        classList={{ "is-loading": props.loadingButton == props.button }}
-        disabled={props.loadingButton != null || props.disabled}
+        class={`button is-fullwidth ${props.class}`}
+        classList={{ "is-loading": resource.loading }}
+        disabled={props.loading || props.disabled}
         onClick={(ev) => {
-          trackLoadingButton(
-            props.setLoadingButton,
-            props.button,
-            props.action(ev)
-          );
+          setTriggerEvent(ev);
         }}
       >
         {props.children}
@@ -34,14 +50,3 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
     </div>
   );
 };
-
-async function trackLoadingButton<T>(
-  setLoadingButton: Setter<ActionButtonKey>,
-  button: ActionButtonKey,
-  action: Promise<T>
-): Promise<T> {
-  setLoadingButton(button);
-  const resp = await action;
-  setLoadingButton(null);
-  return resp;
-}

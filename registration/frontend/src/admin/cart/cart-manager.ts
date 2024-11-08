@@ -1,7 +1,6 @@
 import { Accessor, createSignal, Setter } from "solid-js";
 
 import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
-import emitter from "../mqtt";
 import MqttClient from "../mqtt";
 
 export class CartManager {

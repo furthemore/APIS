@@ -1,6 +1,5 @@
 import { createSignal } from "solid-js";
 
-import emitter from "../mqtt";
 import { ScanPanel } from "./components/ScanPanel";
 
 export { ScanPanel };

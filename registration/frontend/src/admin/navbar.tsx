@@ -1,7 +1,7 @@
-import { render } from "solid-js/web";
-import { Component, For, Show, useContext } from "solid-js";
 import { Big } from "big.js";
+import { Component, createSignal, For, Show, useContext } from "solid-js";
 import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
+import { render } from "solid-js/web";
 
 import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
 import { ConfigContext } from "./providers/config-provider";
@@ -171,6 +171,8 @@ const Actions: Component<{ config: ApisConfig }> = (props) => {
 const Navbar: Component = () => {
   const config = useContext(ConfigContext);
 
+  const [active, setActive] = createSignal<boolean>(false);
+
   return (
     <nav class="navbar" role="navigation">
       <div class="navbar-brand">
@@ -178,7 +180,12 @@ const Navbar: Component = () => {
           APIS Register
         </a>
 
-        <a role="button" class="navbar-burger">
+        <a
+          role="button"
+          class="navbar-burger"
+          classList={{ "is-active": active() }}
+          onClick={() => setActive(!active())}
+        >
           <span></span>
           <span></span>
           <span></span>
@@ -186,7 +193,7 @@ const Navbar: Component = () => {
         </a>
       </div>
 
-      <div class="navbar-menu">
+      <div class="navbar-menu" classList={{ "is-active": active() }}>
         <div class="navbar-end">
           <div class="navbar-item">
             <form>

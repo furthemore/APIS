@@ -1,11 +1,11 @@
 import { Component, createEffect, createMemo, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 
+import { IdData, ShcData } from "..";
 import { IdEntry } from "./IdEntry";
+import { MqttEmitter } from "../../mqtt";
 import { ShcEntry } from "./ShcEntry";
 import { UrlEntry } from "./UrlEntry";
-import { IdData, ShcData } from "..";
-import { MqttEmitter } from "../../mqtt";
 
 type ScanStore = {
   id?: IdData;
@@ -77,7 +77,7 @@ export const ScanPanel: Component<{
     <div class="block">
       <div class="panel is-info">
         <div class="panel-heading">
-          <div class="columns">
+          <div class="columns is-mobile">
             <div class="column">Scanner Entries</div>
 
             <div class="column is-narrow">

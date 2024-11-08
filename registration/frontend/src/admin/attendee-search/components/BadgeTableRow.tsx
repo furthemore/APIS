@@ -1,7 +1,7 @@
 import { Component, Show } from "solid-js";
 
-import { CartManager } from "../../cart";
 import { BadgeResult } from "..";
+import { CartManager } from "../../cart";
 
 export const BadgeTableRow: Component<{
   cartManager: CartManager;

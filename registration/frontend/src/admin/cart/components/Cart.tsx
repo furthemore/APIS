@@ -1,9 +1,9 @@
 import { Show } from "solid-js/web";
 import { Component, createEffect, createResource } from "solid-js";
 
-import { CartManager, CartResponse } from "../cart-manager";
-import { CartEntries } from "./CartEntries";
 import { CartActions } from "./CartActions";
+import { CartEntries } from "./CartEntries";
+import { CartManager } from "../cart-manager";
 
 export const Cart: Component<{
   cartManager: CartManager;
@@ -25,7 +25,7 @@ export const Cart: Component<{
   return (
     <div class="panel is-info">
       <div class="panel-heading">
-        <div class="columns">
+        <div class="columns is-mobile">
           <div class="column">Cart</div>
 
           <div class="column is-narrow">
@@ -65,7 +65,10 @@ export const Cart: Component<{
       </div>
 
       <Show when={props.cartManager.cartEntries()}>
-        <CartEntries manager={props.cartManager} cart={props.cartManager.cartEntries()} />
+        <CartEntries
+          manager={props.cartManager}
+          cart={props.cartManager.cartEntries()}
+        />
       </Show>
     </div>
   );
