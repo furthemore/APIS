@@ -7,7 +7,6 @@ import { CartActions } from "./CartActions";
 
 export const Cart: Component<{
   cartManager: CartManager;
-  cartEntries: CartResponse;
 }> = (props) => {
   const [refresh, { refetch: refreshCart }] = createResource(async () => {
     await props.cartManager.refreshCart();
@@ -61,12 +60,12 @@ export const Cart: Component<{
       <div class="panel-block">
         <CartActions
           manager={props.cartManager}
-          cartEntries={props.cartEntries}
+          cartEntries={props.cartManager.cartEntries()}
         />
       </div>
 
-      <Show when={props.cartEntries}>
-        <CartEntries manager={props.cartManager} cart={props.cartEntries} />
+      <Show when={props.cartManager.cartEntries()}>
+        <CartEntries manager={props.cartManager} cart={props.cartManager.cartEntries()} />
       </Show>
     </div>
   );

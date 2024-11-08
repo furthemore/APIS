@@ -1,24 +1,32 @@
-import { Setter } from "solid-js";
+import { Accessor, createSignal, Setter } from "solid-js";
 
 import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
 import emitter from "../mqtt";
+import MqttClient from "../mqtt";
 
 export class CartManager {
-  urls: ApisUrls;
-  setCartEntries: Setter<CartResponse>;
+  private urls: ApisUrls;
+  private mqtt: MqttClient;
 
-  constructor(urls: ApisUrls, setCartEntries: Setter<CartResponse>) {
+  public cartEntries: Accessor<CartResponse>;
+  private setCartEntries: Setter<CartResponse>;
+
+  constructor(urls: ApisUrls, mqtt: MqttClient) {
     this.urls = urls;
+
+    const [cartEntries, setCartEntries] = createSignal<CartResponse>();
+    this.cartEntries = cartEntries;
     this.setCartEntries = setCartEntries;
 
-    emitter.on("refresh", this.refreshCart.bind(this));
+    this.mqtt = mqtt;
+    mqtt.emitter.on("refresh", this.refreshCart.bind(this));
   }
 
   close() {
-    emitter.off("refresh", this.refreshCart.bind(this));
+    this.mqtt.emitter.off("refresh", this.refreshCart.bind(this));
   }
 
-  private updateCart(data: CartResponse) {
+  private updateCart(data: FallibleRequest<CartResponse>) {
     if (!data.success) {
       alert("Failed to update cart");
       window.location.reload();
@@ -90,7 +98,7 @@ export class CartManager {
     reference: string,
     total: string,
     tendered: string
-  ): Promise<FallibleRequest> {
+  ): Promise<FallibleRequest<void>> {
     let url = new URL(
       this.urls.complete_cash_transaction,
       window.location.href
@@ -108,7 +116,7 @@ export class CartManager {
     return data;
   }
 
-  public async enableCardPayment(): Promise<FallibleRequest> {
+  public async enableCardPayment(): Promise<FallibleRequest<void>> {
     const resp = await fetch(this.urls.enable_payment, {
       headers: {
         "x-csrftoken": CSRF_TOKEN,
@@ -120,8 +128,9 @@ export class CartManager {
   }
 
   public async printBadges(
-    ids: number[]
-  ): Promise<FallibleRequest | BadgePrintResponse> {
+    ids: number[],
+    mqttPrint: boolean = false
+  ): Promise<FallibleRequest<BadgePrintResponse>> {
     const assignResp = await fetch(this.urls.assign_badge_number, {
       method: "POST",
       headers: {
@@ -135,10 +144,10 @@ export class CartManager {
         })
       ),
     });
-    const assignData: FallibleRequest = await assignResp.json();
+    const assignData: FallibleRequest<void> = await assignResp.json();
 
     if (!assignData.success) {
-      return assignData;
+      return { success: false };
     }
 
     let url = new URL(this.urls.onsite_print_badges, window.location.href);
@@ -151,7 +160,25 @@ export class CartManager {
         "x-csrftoken": CSRF_TOKEN,
       },
     });
-    const printData: BadgePrintResponse = await printResp.json();
+    const printData: FallibleRequest<BadgePrintResponse> =
+      await printResp.json();
+
+    if (printData.success && mqttPrint) {
+      console.debug(`Wants MQTT print for ${printData.file}`);
+
+      let url = new URL(this.urls.pdf, window.location.href);
+      url.searchParams.append("file", printData.file);
+
+      this.mqtt.publishMessage(
+        "action",
+        JSON.stringify({
+          action: "print",
+          url,
+        })
+      );
+    } else {
+      console.debug("Not using MQTT print");
+    }
 
     await this.clearCart();
     await this.refreshCart();
@@ -167,13 +194,21 @@ export class CartManager {
     url.pathname = url.pathname.replace("0", id.toString());
     return url.toString();
   }
+
+  public alreadyInCart(id: number): boolean {
+    return (
+      this.cartEntries()?.result?.some((badge) => badge.id === id) || false
+    );
+  }
 }
 
-export interface FallibleRequest {
-  success: boolean;
-}
+export type FallibleRequest<T> =
+  | {
+      success: false;
+    }
+  | ({ success: true } & T);
 
-export interface CartResponse extends FallibleRequest {
+export interface CartResponse {
   charityDonation: string;
   order_id: number;
   orgDonation: string;
@@ -189,13 +224,13 @@ export interface Badge {
   abandoned: string;
   age: number;
   badgeName: string;
-  badgeNumber: number | null;
+  badgeNumber?: number;
   firstName: string;
   lastName: string;
-  holdType: string | null;
+  holdType?: string;
   printed: boolean;
   effectiveLevel: EffectiveLevel;
-  discount: Discount | null;
+  discount?: Discount;
   level_subtotal: string;
   level_discount: string;
   level_total: string;
@@ -220,7 +255,7 @@ export interface AttendeeOption {
   total: string;
 }
 
-export interface BadgePrintResponse extends FallibleRequest {
+export interface BadgePrintResponse {
   file: string;
   next: string;
   url: string;

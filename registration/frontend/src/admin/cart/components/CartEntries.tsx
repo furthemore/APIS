@@ -4,20 +4,6 @@ import { Big } from "big.js";
 import { CartManager, CartResponse } from "../cart-manager";
 import { CartBadge } from "./CartBadge";
 
-export function cleanMoneyAmount(input: string): string {
-  if (input == "?") return "0.00";
-
-  let parsed: Big;
-  try {
-    parsed = new Big(input);
-  } catch (err) {
-    console.error(`Could not parse money: ${err}`);
-    return input;
-  }
-
-  return `$${parsed.toFixed(2)}`;
-}
-
 export const CartEntries: Component<{
   manager: CartManager;
   cart: CartResponse;
@@ -30,7 +16,9 @@ export const CartEntries: Component<{
           options.push({
             quantity: 1,
             item: `Discount ${result.discount.name}`,
-            price: `-${cleanMoneyAmount(result.discount.amount_off)} / ${result.discount.percent_off}%`,
+            price: `-${cleanMoneyAmount(result.discount.amount_off)} / ${
+              result.discount.percent_off
+            }%`,
             total: `-${cleanMoneyAmount(result.level_discount)}`,
           });
         }
@@ -46,7 +34,9 @@ export const CartEntries: Component<{
           <tbody>
             <tr>
               <td>Subtotal:</td>
-              <td style="width: 25%;">{cleanMoneyAmount(props.cart.subtotal)}</td>
+              <td style="width: 25%;">
+                {cleanMoneyAmount(props.cart.subtotal)}
+              </td>
             </tr>
             <tr>
               <td>Discounts:</td>
@@ -60,8 +50,8 @@ export const CartEntries: Component<{
               <td>Donation to Convention:</td>
               <td>{cleanMoneyAmount(props.cart.orgDonation)}</td>
             </tr>
-            <tr>
-              <td class="has-text-weight-semibold">Total:</td>
+            <tr class="has-text-weight-semibold">
+              <td>Total:</td>
               <td>{cleanMoneyAmount(props.cart.total)}</td>
             </tr>
           </tbody>
@@ -109,3 +99,21 @@ export const CartEntries: Component<{
     </>
   );
 };
+
+export function cleanMoneyAmount(input?: string): string {
+  if (!input || input == "?") return "$0.00";
+
+  if (input.startsWith("$")) {
+    input = input.substring(1);
+  }
+
+  let parsed: Big;
+  try {
+    parsed = new Big(input);
+  } catch (err) {
+    console.error(`Could not parse money: ${err}`);
+    return input;
+  }
+
+  return `$${parsed.toFixed(2)}`;
+}

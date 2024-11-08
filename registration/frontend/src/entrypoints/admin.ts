@@ -1,5 +1,3 @@
-import "../admin/scan-actions";
-import { connectToMqtt } from "../admin/mqtt";
 import createActions from "../admin/navbar";
 import createOnsiteExperience from "../admin/onsite";
 
@@ -72,10 +70,6 @@ export interface ApisTerminal {
 
 declare global {
   const APIS_CONFIG: ApisConfig;
-}
-
-if (APIS_CONFIG.mqtt) {
-  connectToMqtt(APIS_CONFIG.mqtt)
 }
 
 createActions(APIS_CONFIG);

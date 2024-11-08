@@ -1,49 +1,46 @@
-import { Component, createSignal, onCleanup, useContext } from "solid-js";
+import { Component, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
 import { ApisConfig } from "../entrypoints/admin";
 import { ConfigContext } from "./providers/config-provider";
 import { AttendeeSearch } from "./attendee-search";
-import { CartManager, CartResponse } from "./cart/cart-manager";
-import { Cart } from "./cart/components/Cart";
-import { ScanPanel } from "./scan-actions";
+import { Cart, CartManager } from "./cart";
+import { ScanPanel } from "./scan";
+import MqttClient from "./mqtt";
 
-const Onsite: Component = () => {
-  const config = useContext(ConfigContext);
-
-  const [cartEntries, setCartEntries] = createSignal<CartResponse | null>();
-  const cartManager = new CartManager(config.urls, setCartEntries);
-
-  onCleanup(() => {
-    cartManager.close();
-  });
-
+const Onsite: Component<{ mqtt: MqttClient, cartManager: CartManager }> = (props) => {
   const [searchQuery, setSearchQuery] = createSignal<string>();
 
   return (
     <div class="columns">
       <div class="column is-half is-narrow-tablet">
         <AttendeeSearch
-          cartManager={cartManager}
+          cartManager={props.cartManager}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
 
-        <ScanPanel gotScannedName={(name) => setSearchQuery(name)} />
+        <ScanPanel
+          gotScannedName={(name) => setSearchQuery(name)}
+          emitter={props.mqtt.emitter}
+        />
       </div>
 
       <div class="column is-half is-narrow-tablet">
-        <Cart cartManager={cartManager} cartEntries={cartEntries()} />
+        <Cart cartManager={props.cartManager} />
       </div>
     </div>
   );
 };
 
 export default function createOnsiteExperience(config: ApisConfig) {
+  const mqtt = new MqttClient(config.mqtt);
+  const cartManager = new CartManager(config.urls, mqtt);
+
   render(
     () => (
       <ConfigContext.Provider value={config}>
-        <Onsite />
+        <Onsite mqtt={mqtt} cartManager={cartManager} />
       </ConfigContext.Provider>
     ),
     document.getElementById("onsite")
