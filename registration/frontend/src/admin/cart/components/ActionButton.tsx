@@ -6,18 +6,20 @@ import {
   JSX,
   Setter,
 } from "solid-js";
+import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
 
 export type ActionButtonProps = {
   class: string;
   disabled: boolean;
   loading: boolean;
   setLoading: Setter<boolean>;
-  action: (ev: MouseEvent) => Promise<any>;
+  keyboardShortcut?: KbdKey[];
+  action: (ev: Event) => Promise<any>;
   children: JSX.Element;
 };
 
 export const ActionButton: Component<ActionButtonProps> = (props) => {
-  const [triggerEvent, setTriggerEvent] = createSignal<MouseEvent>();
+  const [triggerEvent, setTriggerEvent] = createSignal<Event>();
   const [resource] = createResource(triggerEvent, async (ev) => {
     console.debug("Attempting to perform button action");
     props.setLoading(true);
@@ -25,6 +27,21 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
     props.setLoading(false);
     return resp;
   });
+
+  const loadingDisabled = () => props.disabled || props.loading;
+
+  if (props.keyboardShortcut) {
+    createShortcut(
+      props.keyboardShortcut,
+      (ev) => {
+        if (loadingDisabled()) return;
+        setTriggerEvent(ev);
+      },
+      {
+        preventDefault: true,
+      }
+    );
+  }
 
   createEffect(() => {
     // When we have an error, throw it up. All of the buttons are wrapped in an
@@ -40,7 +57,10 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
       <button
         class={`button is-fullwidth ${props.class}`}
         classList={{ "is-loading": resource.loading }}
-        disabled={props.loading || props.disabled}
+        disabled={loadingDisabled()}
+        title={
+          props.keyboardShortcut ? props.keyboardShortcut.join("+") : undefined
+        }
         onClick={(ev) => {
           setTriggerEvent(ev);
         }}

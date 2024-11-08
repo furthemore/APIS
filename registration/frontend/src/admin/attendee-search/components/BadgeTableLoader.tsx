@@ -36,7 +36,7 @@ const Row: Component = () => {
 
           <button class="button is-small is-skeleton">
             <span class="icon">
-              <i class="fas fa-plus"></i>
+              <i class="fas fa-cart-shopping"></i>
             </span>
           </button>
         </div>

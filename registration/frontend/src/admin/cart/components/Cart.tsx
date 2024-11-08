@@ -1,5 +1,6 @@
-import { Show } from "solid-js/web";
 import { Component, createEffect, createResource } from "solid-js";
+import { createShortcut } from "@solid-primitives/keyboard";
+import { Show } from "solid-js/web";
 
 import { CartActions } from "./CartActions";
 import { CartEntries } from "./CartEntries";
@@ -22,6 +23,16 @@ export const Cart: Component<{
     refreshCart();
   });
 
+  createShortcut(["Alt", "A"], () => {
+    if (anythingLoading()) return;
+    clearCart();
+  });
+
+  createShortcut(["Alt", "R"], () => {
+    if (anythingLoading()) return;
+    refreshCart();
+  });
+
   return (
     <div class="panel is-dark">
       <div class="panel-heading">
@@ -34,6 +45,7 @@ export const Cart: Component<{
                 class="button is-primary is-small"
                 classList={{ "is-loading": refresh.loading }}
                 disabled={anythingLoading()}
+                title="Alt+R"
                 onClick={(ev) => {
                   ev.preventDefault();
                   refreshCart();
@@ -48,9 +60,13 @@ export const Cart: Component<{
                 class="button is-warning is-small"
                 classList={{ "is-loading": clear.loading }}
                 disabled={anythingLoading()}
+                title="Alt+A"
                 onClick={() => clearCart()}
               >
-                Clear
+                <span class="icon">
+                  <i class="fas fa-xmark"></i>
+                </span>
+                <span>Clear</span>
               </button>
             </div>
           </div>

@@ -3,11 +3,13 @@ import {
   Component,
   createEffect,
   createResource,
+  ErrorBoundary,
   For,
   Setter,
   Show,
   useContext,
 } from "solid-js";
+import { createShortcut } from "@solid-primitives/keyboard";
 
 import { BadgeTableLoader } from "./BadgeTableLoader";
 import { BadgeTableRow } from "./BadgeTableRow";
@@ -22,8 +24,9 @@ export const AttendeeSearch: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext);
 
-  const [results, { refetch }] = createResource(props.searchQuery, (query) =>
-    getSearchResults(config.urls, query)
+  const [results, { refetch }] = createResource(
+    props.searchQuery,
+    async (query) => await getSearchResults(config.urls, query)
   );
 
   let searchInputRef: HTMLInputElement;
@@ -31,8 +34,24 @@ export const AttendeeSearch: Component<{
   createEffect(() => {
     const query = props.searchQuery();
 
-    if (query) {
+    if (query !== undefined) {
       searchInputRef.value = query;
+    }
+  });
+
+  createShortcut(["Alt", "F"], () => {
+    props.setSearchQuery("");
+    searchInputRef.focus();
+  });
+
+  createShortcut(["Alt", "."], () => {
+    if (results()?.length > 0) {
+      const next = results().find(
+        (badge) => !props.cartManager.alreadyInCart(badge.id)
+      );
+      if (next) {
+        props.cartManager.addCartId(next.id);
+      }
     }
   });
 
@@ -56,86 +75,122 @@ export const AttendeeSearch: Component<{
                   target="edit"
                   class="button is-link is-small"
                 >
-                  Add
+                  <span class="icon">
+                    <i class="fas fa-plus"></i>
+                  </span>
+                  <span>New</span>
                 </a>
               </div>
             </div>
           </div>
 
-          <div class="panel-block">
-            <form
-              class="control"
-              onSubmit={(ev) => {
-                ev.preventDefault();
-                props.setSearchQuery(searchInputRef.value);
-              }}
-            >
-              <div class="field is-grouped">
-                <p class="control is-expanded">
-                  <input
-                    type="search"
-                    name="search"
-                    class="input"
-                    placeholder="Enter names, badge names, and badge numbers"
-                    autofocus={true}
-                    autocomplete="off"
-                    ref={searchInputRef}
-                    onInput={(ev) => {
-                      if (ev.target.value.length === 0) {
-                        props.setSearchQuery("");
+          <ErrorBoundary
+            fallback={(err, reset) => {
+              return (
+                <div class="panel-block">
+                  <div class="message is-danger control">
+                    <div class="message-header">
+                      <p>Search Error</p>
+
+                      <button
+                        class="delete"
+                        onClick={() => {
+                          props.setSearchQuery("");
+                          reset();
+                        }}
+                      ></button>
+                    </div>
+
+                    <Show
+                      when={err.toString().length > 0}
+                      fallback={
+                        <div class="message-body">
+                          An unknown error occured.
+                        </div>
                       }
-                    }}
-                  />
-                </p>
+                    >
+                      <div class="message-body">{err.toString()}</div>
+                    </Show>
+                  </div>
+                </div>
+              );
+            }}
+          >
+            <div class="panel-block">
+              <form
+                class="control"
+                onSubmit={(ev) => {
+                  ev.preventDefault();
+                  props.setSearchQuery(searchInputRef.value);
+                }}
+              >
+                <div class="field is-grouped">
+                  <p class="control is-expanded">
+                    <input
+                      type="search"
+                      name="search"
+                      class="input"
+                      placeholder="Enter names or badge number"
+                      autofocus={true}
+                      autocomplete="off"
+                      ref={searchInputRef}
+                      onInput={(ev) => {
+                        if (ev.target.value.length === 0) {
+                          props.setSearchQuery("");
+                        }
+                      }}
+                    />
+                  </p>
 
-                <p class="control">
-                  <button
-                    class="button is-info"
-                    classList={{ "is-loading": results.loading }}
-                    type="submit"
-                    onClick={() => {
-                      refetch(searchInputRef.value);
-                    }}
+                  <p class="control">
+                    <button
+                      class="button is-info"
+                      classList={{ "is-loading": results.loading }}
+                      type="submit"
+                      onClick={() => {
+                        refetch(searchInputRef.value);
+                      }}
+                    >
+                      <span class="icon">
+                        <i class="fas fa-search"></i>
+                      </span>
+                    </button>
+                  </p>
+                </div>
+              </form>
+            </div>
+
+            <div class="panel-block px-0 pt-0">
+              <table class="table is-striped is-fullwidth">
+                <thead>
+                  <tr>
+                    <th style="width: 35%;">Legal Name</th>
+                    <th style="width: 25%;">Badge Name</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 25%;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <Show
+                    when={!results.loading}
+                    fallback={<BadgeTableLoader count={3} />}
                   >
-                    <span class="icon">
-                      <i class="fas fa-search"></i>
-                    </span>
-                  </button>
-                </p>
-              </div>
-            </form>
-          </div>
-
-          <div class="panel-block px-0 pt-0">
-            <table class="table is-striped is-fullwidth">
-              <thead>
-                <tr>
-                  <th style="width: 35%;">Legal Name</th>
-                  <th style="width: 25%;">Badge Name</th>
-                  <th style="width: 15%;">Status</th>
-                  <th style="width: 25%;"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <Show
-                  when={!results.loading}
-                  fallback={<BadgeTableLoader count={3} />}
-                >
-                  <Show when={results()?.length > 0} fallback={noResults}>
-                    <For each={results()}>
-                      {(badge, index) => (
-                        <BadgeTableRow
-                          data-index={index()}
-                          badge={badge}
-                          cartManager={props.cartManager}
-                        />
-                      )}
-                    </For>
+                    <Show when={results()?.length > 0} fallback={noResults}>
+                      <For each={results()}>
+                        {(badge, index) => (
+                          <BadgeTableRow
+                            data-index={index()}
+                            badge={badge}
+                            cartManager={props.cartManager}
+                          />
+                        )}
+                      </For>
+                    </Show>
                   </Show>
-                </Show>
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+          </ErrorBoundary>
         </div>
       </div>
     </div>

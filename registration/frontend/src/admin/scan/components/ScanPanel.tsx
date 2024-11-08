@@ -1,4 +1,5 @@
 import { Component, createEffect, createMemo, Show } from "solid-js";
+import { createShortcut } from "@solid-primitives/keyboard";
 import { createStore } from "solid-js/store";
 
 import { IdData, ShcData } from "..";
@@ -22,6 +23,12 @@ export const ScanPanel: Component<{
     shc: null,
     url: null,
   });
+
+  const clear = () => {
+    setStore({ id: null, shc: null, url: null });
+  };
+
+  createShortcut(["Alt", "S"], clear.bind(this));
 
   const shcMatch = createMemo(() => {
     if (!store.id || !store.shc) return { name: true, dob: true };
@@ -84,9 +91,13 @@ export const ScanPanel: Component<{
               <button
                 class="button is-warning is-small"
                 disabled={!hasAnyScans()}
-                onClick={() => setStore({ id: null, shc: null, url: null })}
+                title="Alt+S"
+                onClick={() => clear()}
               >
-                Clear
+                <span class="icon">
+                  <i class="fas fa-xmark"></i>
+                </span>
+                <span>Clear</span>
               </button>
             </div>
           </div>

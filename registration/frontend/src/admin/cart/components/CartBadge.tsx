@@ -1,4 +1,4 @@
-import { Component, Show } from "solid-js";
+import { Component, createResource, createSignal, Show } from "solid-js";
 
 import { Badge, CartManager } from "../cart-manager";
 import { cleanMoneyAmount } from "./CartEntries";
@@ -6,6 +6,16 @@ import { cleanMoneyAmount } from "./CartEntries";
 export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
   props
 ) => {
+  const [clearBadgeId, setClearBadgeId] = createSignal<number>();
+  const [resource] = createResource(clearBadgeId, async (id) => {
+    const resp = await props.manager.clearBadgePrinted(id);
+    if (resp.success) {
+      await props.manager.refreshCart();
+    } else {
+      alert("Unable to clear badge print flag.");
+    }
+  });
+
   return (
     <div class="block control">
       <div class="message">
@@ -27,11 +37,22 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
             </Show>
 
             <Show when={props.badge.printed}>
-              <span class="tag is-danger" title="Already printed">
+              <button
+                class="tag is-danger"
+                classList={{ "is-loading": resource.loading }}
+                title="Already printed"
+                onClick={() => {
+                  if (
+                    confirm("Are you sure you need to re-print this badge?")
+                  ) {
+                    setClearBadgeId(props.badge.id);
+                  }
+                }}
+              >
                 <span class="icon">
                   <i class="fas fa-print" />
                 </span>
-              </span>
+              </button>
             </Show>
 
             <Show when={props.badge.badgeNumber}>

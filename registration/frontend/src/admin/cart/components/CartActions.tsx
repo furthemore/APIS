@@ -28,10 +28,10 @@ export const CartActions: Component<{
       isNaN(parseFloat(props?.cartEntries?.total))
   );
 
-  const needsPayment = createMemo(
+  const allNeedPayment = createMemo(
     () =>
       parseFloat(props.cartEntries?.total) > 0 &&
-      props.cartEntries?.result.some(
+      props.cartEntries?.result.every(
         (entry) => !PRINTABLE_STATUS.has(entry.abandoned)
       )
   );
@@ -51,8 +51,8 @@ export const CartActions: Component<{
   );
 
   const canTenderCash = () =>
-    config.permissions.cash && !hasHold() && needsPayment();
-  const canUseCard = () => !hasHold() && needsPayment();
+    config.permissions.cash && !hasHold() && allNeedPayment();
+  const canUseCard = () => !hasHold() && allNeedPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
 
   return (
@@ -92,6 +92,7 @@ export const CartActions: Component<{
             disabled={!canUseCard()}
             loading={loading()}
             setLoading={setLoading}
+            keyboardShortcut={["Alt", "C"]}
             action={() => enableCardPayment(props.manager)}
           >
             <span class="icon">
@@ -106,13 +107,19 @@ export const CartActions: Component<{
             disabled={!hasPrintableBadges()}
             loading={loading()}
             setLoading={setLoading}
-            action={(ev) =>
-              printBadges(
+            keyboardShortcut={["Control", "P"]}
+            action={(ev) => {
+              let holdingShift = false;
+              if (ev instanceof KeyboardEvent || ev instanceof MouseEvent) {
+                holdingShift = ev.shiftKey;
+              }
+
+              return printBadges(
                 props.manager,
                 printableBadgeIds(),
-                config.mqtt.supports_printing && !ev.shiftKey
-              )
-            }
+                config.mqtt.supports_printing && !holdingShift
+              );
+            }}
           >
             <span class="icon">
               <i class="fas fa-print"></i>

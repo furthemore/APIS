@@ -21,6 +21,9 @@ const ActionButton: Component<{
   return (
     <a
       class="navbar-item"
+      title={
+        props.keyboardShortcut ? props.keyboardShortcut.join("+") : undefined
+      }
       onClick={(ev) => {
         ev.preventDefault();
         props.action();
@@ -94,7 +97,7 @@ const Actions: Component<{ config: ApisConfig }> = (props) => {
       <ActionButton
         name="Next Customer"
         icon="fas fa-forward"
-        keyboardShortcut={["Alt", "L"]}
+        keyboardShortcut={["Alt", "N"]}
         action={() => makeSimpleRequest(props.config.urls.ready_terminal)}
       />
 
@@ -176,8 +179,8 @@ const Navbar: Component = () => {
   return (
     <nav class="navbar" role="navigation">
       <div class="navbar-brand">
-        <a class="navbar-item" href="/">
-          APIS Register
+        <a class="navbar-item" href={config.urls.onsite_admin}>
+          APIS Onsite Admin
         </a>
 
         <a
@@ -228,7 +231,7 @@ const Navbar: Component = () => {
             </a>
 
             <div class="navbar-dropdown is-right">
-              <a class="navbar-item has-text-danger" href="#">
+              <a class="navbar-item has-text-danger" href={config.urls.logout}>
                 <span class="icon">
                   <i class="fas fa-sign-out-alt"></i>
                 </span>

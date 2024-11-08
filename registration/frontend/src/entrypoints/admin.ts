@@ -36,12 +36,15 @@ export interface ApisUrls {
   close_terminal: string;
   complete_cash_transaction: string;
   enable_payment: string;
+  logout: string;
   no_sale: string;
   onsite_add_to_cart: string;
   onsite_admin_cart: string;
   onsite_admin_clear_cart: string;
   onsite_admin_search: string;
+  onsite_admin: string;
   onsite_print_badges: string;
+  onsite_print_clear: string;
   onsite_remove_from_cart: string;
   onsite: string;
   open_drawer: string;

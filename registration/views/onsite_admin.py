@@ -134,12 +134,15 @@ def onsite_admin(request):
                 "close_terminal": reverse("registration:close_terminal"),
                 "complete_cash_transaction": reverse("registration:complete_cash_transaction"),
                 "enable_payment": reverse("registration:enable_payment"),
+                "logout": reverse("registration:logout"),
                 "no_sale": reverse("registration:no_sale"),
                 "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
                 "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
                 "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
                 "onsite_admin_search": reverse("registration:onsite_admin_search"),
+                "onsite_admin": reverse("registration:onsite_admin"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
+                "onsite_print_clear": reverse("registration:onsite_print_clear"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "onsite": reverse("registration:onsite"),
                 "open_drawer": reverse("registration:open_drawer"),
@@ -369,6 +372,7 @@ def notify_terminal(request, data):
     return True
 
 
+@staff_member_required
 def assign_badge_number(request):
     request_badges = json.loads(request.body)
 
@@ -974,7 +978,7 @@ def onsite_remove_from_cart(request):
         id = int(id)
     except ValueError:
         return JsonResponse(
-            {"success": False, "reason": "ID must be integer"}, status=400
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
         )
 
     cart = request.session.get("cart", None)
@@ -1047,3 +1051,25 @@ def create_discount(request):
     orders[0].save()
 
     JsonResponse({"success": True, "order": orders[0].pk})
+
+
+@staff_member_required
+def onsite_print_clear(request):
+    id = request.GET.get("id", None)
+    if id is None or id == "":
+        return JsonResponse(
+            {"success": False, "reason": "Need ID parameter"}, status=400
+        )
+
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
+        )
+
+    badge = Badge.objects.get(id=id)
+    badge.printed = False
+    badge.save()
+
+    return JsonResponse({"success": True})

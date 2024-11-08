@@ -185,6 +185,24 @@ export class CartManager {
     return printData;
   }
 
+  public async clearBadgePrinted(id: number): Promise<FallibleRequest<void>> {
+    let url = new URL(
+      this.urls.onsite_print_clear,
+      window.location.href
+    );
+    url.search = new URLSearchParams({ id: id.toString() }).toString();
+
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "x-csrftoken": CSRF_TOKEN,
+      },
+    });
+    const data = await resp.json();
+
+    return data;
+  }
+
   public urlForBadge(id: number): string {
     let url = new URL(
       this.urls.registration_badge_change,
