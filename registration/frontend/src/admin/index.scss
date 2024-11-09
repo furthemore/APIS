@@ -8,3 +8,12 @@
 .has-text-nowrap {
   text-wrap: nowrap;
 }
+
+.attendee-table {
+  width: 100%;
+  max-height: 50vh;
+  overflow-y: auto;
+
+  border-end-start-radius: var(--bulma-panel-radius);
+  border-end-end-radius: var(--bulma-panel-radius);
+}

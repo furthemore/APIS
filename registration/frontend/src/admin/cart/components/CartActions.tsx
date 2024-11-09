@@ -74,6 +74,7 @@ export const CartActions: Component<{
             disabled={!canTenderCash()}
             loading={loading()}
             setLoading={setLoading}
+            keyboardShortcut={["Alt", "M"]}
             action={() =>
               attemptCashPayment(
                 props.manager,

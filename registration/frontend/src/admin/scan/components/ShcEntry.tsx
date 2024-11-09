@@ -67,6 +67,38 @@ export const ShcEntry: Component<{
             </For>
           </tbody>
         </table>
+
+        <div class="field is-grouped is-grouped-multiline">
+          <div class="control">
+            <div class="tags has-addons">
+              <span class="tag is-dark">Issuer</span>
+              <span
+                class="tag"
+                classList={{
+                  "is-success": props.data.verification.trusted,
+                  "is-danger": !props.data.verification.trusted,
+                }}
+              >
+                {props.data.verification.issuer}
+              </span>
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="tags has-addons">
+              <span class="tag is-dark">Signature</span>
+              <span
+                class="tag"
+                classList={{
+                  "is-success": props.data.verification.verified,
+                  "is-danger": !props.data.verification.verified,
+                }}
+              >
+                {props.data.verification.verified ? "Verified" : "Not Verified"}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </article>
   );

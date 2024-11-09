@@ -160,35 +160,37 @@ export const AttendeeSearch: Component<{
               </form>
             </div>
 
-            <div class="panel-block px-0 pt-0">
-              <table class="table is-striped is-fullwidth">
-                <thead>
-                  <tr>
-                    <th style="width: 35%;">Legal Name</th>
-                    <th style="width: 25%;">Badge Name</th>
-                    <th style="width: 15%;">Status</th>
-                    <th style="width: 25%;"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <Show
-                    when={!results.loading}
-                    fallback={<BadgeTableLoader count={3} />}
-                  >
-                    <Show when={results()?.length > 0} fallback={noResults}>
-                      <For each={results()}>
-                        {(badge, index) => (
-                          <BadgeTableRow
-                            data-index={index()}
-                            badge={badge}
-                            cartManager={props.cartManager}
-                          />
-                        )}
-                      </For>
+            <div class="panel-block px-0 py-0">
+              <div class="table-container attendee-table">
+                <table class="table is-striped is-fullwidth">
+                  <thead>
+                    <tr>
+                      <th style="width: 35%;">Legal Name</th>
+                      <th style="width: 25%;">Badge Name</th>
+                      <th style="width: 15%;">Status</th>
+                      <th style="width: 25%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <Show
+                      when={!results.loading}
+                      fallback={<BadgeTableLoader count={3} />}
+                    >
+                      <Show when={results()?.length > 0} fallback={noResults}>
+                        <For each={results()}>
+                          {(badge, index) => (
+                            <BadgeTableRow
+                              data-index={index()}
+                              badge={badge}
+                              cartManager={props.cartManager}
+                            />
+                          )}
+                        </For>
+                      </Show>
                     </Show>
-                  </Show>
-                </tbody>
-              </table>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </ErrorBoundary>
         </div>
