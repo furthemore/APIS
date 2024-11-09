@@ -38,12 +38,14 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
 
             <Show when={props.badge.printed}>
               <button
-                class="tag is-danger"
+                class="tag is-link"
                 classList={{ "is-loading": resource.loading }}
                 title="Already printed"
                 onClick={() => {
                   if (
-                    confirm("Are you sure you need to clear the print flag for this badge?")
+                    confirm(
+                      "Are you sure you need to clear the print flag for this badge?"
+                    )
                   ) {
                     setClearBadgeId(props.badge.id);
                   }
@@ -68,7 +70,9 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
 
           <div>
             <Show when={props.badge.age < 18} fallback={"18+"}>
-              <span class="has-text-danger">MINOR FORM REQUIRED</span>
+              <span class="has-text-danger is-uppercase">
+                Minor Form Required
+              </span>
             </Show>
           </div>
 

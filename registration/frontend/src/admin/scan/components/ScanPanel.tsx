@@ -19,13 +19,13 @@ export const ScanPanel: Component<{
   emitter: MqttEmitter;
 }> = (props) => {
   const [store, setStore] = createStore<ScanStore>({
-    id: null,
-    shc: null,
-    url: null,
+    id: undefined,
+    shc: undefined,
+    url: undefined,
   });
 
   const clear = () => {
-    setStore({ id: null, shc: null, url: null });
+    setStore({ id: undefined, shc: undefined, url: undefined });
   };
 
   createShortcut(["Alt", "S"], clear.bind(this));
@@ -112,23 +112,29 @@ export const ScanPanel: Component<{
 
         <Show when={store.id}>
           <div class="panel-block">
-            <IdEntry data={store.id} remove={() => setStore("id", null)} />
+            <IdEntry
+              data={store.id!}
+              remove={() => setStore("id", undefined)}
+            />
           </div>
         </Show>
 
         <Show when={store.shc}>
           <div class="panel-block">
             <ShcEntry
-              data={store.shc}
+              data={store.shc!}
               shcMatch={shcMatch()}
-              remove={() => setStore("shc", null)}
+              remove={() => setStore("shc", undefined)}
             />
           </div>
         </Show>
 
         <Show when={store.url}>
           <div class="panel-block">
-            <UrlEntry url={store.url} remove={() => setStore("url", null)} />
+            <UrlEntry
+              url={store.url!}
+              remove={() => setStore("url", undefined)}
+            />
           </div>
         </Show>
       </div>

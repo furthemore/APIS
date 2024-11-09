@@ -15,8 +15,8 @@ export type MqttTopic =
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
 
 export default class MqttClient {
-  public errorMessage: Accessor<string>;
-  private setErrorMessage: Setter<string>;
+  public errorMessage: Accessor<string | undefined>;
+  private setErrorMessage: Setter<string | undefined>;
 
   public emitter: Emitter<Record<MqttTopic, object | null>>;
 

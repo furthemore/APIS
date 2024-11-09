@@ -74,6 +74,8 @@ async function makeSimpleRequest(url: string) {
 
 async function amountRequest(url: string, message: string) {
   const input = prompt(message);
+  if (!input) return;
+
   let amount: Big;
   try {
     amount = new Big(input);
@@ -195,8 +197,52 @@ const Actions: Component<{ config: ApisConfig }> = (props) => {
   );
 };
 
+const KeyboardShortcuts: Component = () => {
+  return (
+    <Dialog preventScroll={false}>
+      <Dialog.Trigger class="navbar-item" as="a">
+        <span class="icon">
+          <i class="fas fa-keyboard"></i>
+        </span>
+        <span>Keyboard Shortcuts</span>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <div class="modal is-active">
+          <div class="modal-background"></div>
+
+          <Dialog.Content class="modal-card">
+            <header class="modal-card-head">
+              <Dialog.Title as="h1" class="modal-card-title">
+                Keyboard Shortcuts
+              </Dialog.Title>
+              <Dialog.CloseButton class="delete"></Dialog.CloseButton>
+            </header>
+
+            <section class="modal-card-body">
+              <table class="table is-fullwidth">
+                <tbody>
+                  <For each={KNOWN_SHORTCUTS}>
+                    {(entry) => (
+                      <tr>
+                        <th>
+                          <code>{entry.shortcut}</code>
+                        </th>
+                        <td>{entry.description}</td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </section>
+          </Dialog.Content>
+        </div>
+      </Dialog.Portal>
+    </Dialog>
+  );
+};
+
 const Navbar: Component = () => {
-  const config = useContext(ConfigContext);
+  const config = useContext(ConfigContext)!;
 
   function switchTerminal(value: string) {
     console.debug(`Switching to terminal ${value}`);
@@ -211,6 +257,7 @@ const Navbar: Component = () => {
     );
     if (
       availableIds.length > 0 &&
+      config.terminals.selected &&
       !availableIds.includes(config.terminals.selected)
     ) {
       switchTerminal(availableIds[0].toString());
@@ -277,45 +324,7 @@ const Navbar: Component = () => {
             </a>
 
             <div class="navbar-dropdown is-right">
-              <Dialog preventScroll={false}>
-                <Dialog.Trigger class="navbar-item" as="a">
-                  <span class="icon">
-                    <i class="fas fa-keyboard"></i>
-                  </span>
-                  <span>Keyboard Shortcuts</span>
-                </Dialog.Trigger>
-                <Dialog.Portal>
-                  <div class="modal is-active">
-                    <div class="modal-background"></div>
-
-                    <Dialog.Content class="modal-card">
-                      <header class="modal-card-head">
-                        <Dialog.Title as="h1" class="modal-card-title">
-                          Keyboard Shortcuts
-                        </Dialog.Title>
-                        <Dialog.CloseButton class="delete"></Dialog.CloseButton>
-                      </header>
-
-                      <section class="modal-card-body">
-                        <table class="table is-fullwidth">
-                          <tbody>
-                            <For each={KNOWN_SHORTCUTS}>
-                              {(entry) => (
-                                <tr>
-                                  <th>
-                                    <code>{entry.shortcut}</code>
-                                  </th>
-                                  <td>{entry.description}</td>
-                                </tr>
-                              )}
-                            </For>
-                          </tbody>
-                        </table>
-                      </section>
-                    </Dialog.Content>
-                  </div>
-                </Dialog.Portal>
-              </Dialog>
+              <KeyboardShortcuts />
 
               <hr class="navbar-divider" />
 
@@ -340,5 +349,5 @@ export default function createActions(config: ApisConfig) {
         <Navbar />
       </ConfigContext.Provider>
     );
-  }, document.getElementById("admin-navbar"));
+  }, document.getElementById("admin-navbar")!);
 }

@@ -22,14 +22,14 @@ export const AttendeeSearch: Component<{
   searchQuery: Accessor<string>;
   setSearchQuery: Setter<string>;
 }> = (props) => {
-  const config = useContext(ConfigContext);
+  const config = useContext(ConfigContext)!;
 
   const [results, { refetch }] = createResource(
     props.searchQuery,
     async (query) => await getSearchResults(config.urls, query)
   );
 
-  let searchInputRef: HTMLInputElement;
+  let searchInputRef!: HTMLInputElement;
 
   createEffect(() => {
     const query = props.searchQuery();
@@ -45,8 +45,10 @@ export const AttendeeSearch: Component<{
   });
 
   createShortcut(["Alt", "."], () => {
-    if (results()?.length > 0) {
-      const next = results().find(
+    const entries = results();
+
+    if (entries) {
+      const next = entries.find(
         (badge) => !props.cartManager.alreadyInCart(badge.id)
       );
       if (next) {
@@ -187,7 +189,10 @@ export const AttendeeSearch: Component<{
                       when={!results.loading}
                       fallback={<BadgeTableLoader count={3} />}
                     >
-                      <Show when={results()?.length > 0} fallback={noResults}>
+                      <Show
+                        when={(results()?.length ?? 0) > 0}
+                        fallback={noResults}
+                      >
                         <For each={results()}>
                           {(badge, index) => (
                             <BadgeTableRow

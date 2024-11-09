@@ -7,8 +7,8 @@ export class CartManager {
   private urls: ApisUrls;
   private mqtt: MqttClient;
 
-  public cartEntries: Accessor<CartResponse>;
-  private setCartEntries: Setter<CartResponse>;
+  public cartEntries: Accessor<CartResponse | undefined>;
+  private setCartEntries: Setter<CartResponse | undefined>;
 
   constructor(urls: ApisUrls, mqtt: MqttClient) {
     this.urls = urls;
@@ -59,7 +59,7 @@ export class CartManager {
     });
     await resp.json();
 
-    this.setCartEntries(null);
+    this.setCartEntries(undefined);
   }
 
   public async refreshCart() {
@@ -186,10 +186,7 @@ export class CartManager {
   }
 
   public async clearBadgePrinted(id: number): Promise<FallibleRequest<void>> {
-    let url = new URL(
-      this.urls.onsite_print_clear,
-      window.location.href
-    );
+    let url = new URL(this.urls.onsite_print_clear, window.location.href);
     url.search = new URLSearchParams({ id: id.toString() }).toString();
 
     const resp = await fetch(url, {

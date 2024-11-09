@@ -7,7 +7,7 @@ import { IdData } from "..";
 import { NameBirthday } from "./ScanPii";
 
 export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
-  const config = useContext(ConfigContext);
+  const config = useContext(ConfigContext)!;
 
   const expirationDate = () => new Date(props.data.expiry);
   const expired = () => new Date() > expirationDate();

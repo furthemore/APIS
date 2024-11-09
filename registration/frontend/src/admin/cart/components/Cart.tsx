@@ -99,14 +99,14 @@ export const Cart: Component<{
       <div class="panel-block">
         <CartActions
           manager={props.cartManager}
-          cartEntries={props.cartManager.cartEntries()}
+          entries={props.cartManager.cartEntries()}
         />
       </div>
 
       <Show when={props.cartManager.cartEntries()}>
         <CartEntries
           manager={props.cartManager}
-          cart={props.cartManager.cartEntries()}
+          entries={props.cartManager.cartEntries()}
         />
       </Show>
     </div>

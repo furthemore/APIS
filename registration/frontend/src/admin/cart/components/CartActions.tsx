@@ -16,29 +16,29 @@ const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
 
 export const CartActions: Component<{
   manager: CartManager;
-  cartEntries: CartResponse;
+  entries?: CartResponse;
 }> = (props) => {
-  const config = useContext(ConfigContext);
+  const config = useContext(ConfigContext)!;
 
   const [loading, setLoading] = createSignal<boolean>(false);
 
   const hasHold = createMemo(
     () =>
-      props.cartEntries?.result?.some((entry) => !!entry.holdType) ||
-      isNaN(parseFloat(props?.cartEntries?.total))
+      props.entries?.result?.some((entry) => !!entry.holdType) ||
+      isNaN(parseFloat(props?.entries?.total || ""))
   );
 
   const allNeedPayment = createMemo(
     () =>
-      parseFloat(props.cartEntries?.total) > 0 &&
-      props.cartEntries?.result.every(
+      parseFloat(props.entries?.total || "") > 0 &&
+      props.entries?.result.every(
         (entry) => !PRINTABLE_STATUS.has(entry.abandoned)
       )
   );
 
   const printableBadgeIds = createMemo(
     () =>
-      props.cartEntries?.result
+      props.entries?.result
         ?.filter((badge) => {
           const isPrintable =
             PRINTABLE_STATUS.has(badge.abandoned) &&
@@ -62,7 +62,7 @@ export const CartActions: Component<{
           <CartActionsError
             err={err}
             reset={() => {
-              setLoading(undefined);
+              setLoading(false);
               reset();
             }}
           />
@@ -75,13 +75,15 @@ export const CartActions: Component<{
             loading={loading()}
             setLoading={setLoading}
             keyboardShortcut={["Alt", "M"]}
-            action={() =>
-              attemptCashPayment(
-                props.manager,
-                props.cartEntries.reference,
-                props.cartEntries.total
-              )
-            }
+            action={() => {
+              if (props.entries) {
+                return attemptCashPayment(
+                  props.manager,
+                  props.entries.reference,
+                  props.entries.total
+                );
+              }
+            }}
           >
             <span class="icon">
               <i class="fas fa-money-bill-alt"></i>
@@ -141,6 +143,8 @@ async function attemptCashPayment(
   const totalAmount = new Big(total);
 
   const tendered = prompt("Enter tendered amount");
+  if (!tendered) return;
+
   let tenderedAmount: Big;
   try {
     tenderedAmount = new Big(tendered);

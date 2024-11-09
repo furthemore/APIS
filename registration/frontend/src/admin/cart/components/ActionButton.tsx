@@ -14,7 +14,7 @@ export type ActionButtonProps = {
   loading: boolean;
   setLoading: Setter<boolean>;
   keyboardShortcut?: KbdKey[];
-  action: (ev: Event) => Promise<any>;
+  action: (ev: Event) => Promise<any> | undefined;
   children: JSX.Element;
 };
 
@@ -34,7 +34,7 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
       props.keyboardShortcut,
       (ev) => {
         if (loadingDisabled()) return;
-        setTriggerEvent(ev);
+        setTriggerEvent(ev || undefined);
       },
       {
         preventDefault: true,

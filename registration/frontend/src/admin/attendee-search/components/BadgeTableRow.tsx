@@ -20,8 +20,12 @@ export const BadgeTableRow: Component<{
     `${props.badge.attendee.firstName} ${props.badge.attendee.lastName}`;
 
   const hasIdenticalName = () =>
-    props.searchQuery &&
-    props.searchQuery.localeCompare(fullName(), undefined, {
+    props.searchQuery?.localeCompare(fullName(), undefined, {
+      sensitivity: "base",
+    }) === 0;
+
+  const hasIdenticalBadge = () =>
+    props.searchQuery?.localeCompare(props.badge.badgeName, undefined, {
       sensitivity: "base",
     }) === 0;
 
@@ -32,8 +36,12 @@ export const BadgeTableRow: Component<{
   const alreadyInCart = () => props.cartManager.alreadyInCart(props.badge.id);
 
   return (
-    <tr classList={{ "is-success": hasIdenticalName() }}>
-      <td class="is-vcentered">
+    <tr>
+      <td
+        class="is-vcentered"
+        classList={{ "is-success": hasIdenticalName() }}
+        title={hasIdenticalName() ? "Name is identical to search" : undefined}
+      >
         <div>{fullName()}</div>
 
         <Show when={hasPreferredName()}>
@@ -45,7 +53,13 @@ export const BadgeTableRow: Component<{
           </div>
         </Show>
       </td>
-      <td class="is-vcentered">{props.badge.badgeName}</td>
+      <td
+        class="is-vcentered"
+        classList={{ "is-success": hasIdenticalBadge() }}
+        title={hasIdenticalBadge() ? "Badge is identical to search" : undefined}
+      >
+        {props.badge.badgeName}
+      </td>
       <td class="is-vcentered">{props.badge.abandoned}</td>
       <td class="is-vcentered">
         <div class="buttons is-right">

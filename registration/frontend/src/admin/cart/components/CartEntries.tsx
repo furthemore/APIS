@@ -6,10 +6,10 @@ import { CartManager, CartResponse } from "../cart-manager";
 
 export const CartEntries: Component<{
   manager: CartManager;
-  cart: CartResponse;
+  entries?: CartResponse;
 }> = (props) => {
   const orderItems = createMemo(() =>
-    props.cart.result
+    props.entries?.result
       .flatMap((result) => {
         let options = result.attendee_options;
         if (result.discount) {
@@ -35,30 +35,30 @@ export const CartEntries: Component<{
             <tr>
               <td>Subtotal:</td>
               <td style="width: 25%;">
-                {cleanMoneyAmount(props.cart.subtotal)}
+                {cleanMoneyAmount(props.entries?.subtotal)}
               </td>
             </tr>
             <tr>
               <td>Discounts:</td>
-              <td>{cleanMoneyAmount(props.cart.total_discount)}</td>
+              <td>{cleanMoneyAmount(props.entries?.total_discount)}</td>
             </tr>
             <tr>
               <td>Donation to Charity:</td>
-              <td>{cleanMoneyAmount(props.cart.charityDonation)}</td>
+              <td>{cleanMoneyAmount(props.entries?.charityDonation)}</td>
             </tr>
             <tr>
               <td>Donation to Convention:</td>
-              <td>{cleanMoneyAmount(props.cart.orgDonation)}</td>
+              <td>{cleanMoneyAmount(props.entries?.orgDonation)}</td>
             </tr>
             <tr class="has-text-weight-semibold">
               <td>Total:</td>
-              <td>{cleanMoneyAmount(props.cart.total)}</td>
+              <td>{cleanMoneyAmount(props.entries?.total)}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <Show when={orderItems()?.length > 0}>
+      <Show when={(orderItems()?.length || 0) > 0}>
         <div class="panel-block">
           <table class="table is-fullwidth is-condensed">
             <thead>
@@ -83,9 +83,9 @@ export const CartEntries: Component<{
         </div>
       </Show>
 
-      <Show when={props.cart.result.length > 0}>
+      <Show when={(props.entries?.result.length || 0) > 0}>
         <article class="panel-block is-block">
-          <For each={props.cart.result}>
+          <For each={props.entries!.result}>
             {(badge, index) => (
               <CartBadge
                 data-index={index()}
