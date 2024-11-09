@@ -206,8 +206,8 @@ def onsite_admin_search(request):
         name_similarity=TrigramSimilarity(fullName, query),
         badge_similarity=TrigramSimilarity("badgeName", query),
     ).filter(
-        Q(event=event) & (Q(name_similarity__gte=0.1) | Q(badge_similarity__gte=0.1))
-    ).order_by(greaterSimilarity).reverse().prefetch_related("attendee")[:100]
+        Q(event=event) & (Q(name_similarity__gte=0.4) | Q(badge_similarity__gte=0.6) | Q(attendee__lastName__iexact=query))
+    ).order_by(greaterSimilarity).reverse().prefetch_related("attendee")[:50]
 
     collectBadges(results)
 
