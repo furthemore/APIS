@@ -58,7 +58,7 @@ export const AttendeeSearch: Component<{
   });
 
   createShortcut(
-    ["Control", "N"],
+    ["Control", "E"],
     () => {
       window.open(config.urls.onsite, "register");
     },
