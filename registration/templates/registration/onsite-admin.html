@@ -12,7 +12,7 @@
   <div id="admin-navbar"></div>
 
   {% for error in errors %}
-    <div class="notification is-{{ error.type }}" role="alert">
+    <div class="notification is-{{ error.type }} m-3" role="alert">
       {{ error.text }}
     </div>
   {% endfor %}

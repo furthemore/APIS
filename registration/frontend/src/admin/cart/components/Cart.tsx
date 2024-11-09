@@ -1,4 +1,4 @@
-import { Component, createEffect, createResource } from "solid-js";
+import { Component, createResource, createSignal } from "solid-js";
 import { createShortcut } from "@solid-primitives/keyboard";
 import { Show } from "solid-js/web";
 
@@ -9,28 +9,54 @@ import { CartManager } from "../cart-manager";
 export const Cart: Component<{
   cartManager: CartManager;
 }> = (props) => {
-  const [refresh, { refetch: refreshCart }] = createResource(async () => {
-    await props.cartManager.refreshCart();
+  const [refresh, { refetch: refetchCart }] = createResource(
+    async () => await props.cartManager.refreshCart()
+  );
+
+  // Clearing the cart gets some weird handling because we don't want the
+  // request to immediately be made. Instead, create a signal for the initial
+  // request and hold onto the refetch function. When the initial request has
+  // been made, use refetch instead of setting the signal.
+
+  const [clearCart, setClearCart] = createSignal<boolean>(false);
+  const [clear, { refetch: refetchClear }] = createResource(
+    clearCart,
+    async () => await props.cartManager.clearCart()
+  );
+
+  const doClearCart = () => {
+    if (clearCart()) {
+      refetchClear();
+    } else {
+      setClearCart(true);
+    }
+  };
+
+  const [removeBadgeId, setRemoveBadgeId] = createSignal<number>();
+  const [remove] = createResource(removeBadgeId, async (id) => {
+    await props.cartManager.removeBadge(id);
   });
 
-  const [clear, { refetch: clearCart }] = createResource(async () => {
-    await props.cartManager.clearCart();
-  });
+  const anythingLoading = () =>
+    refresh.loading || clear.loading || remove.loading;
 
-  const anythingLoading = () => refresh.loading || clear.loading;
-
-  createEffect(() => {
-    refreshCart();
+  createShortcut(["Alt", "R"], () => {
+    if (anythingLoading()) return;
+    refetchCart();
   });
 
   createShortcut(["Alt", "A"], () => {
     if (anythingLoading()) return;
-    clearCart();
+    doClearCart();
   });
 
-  createShortcut(["Alt", "R"], () => {
+  createShortcut(["Alt", "\\"], () => {
     if (anythingLoading()) return;
-    refreshCart();
+
+    const lastBadge = props.cartManager.cartEntries()?.result?.at(-1);
+    if (!lastBadge) return;
+
+    setRemoveBadgeId(lastBadge.id);
   });
 
   return (
@@ -46,10 +72,7 @@ export const Cart: Component<{
                 classList={{ "is-loading": refresh.loading }}
                 disabled={anythingLoading()}
                 title="Alt+R"
-                onClick={(ev) => {
-                  ev.preventDefault();
-                  refreshCart();
-                }}
+                onClick={refetchCart}
               >
                 <span class="icon">
                   <i class="fas fa-sync"></i>
@@ -61,7 +84,7 @@ export const Cart: Component<{
                 classList={{ "is-loading": clear.loading }}
                 disabled={anythingLoading()}
                 title="Alt+A"
-                onClick={() => clearCart()}
+                onClick={doClearCart}
               >
                 <span class="icon">
                   <i class="fas fa-xmark"></i>

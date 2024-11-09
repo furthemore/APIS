@@ -1,4 +1,4 @@
-import { Component, Show } from "solid-js";
+import { Component, createEffect, Show } from "solid-js";
 
 import { BadgeResult } from "..";
 import { CartManager } from "../../cart";
@@ -6,21 +6,35 @@ import { CartManager } from "../../cart";
 export const BadgeTableRow: Component<{
   cartManager: CartManager;
   badge: BadgeResult;
+  searchQuery?: string;
 }> = (props) => {
   const hasPreferredName = () =>
     props.badge.attendee.preferredName &&
     props.badge.attendee.preferredName.localeCompare(
-      props.badge.attendee.firstName
+      props.badge.attendee.firstName,
+      undefined,
+      { sensitivity: "base" }
     ) !== 0;
+
+  const fullName = () =>
+    `${props.badge.attendee.firstName} ${props.badge.attendee.lastName}`;
+
+  const hasIdenticalName = () =>
+    props.searchQuery &&
+    props.searchQuery.localeCompare(fullName(), undefined, {
+      sensitivity: "base",
+    }) === 0;
+
+  createEffect(() =>
+    console.log(`${props.searchQuery}, ${fullName()}, ${hasIdenticalName()}`)
+  );
 
   const alreadyInCart = () => props.cartManager.alreadyInCart(props.badge.id);
 
   return (
-    <tr>
+    <tr classList={{ "is-success": hasIdenticalName() }}>
       <td class="is-vcentered">
-        <div>
-          {`${props.badge.attendee.firstName} ${props.badge.attendee.lastName}`}
-        </div>
+        <div>{fullName()}</div>
 
         <Show when={hasPreferredName()}>
           <div>

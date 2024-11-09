@@ -32,9 +32,11 @@ export default class MqttClient {
 
     this.emitter = mitt();
 
-    const WILDCARD_TOPIC = this.getPrefixedTopic("#");
+    if (!this.config.auth) return;
 
+    const wildcardTopic = this.getPrefixedTopic("#");
     const randomClientId = Math.random().toString(16).substr(2, 8);
+
     this.client = mqtt.connect(config.broker, {
       username: config.auth.user,
       password: config.auth.token,
@@ -44,8 +46,8 @@ export default class MqttClient {
 
     this.client.on("connect", () => {
       this.setErrorMessage(undefined);
-      console.debug(`Subscribing to ${WILDCARD_TOPIC}`);
-      this.client.subscribe(WILDCARD_TOPIC, (err) => {
+      console.debug(`Subscribing to ${wildcardTopic}`);
+      this.client.subscribe(wildcardTopic, (err) => {
         if (err) {
           console.error(`MQTT subscription failed: ${err}`);
         } else {
@@ -104,11 +106,11 @@ export default class MqttClient {
   }
 
   public disconnect() {
-    this.client.end();
+    this.client?.end();
   }
 
   public publishMessage(topic: string, payload: string) {
-    this.client.publish(this.getPrefixedTopic(topic), payload);
+    this.client?.publish(this.getPrefixedTopic(topic), payload);
   }
 
   private getPrefixedTopic(topic: string): string {

@@ -1,10 +1,34 @@
+import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
 import { Big } from "big.js";
-import { Component, createSignal, For, Show, useContext } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  Show,
+  useContext,
+} from "solid-js";
+import { ConfigContext } from "./providers/config-provider";
 import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
+import { Dialog } from "@kobalte/core/dialog";
 import { render } from "solid-js/web";
 
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
-import { ConfigContext } from "./providers/config-provider";
+const KNOWN_SHORTCUTS = [
+  { shortcut: "Alt+O", description: "Open position" },
+  { shortcut: "Alt+L", description: "Close position" },
+  { shortcut: "Alt+N", description: "Ready for next" },
+  { shortcut: "Ctrl+N", description: "Create new attendee" },
+  { shortcut: "Ctrl+M", description: "Create new attendee from scanned ID" },
+  { shortcut: "Alt+F", description: "Clear results and focus search field" },
+  { shortcut: "Alt+S", description: "Clear scanner entries" },
+  { shortcut: "Alt+A", description: "Clear cart" },
+  { shortcut: "Alt+R", description: "Reload cart" },
+  { shortcut: "Alt+.", description: "Add first badge search result to cart" },
+  { shortcut: "Alt+\\", description: "Remove last badge from cart" },
+  { shortcut: "Alt+M", description: "Tender cash payment" },
+  { shortcut: "Alt+C", description: "Prompt for card payment" },
+  { shortcut: "Ctrl+P", description: "Print badges in cart" },
+];
 
 const ActionButton: Component<{
   name: string;
@@ -174,6 +198,25 @@ const Actions: Component<{ config: ApisConfig }> = (props) => {
 const Navbar: Component = () => {
   const config = useContext(ConfigContext);
 
+  function switchTerminal(value: string) {
+    console.debug(`Switching to terminal ${value}`);
+    let url = new URL(window.location.href);
+    url.searchParams.set("terminal", value);
+    window.location.href = url.toString();
+  }
+
+  createEffect(() => {
+    const availableIds = config.terminals.available.map(
+      (terminal) => terminal.id
+    );
+    if (
+      availableIds.length > 0 &&
+      !availableIds.includes(config.terminals.selected)
+    ) {
+      switchTerminal(availableIds[0].toString());
+    }
+  });
+
   const [active, setActive] = createSignal<boolean>(false);
 
   return (
@@ -203,14 +246,10 @@ const Navbar: Component = () => {
               <div class="select">
                 <select
                   name="terminal"
-                  onChange={(ev) => {
-                    let url = new URL(window.location.href);
-                    url.searchParams.set("terminal", ev.target.value);
-                    window.location.href = url.toString();
-                  }}
+                  onChange={(ev) => switchTerminal(ev.target.value)}
                 >
                   <For each={config.terminals.available}>
-                    {(terminal, index) => (
+                    {(terminal) => (
                       <option
                         value={terminal.id}
                         selected={terminal.id === config.terminals.selected}
@@ -238,6 +277,48 @@ const Navbar: Component = () => {
             </a>
 
             <div class="navbar-dropdown is-right">
+              <Dialog preventScroll={false}>
+                <Dialog.Trigger class="navbar-item" as="a">
+                  <span class="icon">
+                    <i class="fas fa-keyboard"></i>
+                  </span>
+                  <span>Keyboard Shortcuts</span>
+                </Dialog.Trigger>
+                <Dialog.Portal>
+                  <div class="modal is-active">
+                    <div class="modal-background"></div>
+
+                    <Dialog.Content class="modal-card">
+                      <header class="modal-card-head">
+                        <Dialog.Title as="h1" class="modal-card-title">
+                          Keyboard Shortcuts
+                        </Dialog.Title>
+                        <Dialog.CloseButton class="delete"></Dialog.CloseButton>
+                      </header>
+
+                      <section class="modal-card-body">
+                        <table class="table is-fullwidth">
+                          <tbody>
+                            <For each={KNOWN_SHORTCUTS}>
+                              {(entry) => (
+                                <tr>
+                                  <th>
+                                    <code>{entry.shortcut}</code>
+                                  </th>
+                                  <td>{entry.description}</td>
+                                </tr>
+                              )}
+                            </For>
+                          </tbody>
+                        </table>
+                      </section>
+                    </Dialog.Content>
+                  </div>
+                </Dialog.Portal>
+              </Dialog>
+
+              <hr class="navbar-divider" />
+
               <a class="navbar-item has-text-danger" href={config.urls.logout}>
                 <span class="icon">
                   <i class="fas fa-sign-out-alt"></i>

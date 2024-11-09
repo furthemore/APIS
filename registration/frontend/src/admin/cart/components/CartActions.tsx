@@ -185,8 +185,6 @@ async function printBadges(
     return;
   }
 
-  console.debug("Got response from badge print", mqttPrint, resp);
-
   if (!mqttPrint) {
     window.open(resp.url, "badge");
   }

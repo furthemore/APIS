@@ -34,7 +34,10 @@ export const ScanPanel: Component<{
     if (!store.id || !store.shc) return { name: true, dob: true };
 
     const idName = `${store.id.first} ${store.id.last}`;
-    const name = idName.localeCompare(store.shc.name) === 0;
+    const name =
+      idName.localeCompare(store.shc.name, undefined, {
+        sensitivity: "base",
+      }) === 0;
 
     const dob = store.id.dob === store.shc.birthday;
 

@@ -21,7 +21,6 @@ export type ActionButtonProps = {
 export const ActionButton: Component<ActionButtonProps> = (props) => {
   const [triggerEvent, setTriggerEvent] = createSignal<Event>();
   const [resource] = createResource(triggerEvent, async (ev) => {
-    console.debug("Attempting to perform button action");
     props.setLoading(true);
     const resp = await props.action(ev);
     props.setLoading(false);

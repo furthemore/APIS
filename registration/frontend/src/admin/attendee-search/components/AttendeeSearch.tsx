@@ -55,6 +55,16 @@ export const AttendeeSearch: Component<{
     }
   });
 
+  createShortcut(
+    ["Control", "N"],
+    () => {
+      window.open(config.urls.onsite, "register");
+    },
+    {
+      preventDefault: true,
+    }
+  );
+
   const noResults = (
     <tr>
       <td colSpan={4}>No results.</td>
@@ -72,7 +82,8 @@ export const AttendeeSearch: Component<{
               <div class="column is-narrow">
                 <a
                   href={config.urls.onsite}
-                  target="edit"
+                  target="register"
+                  title="Control+N"
                   class="button is-link is-small"
                 >
                   <span class="icon">
@@ -183,6 +194,7 @@ export const AttendeeSearch: Component<{
                               data-index={index()}
                               badge={badge}
                               cartManager={props.cartManager}
+                              searchQuery={props.searchQuery()}
                             />
                           )}
                         </For>

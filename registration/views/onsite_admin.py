@@ -66,7 +66,6 @@ def onsite_admin(request):
     term = request.session.get("terminal", None)
 
     errors = []
-    results = None
 
     # Set default payment terminal to use:
     if term is None and len(terminals) > 0:
@@ -92,6 +91,7 @@ def onsite_admin(request):
             terminal_obj = Firebase.objects.get(id=int(url_terminal))
             request.session["terminal"] = terminal_obj.id
         except Firebase.DoesNotExist:
+            del request.session["terminal"]
             errors.append(
                 {
                     "type": "warning",
@@ -108,9 +108,7 @@ def onsite_admin(request):
         mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
     context = {
-        "terminals": terminals,
         "errors": errors,
-        "results": results,
         "settings": json.dumps({
             "debug": getattr(settings, "DEBUG", False),
             "sentry": {

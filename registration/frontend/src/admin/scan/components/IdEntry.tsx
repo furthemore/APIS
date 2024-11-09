@@ -1,4 +1,5 @@
 import { Component, createMemo, Show, useContext } from "solid-js";
+import { createShortcut } from "@solid-primitives/keyboard";
 
 import { CloseButton } from "./CloseButton";
 import { ConfigContext } from "../../providers/config-provider";
@@ -32,6 +33,16 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
     return url.toString();
   });
 
+  createShortcut(
+    ["Control", "M"],
+    () => {
+      window.open(regUrl(), "register");
+    },
+    {
+      preventDefault: true,
+    }
+  );
+
   return (
     <article class="message control" classList={panelClasses()}>
       <div class="message-header">
@@ -59,7 +70,12 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
         />
 
         <div>
-          <a href={regUrl()} class="button is-link" target="register">
+          <a
+            href={regUrl()}
+            class="button is-link"
+            target="register"
+            title="Control+M"
+          >
             <span class="icon">
               <i class="fas fa-plus"></i>
             </span>
