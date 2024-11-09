@@ -10,7 +10,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
   const [resource] = createResource(clearBadgeId, async (id) => {
     const resp = await props.manager.clearBadgePrinted(id);
     if (resp.success) {
-      await props.manager.printBadges([id]);
+      await props.manager.refreshCart();
     } else {
       alert("Unable to clear badge print flag.");
     }
@@ -43,7 +43,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                 title="Already printed"
                 onClick={() => {
                   if (
-                    confirm("Are you sure you need to re-print this badge?")
+                    confirm("Are you sure you need to clear the print flag for this badge?")
                   ) {
                     setClearBadgeId(props.badge.id);
                   }
