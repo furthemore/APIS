@@ -45,6 +45,6 @@ export default function createOnsiteExperience(config: ApisConfig) {
         <Onsite mqtt={mqtt} cartManager={cartManager} />
       </ConfigContext.Provider>
     ),
-    document.getElementById("onsite")
+    document.getElementById("onsite")!
   );
 }

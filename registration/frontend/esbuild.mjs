@@ -1,30 +1,33 @@
-import * as esbuild from "esbuild";
+import { writeFileSync } from "fs";
+
+import esbuild from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
 import { solidPlugin } from "esbuild-plugin-solid";
 
 const IS_PROD = process.env.NODE_ENVIRONMENT === "production";
 
-function buildOpts(entryPoints) {
-  return {
-    entryPoints,
-    bundle: true,
-    outdir: "../static/",
-    minify: IS_PROD,
-    sourcemap: true,
-    drop: IS_PROD ? ["console"] : [],
-    target: ["es2020"],
-    loader: {
-      ".woff": "file",
-      ".woff2": "file",
-      ".ttf": "file",
-    },
-    plugins: [
-      sassPlugin({
-        quietDeps: ["bulma"],
-      }),
-      solidPlugin(),
-    ],
-  };
-}
+const result = await esbuild.build({
+  bundle: true,
+  drop: IS_PROD ? ["console"] : [],
+  entryPoints: ["src/entrypoints/admin.ts"],
+  metafile: true,
+  minify: IS_PROD,
+  outdir: "../static/",
+  sourcemap: true,
+  target: ["es2020"],
+  loader: {
+    ".woff": "file",
+    ".woff2": "file",
+    ".ttf": "file",
+  },
+  plugins: [
+    sassPlugin({
+      quietDeps: ["bulma"],
+    }),
+    solidPlugin(),
+  ],
+});
 
-await Promise.all([esbuild.build(buildOpts(["src/entrypoints/admin.ts"]))]);
+if (result.metafile) {
+  writeFileSync("./metafile.json", JSON.stringify(result.metafile));
+}

@@ -5,7 +5,7 @@ import "../admin/index.scss";
 
 export const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
   "meta[name='csrf_token']"
-).content;
+)!.content;
 
 export interface ApisConfig {
   debug: boolean;

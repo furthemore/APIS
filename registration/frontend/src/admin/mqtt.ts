@@ -20,7 +20,7 @@ export default class MqttClient {
 
   public emitter: Emitter<Record<MqttTopic, object | null>>;
 
-  private client: mqtt.MqttClient;
+  private client?: mqtt.MqttClient;
   private config: ApisMqttConfig;
 
   constructor(config: ApisMqttConfig) {
@@ -47,11 +47,11 @@ export default class MqttClient {
     this.client.on("connect", () => {
       this.setErrorMessage(undefined);
       console.debug(`Subscribing to ${wildcardTopic}`);
-      this.client.subscribe(wildcardTopic, (err) => {
+      this.client?.subscribe(wildcardTopic, (err) => {
         if (err) {
           console.error(`MQTT subscription failed: ${err}`);
         } else {
-          this.client.publish(
+          this.client?.publish(
             this.getPrefixedTopic("admin_presence"),
             JSON.stringify(":3")
           );

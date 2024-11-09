@@ -19,8 +19,8 @@ import { getSearchResults } from "..";
 
 export const AttendeeSearch: Component<{
   cartManager: CartManager;
-  searchQuery: Accessor<string>;
-  setSearchQuery: Setter<string>;
+  searchQuery: Accessor<string | undefined>;
+  setSearchQuery: Setter<string | undefined>;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
 
