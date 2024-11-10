@@ -14,6 +14,7 @@ django-redis~=5.4.0
 git+https://github.com/rechner/django-u2f.git@23022f8
 django-widget-tweaks==1.5.0
 freezegun==1.4.0
+gotenberg-client~=0.7.0
 influxdb~=5.3.1          # Influx < v1.7
 influxdb-client~=1.40.0  # Influxdb 1.8, 2.x
 markuppy
