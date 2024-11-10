@@ -8,6 +8,7 @@ export interface BadgeResult {
   edit_url: string;
   attendee: Attendee;
   badgeName: string;
+  badgeNumber?: number;
   abandoned: string;
 }
 

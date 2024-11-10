@@ -13,23 +13,11 @@ export const Cart: Component<{
     async () => await props.cartManager.refreshCart()
   );
 
-  // Clearing the cart gets some weird handling because we don't want the
-  // request to immediately be made. Instead, create a signal for the initial
-  // request and hold onto the refetch function. When the initial request has
-  // been made, use refetch instead of setting the signal.
-
-  const [clearCart, setClearCart] = createSignal<boolean>(false);
-  const [clear, { refetch: refetchClear }] = createResource(
-    clearCart,
-    async () => await props.cartManager.clearCart()
-  );
-
-  const doClearCart = () => {
-    if (clearCart()) {
-      refetchClear();
-    } else {
-      setClearCart(true);
-    }
+  const [clearing, setClearing] = createSignal<boolean>(false);
+  const clear = async () => {
+    setClearing(true);
+    await props.cartManager.clearCart();
+    setClearing(false);
   };
 
   const [removeBadgeId, setRemoveBadgeId] = createSignal<number>();
@@ -38,7 +26,7 @@ export const Cart: Component<{
   });
 
   const anythingLoading = () =>
-    refresh.loading || clear.loading || remove.loading;
+    refresh.loading || clearing() || remove.loading;
 
   createShortcut(["Alt", "R"], () => {
     if (anythingLoading()) return;
@@ -47,7 +35,7 @@ export const Cart: Component<{
 
   createShortcut(["Alt", "A"], () => {
     if (anythingLoading()) return;
-    doClearCart();
+    clear();
   });
 
   createShortcut(["Alt", "\\"], () => {
@@ -81,10 +69,10 @@ export const Cart: Component<{
 
               <button
                 class="button is-warning is-small"
-                classList={{ "is-loading": clear.loading }}
+                classList={{ "is-loading": clearing() }}
                 disabled={anythingLoading()}
                 title="Alt+A"
-                onClick={doClearCart}
+                onClick={clear}
               >
                 <span class="icon">
                   <i class="fas fa-xmark"></i>

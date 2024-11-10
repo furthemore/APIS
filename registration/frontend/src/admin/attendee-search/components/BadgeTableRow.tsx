@@ -1,4 +1,4 @@
-import { Component, createEffect, Show } from "solid-js";
+import { Component, createSignal, Show } from "solid-js";
 
 import { BadgeResult } from "..";
 import { CartManager } from "../../cart";
@@ -8,6 +8,8 @@ export const BadgeTableRow: Component<{
   badge: BadgeResult;
   searchQuery?: string;
 }> = (props) => {
+  const [loading, setLoading] = createSignal<boolean>(false);
+
   const hasPreferredName = () =>
     props.badge.attendee.preferredName &&
     props.badge.attendee.preferredName.localeCompare(
@@ -24,10 +26,16 @@ export const BadgeTableRow: Component<{
       sensitivity: "base",
     }) === 0;
 
-  const hasIdenticalBadge = () =>
+  const hasSearchedId = () =>
+    !!props.searchQuery &&
+    parseInt(props.searchQuery, 10) === props.badge.badgeNumber;
+
+  const hasIdenticalBadgeName = () =>
     props.searchQuery?.localeCompare(props.badge.badgeName, undefined, {
       sensitivity: "base",
     }) === 0;
+
+  const hasIdenticalBadge = () => hasSearchedId() || hasIdenticalBadgeName();
 
   const alreadyInCart = () => props.cartManager.alreadyInCart(props.badge.id);
 
@@ -71,10 +79,13 @@ export const BadgeTableRow: Component<{
 
           <button
             class="button is-small is-primary"
+            classList={{ "is-loading": loading() }}
             disabled={alreadyInCart()}
-            onClick={(ev) => {
+            onClick={async (ev) => {
               ev.preventDefault();
-              props.cartManager.addCartId(props.badge.id);
+              setLoading(true);
+              await props.cartManager.addCartId(props.badge.id);
+              setLoading(false);
             }}
           >
             <span class="icon">

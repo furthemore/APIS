@@ -185,6 +185,7 @@ def onsite_admin_search(request):
                 "preferredName": badge.attendee.preferredName,
             },
             "badgeName": badge.badgeName,
+            "badgeNumber": badge.badgeNumber,
             "abandoned": badge.abandoned,
         })
 
