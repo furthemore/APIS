@@ -78,6 +78,7 @@ def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
                 messages.warning(
                     request, f"skipped printing {badge} because level is {level}"
                 )
+                continue
 
             badge_template = badge.event.defaultBadgeTemplate
             tmpl = Template(badge_template.template)
