@@ -3,14 +3,14 @@ import { Accessor, createSignal, Setter } from "solid-js";
 import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
 import MqttClient from "../mqtt";
 
+const LOCK_NAME = "onsite-cart-update";
+
 export class CartManager {
   private urls: ApisUrls;
   private mqtt: MqttClient;
 
   public cartEntries: Accessor<CartResponse | undefined>;
   private setCartEntries: Setter<CartResponse | undefined>;
-
-  private refresh: Promise<any> | null = null;
 
   constructor(urls: ApisUrls, mqtt: MqttClient) {
     this.urls = urls;
@@ -25,8 +25,49 @@ export class CartManager {
     this.mqtt.emitter.off("refresh", this.refreshCart.bind(this));
   }
 
-  private updateCart(data: FallibleRequest<CartResponse>) {
+  private async makeRequest<T>(
+    input: string | URL,
+    init?: RequestInit
+  ): Promise<FallibleRequest<T>> {
+    console.debug("Aquiring cart update lock for request", input);
+    return await navigator.locks.request(LOCK_NAME, async () => {
+      console.debug("Making request", input);
+      const resp = await fetch(input, {
+        ...init,
+        headers: { "x-csrftoken": CSRF_TOKEN, ...init?.headers },
+      });
+      const data = await resp.json();
+      console.debug("Got response data", input, data);
+      return data;
+    });
+  }
+
+  public async addCartId(id: number) {
+    let url = new URL(this.urls.onsite_add_to_cart, window.location.href);
+    url.searchParams.set("id", id.toString());
+
+    await this.makeRequest(url, {
+      method: "POST",
+    });
+
+    await this.refreshCart();
+  }
+
+  public async clearCart() {
+    await this.makeRequest(this.urls.onsite_admin_clear_cart, {
+      method: "POST",
+    });
+
+    this.setCartEntries(undefined);
+  }
+
+  public async refreshCart() {
+    const data = await this.makeRequest<CartResponse>(
+      this.urls.onsite_admin_cart
+    );
+
     if (!data.success) {
+      console.error("Failed to update cart", data);
       alert("Failed to update cart");
       window.location.reload();
       return;
@@ -35,64 +76,16 @@ export class CartManager {
     this.setCartEntries(data);
   }
 
-  public async addCartId(id: number) {
-    let url = new URL(this.urls.onsite_add_to_cart, window.location.href);
-    url.search = new URLSearchParams({ id: id.toString() }).toString();
-
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    await resp.json();
-
-    await this.refreshCart();
-  }
-
-  public async clearCart() {
-    const resp = await fetch(this.urls.onsite_admin_clear_cart, {
-      method: "POST",
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    await resp.json();
-
-    this.setCartEntries(undefined);
-  }
-
-  public async refreshCart() {
-    this.refresh = new Promise<FallibleRequest<CartResponse>>(
-      async (resolve) => {
-        const resp = await fetch(this.urls.onsite_admin_cart, {
-          headers: {
-            "x-csrftoken": CSRF_TOKEN,
-          },
-        });
-        const data = await resp.json();
-        resolve(data);
-      }
-    );
-    const data = await this.refresh;
-
-    this.updateCart(data);
-  }
-
   public async removeBadge(id: number) {
     let url = new URL(this.urls.onsite_remove_from_cart, window.location.href);
-    url.search = new URLSearchParams({ id: id.toString() }).toString();
+    url.searchParams.set("id", id.toString());
 
-    const resp = await fetch(url, {
+    const data = await this.makeRequest(url, {
       method: "POST",
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
     });
-    const data = await resp.json();
 
-    if (!data["success"]) {
-      alert(`Error removing from cart: ${data["reason"]}`);
+    if (!data.success) {
+      alert(`Error removing from cart: ${data.reason}`);
       return;
     }
 
@@ -108,28 +101,19 @@ export class CartManager {
       this.urls.complete_cash_transaction,
       window.location.href
     );
-    url.search = new URLSearchParams({ reference, total, tendered }).toString();
+    url.searchParams.set("reference", reference);
+    url.searchParams.set("total", total);
+    url.searchParams.set("tendered", tendered);
 
-    const resp = await fetch(url, {
+    const data = await this.makeRequest(url, {
       method: "POST",
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
     });
-    const data = await resp.json();
 
     return data;
   }
 
   public async enableCardPayment(): Promise<FallibleRequest<void>> {
-    const resp = await fetch(this.urls.enable_payment, {
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    const data = await resp.json();
-
-    return data;
+    return await this.makeRequest(this.urls.enable_payment);
   }
 
   public async printBadges(
@@ -137,11 +121,8 @@ export class CartManager {
     clearCart: boolean = true,
     mqttPrint: boolean = false
   ): Promise<FallibleRequest<BadgePrintResponse>> {
-    const assignResp = await fetch(this.urls.assign_badge_number, {
+    const assignData = await this.makeRequest(this.urls.assign_badge_number, {
       method: "POST",
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
       body: JSON.stringify(
         ids.map((id) => {
           return {
@@ -150,24 +131,15 @@ export class CartManager {
         })
       ),
     });
-    const assignData: FallibleRequest<void> = await assignResp.json();
 
     if (!assignData.success) {
       return { success: false };
     }
 
     let url = new URL(this.urls.onsite_print_badges, window.location.href);
-    let params = new URLSearchParams();
-    ids.forEach((id) => params.append("id", id.toString()));
-    url.search = params.toString();
+    ids.forEach((id) => url.searchParams.append("id", id.toString()));
 
-    const printResp = await fetch(url, {
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    const printData: FallibleRequest<BadgePrintResponse> =
-      await printResp.json();
+    const printData = await this.makeRequest<BadgePrintResponse>(url);
 
     if (printData.success && mqttPrint) {
       let url = new URL(this.urls.pdf, window.location.href);
@@ -182,11 +154,6 @@ export class CartManager {
       );
     }
 
-    // Check if we already are refreshing data. If so, wait until it's done
-    // before clearing, otherwise we have a race condition that prevents
-    // clearing the cart.
-    await this.refresh;
-
     if (clearCart) {
       await this.clearCart();
     }
@@ -196,17 +163,11 @@ export class CartManager {
 
   public async clearBadgePrinted(id: number): Promise<FallibleRequest<void>> {
     let url = new URL(this.urls.onsite_print_clear, window.location.href);
-    url.search = new URLSearchParams({ id: id.toString() }).toString();
+    url.searchParams.set("id", id.toString());
 
-    const resp = await fetch(url, {
+    return await this.makeRequest(url, {
       method: "POST",
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
     });
-    const data = await resp.json();
-
-    return data;
   }
 
   public urlForBadge(id: number): string {
@@ -228,6 +189,7 @@ export class CartManager {
 export type FallibleRequest<T> =
   | {
       success: false;
+      reason?: string;
     }
   | ({ success: true } & T);
 

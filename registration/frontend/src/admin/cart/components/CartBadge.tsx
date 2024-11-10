@@ -6,14 +6,19 @@ import { cleanMoneyAmount } from "./CartEntries";
 export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
   props
 ) => {
-  const [clearBadgeId, setClearBadgeId] = createSignal<number>();
-  const [resource] = createResource(clearBadgeId, async (id) => {
+  const [clearPrintBadgeId, setClearPrintBadgeId] = createSignal<number>();
+  const [clearPrint] = createResource(clearPrintBadgeId, async (id) => {
     const resp = await props.manager.clearBadgePrinted(id);
     if (resp.success) {
       await props.manager.refreshCart();
     } else {
       alert("Unable to clear badge print flag.");
     }
+  });
+
+  const [removeBadgeId, setRemoveBadgeId] = createSignal<number>();
+  const [remove] = createResource(removeBadgeId, async (id) => {
+    await props.manager.removeBadge(id);
   });
 
   return (
@@ -39,7 +44,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
             <Show when={props.badge.printed}>
               <button
                 class="tag is-link"
-                classList={{ "is-loading": resource.loading }}
+                classList={{ "is-loading": clearPrint.loading }}
                 title="Already printed"
                 onClick={() => {
                   if (
@@ -47,7 +52,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                       "Are you sure you need to clear the print flag for this badge?"
                     )
                   ) {
-                    setClearBadgeId(props.badge.id);
+                    setClearPrintBadgeId(props.badge.id);
                   }
                 }}
               >
@@ -79,9 +84,10 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
           <div>
             <button
               class="delete"
+              classList={{ "is-loading": remove.loading }}
               onClick={(ev) => {
                 ev.preventDefault();
-                props.manager.removeBadge(props.badge.id);
+                setRemoveBadgeId(props.badge.id);
               }}
             ></button>
           </div>

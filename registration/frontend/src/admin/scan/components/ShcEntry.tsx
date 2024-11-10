@@ -1,4 +1,4 @@
-import { Component, For } from "solid-js";
+import { Component, For, Match, Show, Switch } from "solid-js";
 
 import { CloseButton } from "./CloseButton";
 import { NameBirthday } from "./ScanPii";
@@ -9,32 +9,80 @@ export const ShcEntry: Component<{
   shcMatch: ShcMatch;
   remove(): void;
 }> = (props) => {
-  const status = () => {
-    let status = "Partially Verified";
-    if (props.data.verification.trusted) {
-      status = "Verified";
-    } else if (!props.data.verification.verified) {
-      status = "Not Verified";
-    }
-    return status;
-  };
+  const isValid = () =>
+    props.data.verification.trusted &&
+    props.data.verification.verified &&
+    props.shcMatch.dob &&
+    props.shcMatch.name;
 
   return (
     <article
       class="message control"
       classList={{
-        "is-success": props.data.verification.trusted,
-        "is-warning": !props.shcMatch.dob || !props.shcMatch.name,
-        "is-danger": !props.data.verification.verified,
+        "is-success": isValid(),
+        "is-danger": !isValid(),
       }}
     >
       <div class="message-header">
-        <span class="icon-text">
+        <span class="icon-text mr-3">
           <span class="icon">
             <i class="fa-solid fa-syringe"></i>
           </span>
-          <span>Vaccination Record - {status()}</span>
+          <span>Vaccination Record</span>
         </span>
+
+        <Show when={!isValid()}>
+          <div class="is-flex-grow-1">
+            <div class="tags">
+              <Show when={!props.shcMatch.dob || !props.shcMatch.name}>
+                <div class="tag is-warning">
+                  <div class="icon">
+                    <i class="fas fa-id-badge"></i>
+                  </div>
+                  <Switch>
+                    <Match when={!props.shcMatch.dob && !props.shcMatch.name}>
+                      <span>Mismatched Name and Birthday</span>
+                    </Match>
+                    <Match when={!props.shcMatch.name}>
+                      <span>Mismatched Name</span>
+                    </Match>
+                    <Match when={!props.shcMatch.dob}>
+                      <span>Mismatched Birthday</span>
+                    </Match>
+                  </Switch>
+                </div>
+              </Show>
+              <Show
+                when={
+                  !props.data.verification.trusted ||
+                  !props.data.verification.verified
+                }
+              >
+                <div class="tag is-warning">
+                  <span class="icon">
+                    <i class="fas fa-unlock"></i>
+                  </span>
+                  <Switch>
+                    <Match
+                      when={
+                        !props.data.verification.trusted &&
+                        !props.data.verification.verified
+                      }
+                    >
+                      <span>Untrusted and Unverified</span>
+                    </Match>
+                    <Match when={!props.data.verification.trusted}>
+                      <span>Untrusted</span>
+                    </Match>
+                    <Match when={!props.data.verification.verified}>
+                      <span>Unverified</span>
+                    </Match>
+                  </Switch>
+                </div>
+              </Show>
+            </div>
+          </div>
+        </Show>
 
         <CloseButton close={() => props.remove()} />
       </div>

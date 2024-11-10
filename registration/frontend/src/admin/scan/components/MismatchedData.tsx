@@ -7,7 +7,7 @@ export const MismatchedData: Component<{
 }> = (props) => {
   return (
     <Show when={!props.matched} fallback={props.children}>
-      <span class="icon-text has-text-warning" title={props.message}>
+      <span class="icon-text has-text-danger" title={props.message}>
         <span class="icon">
           <i class="fa-solid fa-triangle-exclamation"></i>
         </span>

@@ -826,12 +826,7 @@ def get_line_items(attendee_options):
 def onsite_admin_cart(request):
     # Returns dataset to render onsite cart preview
     request.session["heartbeat"] = time.time()  # Keep session alive
-    cart = request.session.get("cart", None)
-    if cart is None:
-        request.session["cart"] = []
-        return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=200
-        )
+    cart = request.session.get("cart", [])
 
     badges = []
     for pk in cart:
