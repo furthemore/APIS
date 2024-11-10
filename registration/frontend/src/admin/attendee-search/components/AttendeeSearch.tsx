@@ -3,6 +3,7 @@ import {
   Component,
   createEffect,
   createResource,
+  createSignal,
   ErrorBoundary,
   For,
   Setter,
@@ -24,6 +25,8 @@ export const AttendeeSearch: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext)!;
 
+  const [selectedResult, setSelectedResult] = createSignal<number>();
+
   const [results, { refetch }] = createResource(
     props.searchQuery,
     async (query) => await getSearchResults(config.urls, query)
@@ -39,6 +42,11 @@ export const AttendeeSearch: Component<{
     }
   });
 
+  createEffect(() => {
+    results();
+    setSelectedResult(undefined);
+  });
+
   createShortcut(["Alt", "F"], () => {
     props.setSearchQuery("");
     searchInputRef.focus();
@@ -48,12 +56,34 @@ export const AttendeeSearch: Component<{
     const entries = results();
 
     if (entries) {
-      const next = entries.find(
-        (badge) => !props.cartManager.alreadyInCart(badge.id)
-      );
-      if (next) {
-        props.cartManager.addCartId(next.id);
+      const selected = selectedResult();
+      if (selected) {
+        const badge = entries[selected];
+        if (badge) {
+          props.cartManager.addCartId(badge.id);
+          if (selected === entries.length - 1) {
+            setSelectedResult(entries.length - 2);
+          } else if (selected !== 0) {
+            setSelectedResult(selected + 1);
+          }
+        }
+      } else {
+        const next = entries.find(
+          (badge) => !props.cartManager.alreadyInCart(badge.id)
+        );
+        if (next) {
+          props.cartManager.addCartId(next.id);
+        }
       }
+    }
+  });
+
+  createShortcut(["Alt", "E"], () => {
+    const entries = results();
+    const selected = selectedResult();
+
+    if (selected && entries?.[selected]) {
+      window.open(entries[selected].edit_url, "edit");
     }
   });
 
@@ -152,6 +182,28 @@ export const AttendeeSearch: Component<{
                           props.setSearchQuery("");
                         }
                       }}
+                      onKeyDown={(ev) => {
+                        const key = ev.key;
+                        if (key !== "ArrowDown" && key !== "ArrowUp") return;
+
+                        ev.preventDefault();
+
+                        const currentlySelected = selectedResult() || 0;
+                        const entryCount = results()?.length || 0;
+
+                        switch (ev.key) {
+                          case "ArrowDown":
+                            if (currentlySelected + 2 <= entryCount) {
+                              setSelectedResult(currentlySelected + 1);
+                            }
+                            break;
+                          case "ArrowUp":
+                            if (currentlySelected > 0) {
+                              setSelectedResult(currentlySelected - 1);
+                            }
+                            break;
+                        }
+                      }}
                     />
                   </p>
 
@@ -197,6 +249,7 @@ export const AttendeeSearch: Component<{
                           {(badge, index) => (
                             <BadgeTableRow
                               data-index={index()}
+                              selected={selectedResult() == index()}
                               badge={badge}
                               cartManager={props.cartManager}
                               searchQuery={props.searchQuery()}

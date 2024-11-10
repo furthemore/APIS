@@ -1,4 +1,4 @@
-import { Component, createSignal, Show } from "solid-js";
+import { Component, createEffect, createSignal, Show } from "solid-js";
 
 import { BadgeResult } from "..";
 import { CartManager } from "../../cart";
@@ -6,9 +6,22 @@ import { CartManager } from "../../cart";
 export const BadgeTableRow: Component<{
   cartManager: CartManager;
   badge: BadgeResult;
+  selected: boolean;
   searchQuery?: string;
 }> = (props) => {
   const [loading, setLoading] = createSignal<boolean>(false);
+
+  let row!: HTMLTableRowElement;
+
+  createEffect(() => {
+    if (props.selected) {
+      row?.scrollIntoView({
+        behavior: "auto",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  });
 
   const hasPreferredName = () =>
     props.badge.attendee.preferredName &&
@@ -40,7 +53,7 @@ export const BadgeTableRow: Component<{
   const alreadyInCart = () => props.cartManager.alreadyInCart(props.badge.id);
 
   return (
-    <tr>
+    <tr ref={row} classList={{ "is-link": props.selected }}>
       <td
         class="is-vcentered"
         classList={{ "is-success": hasIdenticalName() }}

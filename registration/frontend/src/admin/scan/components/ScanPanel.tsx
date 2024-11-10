@@ -28,7 +28,13 @@ export const ScanPanel: Component<{
     setStore({ id: undefined, shc: undefined, url: undefined });
   };
 
+  let panel!: HTMLDivElement;
+
   createShortcut(["Alt", "S"], clear.bind(this));
+
+  createShortcut(["Alt", "D"], () => {
+    panel.scrollIntoView(false);
+  });
 
   const shcMatch = createMemo(() => {
     if (!store.id || !store.shc) return { name: true, dob: true };
@@ -83,7 +89,7 @@ export const ScanPanel: Component<{
   });
 
   return (
-    <div class="block">
+    <div class="block" ref={panel}>
       <div class="panel is-dark">
         <div class="panel-heading">
           <div class="columns is-mobile">

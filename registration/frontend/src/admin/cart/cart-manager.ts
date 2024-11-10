@@ -29,8 +29,7 @@ export class CartManager {
     input: string | URL,
     init?: RequestInit
   ): Promise<FallibleRequest<T>> {
-    console.debug("Aquiring cart update lock for request", input);
-    return await navigator.locks.request(LOCK_NAME, async () => {
+    const perform = async () => {
       console.debug("Making request", input);
       const resp = await fetch(input, {
         ...init,
@@ -39,7 +38,14 @@ export class CartManager {
       const data = await resp.json();
       console.debug("Got response data", input, data);
       return data;
-    });
+    };
+    if ("locks" in navigator && navigator.locks) {
+      console.debug("Aquiring cart update lock for request", input);
+      return await navigator.locks.request(LOCK_NAME, perform);
+    } else {
+      console.warn("locks unavailable, session data might get out of sync!");
+      return await perform();
+    }
   }
 
   public async addCartId(id: number) {

@@ -24,10 +24,26 @@ const KNOWN_SHORTCUTS = [
   { shortcut: "Ctrl+E", description: "Create new attendee" },
   { shortcut: "Ctrl+M", description: "Create new attendee from scanned ID" },
   { shortcut: "Alt+F", description: "Clear results and focus search field" },
+  {
+    shortcut: "↓",
+    description: "While searching, move selection one result down",
+  },
+  {
+    shortcut: "↑",
+    description: "While searching, move selection one result up",
+  },
+  {
+    shortcut: "Alt+.",
+    description: "Add first eligible or selected search result to cart",
+  },
+  {
+    shortcut: "Alt+E",
+    description: "Edit the currently selected search result",
+  },
+  { shortcut: "Alt+D", description: "Scroll to show all scanner entries" },
   { shortcut: "Alt+S", description: "Clear scanner entries" },
   { shortcut: "Alt+A", description: "Clear cart" },
   { shortcut: "Alt+R", description: "Reload cart" },
-  { shortcut: "Alt+.", description: "Add first badge search result to cart" },
   { shortcut: "Alt+\\", description: "Remove last badge from cart" },
   { shortcut: "Alt+M", description: "Tender cash payment" },
   { shortcut: "Alt+C", description: "Prompt for card payment" },
