@@ -69,38 +69,45 @@ def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
     badge_ids = data_obj.get("badge_ids", [])
     queryset = Badge.objects.filter(id__in=badge_ids)
 
-    pdfs = []
+    badge_groups = {}
+    badge_templates = {}
+
+    for badge in queryset:
+        level = badge.effectiveLevel()
+        if not level or level == Badge.UNPAID:
+            messages.warning(
+                request, f"skipped printing {badge} because level is {level}"
+            )
+            continue
+
+        badge_template = badge.event.defaultBadgeTemplate
+        if badge_template.id not in badge_templates:
+            badge_groups[badge_template.id] = []
+            badge_templates[badge_template.id] = (badge_template, Template(badge_template.template))
+
+        level = str(level)
+        if Staff.objects.filter(
+            attendee=badge.attendee, event=badge.event
+        ).exists():
+            level = "Staff"
+        elif Dealer.objects.filter(
+            attendee=badge.attendee, event=badge.event
+        ).exists():
+            level = "Dealer"
+
+        badge_groups[badge_template.id].append({
+            "name": badge.badgeName,
+            "level": level,
+            "number": badge.badgeNumber,
+        })
 
     with GotenbergClient(settings.GOTENBERG_HOST) as client:
-        for badge in queryset:
-            level = badge.effectiveLevel()
-            if not level or level == Badge.UNPAID:
-                messages.warning(
-                    request, f"skipped printing {badge} because level is {level}"
-                )
-                continue
+        pdfs = []
 
-            badge_template = badge.event.defaultBadgeTemplate
-            tmpl = Template(badge_template.template)
-
-            level = str(level)
-            if Staff.objects.filter(
-                attendee=badge.attendee, event=badge.event
-            ).exists():
-                level = "Staff"
-            elif Dealer.objects.filter(
-                attendee=badge.attendee, event=badge.event
-            ).exists():
-                level = "Dealer"
-
-            context = Context(
-                dict(
-                    name=badge.badgeName,
-                    level=level,
-                    number=f"{badge.badgeNumber:04}",
-                )
-            )
-            rendered = str(tmpl.render(context))
+        for (badge_template_id, badges) in badge_groups.items():
+            context = Context({"badges": badges})
+            (badge_template, template) = badge_templates[badge_template_id]
+            rendered = str(template.render(context))
 
             with client.chromium.html_to_pdf() as route:
                 response = (
@@ -129,9 +136,6 @@ def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
                 )
                 pdfs.append(response.content)
 
-            badge.printed = True
-            badge.save()
-
         finalPdf = None
 
         if len(pdfs) == 0:
@@ -149,6 +153,10 @@ def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
         http_resp = HttpResponse()
         http_resp.headers["content-type"] = "application/pdf"
         http_resp.write(finalPdf)
+
+        for badge in queryset:
+            badge.printed = True
+            badge.save()
 
         if terminal := data_obj.get("terminal", None):
             topic = f"{mqtt.get_topic('admin', terminal)}/refresh"
