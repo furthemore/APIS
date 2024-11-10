@@ -9,7 +9,7 @@ const IS_PROD = process.env.NODE_ENVIRONMENT === "production";
 const result = await esbuild.build({
   bundle: true,
   drop: IS_PROD ? ["console"] : [],
-  entryPoints: ["src/entrypoints/admin.ts"],
+  entryPoints: ["src/entrypoints/admin.tsx"],
   metafile: true,
   minify: IS_PROD,
   outdir: "../static/",

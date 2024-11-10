@@ -1,7 +1,5 @@
 {% extends "registration/master_admin.html" %}
 
-{% load static %}
-
 {% block head %}
   <script>
     const APIS_CONFIG = {{ settings|safe }};
@@ -9,15 +7,5 @@
 {% endblock %}
 
 {% block content %}
-  <div id="admin-navbar"></div>
-
-  {% for error in errors %}
-    <div class="notification is-{{ error.type }} m-3" role="alert">
-      {{ error.text }}
-    </div>
-  {% endfor %}
-
-  <div class="container-fluid px-3">
-    <div id="onsite" class="my-3"></div>
-  </div>
+  <div id="onsite"></div>
 {% endblock %}

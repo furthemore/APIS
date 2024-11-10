@@ -11,6 +11,7 @@ import { ActionButton } from "./ActionButton";
 import { CartManager, CartResponse } from "../cart-manager";
 import { ConfigContext } from "../../providers/config-provider";
 import { CartActionsError } from "./CartActionsError";
+import { UserSettingsContext } from "../../providers/user-settings-provider";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
 
@@ -19,6 +20,7 @@ export const CartActions: Component<{
   entries?: CartResponse;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
+  const userSettings = useContext(UserSettingsContext)!;
 
   const [loading, setLoading] = createSignal<boolean>(false);
 
@@ -120,6 +122,7 @@ export const CartActions: Component<{
               return printBadges(
                 props.manager,
                 printableBadgeIds(),
+                userSettings.userSettings().clear_cart_after_print,
                 config.mqtt.supports_printing && !holdingShift
               );
             }}
@@ -168,7 +171,7 @@ async function attemptCashPayment(
     return;
   }
 
-  alert(`Change: ${change}`);
+  alert(`Change: $${change.toFixed(2)}`);
 }
 
 async function enableCardPayment(manager: CartManager) {
@@ -181,9 +184,10 @@ async function enableCardPayment(manager: CartManager) {
 async function printBadges(
   manager: CartManager,
   ids: number[],
+  clearCart: boolean = false,
   mqttPrint: boolean = false
 ) {
-  const resp = await manager.printBadges(ids, mqttPrint);
+  const resp = await manager.printBadges(ids, clearCart, mqttPrint);
   if (!resp.success) {
     alert("Error printing badges.");
     return;

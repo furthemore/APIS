@@ -10,15 +10,15 @@ export class CartManager {
   public cartEntries: Accessor<CartResponse | undefined>;
   private setCartEntries: Setter<CartResponse | undefined>;
 
+  private refresh: Promise<any> | null = null;
+
   constructor(urls: ApisUrls, mqtt: MqttClient) {
     this.urls = urls;
-
-    const [cartEntries, setCartEntries] = createSignal<CartResponse>();
-    this.cartEntries = cartEntries;
-    this.setCartEntries = setCartEntries;
-
     this.mqtt = mqtt;
-    mqtt.emitter.on("refresh", this.refreshCart.bind(this));
+
+    [this.cartEntries, this.setCartEntries] = createSignal<CartResponse>();
+
+    this.mqtt.emitter.on("refresh", this.refreshCart.bind(this));
   }
 
   close() {
@@ -63,12 +63,18 @@ export class CartManager {
   }
 
   public async refreshCart() {
-    const resp = await fetch(this.urls.onsite_admin_cart, {
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    const data = await resp.json();
+    this.refresh = new Promise<FallibleRequest<CartResponse>>(
+      async (resolve) => {
+        const resp = await fetch(this.urls.onsite_admin_cart, {
+          headers: {
+            "x-csrftoken": CSRF_TOKEN,
+          },
+        });
+        const data = await resp.json();
+        resolve(data);
+      }
+    );
+    const data = await this.refresh;
 
     this.updateCart(data);
   }
@@ -128,6 +134,7 @@ export class CartManager {
 
   public async printBadges(
     ids: number[],
+    clearCart: boolean = true,
     mqttPrint: boolean = false
   ): Promise<FallibleRequest<BadgePrintResponse>> {
     const assignResp = await fetch(this.urls.assign_badge_number, {
@@ -163,8 +170,6 @@ export class CartManager {
       await printResp.json();
 
     if (printData.success && mqttPrint) {
-      console.debug(`Wants MQTT print for ${printData.file}`);
-
       let url = new URL(this.urls.pdf, window.location.href);
       url.searchParams.append("file", printData.file);
 
@@ -175,12 +180,16 @@ export class CartManager {
           url,
         })
       );
-    } else {
-      console.debug("Not using MQTT print");
     }
 
-    await this.clearCart();
-    await this.refreshCart();
+    // Check if we already are refreshing data. If so, wait until it's done
+    // before clearing, otherwise we have a race condition that prevents
+    // clearing the cart.
+    await this.refresh;
+
+    if (clearCart) {
+      await this.clearCart();
+    }
 
     return printData;
   }

@@ -29,10 +29,6 @@ export const BadgeTableRow: Component<{
       sensitivity: "base",
     }) === 0;
 
-  createEffect(() =>
-    console.log(`${props.searchQuery}, ${fullName()}, ${hasIdenticalName()}`)
-  );
-
   const alreadyInCart = () => props.cartManager.alreadyInCart(props.badge.id);
 
   return (

@@ -108,7 +108,6 @@ def onsite_admin(request):
         mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
     context = {
-        "errors": errors,
         "settings": json.dumps({
             "debug": getattr(settings, "DEBUG", False),
             "sentry": {
@@ -118,6 +117,7 @@ def onsite_admin(request):
                 "environment": getattr(settings, "SENTRY_ENVIRONMENT", None),
                 "release": getattr(settings, "SENTRY_RELEASE", None),
             },
+            "errors": errors,
             "printer_uri": settings.REGISTER_PRINTER_URI,
             "mqtt": {
                 "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),

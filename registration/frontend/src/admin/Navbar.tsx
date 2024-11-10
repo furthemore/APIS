@@ -11,7 +11,11 @@ import {
 import { ConfigContext } from "./providers/config-provider";
 import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
 import { Dialog } from "@kobalte/core/dialog";
-import { render } from "solid-js/web";
+import {
+  UserSettingKey,
+  UserSettingsContext,
+  UserSettingsManager,
+} from "./providers/user-settings-provider";
 
 const KNOWN_SHORTCUTS = [
   { shortcut: "Alt+O", description: "Open position" },
@@ -241,8 +245,39 @@ const KeyboardShortcuts: Component = () => {
   );
 };
 
-const Navbar: Component = () => {
+const ToggleSetting: Component<{
+  name: string;
+  key: UserSettingKey;
+  userSettings: UserSettingsManager;
+}> = (props) => {
+  return (
+    <a
+      href="#"
+      class="navbar-item"
+      onClick={(ev) => {
+        ev.preventDefault();
+        props.userSettings.store(
+          props.key,
+          !props.userSettings.userSettings()[props.key]
+        );
+      }}
+    >
+      <span class="icon">
+        <Show
+          when={props.userSettings.userSettings()[props.key]}
+          fallback={<i class="fas fa-xmark"></i>}
+        >
+          <i class="fas fa-check"></i>
+        </Show>
+      </span>
+      <span>{props.name}</span>
+    </a>
+  );
+};
+
+export const Navbar: Component = () => {
   const config = useContext(ConfigContext)!;
+  const userSettings = useContext(UserSettingsContext)!;
 
   function switchTerminal(value: string) {
     console.debug(`Switching to terminal ${value}`);
@@ -324,6 +359,19 @@ const Navbar: Component = () => {
             </a>
 
             <div class="navbar-dropdown is-right">
+              <ToggleSetting
+                name="Full Width Layout"
+                key="container_fluid"
+                userSettings={userSettings}
+              />
+              <ToggleSetting
+                name="Clear Cart After Print"
+                key="clear_cart_after_print"
+                userSettings={userSettings}
+              />
+
+              <hr class="navbar-divider" />
+
               <KeyboardShortcuts />
 
               <hr class="navbar-divider" />
@@ -341,13 +389,3 @@ const Navbar: Component = () => {
     </nav>
   );
 };
-
-export default function createActions(config: ApisConfig) {
-  render(() => {
-    return (
-      <ConfigContext.Provider value={config}>
-        <Navbar />
-      </ConfigContext.Provider>
-    );
-  }, document.getElementById("admin-navbar")!);
-}

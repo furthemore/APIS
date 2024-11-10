@@ -8,7 +8,7 @@ import { ConfigContext } from "./providers/config-provider";
 import { ScanPanel } from "./scan";
 import MqttClient from "./mqtt";
 
-const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> = (
+export const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> = (
   props
 ) => {
   const [searchQuery, setSearchQuery] = createSignal<string>();
@@ -34,17 +34,3 @@ const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> = (
     </div>
   );
 };
-
-export default function createOnsiteExperience(config: ApisConfig) {
-  const mqtt = new MqttClient(config.mqtt);
-  const cartManager = new CartManager(config.urls, mqtt);
-
-  render(
-    () => (
-      <ConfigContext.Provider value={config}>
-        <Onsite mqtt={mqtt} cartManager={cartManager} />
-      </ConfigContext.Provider>
-    ),
-    document.getElementById("onsite")!
-  );
-}
