@@ -1,5 +1,6 @@
 import { Component, createMemo, Show, useContext } from "solid-js";
 import { createShortcut } from "@solid-primitives/keyboard";
+import { differenceInYears } from "date-fns/differenceInYears";
 
 import { CloseButton } from "./CloseButton";
 import { ConfigContext } from "../../providers/config-provider";
@@ -12,10 +13,12 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
   const expirationDate = () => new Date(props.data.expiry);
   const expired = () => new Date() > expirationDate();
 
+  const underAge = () => differenceInYears(new Date(), props.data.dob) < 18;
+
   const panelClasses = () => {
     return {
-      "is-warning": expired(),
-      "is-success": !expired(),
+      "is-warning": expired() || underAge(),
+      "is-success": !expired() && !underAge(),
     };
   };
 
@@ -46,19 +49,34 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
   return (
     <article class="message control" classList={panelClasses()}>
       <div class="message-header">
-        <span class="icon-text">
+        <span class="icon-text mr-3">
           <span class="icon">
             <i class="fa-solid fa-id-card"></i>
           </span>
           <span>ID Card</span>
         </span>
 
-        <Show when={expired()}>
-          <span class="ml-2">
-            <i class="fa-solid fa-calendar-xmark"></i>
-            {`Expired ${props.data.expiry}`}
-          </span>
-        </Show>
+        <div class="is-flex-grow-1">
+          <div class="tags">
+            <Show when={expired()}>
+              <span class="tag">
+                <span class="icon">
+                  <i class="fa-solid fa-calendar-xmark"></i>
+                </span>
+                <span>Expired</span>
+              </span>
+            </Show>
+
+            <Show when={underAge()}>
+              <span class="tag">
+                <span class="icon">
+                  <i class="fa-solid fa-cake-candles"></i>
+                </span>
+                <span>Under 18</span>
+              </span>
+            </Show>
+          </div>
+        </div>
 
         <CloseButton close={() => props.remove()} />
       </div>
