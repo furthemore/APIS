@@ -11,8 +11,9 @@ from django.conf.urls import url
 from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core.signing import TimestampSigner
 from django.db import transaction
-from django.db.models import JSONField, Max
+from django.db.models import Max
 from django.forms import NumberInput, widgets
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -544,7 +545,7 @@ class EventAdmin(admin.ModelAdmin):
                     "venue",
                     "charity",
                     "donations",
-                    ("codeOfConduct", "badgeTheme"),
+                    ("codeOfConduct", "badgeTheme", "defaultBadgeTemplate"),
                 )
             },
         ),
@@ -945,7 +946,16 @@ def get_attendee_age(attendee):
 
 
 def print_badges(modeladmin, request, queryset):
-    pdf_path = generate_badge_labels(queryset, request)
+    if settings.PRINT_RENDERER == "wkhtmltopdf":
+        pdf_name = generate_badge_labels(queryset, request)
+        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
+    else:
+        signer = TimestampSigner()
+        data = signer.sign_object({
+            "badge_ids": [badge.id for badge in queryset],
+        })
+
+        pdf_path = reverse("registration:pdf") + f"?data={data}"
 
     response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
@@ -1615,3 +1625,47 @@ class PaymentWebhookAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PaymentWebhookNotification, PaymentWebhookAdmin)
+
+
+class BadgeTemplateAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "paperWidth",
+        "paperHeight",
+        "marginTop",
+        "marginBottom",
+        "marginLeft",
+        "marginRight",
+        "landscape",
+        "scale"
+    )
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": ("name", "template"),
+            }
+        ),
+        (
+            "Paper Setup",
+            {
+                "fields": (
+                    "landscape",
+                    "scale",
+                    ("paperWidth", "paperHeight"),
+                )
+            }
+        ),
+        (
+            "Margins And Padding",
+            {
+                "fields": (
+                    ("marginTop", "marginBottom"),
+                    ("marginLeft", "marginRight"),
+                ),
+            }
+        ),
+    )
+
+admin.site.register(BadgeTemplate, BadgeTemplateAdmin)

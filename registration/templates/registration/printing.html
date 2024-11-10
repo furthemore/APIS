@@ -7,7 +7,7 @@
 <body>
 <a href="{{ next }}">Go Back</a>
 <script>
-    var w = window.open("{% url 'registration:pdf' %}" + "/?file={{ file }}", "", "width=400,height=400");
+    var w = window.open("{{ file }}", "", "width=400,height=400");
 
     if (!w || w.closed || typeof w.closed == 'undefined') {
         // Didn't popup

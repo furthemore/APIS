@@ -10,15 +10,17 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
+from django.core.signing import TimestampSigner
 from django.db.models import Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 
-from registration import admin, mqtt, payments, printing
+from registration import admin, mqtt, payments
 from registration.admin import TWOPLACES
 from registration.models import (
     Badge,
@@ -342,20 +344,35 @@ def get_messages_list(request):
 @staff_member_required
 def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
-    queryset = Badge.objects.filter(id__in=badge_list)
-    pdf_path = admin.generate_badge_labels(queryset, request)
-    # Async notify the frontend to refresh the cart
-    logger.info("Refreshing admin cart")
-    admin_push_cart_refresh(request)
 
-    file_url = reverse("registration:print") + "?file={0}".format(pdf_path)
+    if settings.PRINT_RENDERER == "wkhtmltopdf":
+        queryset = Badge.objects.filter(id__in=badge_list)
+        pdf_name = admin.generate_badge_labels(queryset, request)
+
+        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
+
+        # Async notify the frontend to refresh the cart
+        logger.info("Refreshing admin cart")
+        admin_push_cart_refresh(request)
+    else:
+        terminal = get_active_terminal(request)
+
+        signer = TimestampSigner()
+        data = signer.sign_object({
+            "badge_ids": [int(badge_id) for badge_id in badge_list],
+            "terminal": terminal.name if terminal else None,
+        })
+
+        pdf_path = reverse("registration:pdf") + f"?data={data}"
+
+    print_url = reverse("registration:print") + "?" + urlencode({"file": pdf_path})
 
     return JsonResponse(
         {
             "success": True,
-            "file": pdf_path,
             "next": request.get_full_path(),
-            "url": file_url,
+            "file": pdf_path,
+            "url": print_url,
         }
     )
 
