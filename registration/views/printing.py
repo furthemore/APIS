@@ -31,7 +31,7 @@ def printNametag(request):
 
 
 def servePDF(request):
-    if settings.PRINT_RENDERER == "gotenberg":
+    if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
         return pdfFromGotenberg(request)
     else:
         return pdfFromDisk(request.GET.get("file", None))
@@ -43,8 +43,9 @@ def pdfFromDisk(name: Optional[str]) -> Union[FileResponse, JsonResponse]:
             {"success": False, "reason": "Name was missing"}, status=400
         )
 
+    root_dir = getattr(settings, "PDF_DIRECTORY", "/tmp")
     try:
-        path = Path(settings.PDF_DIRECTORY).joinpath(Path(name).name)
+        path = Path(root_dir).joinpath(Path(name).name)
         f = open(path, "rb")
     except IOError:
         return JsonResponse({"success": False, "reason": "IO error"}, status=404)

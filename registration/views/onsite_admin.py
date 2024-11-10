@@ -345,16 +345,7 @@ def get_messages_list(request):
 def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
 
-    if settings.PRINT_RENDERER == "wkhtmltopdf":
-        queryset = Badge.objects.filter(id__in=badge_list)
-        pdf_name = admin.generate_badge_labels(queryset, request)
-
-        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
-
-        # Async notify the frontend to refresh the cart
-        logger.info("Refreshing admin cart")
-        admin_push_cart_refresh(request)
-    else:
+    if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
         terminal = get_active_terminal(request)
 
         signer = TimestampSigner()
@@ -364,6 +355,15 @@ def onsite_print_badges(request):
         })
 
         pdf_path = reverse("registration:pdf") + f"?data={data}"
+    else:
+        queryset = Badge.objects.filter(id__in=badge_list)
+        pdf_name = admin.generate_badge_labels(queryset, request)
+
+        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
+
+        # Async notify the frontend to refresh the cart
+        logger.info("Refreshing admin cart")
+        admin_push_cart_refresh(request)
 
     print_url = reverse("registration:print") + "?" + urlencode({"file": pdf_path})
 

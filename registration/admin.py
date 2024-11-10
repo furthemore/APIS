@@ -946,16 +946,17 @@ def get_attendee_age(attendee):
 
 
 def print_badges(modeladmin, request, queryset):
-    if settings.PRINT_RENDERER == "wkhtmltopdf":
-        pdf_name = generate_badge_labels(queryset, request)
-        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
-    else:
+    if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
         signer = TimestampSigner()
         data = signer.sign_object({
             "badge_ids": [badge.id for badge in queryset],
         })
 
         pdf_path = reverse("registration:pdf") + f"?data={data}"
+    else:
+        pdf_name = generate_badge_labels(queryset, request)
+        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
+
 
     response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
