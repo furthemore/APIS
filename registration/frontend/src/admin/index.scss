@@ -17,3 +17,7 @@
   border-end-start-radius: var(--bulma-panel-radius);
   border-end-end-radius: var(--bulma-panel-radius);
 }
+
+.badge-name {
+  word-break: break-word;
+}

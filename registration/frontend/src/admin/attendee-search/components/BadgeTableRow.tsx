@@ -71,7 +71,7 @@ export const BadgeTableRow: Component<{
         </Show>
       </td>
       <td
-        class="is-vcentered"
+        class="is-vcentered badge-name"
         classList={{ "is-success": hasIdenticalBadge() }}
         title={hasIdenticalBadge() ? "Badge is identical to search" : undefined}
       >

@@ -104,7 +104,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
             </thead>
             <tbody>
               <tr>
-                <td>{props.badge.badgeName}</td>
+                <td class="badge-name">{props.badge.badgeName}</td>
                 <td>{props.badge.effectiveLevel?.name || ""}</td>
                 <td>{cleanMoneyAmount(props.badge.effectiveLevel?.price)}</td>
               </tr>
