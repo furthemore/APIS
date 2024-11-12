@@ -91,10 +91,31 @@ declare global {
 }
 
 function start() {
-  const mqtt = new MqttClient(APIS_CONFIG.mqtt);
-  const cartManager = new CartManager(APIS_CONFIG.urls, mqtt);
+  const elem = document.getElementById("onsite");
+  if (!elem) {
+    return alert("Missing core page component");
+  }
 
-  const userSettings = new UserSettingsManager();
+  let mqtt: MqttClient;
+  let cartManager: CartManager;
+  let userSettings: UserSettingsManager;
+
+  try {
+    mqtt = new MqttClient(APIS_CONFIG.mqtt);
+    cartManager = new CartManager(APIS_CONFIG.urls, mqtt);
+    userSettings = new UserSettingsManager();
+  } catch (err: any) {
+    render(() => {
+      return (
+        <div>
+          <h1>Error</h1>
+          <p>Something went wrong during page initialization.</p>
+          <pre>{err.toString()}</pre>
+        </div>
+      );
+    }, elem);
+    return;
+  }
 
   render(() => {
     return (
@@ -122,7 +143,7 @@ function start() {
         </UserSettingsContext.Provider>
       </ConfigContext.Provider>
     );
-  }, document.getElementById("onsite")!);
+  }, elem);
 }
 
 start();
