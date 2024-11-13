@@ -1,11 +1,11 @@
 import logging
 from pathlib import Path
-from typing import Optional, Union
+from typing import Union
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.signing import TimestampSigner
-from django.http import FileResponse, HttpResponse, JsonResponse
+from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import Context, Template
 from gotenberg_client import GotenbergClient
@@ -16,8 +16,8 @@ from gotenberg_client.options import (
     PageSize,
 )
 
-from registration.models import Badge, Dealer, Staff
 from registration import mqtt
+from registration.models import Badge, Dealer, Staff
 
 logger = logging.getLogger(__name__)
 
@@ -34,11 +34,12 @@ def servePDF(request):
     if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
         return pdfFromGotenberg(request)
     else:
-        return pdfFromDisk(request.GET.get("file", None))
+        return pdfFromDisk(request)
 
 
-def pdfFromDisk(name: Optional[str]) -> Union[FileResponse, JsonResponse]:
-    if not name:
+def pdfFromDisk(request: HttpRequest) -> Union[FileResponse, JsonResponse]:
+    name = request.GET.get("file", None)
+    if not name or not isinstance(name, str):
         return JsonResponse(
             {"success": False, "reason": "Name was missing"}, status=400
         )
@@ -55,16 +56,16 @@ def pdfFromDisk(name: Optional[str]) -> Union[FileResponse, JsonResponse]:
     return response
 
 
-def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
+def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
     data = request.GET.get("data", None)
     if not data:
-        return JsonResponse({"success": False, "reason": "Missing data"})
+        return JsonResponse({"success": False, "reason": "Missing data"}, status=400)
 
     signer = TimestampSigner()
     try:
         data_obj = signer.unsign_object(data, max_age=60)
     except:
-        return JsonResponse({"success": False, "reason": "Invalid data"})
+        return JsonResponse({"success": False, "reason": "Invalid data"}, status=401)
 
     badge_ids = data_obj.get("badge_ids", [])
     queryset = Badge.objects.filter(id__in=badge_ids)
@@ -83,30 +84,31 @@ def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
         badge_template = badge.event.defaultBadgeTemplate
         if badge_template.id not in badge_templates:
             badge_groups[badge_template.id] = []
-            badge_templates[badge_template.id] = (badge_template, Template(badge_template.template))
+            badge_templates[badge_template.id] = (
+                badge_template,
+                Template(badge_template.template),
+            )
 
         level = str(level)
-        if Staff.objects.filter(
-            attendee=badge.attendee, event=badge.event
-        ).exists():
+        if Staff.objects.filter(attendee=badge.attendee, event=badge.event).exists():
             level = "Staff"
-        elif Dealer.objects.filter(
-            attendee=badge.attendee, event=badge.event
-        ).exists():
+        elif Dealer.objects.filter(attendee=badge.attendee, event=badge.event).exists():
             level = "Dealer"
 
-        badge_groups[badge_template.id].append({
-            "name": badge.badgeName,
-            "level": level,
-            "number": badge.badgeNumber,
-        })
+        badge_groups[badge_template.id].append(
+            {
+                "name": badge.badgeName,
+                "level": level,
+                "number": badge.badgeNumber,
+            }
+        )
 
     with GotenbergClient(settings.GOTENBERG_HOST) as client:
         pdfs = []
 
-        for (badge_template_id, badges) in badge_groups.items():
-            context = Context({"badges": badges})
+        for badge_template_id, badges in badge_groups.items():
             (badge_template, template) = badge_templates[badge_template_id]
+            context = Context({"badges": badges})
             rendered = str(template.render(context))
 
             with client.chromium.html_to_pdf() as route:
@@ -139,7 +141,9 @@ def pdfFromGotenberg(request) -> Union[HttpResponse, JsonResponse]:
         finalPdf = None
 
         if len(pdfs) == 0:
-            return JsonResponse({"success": False, "reason": "No PDFs were generated"})
+            return JsonResponse(
+                {"success": False, "reason": "No PDFs were generated"}, status=404
+            )
         elif len(pdfs) == 1:
             finalPdf = pdfs[0]
         else:
