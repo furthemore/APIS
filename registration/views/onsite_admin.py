@@ -170,7 +170,7 @@ def onsite_admin(request):
 @staff_member_required
 def onsite_admin_search(request):
     event = Event.objects.get(default=True)
-    query = request.POST.get("search", None)
+    query = request.GET.get("search", None)
     if query is None:
         return redirect("registration:onsite_admin")
 

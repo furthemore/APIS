@@ -27,12 +27,10 @@ export async function getSearchResults(
     return [];
   }
 
-  let formData = new FormData();
-  formData.set("search", query);
+  let url = new URL(urls.onsite_admin_search, window.location.href);
+  url.searchParams.set("search", query);
 
-  const resp = await fetch(urls.onsite_admin_search, {
-    method: "POST",
-    body: formData,
+  const resp = await fetch(url, {
     headers: {
       "x-csrftoken": CSRF_TOKEN,
     },
