@@ -148,8 +148,7 @@ export class CartManager {
     const printData = await this.makeRequest<BadgePrintResponse>(url);
 
     if (printData.success && mqttPrint) {
-      let url = new URL(this.urls.pdf, window.location.href);
-      url.searchParams.append("file", printData.file);
+      const url = new URL(printData.file, window.location.href);
 
       this.mqtt.publishMessage(
         "action",
