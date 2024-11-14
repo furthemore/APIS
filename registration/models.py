@@ -162,6 +162,22 @@ class Venue(models.Model):
         return self.name
 
 
+class BadgeTemplate(models.Model):
+    name = models.CharField(max_length=100)
+    template = models.TextField()
+    paperWidth = models.CharField(max_length=10, null=True, verbose_name="Paper Width")
+    paperHeight = models.CharField(max_length=10, null=True, verbose_name="Paper Height")
+    marginTop = models.CharField(max_length=10, null=True, verbose_name = "Margin Top")
+    marginBottom = models.CharField(max_length=10, null=True, verbose_name = "Margin Bottom")
+    marginLeft = models.CharField(max_length=10, null=True, verbose_name="Margin Left")
+    marginRight = models.CharField(max_length=10, null=True, verbose_name = "Margin Right")
+    landscape = models.BooleanField(default=True)
+    scale = models.FloatField(default=1.0)
+
+    def __str__(self):
+        return str(self.name)
+
+
 class Event(LookupTable):
     dealerRegStart = models.DateTimeField(
         verbose_name="Dealer Registration Start",
@@ -194,6 +210,12 @@ class Event(LookupTable):
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
+    )
+    defaultBadgeTemplate = models.ForeignKey(
+        BadgeTemplate,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Badge Template",
     )
     newStaffDiscount = models.ForeignKey(
         Discount,

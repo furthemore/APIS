@@ -33,6 +33,16 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
+      gotenberg:
+        image: gotenberg/gotenberg:8
+        options: >-
+          --health-cmd "curl --fail http://localhost:3000/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 3000:3000
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
