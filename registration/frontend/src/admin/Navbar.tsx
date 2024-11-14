@@ -380,11 +380,20 @@ export const Navbar: Component = () => {
                 key="container_fluid"
                 userSettings={userSettings}
               />
+
               <ToggleSetting
                 name="Clear Cart After Print"
                 key="clear_cart_after_print"
                 userSettings={userSettings}
               />
+
+              <Show when={config.mqtt.supports_printing}>
+                <ToggleSetting
+                  name="Auto Print After Payment"
+                  key="print_after_payment"
+                  userSettings={userSettings}
+                />
+              </Show>
 
               <hr class="navbar-divider" />
 

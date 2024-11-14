@@ -2,13 +2,17 @@ import { Accessor, createContext, createSignal, Setter } from "solid-js";
 
 const STORAGE_KEY = "user-settings";
 
-export type UserSettingKey = "clear_cart_after_print" | "container_fluid";
+export type UserSettingKey =
+  | "clear_cart_after_print"
+  | "container_fluid"
+  | "print_after_payment";
 
 export type UserSettings = Record<UserSettingKey, any>;
 
 const USER_DEFAULTS: UserSettings = {
   clear_cart_after_print: true,
   container_fluid: false,
+  print_after_payment: false,
 };
 
 export class UserSettingsManager {
@@ -21,7 +25,7 @@ export class UserSettingsManager {
 
     if (settingsData) {
       try {
-        settings = JSON.parse(settingsData);
+        settings = { ...USER_DEFAULTS, ...JSON.parse(settingsData) };
       } catch (err) {
         console.error(`Could not parse settings: ${err}`);
         settings = USER_DEFAULTS;

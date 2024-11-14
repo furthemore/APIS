@@ -1,14 +1,17 @@
 import {
+  Accessor,
   Component,
+  createEffect,
   createMemo,
   createSignal,
   ErrorBoundary,
+  Setter,
   useContext,
 } from "solid-js";
 import { Big } from "big.js";
 
 import { ActionButton } from "./ActionButton";
-import { CartManager, CartResponse } from "../cart-manager";
+import { Badge, CartManager, CartResponse } from "../cart-manager";
 import { ConfigContext } from "../../providers/config-provider";
 import { CartActionsError } from "./CartActionsError";
 import { UserSettingsContext } from "../../providers/user-settings-provider";
@@ -51,6 +54,24 @@ export const CartActions: Component<{
         })
         ?.map((badge) => badge.id) || []
   );
+
+  if (config.mqtt.supports_printing) {
+    const autoPrintCheck = createAutoPrintCheck(printableBadgeIds);
+
+    createEffect(async () => {
+      if (!userSettings.userSettings().print_after_payment) return;
+
+      if (autoPrintCheck(props.entries?.result || [])) {
+        await printBadges(
+          props.manager,
+          printableBadgeIds(),
+          setLoading,
+          userSettings.userSettings().clear_cart_after_print,
+          true
+        );
+      }
+    });
+  }
 
   const canTenderCash = () =>
     config.permissions.cash && !hasHold() && allNeedPayment();
@@ -122,6 +143,7 @@ export const CartActions: Component<{
               return printBadges(
                 props.manager,
                 printableBadgeIds(),
+                setLoading,
                 userSettings.userSettings().clear_cart_after_print,
                 config.mqtt.supports_printing && !holdingShift
               );
@@ -184,10 +206,14 @@ async function enableCardPayment(manager: CartManager) {
 async function printBadges(
   manager: CartManager,
   ids: number[],
-  clearCart: boolean = false,
-  mqttPrint: boolean = false
+  setLoading: Setter<boolean>,
+  clearCart: boolean,
+  mqttPrint: boolean
 ) {
+  setLoading(true);
   const resp = await manager.printBadges(ids, clearCart, mqttPrint);
+  setLoading(false);
+
   if (!resp.success) {
     alert("Error printing badges.");
     return;
@@ -196,4 +222,40 @@ async function printBadges(
   if (!mqttPrint) {
     window.open(resp.url, "badge");
   }
+}
+
+function createAutoPrintCheck(
+  printableBadgeIds: Accessor<number[]>
+): (currentBadges: Badge[]) => boolean {
+  let previousBadges: Badge[] = [];
+
+  return function (nextBadges: Badge[]): boolean {
+    let currentBadges = previousBadges;
+    previousBadges = nextBadges;
+
+    if (nextBadges.length === 0 || currentBadges.length !== nextBadges.length) {
+      return false;
+    }
+
+    const printableIds = printableBadgeIds();
+
+    for (let i = 0; i < currentBadges.length; i += 1) {
+      const prev = currentBadges[i];
+      const curr = nextBadges[i];
+
+      if (!printableIds.includes(curr.id)) {
+        return false;
+      }
+
+      if (
+        prev.id !== curr.id ||
+        curr.abandoned === prev.abandoned ||
+        curr.abandoned !== "Paid"
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
 }
