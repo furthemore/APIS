@@ -34,7 +34,7 @@ export const CartEntries: Component<{
           <tbody>
             <tr>
               <td>Subtotal:</td>
-              <td style="width: 25%;">
+              <td style="width: 20%;">
                 {cleanMoneyAmount(props.entries?.subtotal)}
               </td>
             </tr>
@@ -64,7 +64,7 @@ export const CartEntries: Component<{
             <thead>
               <tr>
                 <th>Order Item</th>
-                <th style="width: 25%;">Price</th>
+                <th style="width: 20%;">Price</th>
               </tr>
             </thead>
             <tbody>

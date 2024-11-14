@@ -4,7 +4,6 @@ import {
   createEffect,
   createResource,
   createSignal,
-  ErrorBoundary,
   For,
   Setter,
   Show,
@@ -17,6 +16,7 @@ import { BadgeTableRow } from "./BadgeTableRow";
 import { CartManager } from "../../cart";
 import { ConfigContext } from "../../providers/config-provider";
 import { getSearchResults } from "..";
+import { SentryErrorBoundary } from "../../../entrypoints/admin";
 
 export const AttendeeSearch: Component<{
   cartManager: CartManager;
@@ -141,7 +141,7 @@ export const AttendeeSearch: Component<{
             </div>
           </div>
 
-          <ErrorBoundary
+          <SentryErrorBoundary
             fallback={(err, reset) => {
               return (
                 <div class="panel-block">
@@ -314,7 +314,7 @@ export const AttendeeSearch: Component<{
                 </table>
               </div>
             </div>
-          </ErrorBoundary>
+          </SentryErrorBoundary>
         </div>
       </div>
     </div>

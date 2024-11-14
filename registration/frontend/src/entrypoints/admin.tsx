@@ -1,4 +1,5 @@
-import { For, render } from "solid-js/web";
+import { ErrorBoundary, For, render } from "solid-js/web";
+import * as Sentry from "@sentry/solid";
 
 import { ConfigContext } from "../admin/providers/config-provider";
 import { Navbar } from "../admin/Navbar";
@@ -12,18 +13,27 @@ import {
   UserSettingsManager,
 } from "../admin/providers/user-settings-provider";
 
-export const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
-  "meta[name='csrf_token']"
-)!.content;
+declare global {
+  const APIS_CONFIG: ApisConfig;
+}
 
 export interface ApisConfig {
   debug: boolean;
+  sentry: ApisSentry;
   errors: ApisError[];
   printer_uri: string;
   mqtt: ApisMqttConfig;
   urls: ApisUrls;
   permissions: ApisPermissions;
   terminals: ApisTerminalSettings;
+}
+
+export interface ApisSentry {
+  enabled: boolean;
+  user_reports: boolean;
+  frontend_dsn?: string;
+  environment?: string;
+  release?: string;
 }
 
 export interface ApisError {
@@ -86,9 +96,27 @@ export interface ApisTerminal {
   name: string;
 }
 
-declare global {
-  const APIS_CONFIG: ApisConfig;
+if (APIS_CONFIG.sentry.enabled) {
+  Sentry.init({
+    dsn: APIS_CONFIG.sentry.frontend_dsn,
+    environment: APIS_CONFIG.sentry.environment,
+    release: APIS_CONFIG.sentry.release,
+    beforeSend(event) {
+      if (APIS_CONFIG.sentry.user_reports && event.exception) {
+        Sentry.showReportDialog({ eventId: event.event_id });
+      }
+
+      return event;
+    },
+  });
 }
+
+export const SentryErrorBoundary =
+  Sentry.withSentryErrorBoundary(ErrorBoundary);
+
+export const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
+  "meta[name='csrf_token']"
+)!.content;
 
 function start() {
   const elem = document.getElementById("onsite");

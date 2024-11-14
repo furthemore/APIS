@@ -4,7 +4,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  ErrorBoundary,
   Setter,
   useContext,
 } from "solid-js";
@@ -12,8 +11,9 @@ import { Big } from "big.js";
 
 import { ActionButton } from "./ActionButton";
 import { Badge, CartManager, CartResponse } from "../cart-manager";
-import { ConfigContext } from "../../providers/config-provider";
 import { CartActionsError } from "./CartActionsError";
+import { ConfigContext } from "../../providers/config-provider";
+import { SentryErrorBoundary } from "../../../entrypoints/admin";
 import { UserSettingsContext } from "../../providers/user-settings-provider";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
@@ -80,7 +80,7 @@ export const CartActions: Component<{
 
   return (
     <div class="control">
-      <ErrorBoundary
+      <SentryErrorBoundary
         fallback={(err, reset) => (
           <CartActionsError
             err={err}
@@ -155,7 +155,7 @@ export const CartActions: Component<{
             <span>Print Badges</span>
           </ActionButton>
         </div>
-      </ErrorBoundary>
+      </SentryErrorBoundary>
     </div>
   );
 };

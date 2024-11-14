@@ -1,11 +1,31 @@
-{% extends "registration/master_admin.html" %}
+{% load static settings %}
 
-{% block head %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf_token" content="{{ csrf_token }}">
+
+  <title>APIS Register</title>
+
+  <link rel="stylesheet" href="{% static 'admin.css' %}" />
+  <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
+
   <script>
     const APIS_CONFIG = {{ settings|safe }};
   </script>
-{% endblock %}
 
-{% block content %}
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+
   <div id="onsite"></div>
-{% endblock %}
+
+  <script src="{% static 'admin.js' %}"></script>
+
+</body>
+
+</html>
