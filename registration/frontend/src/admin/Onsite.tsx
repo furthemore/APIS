@@ -15,7 +15,7 @@ export const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> =
 
   return (
     <div class="columns">
-      <div class="column is-half is-narrow-tablet">
+      <div class="column is-three-fifths is-narrow-tablet">
         <AttendeeSearch
           cartManager={props.cartManager}
           searchQuery={searchQuery}
@@ -28,7 +28,7 @@ export const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> =
         />
       </div>
 
-      <div class="column is-half is-narrow-tablet">
+      <div class="column is-two-fifths is-narrow-tablet">
         <Cart cartManager={props.cartManager} />
       </div>
     </div>

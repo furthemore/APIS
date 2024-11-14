@@ -282,10 +282,10 @@ export const AttendeeSearch: Component<{
                 <table class="table is-striped is-fullwidth">
                   <thead>
                     <tr>
-                      <th style="width: 35%;">Legal Name</th>
-                      <th style="width: 38%;">Badge</th>
+                      <th style="width: 35%;">Name</th>
+                      <th style="width: 40%;">Badge</th>
                       <th style="width: 10%;">Status</th>
-                      <th style="width: 17%;"></th>
+                      <th style="width: 15%;"></th>
                     </tr>
                   </thead>
                   <tbody>

@@ -93,22 +93,20 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
           <table class="table is-fullwidth is-condensed">
             <thead>
               <tr>
-                <th style="width: 50%;">Badge</th>
-                <th style="width: 25%;">Level</th>
-                <th style="width: 25%;">Price</th>
+                <th style="width: 60%;">Badge</th>
+                <th style="width: 20%;">Level</th>
+                <th style="width: 20%;">Price</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td class="badge-name">
-                  <div class="tags has-addons are-medium">
-                    <span class="tag">{props.badge.badgeName}</span>
-                    <Show when={props.badge.badgeNumber}>
-                      <span class="tag is-info">
-                        {props.badge.badgeNumber}
-                      </span>
-                    </Show>
-                  </div>
+                  <span>{props.badge.badgeName}</span>
+                  <Show when={props.badge.badgeNumber}>
+                    <span class="tag is-info ml-1">
+                      {props.badge.badgeNumber}
+                    </span>
+                  </Show>
                 </td>
                 <td>{props.badge.effectiveLevel?.name || ""}</td>
                 <td>{cleanMoneyAmount(props.badge.effectiveLevel?.price)}</td>
