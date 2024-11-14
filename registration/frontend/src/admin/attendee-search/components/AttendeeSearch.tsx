@@ -26,6 +26,9 @@ export const AttendeeSearch: Component<{
   const config = useContext(ConfigContext)!;
 
   const [selectedResult, setSelectedResult] = createSignal<number>();
+  const [recentSearches, setRecentSearches] = createSignal<string[]>([], {
+    equals: false,
+  });
 
   const [results, { refetch }] = createResource(
     props.searchQuery,
@@ -39,6 +42,17 @@ export const AttendeeSearch: Component<{
 
     if (query !== undefined) {
       searchInputRef.value = query;
+
+      if (query.length > 0) {
+        let searches = recentSearches();
+
+        if (searches.length > 0 && searches[0] === query) return;
+
+        searches.unshift(query);
+        if (searches.length > 10) searches.length = 10;
+
+        setRecentSearches(searches);
+      }
     }
   });
 
@@ -167,7 +181,45 @@ export const AttendeeSearch: Component<{
                   props.setSearchQuery(searchInputRef.value);
                 }}
               >
-                <div class="field is-grouped">
+                <div class="field has-addons">
+                  <div class="control">
+                    <div
+                      class="dropdown"
+                      classList={{ "is-hoverable": !!recentSearches()?.length }}
+                    >
+                      <div class="dropdown-trigger">
+                        <button
+                          type="button"
+                          class="button"
+                          disabled={!recentSearches()?.length}
+                          title="Recent Searches"
+                        >
+                          <span class="icon">
+                            <i class="fas fa-clock-rotate-left"></i>
+                          </span>
+                        </button>
+                      </div>
+                      <div class="dropdown-menu">
+                        <div class="dropdown-content">
+                          <For each={recentSearches()}>
+                            {(search) => (
+                              <a
+                                href="#"
+                                class="dropdown-item"
+                                onClick={(ev) => {
+                                  ev.preventDefault();
+                                  props.setSearchQuery(search);
+                                }}
+                              >
+                                {search}
+                              </a>
+                            )}
+                          </For>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <p class="control is-expanded">
                     <input
                       type="search"
@@ -231,9 +283,9 @@ export const AttendeeSearch: Component<{
                   <thead>
                     <tr>
                       <th style="width: 35%;">Legal Name</th>
-                      <th style="width: 25%;">Badge Name</th>
-                      <th style="width: 15%;">Status</th>
-                      <th style="width: 25%;"></th>
+                      <th style="width: 38%;">Badge</th>
+                      <th style="width: 10%;">Status</th>
+                      <th style="width: 17%;"></th>
                     </tr>
                   </thead>
                   <tbody>

@@ -18,7 +18,7 @@ const Row: Component = () => {
       </td>
       <td class="is-vcentered">
         <div class="is-skeleton">
-          <div>Badge Name</div>
+          <div>Badge</div>
         </div>
       </td>
       <td class="is-vcentered">
