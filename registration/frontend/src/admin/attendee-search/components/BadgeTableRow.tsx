@@ -75,7 +75,12 @@ export const BadgeTableRow: Component<{
         classList={{ "is-success": hasIdenticalBadge() }}
         title={hasIdenticalBadge() ? "Badge is identical to search" : undefined}
       >
-        {props.badge.badgeName}
+        <div class="tags has-addons are-medium">
+          <span class="tag">{props.badge.badgeName}</span>
+          <Show when={props.badge.badgeNumber}>
+            <span class="tag is-info">{props.badge.badgeNumber}</span>
+          </Show>
+        </div>
       </td>
       <td class="is-vcentered">{props.badge.abandoned}</td>
       <td class="is-vcentered">
