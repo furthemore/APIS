@@ -16,7 +16,7 @@ from idempotency_key import status
 
 eval_bool = lambda x: x.lower() in ('true', '1', 't', 'y', 'yes')
 
-SENTRY_ENABLED = eval_bool(os.environ.get("SENTRY_ENABLED"))
+SENTRY_ENABLED = eval_bool(os.environ.get("SENTRY_ENABLED", ""))
 if SENTRY_ENABLED:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
