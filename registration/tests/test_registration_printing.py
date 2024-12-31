@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
@@ -6,8 +7,11 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
+from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
+import httpx
+import respx
 
 from registration.models import (
     Attendee,
@@ -22,6 +26,28 @@ from registration.tests.common import DEFAULT_EVENT_ARGS, TEST_ATTENDEE_ARGS
 
 now = timezone.now()
 ten_days = timedelta(days=10)
+
+
+@contextmanager
+def patch_gotenberg(have_gotenberg_host):
+    if have_gotenberg_host:
+        yield
+        return
+
+    patcher = override_settings(GOTENBERG_HOST="https://localhost:9125")
+    patcher.enable()
+
+    try:
+        with respx.mock:
+            convert_route = respx.post(
+                "https://localhost:9125/forms/chromium/convert/html"
+            ).mock(return_value=httpx.Response(204))
+
+            yield
+
+            assert convert_route.called
+    finally:
+        patcher.disable()
 
 
 class TestRegistrationPrinting(TestCase):
@@ -105,6 +131,7 @@ class TestRegistrationPrinting(TestCase):
 
     def test_print_gotenberg(self):
         settings.PRINT_RENDERER = "gotenberg"
-        data = self._badge_generates_pdf()
+        with patch_gotenberg(hasattr(settings, "GOTENBERG_HOST")):
+            data = self._badge_generates_pdf()
         # gotenberg responses return a signed data parameter with badge IDs
         self.assertIn("?data=", data["file"])
