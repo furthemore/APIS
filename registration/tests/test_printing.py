@@ -1,5 +1,6 @@
 import os
 from unittest import TestCase
+from unittest.mock import patch
 
 from registration import printing
 
@@ -74,11 +75,21 @@ class TestMain(TestCase):
             "level": "Top Dog",
             "title": "",
         }
-        pdf = self.printing.nametag(**tag)
+        with patch("subprocess.check_call", return_value=0) as patched:
+            pdf = self.printing.nametag(**tag)
         self.assertTrue(os.path.isfile(pdf))
+        self.assertEqual(patched.call_count, 1)
+        args = patched.call_args[0][0]
+        # Last argument is always the filename with path
+        self.assertEqual(args[-1], pdf)
         self.printing.cleanup()
 
     def test_nametags(self) -> None:
-        pdf = self.printing.nametags(TAGS)
+        with patch("subprocess.check_call", return_value=0) as patched:
+            pdf = self.printing.nametags(TAGS)
         self.assertTrue(os.path.isfile(pdf))
+        self.assertEqual(patched.call_count, 1)
+        args = patched.call_args[0][0]
+        # Last argument is always the filename with path
+        self.assertEqual(args[-1], pdf)
         self.printing.cleanup()

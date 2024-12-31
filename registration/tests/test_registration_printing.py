@@ -1,4 +1,7 @@
 from datetime import timedelta
+from pathlib import Path
+from unittest.mock import patch
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -89,7 +92,14 @@ class TestRegistrationPrinting(TestCase):
 
     def test_print_wkhtmltopdf(self):
         settings.PRINT_RENDERER = "wkhtmltopdf"
-        data = self._badge_generates_pdf()
+        with patch("subprocess.check_call", return_value=0) as patched:
+            data = self._badge_generates_pdf()
+        self.assertEqual(patched.call_count, 1)
+        args = patched.call_args[0][0]
+        # Last argument is always the filename with path
+        arg_filename = Path(args[-1]).name
+        response_filename = urlparse(data["file"]).query.removeprefix("file=")
+        self.assertEqual(arg_filename, response_filename)
         # wkhtmltopdf responses return a direct path to the file
         self.assertIn("?file=", data["file"])
 
