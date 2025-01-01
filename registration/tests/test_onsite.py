@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from registration.models import *
 from registration.tests import common
@@ -179,6 +180,16 @@ class TestOnsiteCart(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
 
 
+@override_settings(**{
+    "MQTT_BROKER": {
+        "host": "localhost",
+        "port": 1883,
+    },
+    "MQTT_JWT_SECRET": "secret==",
+    "MQTT_JWT_ALGORITHM": "HS256",
+    "REGISTER_KEY": "",
+    "REGISTER_PRINTER_URI": "",
+})
 class TestOnsiteAdmin(OnsiteBaseTestCase):
     def test_onsite_login_required(self):
         self.client.logout()
@@ -538,6 +549,11 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertEqual(order.status, Order.COMPLETED)
 
 
+@override_settings(
+    MQTT_JWT_SECRET="secret==",
+    MQTT_JWT_ALGORITHM="HS256",
+    REGISTER_PRINTER_URI="",
+)
 class TestDrawers(OnsiteBaseTestCase):
     def setUp(self):
         super().setUp()
