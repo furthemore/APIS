@@ -1,4 +1,5 @@
 *.pyc
+__pycache__/
 fm_eventmanager/dev.py
 fm_eventmanager/settings.py
 fm_eventmanager/settings.py.bak
@@ -6,6 +7,7 @@ fm_eventmanager/settings.py.bak
 venv/
 db.sqlite3
 test-db.sqlite3
+test-db.sqlite3-journal
 registration/resources/nametag/apis/tmp*.html
 .idea/
 .coverage
