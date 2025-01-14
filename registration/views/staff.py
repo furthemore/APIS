@@ -7,7 +7,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render
-from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 import registration.emails
@@ -32,12 +31,6 @@ def new_staff(request, guid):
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {"token": guid, "event": event}
-
-    if event.websiteUrl:
-        context["homeRedirect"] = event.websiteUrl
-    else:
-        context["homeRedirect"] = reverse("registration:index")
-
     if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
         return render(request, "registration/staff/staff-new.html", context)
     elif event.staffRegStart >= today:
@@ -173,12 +166,6 @@ def staff_index(request, guid):
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {"token": guid, "event": event}
-
-    if event.websiteUrl:
-        context["homeRedirect"] = event.websiteUrl
-    else:
-        context["homeRedirect"] = reverse("registration:index")
-
     if event.staffRegStart <= today <= event.staffRegEnd:
         return render(request, "registration/staff/staff-locate.html", context)
     elif event.staffRegStart >= today:
