@@ -540,6 +540,7 @@ class EventAdmin(admin.ModelAdmin):
                 "fields": (
                     "default",
                     "name",
+                    "websiteUrl",
                     "eventStart",
                     "eventEnd",
                     "venue",

@@ -10,11 +10,7 @@
         <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
       </p>
       <p style="float:right;">
-        {% if onsite %}
-          <a href="{% url 'registration:onsite' %}">Back to Main Page</a>
-        {% else %}
-          <a href="{% url 'registration:index' %}">Back to Main Page</a>
-        {% endif %}
+        <a href="{{ homeRedirect }}">Back to Main Page</a>
       </p>
     </div>
   </div>

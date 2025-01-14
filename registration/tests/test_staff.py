@@ -133,6 +133,14 @@ class TestNewStaff(StaffTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"not yet open", response.content)
+        self.assertIn(b'<a href="/registration/">Back to Main Page</a>', response.content)
+
+        self.event.websiteUrl = "https://example.com"
+        self.event.save()
+
+        response = self.client.get(reverse("registration:new_dealer"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'<a href="https://example.com">Back to Main Page</a>', response.content)
 
     @freeze_time(timezone.now() + timedelta(days=20))
     def test_new_staff_invite_good_closed_ended(self):
@@ -147,6 +155,14 @@ class TestNewStaff(StaffTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"has ended", response.content)
+        self.assertIn(b'<a href="/registration/">Back to Main Page</a>', response.content)
+
+        self.event.websiteUrl = "https://example.com"
+        self.event.save()
+
+        response = self.client.get(reverse("registration:new_dealer"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'<a href="https://example.com">Back to Main Page</a>', response.content)
 
     @freeze_time("2000-01-01")
     def test_new_staff_invite_override(self):

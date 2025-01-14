@@ -73,6 +73,12 @@ def new_dealer(request):
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
     context = {"event": event, "venue": venue}
+
+    if event.websiteUrl:
+        context["homeRedirect"] = event.websiteUrl
+    else:
+        context["homeRedirect"] = reverse("registration:index")
+
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
     elif event.dealerRegStart >= today:

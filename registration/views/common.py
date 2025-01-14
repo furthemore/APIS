@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from idempotency_key.decorators import idempotency_key
@@ -214,6 +215,12 @@ def index(request):
             discount = discount.first()
 
     context = {"event": event, "discount": discount}
+
+    if event.websiteUrl:
+        context["homeRedirect"] = event.websiteUrl
+    else:
+        context["homeRedirect"] = reverse("registration:index")
+
     if event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, "registration/registration-form.html", context)
     elif event.attendeeRegStart >= today:

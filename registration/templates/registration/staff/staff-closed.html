@@ -10,7 +10,7 @@
         <a href="mailto:{{ event.staffEmail }}">{{ event.staffEmail }}</a>
       </p>
       <p style="float:right;">
-        <a href="{% url 'registration:index' %}">Back to Main Page</a>
+        <a href="{{ homeRedirect }}">Back to Main Page</a>
       </p>
     </div>
   </div>
