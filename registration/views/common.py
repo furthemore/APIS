@@ -84,33 +84,15 @@ def getOptionsDict(orderItems):
     for oi in orderItems:
         aos = oi.getOptions()
         for ao in aos:
-            if (
-                ao.optionValue == 0
-                or ao.optionValue is None
-                or ao.optionValue == ""
-                or ao.optionValue is False
-            ):
-                pass
-            try:
-                orderDict.append(
-                    {
-                        "name": ao.option.optionName,
-                        "type": ao.option.OptionExtraType,
-                        "value": ao.optionValue,
-                        "id": ao.option.id,
-                        "image": ao.option.optionImage.url,
-                    }
-                )
-            except BaseException:
-                orderDict.append(
-                    {
-                        "name": ao.option.optionName,
-                        "type": ao.option.optionExtraType,
-                        "value": ao.optionValue,
-                        "id": ao.option.id,
-                        "image": None,
-                    }
-                )
+            orderDict.append(
+                {
+                    "name": ao.option.optionName,
+                    "type": ao.option.optionExtraType,
+                    "value": ao.optionValue,
+                    "id": ao.option.id,
+                    "image": ao.option.getOptionImage(),
+                }
+            )
 
     return orderDict
 
