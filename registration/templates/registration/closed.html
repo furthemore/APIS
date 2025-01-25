@@ -6,12 +6,14 @@
       <h1>Registration - {{ event }}</h1>
       <hr>
       <p>Registration for {{ event }} {{ message }}</p>
-      <p>If you have any questions please contact
-        <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
-      </p>
-      <p style="float:right;">
-        <a href="{{ homeRedirect }}">Back to Main Page</a>
-      </p>
+      <div class="link-box">
+        <p>If you have any questions please contact
+          <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
+        </p>
+        <p>
+          <a href="{{ homeRedirect }}">Back to Main Page</a>
+        </p>
+      </div>
     </div>
   </div>
 {% endblock %}

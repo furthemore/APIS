@@ -6,9 +6,14 @@
       <h1>Dealer Registration - {{ event }}</h1>
       <hr>
       <p>Dealer registration for {{ event }} {{ message }}</p>
-      <p>If you have any questions please contact
-        <a href='mailto:{{ event.dealerEmail }}'>{{ event.dealerEmail }}</a></p>
-      <p style='float:right;'><a href="{% url 'registration:index' %}">Back to Main Page</a></p>
+      <div class="link-box">
+        <p>If you have any questions please contact
+          <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a>
+        </p>
+        <p>
+          <a href="{% url 'registration:index' %}">Back to Main Page</a>
+        </p>
+      </div>
     </div>
   </div>
 {% endblock %}
