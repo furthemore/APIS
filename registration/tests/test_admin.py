@@ -3,6 +3,7 @@ import time
 import uuid
 from unittest.mock import patch
 
+from bs4 import BeautifulSoup
 from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
 from django.core import mail
@@ -13,6 +14,7 @@ from django.urls import reverse
 from registration import admin, payments
 from registration.admin import OrderAdmin
 from registration.models import *
+from registration.templatetags import site as site_tags
 from registration.tests.common import *
 
 
@@ -758,3 +760,120 @@ class TestStaffAdmin(AdminTestCase):
             f"Successfully copied 0 staff to {self.event.name}.",
         )
         self.assertEqual(Staff.objects.filter(event=self.new_event).count(), 0)
+
+
+class TestTempToken(TestCase):
+    def setUp(self):
+        self.event = Event(**DEFAULT_EVENT_ARGS)
+        self.event.save()
+
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user.save()
+
+    @patch("registration.emails.send_email")
+    def test_temp_token_send_email(self, mock_send_email):
+        test_email_address = "test-admin@example.net"
+
+        # Login to the admin section
+        logged_in = self.client.login(username="admin", password="admin")
+        self.assertTrue(logged_in)
+
+        # Build out the create temp token form
+        token = getRegistrationToken()
+        form_data = {
+            "token": token,
+            "initial-token": token,
+            "email": test_email_address,
+            "ignore_time_window": "on",
+            "validUntil_0": "2025-01-27",
+            "validUntil_1": "00:00:00",
+            "usedDate_0": "",
+            "usedDate_1": "",
+            "_save": "Save",
+        }
+
+        # Get the CSRF token from the form so we can POST properly
+        response = self.client.get(
+            reverse("admin:registration_temptoken_add")
+        )
+        soup = BeautifulSoup(response.content, "html.parser")
+        form = soup.find("form", id="temptoken_form")
+        csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
+        form_data["csrfmiddlewaretoken"] = csrfmiddlewaretoken.attrs["value"]
+
+        # Create the temp token
+        response = self.client.post(
+            reverse("admin:registration_temptoken_add"),
+            form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content, "html.parser")
+
+        # Make sure we weren't sent back to the create form
+        form = soup.find("form", id="temptoken_form")
+        self.assertIsNone(form)
+
+        # Get the response message
+        content = soup.find("div", attrs={"class": "content"})
+        message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
+        # Standardize quotes
+        message = message.replace('“', '"').replace('”', '"')
+        expected_message = f'The temp token "{token}" was added successfully.'
+        self.assertEqual(message, expected_message)
+
+        # Build out the send staff token email form
+        form_data = {
+            "action": "send_staff_token_email",
+            "select_across": "0",
+            "index": "0",
+            "_selected_action": "1",
+        }
+
+        # Get the CSRF token from the form so we can POST properly
+        response = self.client.get(
+            reverse("admin:registration_temptoken_changelist")
+        )
+        soup = BeautifulSoup(response.content, "html.parser")
+        form = soup.find("form", id="changelist-form")
+        csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
+        form_data["csrfmiddlewaretoken"] = csrfmiddlewaretoken.attrs["value"]
+
+        # Send the email
+        response = self.client.post(
+            reverse("admin:registration_temptoken_changelist"),
+            form_data,
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 200)
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        # Get the response message
+        content = soup.find("div", attrs={"class": "content"})
+        message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
+        expected_message = f"Successfully sent email to {token}"
+        self.assertEqual(message, expected_message)
+
+        # Make sure the email was sent correctly
+        mock_send_email.assert_called_once()
+        recipients = mock_send_email.call_args[0][1]
+        plain_text = mock_send_email.call_args[0][3]
+        html_text = mock_send_email.call_args[0][4]
+
+        # Make sure the recipients are correct
+        self.assertEqual(recipients, [test_email_address])
+
+        # Make sure the correct endpoint was rendered
+        expected_path = reverse("registration:new_staff", args=(token,))
+        expected_fixed_path = f"/registration/newstaff/{token}"
+        self.assertEqual(expected_path, expected_fixed_path)
+
+        # Make sure the correct URL was rendered
+        current_domain = site_tags.current_domain()
+        expected_url = f"https://{current_domain}{expected_path}"
+        self.assertIn(expected_url, plain_text)
+
+        # Make sure the URL is correct in the HTML email
+        expected_html_link = f"<a href='{expected_url}'>{expected_url}</a>"
+        self.assertIn(expected_html_link, html_text)

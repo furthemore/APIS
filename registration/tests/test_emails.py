@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.core import mail
 from django.test import TestCase
+from django.urls import reverse
 
 from registration import emails
 from registration.models import (
@@ -14,6 +15,7 @@ from registration.models import (
     Staff,
     TempToken,
 )
+from registration.templatetags import site as site_tags
 from registration.tests.common import DEFAULT_EVENT_ARGS
 
 
@@ -79,6 +81,20 @@ class TestStaffEmails(EmailTestCase):
         self.assertIn(self.token.token, plain_text)
         self.assertIn(self.token.token, html_text)
         self.assertEqual(recipients, [self.attendee.email])
+
+        # Make sure the correct endpoint was rendered
+        expected_path = reverse("registration:new_staff", args=(self.token.token,))
+        expected_fixed_path = f"/registration/newstaff/{self.token.token}"
+        self.assertEqual(expected_path, expected_fixed_path)
+
+        # Make sure the correct URL was rendered
+        current_domain = site_tags.current_domain()
+        expected_url = f"https://{current_domain}{expected_path}"
+        self.assertIn(expected_url, plain_text)
+
+        # Make sure the URL is correct in the HTML email
+        expected_html_link = f"<a href='{expected_url}'>{expected_url}</a>"
+        self.assertIn(expected_html_link, html_text)
 
     @patch("registration.emails.send_email")
     def test_send_staff_promotion_email(self, mock_send_email):
