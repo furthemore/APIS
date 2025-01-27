@@ -176,6 +176,10 @@ admin.site.register(BanList, BanListAdmin)
 
 
 def send_staff_token_email(modeladmin, request, queryset):
+    if queryset.count() == 0:
+        messages.error("Invalid token selected")
+        return
+
     for token in queryset:
         registration.emails.send_new_staff_email(token)
         token.sent = True
