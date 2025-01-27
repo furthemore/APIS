@@ -852,7 +852,7 @@ class TestTempToken(TestCase):
         # Get the response message
         content = soup.find("div", attrs={"class": "content"})
         message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
-        expected_message = f"Successfully sent email to {token}"
+        expected_message = f"Successfully sent email to {test_email_address}"
         self.assertEqual(message, expected_message)
 
         # Make sure the email was sent correctly

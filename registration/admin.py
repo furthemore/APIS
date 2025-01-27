@@ -189,7 +189,7 @@ def send_staff_token_email(modeladmin, request, queryset):
             request, "Successfully sent emails to %d staff members" % queryset.count()
         )
     else:
-        messages.success(request, "Successfully sent email to %s" % queryset[0])
+        messages.success(request, "Successfully sent email to %s" % queryset[0].email)
 
 
 send_staff_token_email.short_description = "Send New Staff registration email"
