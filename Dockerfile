@@ -1,4 +1,4 @@
-FROM ghcr.io/furthemore/apis:apis-base-3d1a81a
+FROM ghcr.io/furthemore/apis:apis-base-ea2b3e2
 
 LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
