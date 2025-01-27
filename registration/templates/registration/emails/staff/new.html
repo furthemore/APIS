@@ -1,6 +1,6 @@
 {% load site %}
 <h3>Welcome to {{event.name}} staff!</h3>
 <p>If you have already registered as an attendee, do not use this form. Please contact staff services to get the correct registration link.</p>
-<p>Use this link to register as staff: <a href='https://{% current_domain %}{% url 'registration:new_staff' guid=registrationToken %}'>https://{% current_domain %}{% url 'registration:staff' guid=registrationToken %}</a></p>
+<p>Use this link to register as staff: <a href='https://{% current_domain %}{% url 'registration:new_staff' guid=registrationToken %}'>https://{% current_domain %}{% url 'registration:new_staff' guid=registrationToken %}</a></p>
 <p>&nbsp;</p>
 <p>Signature</p>
