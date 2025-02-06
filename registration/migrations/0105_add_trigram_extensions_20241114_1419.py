@@ -7,7 +7,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0103_auto_20241109_1543'),
+        ('registration', '0104_add_event_website_url'),
     ]
 
     operations = [
