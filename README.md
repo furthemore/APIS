@@ -26,7 +26,7 @@ Stack:
     or label printer, with Unicode-supported fonts (Emoji!)
   + Protect admin and volunteer logins with TOTP 2-Factor or FIDO U2F.
 
-![Screenshot of Cash Register Position](https://i.imgur.com/7iJSS8E.png)
+![Screenshot of Cash Register Position](/docs/admin-onsite.png)
 
 ## Quick start
 ### Running Using Published Docker Images
@@ -34,7 +34,7 @@ Stack:
     # Install docker using the instructions at either:
     # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 or
     # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository.
-    
+
     # Download docker-compose.yml and example.env files from this repo
 
     # Create .env from template and edit relevant settings (API keys, etc)
