@@ -666,6 +666,6 @@ class TestSearchFields(OnsiteBaseTestCase):
         self.assertIsNone(fields.badge_ids)
 
         fields = onsite_admin.SearchFields.parse("num:123,456")
-        self.assertIsNone(fields.query)
+        self.assertEqual(fields.query, "")
         self.assertIsNone(fields.birthday)
         self.assertEqual(fields.badge_ids, [123, 456])
