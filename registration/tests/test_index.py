@@ -20,15 +20,17 @@ class Index(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Welcome to the registration system")
 
-    def TestIndexClosedUpcoming(self):
+    def TestIndexClosedUpcoming(self, home_link):
         response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "not yet open")
+        self.assertContains(response, f'<a href="{home_link}">Back to Main Page</a>')
 
-    def TestIndexClosedEnded(self):
+    def TestIndexClosedEnded(self, home_link):
         response = self.client.get(reverse("registration:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "has ended")
+        self.assertContains(response, f'<a href="{home_link}">Back to Main Page</a>')
 
     def TestIndexNoEvent(self):
         response = self.client.get(reverse("registration:index"))
@@ -44,11 +46,28 @@ class Index(TestCase):
         self.event.attendeeRegStart = now + one_day
         self.event.attendeeRegEnd = now + ten_days
         self.event.save()
-        self.TestIndexClosedUpcoming()
+        self.TestIndexClosedUpcoming(home_link="/registration/")
+
+        self.event.websiteUrl = "https://example.com"
+        self.event.save()
+
+        self.TestIndexClosedUpcoming(home_link="https://example.com")
+
+        self.event.websiteUrl = ""
+        self.event.save()
+
         self.event.attendeeRegStart = now - ten_days
         self.event.attendeeRegEnd = now - one_day
         self.event.save()
-        self.TestIndexClosedEnded()
+        self.TestIndexClosedEnded(home_link="/registration/")
+
+        self.event.websiteUrl = "https://example.com"
+        self.event.save()
+
+        self.TestIndexClosedEnded(home_link="https://example.com")
+
+        self.event.websiteUrl = ""
+        self.event.save()
 
 
 class TestTemplateTags(TestCase):

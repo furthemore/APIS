@@ -306,6 +306,12 @@ class Event(LookupTable):
         blank=True,
         default="/code-of-conduct",
     )
+    websiteUrl = models.CharField(
+        max_length=500,
+        verbose_name="Website URL",
+        help_text="URL to the homepage for the convention's primary website.",
+        blank=True,
+    )
     charity = models.ForeignKey(
         Charity, null=True, blank=True, on_delete=models.SET_NULL
     )

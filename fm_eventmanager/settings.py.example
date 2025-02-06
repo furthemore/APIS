@@ -166,8 +166,6 @@ SESSION_COOKIE_AGE = 60*60  # 1hr
 
 # Default email to display as part of error messages
 APIS_DEFAULT_EMAIL = "registration@example.com"
-APIS_DEALER_HEAD = "marketplace@example.com"
-APIS_STAFF_HEAD = "staff@example.com"
 
 # Square API keys
 SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_xxxxxxxxxxxxxxxxxxx'

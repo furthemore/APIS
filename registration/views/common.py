@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from idempotency_key.decorators import idempotency_key
@@ -83,33 +84,15 @@ def getOptionsDict(orderItems):
     for oi in orderItems:
         aos = oi.getOptions()
         for ao in aos:
-            if (
-                ao.optionValue == 0
-                or ao.optionValue is None
-                or ao.optionValue == ""
-                or ao.optionValue is False
-            ):
-                pass
-            try:
-                orderDict.append(
-                    {
-                        "name": ao.option.optionName,
-                        "type": ao.option.OptionExtraType,
-                        "value": ao.optionValue,
-                        "id": ao.option.id,
-                        "image": ao.option.optionImage.url,
-                    }
-                )
-            except BaseException:
-                orderDict.append(
-                    {
-                        "name": ao.option.optionName,
-                        "type": ao.option.optionExtraType,
-                        "value": ao.optionValue,
-                        "id": ao.option.id,
-                        "image": None,
-                    }
-                )
+            orderDict.append(
+                {
+                    "name": ao.option.optionName,
+                    "type": ao.option.optionExtraType,
+                    "value": ao.optionValue,
+                    "id": ao.option.id,
+                    "image": ao.option.getOptionImage(),
+                }
+            )
 
     return orderDict
 
@@ -214,6 +197,12 @@ def index(request):
             discount = discount.first()
 
     context = {"event": event, "discount": discount}
+
+    if event.websiteUrl:
+        context["homeRedirect"] = event.websiteUrl
+    else:
+        context["homeRedirect"] = reverse("registration:index")
+
     if event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, "registration/registration-form.html", context)
     elif event.attendeeRegStart >= today:

@@ -176,6 +176,10 @@ admin.site.register(BanList, BanListAdmin)
 
 
 def send_staff_token_email(modeladmin, request, queryset):
+    if queryset.count() == 0:
+        messages.error("Invalid token selected")
+        return
+
     for token in queryset:
         registration.emails.send_new_staff_email(token)
         token.sent = True
@@ -185,7 +189,7 @@ def send_staff_token_email(modeladmin, request, queryset):
             request, "Successfully sent emails to %d staff members" % queryset.count()
         )
     else:
-        messages.success(request, "Successfully sent email to %s" % queryset[0])
+        messages.success(request, "Successfully sent email to %s" % queryset[0].email)
 
 
 send_staff_token_email.short_description = "Send New Staff registration email"
@@ -540,6 +544,7 @@ class EventAdmin(admin.ModelAdmin):
                 "fields": (
                     "default",
                     "name",
+                    "websiteUrl",
                     "eventStart",
                     "eventEnd",
                     "venue",

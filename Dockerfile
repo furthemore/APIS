@@ -9,7 +9,7 @@ RUN npm install
 COPY ./registration/frontend/ /app/registration/frontend/
 RUN node esbuild.mjs
 
-FROM ghcr.io/furthemore/apis:apis-base-5894de2
+FROM ghcr.io/furthemore/apis:apis-base-0a72b3c
 
 LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
