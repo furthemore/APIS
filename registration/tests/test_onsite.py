@@ -631,3 +631,25 @@ class TestDrawers(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message["success"])
         mock_send_mqtt_message.assert_called_once()
+
+class TestSearchFields(OnsiteBaseTestCase):
+    def test_search_fields_parse(self):
+        fields = onsite_admin.SearchFields.parse("")
+        self.assertEqual(fields.query, "")
+        self.assertIsNone(fields.birthday)
+        self.assertIsNone(fields.badge_ids)
+
+        fields = onsite_admin.SearchFields.parse(" test query ")
+        self.assertEqual(fields.query, "test query")
+        self.assertIsNone(fields.birthday)
+        self.assertIsNone(fields.badge_ids)
+
+        fields = onsite_admin.SearchFields.parse(" test query birthday:1990-01-01 ")
+        self.assertEqual(fields.query, "test query")
+        self.assertEqual(fields.birthday, "1990-01-01")
+        self.assertIsNone(fields.badge_ids)
+
+        fields = onsite_admin.SearchFields.parse("num:123,456")
+        self.assertIsNone(fields.query)
+        self.assertIsNone(fields.birthday)
+        self.assertEqual(fields.badge_ids, [123, 456])

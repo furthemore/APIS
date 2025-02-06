@@ -1,10 +1,13 @@
 import base64
 import json
 import logging
+import re
 import time
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from typing import List, Optional
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -167,6 +170,33 @@ def onsite_admin(request):
     return render(request, "registration/onsite-admin.html", context)
 
 
+@dataclass
+class SearchFields:
+    query: str
+    birthday: Optional[str] = None
+    badge_ids: Optional[List[int]] = None
+
+    @classmethod
+    def parse(cls, query: str) -> "SearchFields":
+        badge_nums = re.search(r"num:([0-9,]+)", query)
+        if badge_nums:
+            try:
+                badge_ids = [int(num) for num in badge_nums.group(1).split(",")]
+                return SearchFields(badge_ids=badge_ids, query="")
+            except ValueError:
+                query = query.replace(badge_nums.group(0), "")
+                pass
+
+        birthday = re.search(r"birthday:([0-9-]{10}) ?", query)
+        if birthday:
+            query = query.replace(birthday.group(0), "")
+            birthday = birthday.group(1)
+
+        query = query.strip()
+
+        return SearchFields(query=query, birthday=birthday)
+
+
 @staff_member_required
 def onsite_admin_search(request):
     event = Event.objects.get(default=True)
@@ -179,35 +209,39 @@ def onsite_admin_search(request):
     def collectBadges(badges):
         for badge in badges:
             data.append({
-            "id": badge.id,
-            "edit_url": reverse("admin:registration_badge_change", args=(badge.id,)),
-            "attendee": {
-                "firstName": badge.attendee.firstName,
-                "lastName": badge.attendee.lastName,
-                "preferredName": badge.attendee.preferredName,
-            },
-            "badgeName": badge.badgeName,
-            "badgeNumber": badge.badgeNumber,
-            "abandoned": badge.abandoned,
-        })
+                "id": badge.id,
+                "edit_url": reverse("admin:registration_badge_change", args=(badge.id,)),
+                "attendee": {
+                    "firstName": badge.attendee.firstName,
+                    "lastName": badge.attendee.lastName,
+                    "preferredName": badge.attendee.preferredName,
+                },
+                "badgeName": badge.badgeName,
+                "badgeNumber": badge.badgeNumber,
+                "abandoned": badge.abandoned,
+            })
 
     query = query.strip()
 
-    try:
-        badge_id = int(query)
-        badges = Badge.objects.filter(event=event, badgeNumber=badge_id)
+    fields = SearchFields.parse(query)
+
+    if fields.badge_ids:
+        badges = Badge.objects.filter(event=event, badgeNumber__in=fields.badge_ids)
         collectBadges(badges)
-    except:
-        pass
 
     fullName = Func(F("attendee__firstName"), Value(" "), F("attendee__lastName"), function="CONCAT")
     greaterSimilarity = Func("name_similarity", "badge_similarity", function="GREATEST")
 
+    filters = (Q(name_similarity__gte=0.4) | Q(badge_similarity__gte=0.6) | Q(attendee__lastName__iexact=fields.query))
+
+    if fields.birthday:
+        filters = filters & Q(attendee__birthdate=fields.birthday)
+
     results = Badge.objects.annotate(
-        name_similarity=TrigramSimilarity(fullName, query),
-        badge_similarity=TrigramSimilarity("badgeName", query),
+        name_similarity=TrigramSimilarity(fullName, fields.query),
+        badge_similarity=TrigramSimilarity("badgeName", fields.query),
     ).filter(
-        Q(event=event) & (Q(name_similarity__gte=0.4) | Q(badge_similarity__gte=0.6) | Q(attendee__lastName__iexact=query))
+        Q(event=event) & filters
     ).order_by(greaterSimilarity).reverse().prefetch_related("attendee")[:50]
 
     collectBadges(results)

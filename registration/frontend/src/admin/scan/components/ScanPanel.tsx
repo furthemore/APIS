@@ -15,7 +15,7 @@ type ScanStore = {
 };
 
 export const ScanPanel: Component<{
-  gotScannedName(name: string): void;
+  gotScannedName(name: string, birthday?: string): void;
   emitter: MqttEmitter;
 }> = (props) => {
   const [store, setStore] = createStore<ScanStore>({
@@ -55,7 +55,7 @@ export const ScanPanel: Component<{
   createEffect(() => {
     const id = store.id;
     if (id) {
-      props.gotScannedName(`${id.first} ${id.last}`);
+      props.gotScannedName(`${id.first} ${id.last}`, id.dob);
     }
   });
 

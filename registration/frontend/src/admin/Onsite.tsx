@@ -8,9 +8,10 @@ import { ConfigContext } from "./providers/config-provider";
 import { ScanPanel } from "./scan";
 import MqttClient from "./mqtt";
 
-export const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> = (
-  props
-) => {
+export const Onsite: Component<{
+  mqtt: MqttClient;
+  cartManager: CartManager;
+}> = (props) => {
   const [searchQuery, setSearchQuery] = createSignal<string>();
 
   return (
@@ -23,7 +24,10 @@ export const Onsite: Component<{ mqtt: MqttClient; cartManager: CartManager }> =
         />
 
         <ScanPanel
-          gotScannedName={(name) => setSearchQuery(name)}
+          gotScannedName={(name, birthday) => {
+            const query = birthday ? `${name} birthday:${birthday}` : name;
+            setSearchQuery(query);
+          }}
           emitter={props.mqtt.emitter}
         />
       </div>

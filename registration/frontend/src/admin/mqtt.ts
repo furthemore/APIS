@@ -42,6 +42,7 @@ export default class MqttClient {
       password: config.auth.token,
       clientId: `${config.auth.user}-${randomClientId}`,
       clean: true,
+      timerVariant: "native",
     });
 
     this.client.on("connect", () => {

@@ -57,8 +57,15 @@ export const AttendeeSearch: Component<{
   });
 
   createEffect(() => {
-    results();
-    setSelectedResult(undefined);
+    const entries = results();
+    if (entries && entries.length === 1) {
+      setSelectedResult(0);
+      if (!props.cartManager.alreadyInCart(entries[0].id)) {
+        props.cartManager.addCartId(entries[0].id);
+      }
+    } else {
+      setSelectedResult(undefined);
+    }
   });
 
   createShortcut(["Alt", "F"], () => {
