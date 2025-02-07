@@ -38,14 +38,11 @@ $(document).ready(function (e) {
         return;
     }
     let [year, month, day] = dob.split('-');
-    if (year) {
+    if (year && month && day) {
         $("#byear").val(year);
         $("#bmonth").val(month);
         $('#bmonth').change();
         $("#bday").val(day);
-    } else {
-        day = $('#bday').val();
-        $('#bmonth').change();
-        $('#bday').val(day);
+        $("#bday").change();
     }
 });
