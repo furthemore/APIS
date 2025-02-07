@@ -125,7 +125,8 @@ export class CartManager {
   public async printBadges(
     ids: number[],
     clearCart: boolean = true,
-    mqttPrint: boolean = false
+    mqttPrint: boolean = false,
+    beforeClearingCart?: () => void
   ): Promise<FallibleRequest<BadgePrintResponse>> {
     const assignData = await this.makeRequest(this.urls.assign_badge_number, {
       method: "POST",
@@ -157,10 +158,11 @@ export class CartManager {
           url,
         })
       );
-    }
 
-    if (clearCart) {
-      await this.clearCart();
+      if (clearCart) {
+        beforeClearingCart?.();
+        await this.clearCart();
+      }
     }
 
     return printData;

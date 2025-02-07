@@ -21,6 +21,7 @@ const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
 export const CartActions: Component<{
   manager: CartManager;
   entries?: CartResponse;
+  clearSearch(): void;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
   const userSettings = useContext(UserSettingsContext)!;
@@ -67,6 +68,7 @@ export const CartActions: Component<{
           printableBadgeIds(),
           setLoading,
           userSettings.userSettings().clear_cart_after_print,
+          props.clearSearch,
           true
         );
       }
@@ -145,6 +147,7 @@ export const CartActions: Component<{
                 printableBadgeIds(),
                 setLoading,
                 userSettings.userSettings().clear_cart_after_print,
+                props.clearSearch,
                 config.mqtt.supports_printing && !holdingShift
               );
             }}
@@ -208,10 +211,11 @@ async function printBadges(
   ids: number[],
   setLoading: Setter<boolean>,
   clearCart: boolean,
+  clearSearch: () => void,
   mqttPrint: boolean
 ) {
   setLoading(true);
-  const resp = await manager.printBadges(ids, clearCart, mqttPrint);
+  const resp = await manager.printBadges(ids, clearCart, mqttPrint, clearSearch);
   setLoading(false);
 
   if (!resp.success) {

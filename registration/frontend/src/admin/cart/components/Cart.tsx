@@ -8,6 +8,7 @@ import { CartManager } from "../cart-manager";
 
 export const Cart: Component<{
   cartManager: CartManager;
+  clearSearch(): void;
 }> = (props) => {
   const [refresh, { refetch: refetchCart }] = createResource(
     async () => await props.cartManager.refreshCart()
@@ -16,6 +17,7 @@ export const Cart: Component<{
   const [clearing, setClearing] = createSignal<boolean>(false);
   const clear = async () => {
     setClearing(true);
+    props.clearSearch();
     await props.cartManager.clearCart();
     setClearing(false);
   };
@@ -88,6 +90,7 @@ export const Cart: Component<{
         <CartActions
           manager={props.cartManager}
           entries={props.cartManager.cartEntries()}
+          clearSearch={props.clearSearch}
         />
       </div>
 

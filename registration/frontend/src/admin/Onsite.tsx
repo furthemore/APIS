@@ -33,7 +33,10 @@ export const Onsite: Component<{
       </div>
 
       <div class="column is-two-fifths is-narrow-tablet">
-        <Cart cartManager={props.cartManager} />
+        <Cart
+          cartManager={props.cartManager}
+          clearSearch={() => setSearchQuery("")}
+        />
       </div>
     </div>
   );
