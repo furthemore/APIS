@@ -83,7 +83,7 @@ export const CartEntries: Component<{
                   <tr>
                     <AttendeeOptionDescription item={item} />
                     <td>
-                      <span>{item.total}</span>
+                      <span>{cleanMoneyAmount(item.total)}</span>
                     </td>
                   </tr>
                 )}
