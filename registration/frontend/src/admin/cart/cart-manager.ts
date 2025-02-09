@@ -191,6 +191,18 @@ export class CartManager {
       this.cartEntries()?.result?.some((badge) => badge.id === id) || false
     );
   }
+
+  public async createAndApplyDiscount(
+    amount: string
+  ): Promise<FallibleRequest<void>> {
+    const formData = new FormData();
+    formData.set("amount", amount);
+
+    return await this.makeRequest(this.urls.onsite_create_discount, {
+      method: "POST",
+      body: formData,
+    });
+  }
 }
 
 export type FallibleRequest<T> =
@@ -237,7 +249,8 @@ export interface EffectiveLevel {
 export interface Discount {
   name: string;
   amount_off: string;
-  percent_off: string;
+  percent_off: number;
+  reason?: string;
 }
 
 export interface AttendeeOption {
@@ -245,6 +258,7 @@ export interface AttendeeOption {
   item: string;
   price: string;
   total: string;
+  reason?: string;
   optionExtraType?: "int" | "bool" | "string" | "ShirtSizes";
   optionValue?: string;
 }
