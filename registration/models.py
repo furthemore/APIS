@@ -78,7 +78,11 @@ def content_file_name(instance, filename):
 class PriceLevelOption(models.Model):
     optionName = models.CharField(max_length=200)
     optionPrice = models.DecimalField(max_digits=6, decimal_places=2)
-    optionExtraType = models.CharField(max_length=100, blank=True)
+    optionExtraType = models.CharField(
+        max_length=100,
+        blank=True,
+        choices=[("int", "Quantity"), ("bool", "Yes/No"), ("ShirtSizes", "Shirt Size"), ("string", "String")],
+    )
     optionExtraType2 = models.CharField(max_length=100, blank=True)
     optionExtraType3 = models.CharField(max_length=100, blank=True)
     optionImage = models.ImageField(upload_to=content_file_name, blank=True, null=True)

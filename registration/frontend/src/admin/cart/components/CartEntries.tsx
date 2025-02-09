@@ -1,8 +1,18 @@
-import { Component, createMemo, For, Show } from "solid-js";
+import {
+  Component,
+  createMemo,
+  For,
+  Match,
+  Show,
+  Switch,
+  useContext,
+} from "solid-js";
 import { Big } from "big.js";
 
 import { CartBadge } from "./CartBadge";
-import { CartManager, CartResponse } from "../cart-manager";
+import { AttendeeOption, CartManager, CartResponse } from "../cart-manager";
+import { ConfigContext } from "../../providers/config-provider";
+import { ApisConfig } from "../../../entrypoints/admin";
 
 export const CartEntries: Component<{
   manager: CartManager;
@@ -69,9 +79,9 @@ export const CartEntries: Component<{
             </thead>
             <tbody>
               <For each={orderItems()}>
-                {(item, index) => (
-                  <tr data-index={index()}>
-                    <td>{`${item.quantity} × ${item.item} (@ ${item.price})`}</td>
+                {(item) => (
+                  <tr>
+                    <AttendeeOptionDescription item={item} />
                     <td>
                       <span>{item.total}</span>
                     </td>
@@ -99,6 +109,54 @@ export const CartEntries: Component<{
     </>
   );
 };
+
+const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = ({
+  item,
+}) => {
+  const config = useContext(ConfigContext)!;
+
+  return (
+    <td>
+      <div>
+        {`${item.quantity} × ${item.item} (${cleanMoneyAmount(item.price)}/ea)`}
+        <Show
+          when={
+            item.optionExtraType === "ShirtSizes" ||
+            item.optionExtraType == "bool"
+          }
+        >
+          {` - `}
+          <span class="has-text-weight-bold">
+            <Switch>
+              <Match when={item.optionExtraType === "ShirtSizes"}>
+                {getShirtSizeName(config, item.optionValue)}
+              </Match>
+              <Match when={item.optionExtraType === "bool"}>
+                {item.optionValue === "True" ? "Yes" : "No"}
+              </Match>
+            </Switch>
+          </span>
+        </Show>
+      </div>
+      <Show when={item.optionExtraType === "string"}>
+        <div class="has-text-weight-bold">{item.optionValue}</div>
+      </Show>
+    </td>
+  );
+};
+
+function getShirtSizeName(
+  config: ApisConfig,
+  optionValue?: string
+): string | undefined {
+  if (!optionValue) return;
+
+  const sizeName = config.shirt_sizes.find(
+    (entry) => entry.id === parseInt(optionValue, 10)
+  )?.name;
+
+  return sizeName || optionValue;
+}
 
 export function cleanMoneyAmount(input?: string): string {
   if (!input || input == "?") return "$0.00";

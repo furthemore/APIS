@@ -23,6 +23,7 @@ export interface ApisConfig {
   errors: ApisError[];
   printer_uri: string;
   mqtt: ApisMqttConfig;
+  shirt_sizes: ApisShirtSize[];
   urls: ApisUrls;
   permissions: ApisPermissions;
   terminals: ApisTerminalSettings;
@@ -51,6 +52,11 @@ export interface ApisMqttAuth {
   user: string;
   token: string;
   base_topic: string;
+}
+
+export interface ApisShirtSize {
+  id: number;
+  name: string;
 }
 
 export interface ApisUrls {

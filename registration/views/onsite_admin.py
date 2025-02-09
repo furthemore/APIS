@@ -34,6 +34,7 @@ from registration.models import (
     Firebase,
     Order,
     OrderItem,
+    ShirtSizes,
 )
 from registration.mqtt import send_mqtt_message
 from registration.pushy import PushyAPI, PushyError
@@ -129,6 +130,7 @@ def onsite_admin(request):
                 "auth": mqtt_auth,
                 "supports_printing": getattr(settings, "PRINT_VIA_MQTT", False),
             },
+            "shirt_sizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
             "urls": {
                 "assign_badge_number": reverse("registration:assign_badge_number"),
                 "cash_deposit": reverse("registration:cash_deposit"),
@@ -854,21 +856,20 @@ def get_discount_dict(discount):
 def get_line_items(attendee_options):
     out = []
     for option in attendee_options:
+        option_dict = {
+            "item": option.option.optionName,
+            "price": option.option.optionPrice,
+            "quantity": 1,
+            "total": option.option.optionPrice,
+            "optionExtraType": option.option.optionExtraType,
+            "optionValue": option.optionValue,
+        }
+
         if option.option.optionExtraType == "int":
-            if option.optionValue:
-                option_dict = {
-                    "item": option.option.optionName,
-                    "price": option.option.optionPrice,
-                    "quantity": option.optionValue,
-                    "total": option.option.optionPrice * Decimal(option.optionValue),
-                }
-        else:
-            option_dict = {
-                "item": option.option.optionName,
-                "price": option.option.optionPrice,
-                "quantity": 1,
-                "total": option.option.optionPrice,
-            }
+            val = Decimal(option.optionValue)
+            option_dict["quantity"] = int(val)
+            option_dict["total"] = option.option.optionPrice * val
+
         out.append(option_dict)
     return out
 

@@ -1,10 +1,7 @@
 import { Component, createSignal } from "solid-js";
-import { render } from "solid-js/web";
 
-import { ApisConfig } from "../entrypoints/admin";
 import { AttendeeSearch } from "./attendee-search";
 import { Cart, CartManager } from "./cart";
-import { ConfigContext } from "./providers/config-provider";
 import { ScanPanel } from "./scan";
 import MqttClient from "./mqtt";
 

@@ -245,6 +245,8 @@ export interface AttendeeOption {
   item: string;
   price: string;
   total: string;
+  optionExtraType?: "int" | "bool" | "string" | "ShirtSizes";
+  optionValue?: string;
 }
 
 export interface BadgePrintResponse {
