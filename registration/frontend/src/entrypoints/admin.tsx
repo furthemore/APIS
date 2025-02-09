@@ -74,6 +74,7 @@ export interface ApisUrls {
   onsite_admin_clear_cart: string;
   onsite_admin_search: string;
   onsite_admin: string;
+  onsite_create_discount: string;
   onsite_print_badges: string;
   onsite_print_clear: string;
   onsite_remove_from_cart: string;
