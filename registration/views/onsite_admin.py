@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import re
@@ -34,7 +35,6 @@ from registration.models import (
     Order,
     OrderItem,
     ShirtSizes,
-    get_token,
 )
 from registration.mqtt import send_mqtt_message
 from registration.pushy import PushyAPI, PushyError
@@ -1051,6 +1051,11 @@ def onsite_admin_clear_cart(request):
     return JsonResponse({"success": True, "cart": []})
 
 
+def get_b32_uuid():
+    uid = base64.b32encode(uuid.uuid4().bytes).decode("ascii")
+    return uid[:26]
+
+
 @staff_member_required
 @permission_required("order.discount")
 def create_discount(request):
@@ -1079,7 +1084,7 @@ def create_discount(request):
         )
 
     discount = Discount(
-        codeName=f"ONSITE-{get_token(8)}",
+        codeName=get_b32_uuid(),
         percentOff=percent_off,
         amountOff=amount_off,
         startDate=timezone.now(),
