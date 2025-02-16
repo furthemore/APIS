@@ -57,16 +57,14 @@
 
   <script type="text/javascript">
 
-      $("#lookup").click(doRegister);
-
       function doRegister() {
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          let errorCount = $(".has-error").length;
           if (errorCount > 0) {
               return;
           }
 
-          var data = {
+          let data = {
               'email': $("#email").val(), 'token': $("#token").val()
           };
           $.ajax({
@@ -86,6 +84,10 @@
               }
           });
       }
+
+      $(document).ready(function () {
+          $("#lookup").click(doRegister);
+      });
 
   </script>
 
