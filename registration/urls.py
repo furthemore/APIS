@@ -347,4 +347,19 @@ urlpatterns = [
         registration.views.webhooks.square_webhook,
         name="square_webhook",
     ),
+    url(
+        r"^terminal/register$",
+        registration.views.onsite_admin.terminal_register,
+        name="terminal_register"
+    ),
+    url(
+        r"^terminal/square/token$",
+        registration.views.onsite_admin.terminal_square_token,
+        name="terminal_square_token"
+    ),
+    url(
+        r"^terminal/square/completed$",
+        registration.views.onsite_admin.complete_square_transaction,
+        name="terminal_square_completed"
+    )
 ]

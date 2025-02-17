@@ -1,6 +1,7 @@
 import random
 import string
 from decimal import Decimal
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -922,6 +923,7 @@ class Firebase(models.Model):
     webview = models.CharField(
         max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
     )
+    terminal_token = models.CharField(max_length=500, null=True, blank=True, default=uuid.uuid4)
 
     def __str__(self):
         return self.name

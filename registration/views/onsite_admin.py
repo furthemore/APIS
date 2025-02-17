@@ -23,6 +23,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
+from paho.mqtt import publish
+from square.client import Client as SquareClient
 
 from registration import admin, mqtt, payments
 from registration.admin import TWOPLACES
@@ -253,14 +255,50 @@ def onsite_admin_search(request):
 
 @staff_member_required
 def close_terminal(request):
-    data = {"command": "close"}
-    return send_message_to_terminal(request, data)
+    return send_mqtt_message_to_terminal(request, {
+        "close": {},
+    })
 
 
 @staff_member_required
 def open_terminal(request):
-    data = {"command": "open"}
-    return send_message_to_terminal(request, data)
+    return send_mqtt_message_to_terminal(request, {
+        "open": {},
+    })
+
+
+def send_mqtt_message_to_terminal(request, data):
+    url_terminal = request.GET.get("terminal", None)
+    session_terminal = request.session.get("terminal", None)
+
+    if url_terminal is not None:
+        try:
+            active = Firebase.objects.get(id=int(url_terminal))
+            request.session["terminal"] = active.id
+            session_terminal = active.id
+        except Firebase.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Unknown payment terminal ID"}, status=404)
+
+    try:
+        active = Firebase.objects.get(id=session_terminal)
+    except Firebase.DoesNotExist:
+        return JsonResponse({"success": False, "message": "No valid terminals provided"}, status=400)
+
+    name = active.name
+    topic = mqtt.get_topic("terminal", name)
+
+    try:
+        publish.single(
+            topic,
+            json.dumps(data),
+            retain=False,
+            hostname=settings.MQTT_BROKER["host"],
+            port=settings.MQTT_BROKER["port"],
+        )
+    except Exception as ex:
+        return JsonResponse({"success": False, "message": "Could not send MQTT message"}, status=400)
+
+    return JsonResponse({"success": True})
 
 
 @staff_member_required
@@ -325,7 +363,6 @@ def send_message_to_terminal(request, data):
 @staff_member_required
 def enable_payment(request):
     cart = request.session.get("cart", None)
-    terminal = get_active_terminal(request)
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
@@ -359,10 +396,16 @@ def enable_payment(request):
     # Force a cart refresh to get the latest order reference to the terminal
     onsite_admin_cart(request)
 
-    data = {"command": "process_payment"}
-    if terminal:
-        data["terminal"] = terminal.pk
-    return send_message_to_terminal(request, data)
+    data = build_result(cart)
+
+    amount = 100 if settings.DEBUG else int(data["total"] * 100)
+    return send_mqtt_message_to_terminal(request, {
+        "processPayment": {
+            "total": amount,
+            "reference": data["reference"],
+            "note": render_to_string("registration/customer-note.txt", data),
+        }
+    })
 
 
 def notify_terminal(request, data):
@@ -478,16 +521,44 @@ def admin_push_cart_refresh(request):
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
 def complete_square_transaction(request):
-    key = request.GET.get("key", "")
-    reference = request.GET.get("reference")
-    terminal_name = request.GET.get("terminal")
-    clientTransactionId = request.GET.get("clientTransactionId")
-    serverTransactionId = request.GET.get("serverTransactionId")
+    terminal = None
 
-    if key != settings.REGISTER_KEY:
-        return JsonResponse(
-            {"success": False, "reason": "Incorrect API key"}, status=401
-        )
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        key = data.get("key")
+        reference = data.get("reference")
+        clientTransactionId = data.get("clientTransactionId")
+        serverTransactionId = data.get("serverTransactionId")
+
+        try:
+            terminal = Firebase.objects.get(terminal_token=key)
+            request.session["terminal"] = terminal.id
+        except Firebase.DoesNotExist:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "reason": "Unknown token",
+                },
+                status=401,
+            )
+    else:
+        key = request.GET.get("key", "")
+        reference = request.GET.get("reference", None)
+        clientTransactionId = request.GET.get("clientTransactionId", None)
+        serverTransactionId = request.GET.get("serverTransactionId", None)
+        terminalName = request.GET.get("terminal", request.session.get("terminal", None))
+
+        try:
+            terminal = Firebase.objects.get(name=terminalName)
+            request.session["terminal"] = terminal.id
+        except Firebase.DoesNotExist:
+            request.session["terminal"] = None
+
+        if key != settings.REGISTER_KEY:
+            return JsonResponse(
+                {"success": False, "reason": "Incorrect API key"}, status=401
+            )
 
     if reference is None or clientTransactionId is None:
         return JsonResponse(
@@ -497,12 +568,6 @@ def complete_square_transaction(request):
             },
             status=400,
         )
-
-    try:
-        terminal = Firebase.objects.get(name=terminal_name)
-        request.session["terminal"] = terminal.id
-    except Firebase.DoesNotExist:
-        request.session["terminal"] = None
 
     # Things we need:
     #   orderID or reference (passed to square by metadata)
@@ -573,9 +638,10 @@ def combine_orders(orders):
     # If there is more than one order, we should flatten them into one by reassigning all these
     # orderItems to the first order, and delete the rest.
     first_order = orders[0]
-    if len(orders) > 1:
 
+    if len(orders) > 1:
         order_items = []
+
         for order in orders[1:]:
             order_items += order.orderitem_set.all()
             first_order.notes += (
@@ -874,12 +940,7 @@ def get_line_items(attendee_options):
     return out
 
 
-@staff_member_required
-def onsite_admin_cart(request):
-    # Returns dataset to render onsite cart preview
-    request.session["heartbeat"] = time.time()  # Keep session alive
-    cart = request.session.get("cart", [])
-
+def build_result(cart):
     badges = []
     for pk in cart:
         try:
@@ -895,7 +956,7 @@ def onsite_admin_cart(request):
     subtotal = 0
     total_discount = 0
     result = []
-    first_order = None
+    orders = []
     for badge in badges:
         oi = badge.getOrderItems()
         level = None
@@ -915,8 +976,7 @@ def onsite_admin_cart(request):
         subtotal += level_subtotal
 
         order = badge.getOrder()
-        if first_order is None:
-            first_order = order
+        orders.append(order)
 
         holdType = None
         if badge.attendee.holdType:
@@ -948,12 +1008,17 @@ def onsite_admin_cart(request):
         result.append(item)
 
     total = subtotal
-    charityDonation = "?"
-    orgDonation = "?"
-    if order is not None:
+    paid = Decimal(0)
+
+    charityDonation = 0
+    orgDonation = 0
+
+    for order in orders:
         total += order.orgDonation + order.charityDonation
-        charityDonation = order.charityDonation
-        orgDonation = order.orgDonation
+        paid += (order.total + order.orgDonation + order.charityDonation) if order.billingType != Order.UNPAID and order.status in (Order.CAPTURED, Order.COMPLETED) else 0
+
+        charityDonation += order.charityDonation
+        orgDonation += order.orgDonation
 
     data = {
         "success": True,
@@ -963,6 +1028,7 @@ def onsite_admin_cart(request):
         "total_discount": total_discount,
         "charityDonation": charityDonation,
         "orgDonation": orgDonation,
+        "paid": paid,
     }
 
     if order is not None:
@@ -972,7 +1038,44 @@ def onsite_admin_cart(request):
         data["order_id"] = None
         data["reference"] = None
 
-    notify_terminal(request, data)
+    return data
+
+
+@staff_member_required
+def onsite_admin_cart(request):
+    # Returns dataset to render onsite cart preview
+    request.session["heartbeat"] = time.time()  # Keep session alive
+    cart = request.session.get("cart", [])
+
+    data = build_result(cart)
+
+    terminal_data = {
+        "updateCart": {
+            "cart": {
+                "badges": list(map(lambda badge: {
+                    "id": badge["id"],
+                    "firstName": badge["firstName"],
+                    "lastName": badge["lastName"],
+                    "badgeName": badge["badgeName"],
+                    "effectiveLevel": {
+                        "name": badge["effectiveLevel"]["name"],
+                        "price": str(badge["level_subtotal"]),
+                    },
+                    "discountedPrice": str(badge["level_total"]),
+                }, data["result"])),
+                "charityDonation": str(data["charityDonation"]),
+                "organizationDonation": str(data["orgDonation"]),
+                "totalDiscount": str(data["total_discount"]),
+                "total": str(data["total"]),
+                "paid": str(data["paid"]),
+            }
+        }
+    }
+
+    if data["total"] != 0:
+        send_mqtt_message_to_terminal(request, terminal_data)
+    else:
+        send_mqtt_message_to_terminal(request, {"clearCart": {}})
 
     return JsonResponse(data)
 
@@ -1043,7 +1146,7 @@ def onsite_remove_from_cart(request):
 @staff_member_required
 def onsite_admin_clear_cart(request):
     request.session["cart"] = []
-    send_message_to_terminal(request, {"command": "clear"})
+    send_mqtt_message_to_terminal(request, {"clearCart": {}})
     return JsonResponse({"success": True, "cart": []})
 
 
@@ -1119,3 +1222,69 @@ def onsite_print_clear(request):
     badge.save()
 
     return JsonResponse({"success": True})
+
+
+@csrf_exempt
+def terminal_register(request):
+    data = json.loads(request.body)
+
+    token = data.get("token", None)
+    if token != settings.REGISTER_KEY:
+        return JsonResponse(
+            {"success": False, "reason": "Incorrect API token"}, status=401
+        )
+
+    name = "".join(filter(str.isalnum, data.get("terminalName", "unnamed"))).lower()
+
+    key = str(uuid.uuid4())
+    try:
+        terminal = Firebase.objects.get(name=name)
+        terminal.terminal_token = key
+        terminal.save()
+    except Firebase.DoesNotExist:
+        terminal = Firebase.objects.create(name=name, terminal_token=key)
+
+    topic = mqtt.get_topic("terminal", terminal.name)
+    password = mqtt.get_token(terminal.name, subs=[topic])
+
+    return JsonResponse({
+        "terminalName": name,
+        "host": f"https://{request.get_host()}/registration",
+        "token": token,
+        "key": key,
+        "webViewURL": terminal.webview,
+        "themeColor": terminal.background_color,
+        "mqttHost": settings.REGISTER_MQTT["host"],
+        "mqttPort": settings.REGISTER_MQTT["port"],
+        "mqttTopic": topic,
+        "mqttUserName": name,
+        "mqttPassword": password,
+        "allowCash": settings.DEBUG,
+    })
+
+@csrf_exempt
+def terminal_square_token(request):
+    key = request.headers['x-register-key']
+
+    try:
+        Firebase.objects.get(terminal_token=key)
+    except Firebase.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "reason": "Incorrect API key"}, status=401
+        )
+
+    client = SquareClient(
+        access_token=settings.SQUARE_ACCESS_TOKEN,
+        environment=settings.SQUARE_ENVIRONMENT,
+    )
+
+    result = client.mobile_authorization.create_mobile_authorization_code(
+        body = {
+            "location_id": settings.SQUARE_LOCATION_ID,
+        }
+    )
+
+    if result.is_success():
+        return JsonResponse(result.body["authorization_code"], safe=False)
+    else:
+        return JsonResponse({"success": False, "reason": "Could not get mobile authorization code."}, status=500)
