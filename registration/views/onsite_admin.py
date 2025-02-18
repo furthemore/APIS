@@ -16,7 +16,7 @@ from django.contrib.messages import get_messages
 from django.contrib.postgres.search import TrigramSimilarity
 from django.core.signing import TimestampSigner
 from django.db.models import F, Func, Q, Sum, Value
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -37,6 +37,7 @@ from registration.models import (
     Order,
     OrderItem,
     ShirtSizes,
+    get_token,
 )
 from registration.mqtt import send_mqtt_message
 from registration.pushy import PushyAPI, PushyError
@@ -398,58 +399,13 @@ def enable_payment(request):
 
     data = build_result(cart)
 
-    amount = 100 if settings.DEBUG else int(data["total"] * 100)
     return send_mqtt_message_to_terminal(request, {
         "processPayment": {
-            "total": amount,
+            "total": int(data["total"] * 100),
             "reference": data["reference"],
             "note": render_to_string("registration/customer-note.txt", data),
         }
     })
-
-
-def notify_terminal(request, data):
-    # Generates preview layout based on cart items and sends the result
-    # to the apropriate payment terminal for display to the customer
-    term = request.session.get("terminal", None)
-    if term is None:
-        return
-    try:
-        active = Firebase.objects.get(id=term)
-    except Firebase.DoesNotExist:
-        return
-
-    html = render_to_string("registration/customer-display.html", data)
-    note = render_to_string("registration/customer-note.txt", data)
-
-    logger.info(note)
-
-    if len(data["result"]) == 0:
-        display = {"command": "clear"}
-    else:
-        display = {
-            "command": "display",
-            "html": html,
-            "note": note,
-            "total": int(data["total"] * 100),
-            "reference": data["reference"],
-        }
-
-    logger.info(display)
-
-    # Send cloud push message
-    logger.debug(note)
-    to = [
-        active.token,
-    ]
-
-    try:
-        PushyAPI.send_push_notification(display, to, None)
-    except PushyError as e:
-        logger.error("Problem while sending push notification:")
-        logger.error(e)
-        return False
-    return True
 
 
 @staff_member_required
@@ -521,50 +477,30 @@ def admin_push_cart_refresh(request):
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
 def complete_square_transaction(request):
-    terminal = None
+    key = request.headers.get("authorization").removeprefix("Bearer ")
 
-    if request.method == 'POST':
-        data = json.loads(request.body)
-
-        key = data.get("key")
-        reference = data.get("reference")
-        clientTransactionId = data.get("clientTransactionId")
-        serverTransactionId = data.get("serverTransactionId")
-
-        try:
-            terminal = Firebase.objects.get(terminal_token=key)
-            request.session["terminal"] = terminal.id
-        except Firebase.DoesNotExist:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "reason": "Unknown token",
-                },
-                status=401,
-            )
-    else:
-        key = request.GET.get("key", "")
-        reference = request.GET.get("reference", None)
-        clientTransactionId = request.GET.get("clientTransactionId", None)
-        serverTransactionId = request.GET.get("serverTransactionId", None)
-        terminalName = request.GET.get("terminal", request.session.get("terminal", None))
-
-        try:
-            terminal = Firebase.objects.get(name=terminalName)
-            request.session["terminal"] = terminal.id
-        except Firebase.DoesNotExist:
-            request.session["terminal"] = None
-
-        if key != settings.REGISTER_KEY:
-            return JsonResponse(
-                {"success": False, "reason": "Incorrect API key"}, status=401
-            )
-
-    if reference is None or clientTransactionId is None:
+    try:
+        terminal = Firebase.objects.get(terminal_token=key)
+        request.session["terminal"] = terminal.id
+    except Firebase.DoesNotExist:
         return JsonResponse(
             {
                 "success": False,
-                "reason": "Reference and clientTransactionId are required parameters",
+                "reason": "Unknown token",
+            },
+            status=401,
+        )
+
+    data = json.loads(request.body)
+
+    reference = data.get("reference")
+    paymentId = data.get("paymentId")
+
+    if reference is None or paymentId is None:
+        return JsonResponse(
+            {
+                "success": False,
+                "reason": "reference and transactionId are required parameters",
             },
             status=400,
         )
@@ -591,8 +527,7 @@ def complete_square_transaction(request):
 
     store_api_data = {
         "onsite": {
-            "client_transaction_id": clientTransactionId,
-            "server_transaction_id": serverTransactionId,
+            "payment_id": paymentId,
         },
     }
 
@@ -600,23 +535,14 @@ def complete_square_transaction(request):
     order.billingType = Order.CREDIT
 
     # Lookup the payment(s?) associated with this order:
-    if serverTransactionId:
-        for retry in range(4):
-            payment_ids = payments.get_payments_from_order_id(serverTransactionId)
-            if payment_ids:
-                break
-            time.sleep(0.5)
-        if payment_ids:
-            store_api_data["payment"] = {"id": payment_ids[0]}
-            order.status = Order.COMPLETED
-            order.settledDate = timezone.now()
-            order.apiData = json.dumps(store_api_data)
-        else:
-            order.status = Order.CAPTURED
-            order.notes = "Need to refresh payment."
+    if paymentId:
+        store_api_data["payment"] = {"id": paymentId}
+        order.status = Order.COMPLETED
+        order.settledDate = timezone.now()
+        order.apiData = json.dumps(store_api_data)
     else:
         order.status = Order.CAPTURED
-        order.notes = "No serverTransactionId."
+        order.notes = "No paymentId."
 
     order.status = Order.COMPLETED
     order.settledDate = timezone.now()
@@ -626,7 +552,7 @@ def complete_square_transaction(request):
 
     admin_push_cart_refresh(request)
 
-    if serverTransactionId:
+    if paymentId:
         status, errors = payments.refresh_payment(order, store_api_data)
         if not status:
             return JsonResponse({"success": False, "error": errors}, status=210)
@@ -990,7 +916,7 @@ def build_result(cart):
 
         item = {
             "id": badge.id,
-            "firstName": badge.attendee.firstName,
+            "firstName": badge.attendee.preferredName or badge.attendee.firstName,
             "lastName": badge.attendee.lastName,
             "badgeName": badge.badgeName,
             "badgeNumber": badge.badgeNumber,
@@ -1252,6 +1178,7 @@ def terminal_register(request):
         "host": f"https://{request.get_host()}/registration",
         "token": token,
         "key": key,
+        "locationId": settings.SQUARE_LOCATION_ID,
         "webViewURL": terminal.webview,
         "themeColor": terminal.background_color,
         "mqttHost": settings.REGISTER_MQTT["host"],
@@ -1259,32 +1186,67 @@ def terminal_register(request):
         "mqttTopic": topic,
         "mqttUserName": name,
         "mqttPassword": password,
-        "allowCash": settings.DEBUG,
     })
 
 @csrf_exempt
 def terminal_square_token(request):
-    key = request.headers['x-register-key']
+    key = request.headers.get("authorization").removeprefix("Bearer ")
 
     try:
-        Firebase.objects.get(terminal_token=key)
+        terminal = Firebase.objects.get(terminal_token=key)
     except Firebase.DoesNotExist:
         return JsonResponse(
             {"success": False, "reason": "Incorrect API key"}, status=401
         )
 
+    base_url = "https://connect.squareup.com"
+    if settings.DEBUG:
+        base_url = "https://connect.squareupsandbox.com"
+
+    scopes = ["MERCHANT_PROFILE_READ", "PAYMENTS_WRITE", "PAYMENTS_WRITE_IN_PERSON"]
+    state = get_token(64)
+
+    url = f"{base_url}/oauth2/authorize?client_id={settings.SQUARE_APPLICATION_ID}&state={state}&scope={'+'.join(scopes)}"
+
+    topic = f"{mqtt.get_topic('admin', terminal.name)}/authorize_terminal"
+    send_mqtt_message(topic, payload={
+        "url": url,
+        "state": state,
+    })
+
+    return JsonResponse(True, safe=False)
+
+def oauth_square(request):
+    url_state = request.GET.get("state")
+    cookie_state = request.COOKIES.get("square_oauth_state")
+
+    if url_state != cookie_state:
+        return JsonResponse({"success": False, "reason": "Saved state did not match URL state"}, status=400)
+
+    code = request.GET.get("code")
+
     client = SquareClient(
-        access_token=settings.SQUARE_ACCESS_TOKEN,
         environment=settings.SQUARE_ENVIRONMENT,
     )
 
-    result = client.mobile_authorization.create_mobile_authorization_code(
-        body = {
-            "location_id": settings.SQUARE_LOCATION_ID,
-        }
-    )
+    result = client.o_auth.obtain_token({
+        "client_id": settings.SQUARE_APPLICATION_ID,
+        "client_secret": settings.SQUARE_APPLICATION_SECRET,
+        "code": code,
+        "grant_type": "authorization_code"
+    })
 
     if result.is_success():
-        return JsonResponse(result.body["authorization_code"], safe=False)
+        send_mqtt_message_to_terminal(request, {
+            "updateToken": {
+                "accessToken": result.body["access_token"],
+                "refreshToken": result.body["refresh_token"]
+            }
+        })
+        resp = HttpResponseRedirect(reverse("registration:onsite_admin"))
     else:
-        return JsonResponse({"success": False, "reason": "Could not get mobile authorization code."}, status=500)
+        print(result.errors)
+        resp = JsonResponse({"success": False, "reason": "Could not fetch tokens"})
+
+    resp.delete_cookie("square_oauth_state")
+    return resp

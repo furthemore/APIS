@@ -361,5 +361,10 @@ urlpatterns = [
         r"^terminal/square/completed$",
         registration.views.onsite_admin.complete_square_transaction,
         name="terminal_square_completed"
+    ),
+    url(
+        r"^oauth/square$",
+        registration.views.onsite_admin.oauth_square,
+        name="oauth_square",
     )
 ]
