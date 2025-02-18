@@ -1,4 +1,3 @@
-import json
 import logging
 import uuid
 from datetime import datetime
@@ -16,6 +15,7 @@ client = Client(
 payments_api = client.payments
 refunds_api = client.refunds
 payments_api = client.payments
+orders_api = client.orders
 
 logger = logging.getLogger("registration.payments")
 

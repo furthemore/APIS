@@ -24,7 +24,6 @@ from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 from paho.mqtt import publish
-from square.client import Client as SquareClient
 
 from registration import admin, mqtt, payments
 from registration.admin import TWOPLACES
@@ -268,7 +267,7 @@ def open_terminal(request):
     })
 
 
-def send_mqtt_message_to_terminal(request, data):
+def get_terminal_from_request(request) -> Optional[Firebase]:
     url_terminal = request.GET.get("terminal", None)
     session_terminal = request.session.get("terminal", None)
 
@@ -278,12 +277,20 @@ def send_mqtt_message_to_terminal(request, data):
             request.session["terminal"] = active.id
             session_terminal = active.id
         except Firebase.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Unknown payment terminal ID"}, status=404)
+            return None
 
     try:
         active = Firebase.objects.get(id=session_terminal)
     except Firebase.DoesNotExist:
-        return JsonResponse({"success": False, "message": "No valid terminals provided"}, status=400)
+        return None
+
+    return active
+
+
+def send_mqtt_message_to_terminal(request, data):
+    active = get_terminal_from_request(request)
+    if not active:
+        return JsonResponse({"sucess": False, "reason": "No terminal associated with request."})
 
     name = active.name
     topic = mqtt.get_topic("terminal", name)
@@ -297,7 +304,7 @@ def send_mqtt_message_to_terminal(request, data):
             port=settings.MQTT_BROKER["port"],
         )
     except Exception as ex:
-        return JsonResponse({"success": False, "message": "Could not send MQTT message"}, status=400)
+        return JsonResponse({"success": False, "reason": "Could not send MQTT message"}, status=400)
 
     return JsonResponse({"success": True})
 
@@ -399,8 +406,102 @@ def enable_payment(request):
 
     data = build_result(cart)
 
+    terminal = get_terminal_from_request(request)
+    if not terminal:
+        return JsonResponse({"sucess": False, "reason": "No terminal associated with request."})
+
+    discounts = []
+    line_items = []
+    for badge in data["result"]:
+        badge_applied_discounts = []
+
+        if badge["discount"]:
+            discount = badge["discount"]
+            uid = f"discount-{badge['id']}"
+
+            if discount["percent_off"] > 0:
+                discounts.append({
+                    "uid": uid,
+                    "name": f"Discount {discount['name']}",
+                    "type": "FIXED_PERCENTAGE",
+                    "scope": "LINE_ITEM",
+                    "percentage": discount["percent_off"],
+                })
+            elif discount["amount_off"] > 0:
+                discounts.append({
+                    "uid": uid,
+                    "name": f"Discount {discount['name']}",
+                    "type": "FIXED_AMOUNT",
+                    "scope": "LINE_ITEM",
+                    "amount_money": {
+                        "amount": int(discount["amount_off"] * 100),
+                        "currency": "USD",
+                    },
+                })
+
+            badge_applied_discounts.append({
+                "discounts_uid": uid,
+            })
+
+        line_items.append({
+            "uid": f"badge-{badge['id']}",
+            "name": f"{badge['effectiveLevel']['name']} Badge",
+            "note": f"{badge['badgeName']} ({badge['badgeNumber']})",
+            "quantity": "1",
+            "item_type": "ITEM",
+            "base_price_money": {
+                "amount": int(badge['level_subtotal'] * 100),
+                "currency": "USD",
+            },
+            "applied_discounts": badge_applied_discounts,
+        })
+
+    if data["charityDonation"] > 0:
+        line_items.append({
+            "uid": "donation-charity",
+            "name": f"Donation to charity",
+            "quantity": "1",
+            "item_type": "ITEM",
+            "base_price_money": {
+                "amount": int(data["charityDonation"] * 100),
+                "currency": "USD",
+            }
+        })
+
+    if data["orgDonation"] > 0:
+        line_items.append({
+            "uid": "donation-organization",
+            "name": f"Donation to organization",
+            "quantity": "1",
+            "item_type": "ITEM",
+            "base_price_money": {
+                "amount": int(data["orgDonation"] * 100),
+                "currency": "USD",
+            }
+        })
+
+    order_data = {
+        "order": {
+            "location_id": settings.SQUARE_LOCATION_ID,
+            "reference_id": data["reference"],
+            "source": {
+                "name": terminal.name,
+            },
+            "line_items": line_items,
+        }
+    }
+
+    result = payments.orders_api.create_order(order_data)
+
+    order_id = None
+    if result.is_success():
+        order_id = result.body["order"]["id"]
+    else:
+        logger.error("failed to create order: %s", result.errors)
+
     return send_mqtt_message_to_terminal(request, {
         "processPayment": {
+            "orderId": order_id,
             "total": int(data["total"] * 100),
             "reference": data["reference"],
             "note": render_to_string("registration/customer-note.txt", data),
@@ -1225,11 +1326,7 @@ def oauth_square(request):
 
     code = request.GET.get("code")
 
-    client = SquareClient(
-        environment=settings.SQUARE_ENVIRONMENT,
-    )
-
-    result = client.o_auth.obtain_token({
+    result = payments.client.o_auth.obtain_token({
         "client_id": settings.SQUARE_APPLICATION_ID,
         "client_secret": settings.SQUARE_APPLICATION_SECRET,
         "code": code,
