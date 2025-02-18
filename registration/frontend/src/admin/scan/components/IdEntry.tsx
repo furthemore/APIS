@@ -1,10 +1,10 @@
-import { Component, createMemo, Show, useContext } from "solid-js";
 import { createShortcut } from "@solid-primitives/keyboard";
 import { differenceInYears } from "date-fns/differenceInYears";
+import { Component, createMemo, Show, useContext } from "solid-js";
 
-import { CloseButton } from "./CloseButton";
-import { ConfigContext } from "../../providers/config-provider";
 import { IdData } from "..";
+import { ConfigContext } from "../../providers/config-provider";
+import { CloseButton } from "./CloseButton";
 import { NameBirthday } from "./ScanPii";
 
 export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {

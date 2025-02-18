@@ -1,3 +1,4 @@
+import { Big } from "big.js";
 import {
   Component,
   createMemo,
@@ -7,12 +8,11 @@ import {
   Switch,
   useContext,
 } from "solid-js";
-import { Big } from "big.js";
 
-import { CartBadge } from "./CartBadge";
-import { AttendeeOption, CartManager, CartResponse } from "../cart-manager";
-import { ConfigContext } from "../../providers/config-provider";
 import { ApisConfig } from "../../../entrypoints/admin";
+import { ConfigContext } from "../../providers/config-provider";
+import { AttendeeOption, CartManager, CartResponse } from "../cart-manager";
+import { CartBadge } from "./CartBadge";
 
 export const CartEntries: Component<{
   manager: CartManager;

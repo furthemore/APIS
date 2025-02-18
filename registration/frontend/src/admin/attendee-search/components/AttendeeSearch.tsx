@@ -1,3 +1,4 @@
+import { createShortcut } from "@solid-primitives/keyboard";
 import {
   Accessor,
   Component,
@@ -9,14 +10,13 @@ import {
   Show,
   useContext,
 } from "solid-js";
-import { createShortcut } from "@solid-primitives/keyboard";
 
-import { BadgeTableLoader } from "./BadgeTableLoader";
-import { BadgeTableRow } from "./BadgeTableRow";
-import { CartManager } from "../../cart";
-import { ConfigContext } from "../../providers/config-provider";
 import { getSearchResults } from "..";
 import { SentryErrorBoundary } from "../../../entrypoints/admin";
+import { CartManager } from "../../cart";
+import { ConfigContext } from "../../providers/config-provider";
+import { BadgeTableLoader } from "./BadgeTableLoader";
+import { BadgeTableRow } from "./BadgeTableRow";
 
 export const AttendeeSearch: Component<{
   cartManager: CartManager;
