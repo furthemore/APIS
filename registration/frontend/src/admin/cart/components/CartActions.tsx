@@ -121,7 +121,7 @@ export const CartActions: Component<{
             <span>Tender Cash</span>
           </ActionButton>
           <ActionButton
-            class="is-warning"
+            class="is-primary"
             disabled={!canUseCard()}
             loading={loading()}
             setLoading={setLoading}
@@ -137,7 +137,7 @@ export const CartActions: Component<{
         <div class="columns">
           <Show when={config.permissions.discount}>
             <ActionButton
-              class="is-link is-outlined"
+              class="is-warning is-outlined"
               disabled={!canUseCard()}
               loading={loading()}
               setLoading={setLoading}
@@ -151,7 +151,7 @@ export const CartActions: Component<{
           </Show>
 
           <ActionButton
-            class="is-warning is-outlined"
+            class="is-link is-outlined"
             disabled={!hasBadgesWithPayments()}
             loading={loading()}
             setLoading={setLoading}
@@ -165,7 +165,7 @@ export const CartActions: Component<{
         </div>
         <div class="columns">
           <ActionButton
-            class="is-primary"
+            class="is-link"
             disabled={!hasPrintableBadges()}
             loading={loading()}
             setLoading={setLoading}
