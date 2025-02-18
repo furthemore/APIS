@@ -1200,7 +1200,7 @@ def terminal_square_token(request):
         )
 
     base_url = "https://connect.squareup.com"
-    if settings.DEBUG:
+    if settings.SQUARE_ENVIRONMENT == "sandbox":
         base_url = "https://connect.squareupsandbox.com"
 
     scopes = ["MERCHANT_PROFILE_READ", "PAYMENTS_WRITE", "PAYMENTS_WRITE_IN_PERSON"]
