@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
-import logging
 from idempotency_key import status
 
 eval_bool = lambda x: x.lower() in ('true', '1', 't', 'y', 'yes')
@@ -356,8 +355,10 @@ AUTHNET_TRANSACTIONKEY = ''
 
 # Sandbox values = DO NOT check in production ids
 SQUARE_APPLICATION_ID = os.environ['SQUARE_APPLICATION_ID']
+SQUARE_APPLICATION_SECRET = os.environ['SQUARE_APPLICATION_SECRET']
 SQUARE_ACCESS_TOKEN = os.environ['SQUARE_ACCESS_TOKEN']
 SQUARE_LOCATION_ID = os.environ['SQUARE_LOCATION_ID']
+SQUARE_TERMINAL_ID = os.environ['SQUARE_TERMINAL_ID']
 SQUARE_CURRENCY = os.getenv('SQUARE_CURRENCY', 'USD')
 SQUARE_ENVIRONMENT = os.getenv('SQUARE_ENVIRONMENT', 'production')  # Or "sandbox"
 SQUARE_WEBHOOK_SIGNATURE_KEY = os.getenv('SQUARE_WEBHOOK_SIGNATURE_KEY', 'unset')

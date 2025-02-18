@@ -504,7 +504,7 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
                     "scope": "LINE_ITEM",
                     "amount_money": {
                         "amount": int(discount["amount_off"] * 100),
-                        "currency": "USD",
+                        "currency": settings.SQUARE_CURRENCY,
                     },
                 })
 
@@ -520,7 +520,7 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
             "item_type": "ITEM",
             "base_price_money": {
                 "amount": int(badge['level_subtotal'] * 100),
-                "currency": "USD",
+                "currency": settings.SQUARE_CURRENCY,
             },
             "applied_discounts": badge_applied_discounts,
         })
@@ -536,7 +536,7 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
                 "item_type": "ITEM",
                 "base_price_money": {
                     "amount": int(data["charityDonation"] * 100),
-                    "currency": "USD",
+                    "currency": settings.SQUARE_CURRENCY,
                 }
             })
 
@@ -548,7 +548,7 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
                 "item_type": "ITEM",
                 "base_price_money": {
                     "amount": int(data["orgDonation"] * 100),
-                    "currency": "USD",
+                    "currency": settings.SQUARE_CURRENCY,
                 }
             })
 
