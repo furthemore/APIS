@@ -5,7 +5,7 @@ import re
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import timedelta
 from decimal import Decimal
 from typing import List, Optional
 
@@ -148,6 +148,7 @@ def onsite_admin(request):
                 "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
                 "onsite_admin_search": reverse("registration:onsite_admin_search"),
                 "onsite_admin": reverse("registration:onsite_admin"),
+                "onsite_create_discount": reverse("registration:onsite_create_discount"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
                 "onsite_print_clear": reverse("registration:onsite_print_clear"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
@@ -935,6 +936,8 @@ def firebase_lookup(request):
 
 def get_discount_dict(discount):
     if discount:
+        reason = "\n\n---\n\n".join(filter(None, [discount.reason, discount.notes]))
+
         return {
             "name": discount.codeName,
             "percent_off": discount.percentOff,
@@ -942,7 +945,9 @@ def get_discount_dict(discount):
             "id": discount.id,
             "valid": discount.isValid(),
             "status": discount.status,
+            "reason": reason,
         }
+
     return None
 
 
@@ -1178,7 +1183,7 @@ def onsite_admin_clear_cart(request):
 
 
 def get_b32_uuid():
-    uid = base64.b32encode(uuid.uuid4().bytes)
+    uid = base64.b32encode(uuid.uuid4().bytes).decode("ascii")
     return uid[:26]
 
 
@@ -1186,7 +1191,7 @@ def get_b32_uuid():
 @permission_required("order.discount")
 def create_discount(request):
     # e.g '$10.00' or '10%'
-    amount = request.POST.get("amount")
+    amount = request.POST.get("amount").strip()
     amount_off = Decimal("0")
     percent_off = 0
 
@@ -1195,6 +1200,10 @@ def create_discount(request):
             amount_off = Decimal(amount[1:])
         elif amount.startswith("%"):
             percent_off = int(amount[1:])
+        elif amount.endswith("%"):
+            percent_off = int(amount[:-1])
+        else:
+            return JsonResponse({"success": False, "reason": "Unknown discount type"}, status=400)
     except ValueError as e:
         return JsonResponse({"success": False, "reason": str(e)}, status=400)
 
@@ -1202,7 +1211,7 @@ def create_discount(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=400
+            {"success": False, "reason": "Cart not initialized"}, status=400
         )
 
     discount = Discount(
@@ -1210,10 +1219,10 @@ def create_discount(request):
         percentOff=percent_off,
         amountOff=amount_off,
         startDate=timezone.now(),
-        endDate=timezone.now() + datetime.timedelta(hours=1),
+        endDate=timezone.now() + timedelta(hours=1),
         notes=f"Applied by [{request.user}]",
         oneTime=True,
-        used=1,
+        used=0,
         reason="Onsite admin discount",
     )
     discount.save()
@@ -1226,7 +1235,7 @@ def create_discount(request):
     orders[0].discount = discount
     orders[0].save()
 
-    JsonResponse({"success": True, "order": orders[0].pk})
+    return JsonResponse({"success": True})
 
 
 @staff_member_required
