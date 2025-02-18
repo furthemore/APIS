@@ -150,6 +150,7 @@ def onsite_admin(request):
                 "onsite_admin": reverse("registration:onsite_admin"),
                 "onsite_create_discount": reverse("registration:onsite_create_discount"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
+                "onsite_print_card_receipts": reverse("registration:onsite_print_card_receipts"),
                 "onsite_print_clear": reverse("registration:onsite_print_clear"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "onsite": reverse("registration:onsite"),
@@ -411,94 +412,7 @@ def enable_payment(request):
     if not terminal:
         return JsonResponse({"sucess": False, "reason": "No terminal associated with request."})
 
-    discounts = []
-    line_items = []
-    for badge in data["result"]:
-        badge_applied_discounts = []
-
-        if badge["discount"]:
-            discount = badge["discount"]
-            uid = f"discount-{badge['id']}"
-
-            if discount["percent_off"] > 0:
-                discounts.append({
-                    "uid": uid,
-                    "name": f"Discount {discount['name']}",
-                    "type": "FIXED_PERCENTAGE",
-                    "scope": "LINE_ITEM",
-                    "percentage": discount["percent_off"],
-                })
-            elif discount["amount_off"] > 0:
-                discounts.append({
-                    "uid": uid,
-                    "name": f"Discount {discount['name']}",
-                    "type": "FIXED_AMOUNT",
-                    "scope": "LINE_ITEM",
-                    "amount_money": {
-                        "amount": int(discount["amount_off"] * 100),
-                        "currency": "USD",
-                    },
-                })
-
-            badge_applied_discounts.append({
-                "discounts_uid": uid,
-            })
-
-        line_items.append({
-            "uid": f"badge-{badge['id']}",
-            "name": f"{badge['effectiveLevel']['name']} Badge",
-            "note": f"{badge['badgeName']} ({badge['badgeNumber']})",
-            "quantity": "1",
-            "item_type": "ITEM",
-            "base_price_money": {
-                "amount": int(badge['level_subtotal'] * 100),
-                "currency": "USD",
-            },
-            "applied_discounts": badge_applied_discounts,
-        })
-
-    if data["charityDonation"] > 0:
-        line_items.append({
-            "uid": "donation-charity",
-            "name": f"Donation to charity",
-            "quantity": "1",
-            "item_type": "ITEM",
-            "base_price_money": {
-                "amount": int(data["charityDonation"] * 100),
-                "currency": "USD",
-            }
-        })
-
-    if data["orgDonation"] > 0:
-        line_items.append({
-            "uid": "donation-organization",
-            "name": f"Donation to organization",
-            "quantity": "1",
-            "item_type": "ITEM",
-            "base_price_money": {
-                "amount": int(data["orgDonation"] * 100),
-                "currency": "USD",
-            }
-        })
-
-    order_data = {
-        "order": {
-            "location_id": settings.SQUARE_LOCATION_ID,
-            "reference_id": data["reference"],
-            "source": {
-                "name": terminal.name,
-            },
-            "line_items": line_items,
-        }
-    }
-
-    result = payments.orders_api.create_order(order_data)
-
-    order_id = None
-    if result.is_success():
-        order_id = result.body["order"]["id"]
-    else:
-        logger.error("failed to create order: %s", result.errors)
+    order_id = payments.create_square_order(str(terminal.name), data)
 
     return send_mqtt_message_to_terminal(request, {
         "processPayment": {
@@ -627,11 +541,7 @@ def complete_square_transaction(request):
 
     combine_orders(orders)
 
-    store_api_data = {
-        "onsite": {
-            "payment_id": paymentId,
-        },
-    }
+    store_api_data = {}
 
     order = orders[0]
     order.billingType = Order.CREDIT
@@ -641,7 +551,6 @@ def complete_square_transaction(request):
         store_api_data["payment"] = {"id": paymentId}
         order.status = Order.COMPLETED
         order.settledDate = timezone.now()
-        order.apiData = json.dumps(store_api_data)
     else:
         order.status = Order.CAPTURED
         order.notes = "No paymentId."
@@ -994,14 +903,13 @@ def build_result(cart):
         level = None
         level_subtotal = 0
         attendee_options = []
+        effectiveLevel = None
         for item in oi:
             level = item.priceLevel
             attendee_options.append(get_line_items(item.getOptions()))
             level_subtotal += get_order_item_option_total(item.getOptions())
 
-            if level is None:
-                effectiveLevel = None
-            else:
+            if level:
                 effectiveLevel = {"name": level.name, "price": level.basePrice}
                 level_subtotal += level.basePrice
 
@@ -1020,6 +928,10 @@ def build_result(cart):
         )
         total_discount += level_discount
 
+        payment_id = None
+        if order.apiData and "payment" in order.apiData:
+            payment_id = order.apiData["payment"]["id"]
+
         item = {
             "id": badge.id,
             "firstName": badge.attendee.preferredName or badge.attendee.firstName,
@@ -1036,6 +948,7 @@ def build_result(cart):
             "level_total": level_subtotal - level_discount,
             "attendee_options": attendee_options,
             "printed": badge.printed,
+            "paymentId": payment_id,
         }
         result.append(item)
 
@@ -1356,3 +1269,13 @@ def oauth_square(request):
 
     resp.delete_cookie("square_oauth_state")
     return resp
+
+
+def print_card_receipts(request):
+    payment_ids = request.GET.getlist("payment_id", [])
+
+    for payment_id in payment_ids:
+        if not payments.print_payment_receipt(request, payment_id):
+            return JsonResponse({"success": False, "reason": "Got error attempting to print receipt"})
+
+    return JsonResponse({"success": True})

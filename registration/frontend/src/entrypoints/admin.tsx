@@ -77,6 +77,7 @@ export interface ApisUrls {
   onsite_admin: string;
   onsite_create_discount: string;
   onsite_print_badges: string;
+  onsite_print_card_receipts: string;
   onsite_print_clear: string;
   onsite_remove_from_cart: string;
   onsite: string;

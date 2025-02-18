@@ -57,6 +57,10 @@ export const CartActions: Component<{
         ?.map((badge) => badge.id) || []
   );
 
+  const hasBadgesWithPayments = createMemo(() =>
+    props.entries?.result?.some((badge) => badge.paymentId)
+  );
+
   if (config.mqtt.supports_printing) {
     const autoPrintCheck = createAutoPrintCheck(printableBadgeIds);
 
@@ -130,8 +134,8 @@ export const CartActions: Component<{
             <span>Credit/Debit Card</span>
           </ActionButton>
         </div>
-        <Show when={config.permissions.discount}>
-          <div class="columns">
+        <div class="columns">
+          <Show when={config.permissions.discount}>
             <ActionButton
               class="is-link is-outlined"
               disabled={!canUseCard()}
@@ -144,8 +148,21 @@ export const CartActions: Component<{
               </span>
               <span>Create Discount</span>
             </ActionButton>
-          </div>
-        </Show>
+          </Show>
+
+          <ActionButton
+            class="is-warning is-outlined"
+            disabled={!hasBadgesWithPayments()}
+            loading={loading()}
+            setLoading={setLoading}
+            action={() => printReceipts(props.manager)}
+          >
+            <span class="icon">
+              <i class="fas fa-receipt"></i>
+            </span>
+            <span>Print Card Receipt</span>
+          </ActionButton>
+        </div>
         <div class="columns">
           <ActionButton
             class="is-primary"
@@ -261,6 +278,14 @@ async function printBadges(
 
   if (!mqttPrint) {
     window.open(resp.url, "badge");
+  }
+}
+
+async function printReceipts(manager: CartManager) {
+  const resp = await manager.printCardReceipts();
+
+  if (!resp.success) {
+    alert(`Error printing receipts: ${resp.reason}`);
   }
 }
 

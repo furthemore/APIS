@@ -224,6 +224,11 @@ urlpatterns = [
         name="complete_cash_transaction",
     ),
     url(
+        r"^onsite/admin/receipt/?$",
+        registration.views.onsite_admin.print_card_receipts,
+        name="onsite_print_card_receipts",
+    ),
+    url(
         r"^onsite/cashdrawer/status/?$",
         registration.views.onsite_admin.drawer_status,
         name="drawer_status",
