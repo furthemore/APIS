@@ -550,12 +550,12 @@ def complete_square_transaction(request):
     order.apiData = json.dumps(store_api_data)
     order.save()
 
-    admin_push_cart_refresh(request)
-
     if paymentId:
         status, errors = payments.refresh_payment(order, store_api_data)
         if not status:
             return JsonResponse({"success": False, "error": errors}, status=210)
+
+    admin_push_cart_refresh(request)
 
     return JsonResponse({"success": True})
 
@@ -882,7 +882,7 @@ def build_result(cart):
     subtotal = 0
     total_discount = 0
     result = []
-    orders = []
+    orders = set()
     for badge in badges:
         oi = badge.getOrderItems()
         level = None
@@ -902,7 +902,7 @@ def build_result(cart):
         subtotal += level_subtotal
 
         order = badge.getOrder()
-        orders.append(order)
+        orders.add(order)
 
         holdType = None
         if badge.attendee.holdType:
@@ -941,7 +941,7 @@ def build_result(cart):
 
     for order in orders:
         total += order.orgDonation + order.charityDonation
-        paid += (order.total + order.orgDonation + order.charityDonation) if order.billingType != Order.UNPAID and order.status in (Order.CAPTURED, Order.COMPLETED) else 0
+        paid += order.total if order.billingType != Order.UNPAID and order.status in (Order.CAPTURED, Order.COMPLETED) else 0
 
         charityDonation += order.charityDonation
         orgDonation += order.orgDonation
