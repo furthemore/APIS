@@ -212,7 +212,10 @@ export class CartManager {
       return { success: true } as FallibleRequest<void>;
     }
 
-    let url = new URL(this.urls.onsite_print_card_receipts, window.location.href);
+    let url = new URL(
+      this.urls.onsite_print_card_receipts,
+      window.location.href
+    );
     paymentIds?.forEach((badge) =>
       url.searchParams.append("payment_id", badge.paymentId!)
     );

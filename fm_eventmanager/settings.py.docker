@@ -376,7 +376,6 @@ REGISTER_KEY = os.environ['REGISTER_KEY']
 
 # Print handler for cash drawer and receipts
 REGISTER_ENDPOINT = os.getenv('REGISTER_ENDPOINT') # Use default site
-REGISTER_PRINTER_URI = os.environ['REGISTER_PRINTER_URI'] # 'https://print.example.com:5000'
 REGISTER_DEFAULT_WEBVIEW = os.getenv('REGISTER_DEFAULT_WEBVIEW', "https://www.example.com/code-of-conduct-embed/")
 REGISTER_SQUARE_LOCATION = os.getenv('REGISTER_SQUARE_LOCATION', SQUARE_LOCATION_ID)
 REGISTER_FORCE_LOCATION = eval_bool(os.getenv('REGISTER_FORCE_LOCATION', 'True'))
@@ -414,5 +413,6 @@ ENVIRONMENT_COLOR = os.getenv('ENVIRONMENT_COLOR', "#FF0000")
 ENVIRONMENT_TEXT_COLOR = os.getenv('ENVIRONMENT_TEXT_COLOR', "#00FF00")
 ENVIRONMENT_FLOAT = os.getenv('ENVIRONMENT_FLOAT', False)
 
+PRINT_VIA_MQTT = os.getenv('PRINT_VIA_MQTT', False)
 PRINT_RENDERER = os.getenv('PRINT_RENDERER', 'wkhtmltopdf')
 GOTENBERG_HOST = os.getenv('GOTENBERG_HOST', None)

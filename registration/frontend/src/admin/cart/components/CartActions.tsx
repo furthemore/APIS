@@ -134,6 +134,22 @@ export const CartActions: Component<{
             <span>Credit/Debit Card</span>
           </ActionButton>
         </div>
+        <Show when={config.permissions.discount}>
+          <div class="columns">
+            <ActionButton
+              class="is-link is-outlined"
+              disabled={!canUseCard()}
+              loading={loading()}
+              setLoading={setLoading}
+              action={() => createAndApplyDiscount(props.manager)}
+            >
+              <span class="icon">
+                <i class="fas fa-gift"></i>
+              </span>
+              <span>Create Discount</span>
+            </ActionButton>
+          </div>
+        </Show>
         <div class="columns">
           <Show when={config.permissions.discount}>
             <ActionButton
