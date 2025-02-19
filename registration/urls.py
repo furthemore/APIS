@@ -174,19 +174,9 @@ urlpatterns = [
         name="onsite_remove_from_cart",
     ),
     url(
-        r"^onsite/admin/open/?$",
-        registration.views.onsite_admin.open_terminal,
-        name="open_terminal",
-    ),
-    url(
-        r"^onsite/admin/close/?$",
-        registration.views.onsite_admin.close_terminal,
-        name="close_terminal",
-    ),
-    url(
-        r"^onsite/admin/ready/?$",
-        registration.views.onsite_admin.ready_terminal,
-        name="ready_terminal",
+        r"^onsite/admin/terminal/status/?$",
+        registration.views.onsite_admin.set_terminal_status,
+        name="terminal_status",
     ),
     url(
         r"^onsite/admin/payment/?$",
@@ -351,11 +341,6 @@ urlpatterns = [
         r"webhook/square/v2",
         registration.views.webhooks.square_webhook,
         name="square_webhook",
-    ),
-    url(
-        r"^terminal/register$",
-        registration.views.onsite_admin.terminal_register,
-        name="terminal_register"
     ),
     url(
         r"^terminal/square/token$",

@@ -1,8 +1,6 @@
-import json
 from unittest.mock import patch
 
 from django.conf import settings
-from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.test import TestCase
@@ -10,7 +8,7 @@ from django.urls import reverse
 
 from registration.admin import FirebaseAdmin
 from registration.models import Firebase
-from registration.pushy import PushyError
+from registration import mqtt
 
 
 class TestFirebaseAdmin(TestCase):
@@ -31,28 +29,31 @@ class TestFirebaseAdmin(TestCase):
         firebase = self.terminal_blue
         provision_json = FirebaseAdmin.get_provisioning(firebase)
 
-        provision_dict = json.loads(provision_json)
+        provision_dict = provision_json
 
         current_site = Site.objects.get_current()
-        endpoint = "https://{0}{1}".format(current_site.domain, reverse("root"))
+        endpoint = "https://{0}".format(current_site.domain)
+        token = mqtt.get_client_token(firebase)
 
         expected_result = {
-            "v": 1,
-            "client_id": settings.SQUARE_APPLICATION_ID,
-            "api_key": settings.REGISTER_KEY,
+            "terminalName": firebase.name,
             "endpoint": endpoint,
-            "name": firebase.name,
-            "location_id": settings.REGISTER_SQUARE_LOCATION,
-            "force_location": settings.REGISTER_FORCE_LOCATION,
-            "bg": firebase.background_color,
-            "fg": firebase.foreground_color,
-            "webview": firebase.webview,
+            "token": firebase.token,
+            "webViewUrl": firebase.webview,
+            "themeColor": firebase.background_color,
+            "mqttHost": settings.MQTT_EXTERNAL_BROKER,
+            "mqttPort": 443,
+            "mqttUsername": token["user"],
+            "mqttPassword": token["token"],
+            "mqttTopic": mqtt.get_topic("terminal", firebase.name),
+            "squareApplicationId": settings.SQUARE_APPLICATION_ID,
+            "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
 
         self.assertEqual(provision_dict, expected_result)
 
-    @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_save_model(self, mock_send_push_notification):
+    @patch("registration.mqtt.send_mqtt_message")
+    def test_save_model(self, mock_send_mqtt_message):
         self.client.logout()
         self.assertTrue(self.client.login(username="admin", password="admin"))
         terminal_red = Firebase(token="terminal_red_token", name="Not Red Yet")
@@ -74,32 +75,7 @@ class TestFirebaseAdmin(TestCase):
         self.assertNotIn(b"there was a problem", response.content)
         terminal_red.refresh_from_db()
         self.assertEqual(terminal_red.name, "Red")
-        mock_send_push_notification.assert_called_once()
-
-    @patch("registration.pushy.PushyAPI.send_push_notification")
-    def test_save_model_pushy_exception(self, mock_send_push_notification):
-        self.client.logout()
-        self.assertTrue(self.client.login(username="admin", password="admin"))
-        terminal_red = Firebase(token="terminal_red_token", name="Not Red Yet")
-        terminal_red.save()
-
-        form_data = {
-            "token": terminal_red.token,
-            "name": "Red",
-            "background_color": "#ff0000",
-            "foreground_color": "#ffffff",
-        }
-
-        mock_send_push_notification.side_effect = PushyError()
-
-        response = self.client.post(
-            reverse("admin:registration_firebase_change", args=(terminal_red.id,)),
-            form_data,
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"there was a problem", response.content)
-        mock_send_push_notification.assert_called_once()
+        mock_send_mqtt_message.assert_called_once()
 
     def test_get_qrcode(self):
         qr_code = FirebaseAdmin.get_qrcode("foo")
@@ -118,7 +94,7 @@ class TestFirebaseAdmin(TestCase):
             b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ",
             response.content,
         )
-        self.assertIn(b'height="77mm"', response.content)
+        self.assertIn(b'height="113mm"', response.content)
 
     def test_provision_page_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))

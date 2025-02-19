@@ -7,7 +7,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -16,17 +16,15 @@ from django.contrib.messages import get_messages
 from django.contrib.postgres.search import TrigramSimilarity
 from django.core.signing import TimestampSigner
 from django.db.models import F, Func, Q, Sum, Value
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
-from paho.mqtt import publish
 
 from registration import admin, mqtt, payments
-from registration.admin import TWOPLACES
 from registration.models import (
     Badge,
     Cashdrawer,
@@ -38,8 +36,6 @@ from registration.models import (
     ShirtSizes,
     get_token,
 )
-from registration.mqtt import send_mqtt_message
-from registration.pushy import PushyAPI, PushyError
 from registration.views.attendee import get_attendee_age
 from registration.views.common import logger
 from registration.views.ordering import (
@@ -53,6 +49,8 @@ def flatten(l):
 
 
 logger = logging.getLogger(__name__)
+
+TWOPLACES = Decimal(10) ** -2
 
 
 def get_active_terminal(request):
@@ -137,7 +135,6 @@ def onsite_admin(request):
                 "cash_deposit": reverse("registration:cash_deposit"),
                 "cash_pickup": reverse("registration:cash_pickup"),
                 "close_drawer": reverse("registration:close_drawer"),
-                "close_terminal": reverse("registration:close_terminal"),
                 "complete_cash_transaction": reverse("registration:complete_cash_transaction"),
                 "enable_payment": reverse("registration:enable_payment"),
                 "logout": reverse("registration:logout"),
@@ -154,11 +151,10 @@ def onsite_admin(request):
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "onsite": reverse("registration:onsite"),
                 "open_drawer": reverse("registration:open_drawer"),
-                "open_terminal": reverse("registration:open_terminal"),
                 "pdf": reverse("registration:pdf"),
-                "ready_terminal": reverse("registration:ready_terminal"),
                 "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
                 "safe_drop": reverse("registration:safe_drop"),
+                "set_terminal_status": reverse("registration:terminal_status"),
             },
             "permissions": {
                 "cash": request.user.has_perm("registration.cash"),
@@ -254,118 +250,66 @@ def onsite_admin_search(request):
     return JsonResponse({"success": True, "results": data})
 
 
-@staff_member_required
-def close_terminal(request):
-    return send_mqtt_message_to_terminal(request, {
-        "close": {},
+def update_terminal_status(request, status: str) -> JsonResponse:
+    active = get_terminal_from_request(request)
+    if not active:
+        return JsonResponse({"success": False, "reason": "No terminal associated with request"}, status=400)
+
+    stateCommand = status
+    if stateCommand == "close":
+        stateCommand = "closed"
+    mqtt.send_mqtt_message(f"{mqtt.get_topic('admin', active.name)}/terminal/state", stateCommand)
+
+    return send_mqtt_message_to_terminal(active, {
+        status: {},
     })
 
 
 @staff_member_required
-def open_terminal(request):
-    return send_mqtt_message_to_terminal(request, {
-        "open": {},
-    })
+def set_terminal_status(request):
+    status = request.GET.get("status", "close")
+    return update_terminal_status(request, status)
 
 
 def get_terminal_from_request(request) -> Optional[Firebase]:
     url_terminal = request.GET.get("terminal", None)
     session_terminal = request.session.get("terminal", None)
 
-    if url_terminal is not None:
+    active = None
+
+    if url_terminal:
         try:
             active = Firebase.objects.get(id=int(url_terminal))
             request.session["terminal"] = active.id
-            session_terminal = active.id
-        except Firebase.DoesNotExist:
+        except (ValueError, Firebase.DoesNotExist):
             return None
 
-    try:
-        active = Firebase.objects.get(id=session_terminal)
-    except Firebase.DoesNotExist:
-        return None
+    if not active and session_terminal:
+        try:
+            active = Firebase.objects.get(id=int(session_terminal))
+        except Firebase.DoesNotExist:
+            return None
 
     return active
 
 
-def send_mqtt_message_to_terminal(request, data):
-    active = get_terminal_from_request(request)
-    if not active:
-        return JsonResponse({"sucess": False, "reason": "No terminal associated with request."})
+def send_mqtt_message_to_terminal(request: Union[HttpRequest, Firebase], data: dict) -> JsonResponse:
+    if isinstance(request, Firebase):
+        active = request
+    else:
+        active = get_terminal_from_request(request)
+        if not active:
+            return JsonResponse({"sucess": False, "reason": "No terminal associated with request"}, status=400)
 
     name = active.name
     topic = mqtt.get_topic("terminal", name)
 
     try:
-        publish.single(
-            topic,
-            json.dumps(data),
-            retain=False,
-            hostname=settings.MQTT_BROKER["host"],
-            port=settings.MQTT_BROKER["port"],
-        )
+        mqtt.send_mqtt_message(topic, data)
     except Exception as ex:
-        return JsonResponse({"success": False, "reason": "Could not send MQTT message"}, status=400)
+        logger.error("could not send mqtt message: %s", ex)
+        return JsonResponse({"success": False, "reason": "Could not send MQTT message"}, status=500)
 
-    return JsonResponse({"success": True})
-
-
-@staff_member_required
-def ready_terminal(request):
-    data = {"command": "ready"}
-    return send_message_to_terminal(request, data)
-
-
-def send_message_to_terminal(request, data):
-    request.session["heartbeat"] = time.time()  # Keep session alive
-    url_terminal = request.GET.get("terminal", None)
-    logger.info("Terminal from GET parameter: {0}".format(url_terminal))
-    session_terminal = request.session.get("terminal", None)
-
-    if url_terminal is not None:
-        try:
-            active = Firebase.objects.get(id=int(url_terminal))
-            request.session["terminal"] = active.id
-            session_terminal = active.id
-        except Firebase.DoesNotExist:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "The payment terminal specified has not registered with the server",
-                },
-                status=404,
-            )
-        except ValueError:
-            # weren't passed an integer
-            return JsonResponse(
-                {"success": False, "message": "Invalid terminal specified"}, status=400
-            )
-
-    try:
-        active = Firebase.objects.get(id=session_terminal)
-    except Firebase.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "message": "No terminal specified and none in session"},
-            status=400,
-        )
-
-    logger.info("Terminal from session: {0}".format(request.session["terminal"]))
-
-    to = [
-        active.token,
-    ]
-
-    command = data.get("command")
-    if command in ("open", "close", "ready", "gay"):
-        if command == "close":
-            command = "closed"
-        topic = f"{mqtt.get_topic('admin', active.name)}/terminal/state"
-        send_mqtt_message(topic, command, True)
-
-    try:
-        PushyAPI.send_push_notification(data, to, None)
-    except PushyError as e:
-        return JsonResponse({"success": False, "message": e.message})
     return JsonResponse({"success": True})
 
 
@@ -413,7 +357,7 @@ def enable_payment(request):
 
     order_id = payments.create_square_order(str(terminal.name), data)
 
-    return send_mqtt_message_to_terminal(request, {
+    return send_mqtt_message_to_terminal(terminal, {
         "processPayment": {
             "orderId": order_id,
             "total": int(data["total"] * 100),
@@ -486,16 +430,19 @@ def admin_push_cart_refresh(request):
     terminal = get_active_terminal(request)
     if terminal:
         topic = f"{mqtt.get_topic('admin', terminal.name)}/refresh"
-        send_mqtt_message(topic, None)
+        mqtt.send_mqtt_message(topic, None)
 
 
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
 @csrf_exempt
 def complete_square_transaction(request):
-    key = request.headers.get("authorization").removeprefix("Bearer ")
+    try:
+        token = request.headers.get("authorization").removeprefix("Bearer ")
+    except:
+        return JsonResponse({"success": False, "reason": "Invalid authorization"}, status=401)
 
     try:
-        terminal = Firebase.objects.get(terminal_token=key)
+        terminal = Firebase.objects.get(token=token)
         request.session["terminal"] = terminal.id
     except Firebase.DoesNotExist:
         return JsonResponse(
@@ -511,7 +458,7 @@ def complete_square_transaction(request):
     reference = data.get("reference")
     paymentId = data.get("paymentId")
 
-    if reference is None or paymentId is None:
+    if not reference or not paymentId:
         return JsonResponse(
             {
                 "success": False,
@@ -615,7 +562,7 @@ def drawer_status(request):
 def no_sale(request):
     position = get_active_terminal(request)
     topic = f"{mqtt.get_topic('receipts', position.name)}/no_sale"
-    send_mqtt_message(topic)
+    mqtt.send_mqtt_message(topic)
 
     return JsonResponse({"success": True})
 
@@ -638,7 +585,7 @@ def print_audit_receipt(request, audit_type, cash_ledger, cashdraw=True):
 
     topic = f"{mqtt.get_topic('receipts', position.name)}/audit_slip"
 
-    send_mqtt_message(topic, payload)
+    mqtt.send_mqtt_message(topic, payload)
 
 
 def cash_audit_action(request, action):
@@ -770,7 +717,7 @@ def complete_cash_transaction(request):
     active = Firebase.objects.get(id=term)
     topic = f"{mqtt.get_topic('receipts', active.name)}/print_cash"
 
-    send_mqtt_message(topic, payload)
+    mqtt.send_mqtt_message(topic, payload)
 
     return JsonResponse({"success": True})
 
@@ -1173,44 +1120,6 @@ def onsite_print_clear(request):
 
 
 @csrf_exempt
-def terminal_register(request):
-    data = json.loads(request.body)
-
-    token = data.get("token", None)
-    if token != settings.REGISTER_KEY:
-        return JsonResponse(
-            {"success": False, "reason": "Incorrect API token"}, status=401
-        )
-
-    name = "".join(filter(str.isalnum, data.get("terminalName", "unnamed"))).lower()
-
-    key = str(uuid.uuid4())
-    try:
-        terminal = Firebase.objects.get(name=name)
-        terminal.terminal_token = key
-        terminal.save()
-    except Firebase.DoesNotExist:
-        terminal = Firebase.objects.create(name=name, terminal_token=key)
-
-    topic = mqtt.get_topic("terminal", terminal.name)
-    password = mqtt.get_token(terminal.name, subs=[topic])
-
-    return JsonResponse({
-        "terminalName": name,
-        "host": f"https://{request.get_host()}/registration",
-        "token": token,
-        "key": key,
-        "locationId": settings.SQUARE_LOCATION_ID,
-        "webViewURL": terminal.webview,
-        "themeColor": terminal.background_color,
-        "mqttHost": settings.REGISTER_MQTT["host"],
-        "mqttPort": settings.REGISTER_MQTT["port"],
-        "mqttTopic": topic,
-        "mqttUserName": name,
-        "mqttPassword": password,
-    })
-
-@csrf_exempt
 def terminal_square_token(request):
     key = request.headers.get("authorization").removeprefix("Bearer ")
 
@@ -1231,7 +1140,7 @@ def terminal_square_token(request):
     url = f"{base_url}/oauth2/authorize?client_id={settings.SQUARE_APPLICATION_ID}&state={state}&scope={'+'.join(scopes)}"
 
     topic = f"{mqtt.get_topic('admin', terminal.name)}/authorize_terminal"
-    send_mqtt_message(topic, payload={
+    mqtt.send_mqtt_message(topic, payload={
         "url": url,
         "state": state,
     })

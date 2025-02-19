@@ -371,17 +371,9 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = eval_bool(os.getenv('EMAIL_USE_TLS', 'True'))
 
-# Return channel for Android register application
-REGISTER_KEY = os.environ['REGISTER_KEY']
-
 # Print handler for cash drawer and receipts
-REGISTER_ENDPOINT = os.getenv('REGISTER_ENDPOINT') # Use default site
-REGISTER_DEFAULT_WEBVIEW = os.getenv('REGISTER_DEFAULT_WEBVIEW', "https://www.example.com/code-of-conduct-embed/")
 REGISTER_SQUARE_LOCATION = os.getenv('REGISTER_SQUARE_LOCATION', SQUARE_LOCATION_ID)
-REGISTER_FORCE_LOCATION = eval_bool(os.getenv('REGISTER_FORCE_LOCATION', 'True'))
-
-# Firebase/Pushy.me cloud-push API key
-CLOUD_MESSAGING_KEY = os.getenv('CLOUD_MESSAGING_KEY')
+REGISTER_DEFAULT_WEBVIEW = os.getenv('REGISTER_DEFAULT_WEBVIEW', "https://www.example.com/code-of-conduct-embed/")
 
 # Cron metrics recording provider and settings
 APIS_METRICS_BACKEND = "InfluxDBReporter"

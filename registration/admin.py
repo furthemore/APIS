@@ -29,17 +29,15 @@ from pygments.lexers.data import JsonLexer
 from qrcode.image.svg import SvgPathFillImage
 
 import registration.emails
+import registration.views.onsite_admin
 import registration.views.printing
 from registration import mqtt, payments
 from registration.forms import FirebaseForm
 from registration.models import *
-from registration.pushy import PushyAPI, PushyError
 
 from . import printing
 
 logger = logging.getLogger(__name__)
-
-TWOPLACES = Decimal(10) ** -2
 
 admin.site.site_url = None
 admin.site.site_header = "APIS Backoffice"
@@ -90,7 +88,7 @@ admin.site.register(User, UserProfileAdmin)
 
 
 class FirebaseAdmin(admin.ModelAdmin):
-    list_display = ("name", "token", "closed")
+    list_display = ("name", "closed")
     form = FirebaseForm
 
     def render_change_form(self, request, context, *args, **kwargs):
@@ -109,41 +107,35 @@ class FirebaseAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save()
+
         data = {
-            "command": "settings",
-            "json": self.get_provisioning(obj, closed=obj.closed),
+            "updateConfig": {
+                "config": self.get_provisioning(obj),
+            }
         }
 
-        try:
-            PushyAPI.send_push_notification(data, [obj.token], None)
-        except PushyError as e:
-            messages.warning(
-                request,
-                f"We tried to update the terminal's settings, but there was a problem: {e}",
-            )
+        registration.views.onsite_admin.send_mqtt_message_to_terminal(obj, data)
 
     @staticmethod
-    def get_provisioning(firebase, **kwargs):
+    def get_provisioning(firebase):
         current_site = Site.objects.get_current()
-        endpoint = settings.REGISTER_ENDPOINT
-        if endpoint is None:
-            endpoint = "https://{0}{1}".format(current_site.domain, reverse("root"))
+        endpoint = "https://{0}".format(current_site.domain)
+        token = mqtt.get_client_token(firebase)
 
-        document = {
-            "v": 1,
-            "client_id": settings.SQUARE_APPLICATION_ID,
-            "api_key": settings.REGISTER_KEY,
+        return {
+            "terminalName": firebase.name,
             "endpoint": endpoint,
-            "name": firebase.name,
-            "location_id": settings.REGISTER_SQUARE_LOCATION,
-            "force_location": settings.REGISTER_FORCE_LOCATION,
-            "bg": firebase.background_color,
-            "fg": firebase.foreground_color,
-            "webview": firebase.webview,
+            "token": firebase.token,
+            "webViewUrl": firebase.webview,
+            "themeColor": firebase.background_color,
+            "mqttHost": settings.MQTT_EXTERNAL_BROKER,
+            "mqttPort": 443,
+            "mqttUsername": token["user"],
+            "mqttPassword": token["token"],
+            "mqttTopic": mqtt.get_topic("terminal", firebase.name),
+            "squareApplicationId": settings.SQUARE_APPLICATION_ID,
+            "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
-        document.update(kwargs)
-
-        return json.dumps(document)
 
     @staticmethod
     def get_qrcode(data):
@@ -154,7 +146,7 @@ class FirebaseAdmin(admin.ModelAdmin):
 
     def provision_view(self, request, pk):
         obj = Firebase.objects.get(id=pk)
-        provisioning = self.get_provisioning(obj)
+        provisioning = json.dumps(self.get_provisioning(obj))
         token = mqtt.get_client_token(obj)
 
         context = {
@@ -1496,7 +1488,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
             form = self.RefundForm(request.POST)
 
             if form.is_valid():
-                amount = Decimal(form.cleaned_data["amount"]).quantize(TWOPLACES)
+                amount = Decimal(form.cleaned_data["amount"]).quantize(registration.views.onsite_admin.TWOPLACES)
                 reason = form.cleaned_data.get("reason")
 
                 if amount > order.total:

@@ -18,6 +18,7 @@ BASE_TOPIC = "apis"
 TOPICS = [
     "receipts",
     "admin",
+    "terminal",
 ]
 
 
