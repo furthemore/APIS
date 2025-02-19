@@ -85,9 +85,13 @@
           });
       }
 
-      $(document).ready(function () {
+      if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function() {
+              $("#lookup").click(doRegister);
+          });
+      } else {
           $("#lookup").click(doRegister);
-      });
+      }
 
   </script>
 
