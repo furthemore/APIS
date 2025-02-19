@@ -124,7 +124,7 @@ def onsite_admin(request):
                 "release": getattr(settings, "SENTRY_RELEASE", None),
             },
             "errors": errors,
-            "printer_uri": settings.REGISTER_PRINTER_URI,
+            "printer_uri": getattr(settings, "REGISTER_PRINTER_URI", ""),
             "mqtt": {
                 "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
                 "auth": mqtt_auth,
