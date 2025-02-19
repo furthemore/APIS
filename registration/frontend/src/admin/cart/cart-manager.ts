@@ -204,20 +204,14 @@ export class CartManager {
     });
   }
 
-  public async printCardReceipts(): Promise<FallibleRequest<void>> {
-    const paymentIds = this.cartEntries()?.result?.filter(
-      (badge) => !!badge.paymentId
-    );
-    if (!paymentIds) {
+  public async printReceipts(): Promise<FallibleRequest<void>> {
+    if (!this.cartEntries()?.result) {
       return { success: true } as FallibleRequest<void>;
     }
 
-    let url = new URL(
-      this.urls.onsite_print_card_receipts,
-      window.location.href
-    );
-    paymentIds?.forEach((badge) =>
-      url.searchParams.append("payment_id", badge.paymentId!)
+    let url = new URL(this.urls.onsite_print_receipts, window.location.href);
+    this.cartEntries()?.result?.forEach((badge) =>
+      url.searchParams.append("reference", badge.reference)
     );
 
     return await this.makeRequest(url);
@@ -258,7 +252,7 @@ export interface Badge {
   level_discount: string;
   level_total: string;
   attendee_options: AttendeeOption[];
-  paymentId?: string;
+  reference: string;
 }
 
 export interface EffectiveLevel {

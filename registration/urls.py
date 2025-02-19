@@ -215,8 +215,8 @@ urlpatterns = [
     ),
     url(
         r"^onsite/admin/receipt/?$",
-        registration.views.onsite_admin.print_card_receipts,
-        name="onsite_print_card_receipts",
+        registration.views.onsite_admin.print_receipts,
+        name="onsite_print_receipts",
     ),
     url(
         r"^onsite/cashdrawer/status/?$",

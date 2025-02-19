@@ -10,9 +10,9 @@ export type UserSettingKey =
 export type UserSettings = Record<UserSettingKey, any>;
 
 const USER_DEFAULTS: UserSettings = {
-  clear_cart_after_print: true,
+  clear_cart_after_print: false,
   container_fluid: false,
-  print_after_payment: false,
+  print_after_payment: true,
 };
 
 export class UserSettingsManager {

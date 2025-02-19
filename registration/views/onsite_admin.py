@@ -146,8 +146,8 @@ def onsite_admin(request):
                 "onsite_admin": reverse("registration:onsite_admin"),
                 "onsite_create_discount": reverse("registration:onsite_create_discount"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
-                "onsite_print_card_receipts": reverse("registration:onsite_print_card_receipts"),
                 "onsite_print_clear": reverse("registration:onsite_print_clear"),
+                "onsite_print_receipts": reverse("registration:onsite_print_receipts"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "onsite": reverse("registration:onsite"),
                 "open_drawer": reverse("registration:open_drawer"),
@@ -635,6 +635,47 @@ def close_drawer(request):
     return cash_audit_action(request, Cashdrawer.CLOSE)
 
 
+def cash_receipt_payload(order: Order, tendered: str, total: str) -> dict:
+    order_items = OrderItem.objects.filter(order=order)
+    attendee_options = []
+    for item in order_items:
+        attendee_options.extend(get_line_items(item.attendeeoptions_set.all()))
+
+    # discounts
+    if order.discount:
+        if order.discount.amountOff:
+            attendee_options.append(
+                {"item": "Discount", "price": "-${0}".format(order.discount.amountOff)}
+            )
+        elif order.discount.percentOff:
+            attendee_options.append(
+                {"item": "Discount", "price": "-%{0}".format(order.discount.percentOff)}
+            )
+
+    event = Event.objects.get(default=True)
+    payload = {
+        "v": 1,
+        "event": event.name,
+        "line_items": attendee_options,
+        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)}},
+        "total": order.total,
+        "payment": {
+            "type": order.billingType,
+            "tendered": Decimal(tendered),
+            "change": Decimal(tendered) - Decimal(total),
+            "details": "Ref: {0}".format(order.reference),
+        },
+        "reference": order.reference,
+    }
+
+    if event.charity:
+        payload["donations"]["charity"] = (
+            {"name": event.charity.name, "price": str(order.charityDonation)},
+        )
+
+    return payload
+
+
 @staff_member_required
 @permission_required("order.cash")
 def complete_cash_transaction(request):
@@ -676,42 +717,7 @@ def complete_cash_transaction(request):
     )
     txn.save()
 
-    order_items = OrderItem.objects.filter(order=order)
-    attendee_options = []
-    for item in order_items:
-        attendee_options.extend(get_line_items(item.attendeeoptions_set.all()))
-
-    # discounts
-    if order.discount:
-        if order.discount.amountOff:
-            attendee_options.append(
-                {"item": "Discount", "price": "-${0}".format(order.discount.amountOff)}
-            )
-        elif order.discount.percentOff:
-            attendee_options.append(
-                {"item": "Discount", "price": "-%{0}".format(order.discount.percentOff)}
-            )
-
-    event = Event.objects.get(default=True)
-    payload = {
-        "v": 1,
-        "event": event.name,
-        "line_items": attendee_options,
-        "donations": {"org": {"name": event.name, "price": str(order.orgDonation)}},
-        "total": order.total,
-        "payment": {
-            "type": order.billingType,
-            "tendered": Decimal(tendered),
-            "change": Decimal(tendered) - Decimal(total),
-            "details": "Ref: {0}".format(order.reference),
-        },
-        "reference": order.reference,
-    }
-
-    if event.charity:
-        payload["donations"]["charity"] = (
-            {"name": event.charity.name, "price": str(order.charityDonation)},
-        )
+    payload = cash_receipt_payload(order, tendered, total)
 
     term = request.session.get("terminal", None)
     active = Firebase.objects.get(id=term)
@@ -874,10 +880,6 @@ def build_result(cart):
         )
         total_discount += level_discount
 
-        payment_id = None
-        if order.apiData and "payment" in order.apiData:
-            payment_id = order.apiData["payment"]["id"]
-
         item = {
             "id": badge.id,
             "firstName": badge.attendee.preferredName or badge.attendee.firstName,
@@ -894,7 +896,7 @@ def build_result(cart):
             "level_total": level_subtotal - level_discount,
             "attendee_options": attendee_options,
             "printed": badge.printed,
-            "paymentId": payment_id,
+            "reference": order.reference,
         }
         result.append(item)
 
@@ -1179,11 +1181,33 @@ def oauth_square(request):
     return resp
 
 
-def print_card_receipts(request):
-    payment_ids = request.GET.getlist("payment_id", [])
+def print_receipts(request):
+    terminal = get_active_terminal(request)
+    if not terminal:
+        return JsonResponse({"success": False, "reason": "No terminal attached to session"}, status=400)
 
-    for payment_id in payment_ids:
-        if not payments.print_payment_receipt(request, payment_id):
-            return JsonResponse({"success": False, "reason": "Got error attempting to print receipt"})
+    references = request.GET.getlist("reference", [])
+    orders = Order.objects.filter(reference__in=references).prefetch_related()
+
+    for order in orders:
+        if order.billingType in (Order.UNPAID, Order.COMP):
+            continue
+
+        if order.billingType == Order.CASH:
+            try:
+                note_data = json.loads(order.notes)
+            except:
+                return JsonResponse({"success": False, "reason": "Cash order was missing note data"})
+
+            payload = cash_receipt_payload(order, note_data["tendered"], order.total)
+            topic = f"{mqtt.get_topic('receipts', terminal.name)}/print_cash"
+            mqtt.send_mqtt_message(topic, payload)
+
+        elif order.billingType == Order.CREDIT:
+            if not order.apiData or "payment" not in order.apiData:
+                return JsonResponse({"success": False, "reason": "Missing payment data on credit transaction"})
+
+            if not payments.print_payment_receipt(request, order.apiData["payment"]["id"]):
+                return JsonResponse({"success": False, "reason": "Got error attempting to print receipt"})
 
     return JsonResponse({"success": True})
