@@ -6,6 +6,7 @@ import {
   createMemo,
   createSignal,
   Setter,
+  Show,
   useContext,
 } from "solid-js";
 
@@ -129,6 +130,22 @@ export const CartActions: Component<{
             <span>Credit/Debit Card</span>
           </ActionButton>
         </div>
+        <Show when={config.permissions.discount}>
+          <div class="columns">
+            <ActionButton
+              class="is-link is-outlined"
+              disabled={!canUseCard()}
+              loading={loading()}
+              setLoading={setLoading}
+              action={() => createAndApplyDiscount(props.manager)}
+            >
+              <span class="icon">
+                <i class="fas fa-gift"></i>
+              </span>
+              <span>Create Discount</span>
+            </ActionButton>
+          </div>
+        </Show>
         <div class="columns">
           <ActionButton
             class="is-primary"
@@ -192,17 +209,31 @@ async function attemptCashPayment(
   if (resp.success) {
     manager.refreshCart();
   } else {
-    alert("Error posting cash transaction.");
+    alert(`Error posting cash transaction: ${resp.reason}`);
     return;
   }
 
   alert(`Change: $${change.toFixed(2)}`);
 }
 
+async function createAndApplyDiscount(manager: CartManager) {
+  const discountAmount = prompt(
+    "Enter discount amount, starting with either $ or %"
+  );
+  if (!discountAmount) return;
+
+  const resp = await manager.createAndApplyDiscount(discountAmount);
+  if (resp.success) {
+    manager.refreshCart();
+  } else {
+    alert(`Error creating discount: ${resp.reason}`);
+  }
+}
+
 async function enableCardPayment(manager: CartManager) {
   const resp = await manager.enableCardPayment();
   if (!resp.success) {
-    alert("Error enabling card payment.");
+    alert(`Error enabling card payment: ${resp.reason}`);
   }
 }
 
@@ -224,7 +255,7 @@ async function printBadges(
   setLoading(false);
 
   if (!resp.success) {
-    alert("Error printing badges.");
+    alert(`Error printing badges: ${resp.reason}`);
     return;
   }
 
