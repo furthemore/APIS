@@ -1,8 +1,8 @@
 import { Component, For, Match, Show, Switch } from "solid-js";
 
+import { ShcData, ShcMatch } from "..";
 import { CloseButton } from "./CloseButton";
 import { NameBirthday } from "./ScanPii";
-import { ShcData, ShcMatch } from "..";
 
 export const ShcEntry: Component<{
   data: ShcData;

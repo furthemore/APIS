@@ -1,16 +1,18 @@
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
+import { Dialog } from "@kobalte/core/dialog";
+import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
 import { Big } from "big.js";
 import {
   Component,
   createEffect,
   createSignal,
   For,
+  Setter,
   Show,
   useContext,
 } from "solid-js";
+
+import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
 import { ConfigContext } from "./providers/config-provider";
-import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
-import { Dialog } from "@kobalte/core/dialog";
 import {
   UserSettingKey,
   UserSettingsContext,
@@ -123,7 +125,10 @@ async function amountRequest(url: string, message: string) {
   }
 }
 
-const Actions: Component<{ config: ApisConfig }> = (props) => {
+const Actions: Component<{
+  config: ApisConfig;
+  setReadyForNext: Setter<boolean>;
+}> = (props) => {
   return (
     <div class="navbar-dropdown is-right">
       <ActionButton
@@ -144,7 +149,10 @@ const Actions: Component<{ config: ApisConfig }> = (props) => {
         name="Next Customer"
         icon="fas fa-forward"
         keyboardShortcut={["Alt", "N"]}
-        action={() => makeSimpleRequest(props.config.urls.ready_terminal)}
+        action={() => {
+          makeSimpleRequest(props.config.urls.ready_terminal);
+          props.setReadyForNext(true);
+        }}
       />
 
       <Show when={props.config.permissions.cash_admin}>
@@ -291,7 +299,9 @@ const ToggleSetting: Component<{
   );
 };
 
-export const Navbar: Component = () => {
+export const Navbar: Component<{
+  setReadyForNext: Setter<boolean>;
+}> = (props) => {
   const config = useContext(ConfigContext)!;
   const userSettings = useContext(UserSettingsContext)!;
 
@@ -366,7 +376,7 @@ export const Navbar: Component = () => {
               <i class="fas fa-cog"></i>
             </a>
 
-            <Actions config={config} />
+            <Actions config={config} setReadyForNext={props.setReadyForNext} />
           </div>
 
           <div class="navbar-item has-dropdown is-hoverable">

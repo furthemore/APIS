@@ -1,15 +1,31 @@
-import { Component, createSignal } from "solid-js";
+import {
+  Accessor,
+  Component,
+  createEffect,
+  createSignal,
+  Setter,
+} from "solid-js";
 
 import { AttendeeSearch } from "./attendee-search";
 import { Cart, CartManager } from "./cart";
-import { ScanPanel } from "./scan";
 import MqttClient from "./mqtt";
+import { ScanPanel } from "./scan";
 
 export const Onsite: Component<{
   mqtt: MqttClient;
   cartManager: CartManager;
+  readyForNext: Accessor<boolean>;
+  setReadyForNext: Setter<boolean>;
 }> = (props) => {
   const [searchQuery, setSearchQuery] = createSignal<string>();
+
+  createEffect(async () => {
+    if (props.readyForNext()) {
+      setSearchQuery("");
+      await props.cartManager.clearCart();
+      props.setReadyForNext(false);
+    }
+  });
 
   return (
     <div class="columns">
@@ -25,6 +41,7 @@ export const Onsite: Component<{
             const query = birthday ? `${name} birthday:${birthday}` : name;
             setSearchQuery(query);
           }}
+          readyForNext={props.readyForNext}
           emitter={props.mqtt.emitter}
         />
       </div>

@@ -1,13 +1,14 @@
-import { ErrorBoundary, For, render } from "solid-js/web";
 import * as Sentry from "@sentry/solid";
+import { createSignal } from "solid-js";
+import { ErrorBoundary, For, render } from "solid-js/web";
 
-import { ConfigContext } from "../admin/providers/config-provider";
 import { Navbar } from "../admin/Navbar";
 import { Onsite } from "../admin/Onsite";
+import { ConfigContext } from "../admin/providers/config-provider";
 
+import { CartManager } from "../admin/cart";
 import "../admin/index.scss";
 import MqttClient from "../admin/mqtt";
-import { CartManager } from "../admin/cart";
 import {
   UserSettingsContext,
   UserSettingsManager,
@@ -151,11 +152,13 @@ function start() {
     return;
   }
 
+  const [readyForNext, setReadyForNext] = createSignal(false);
+
   render(() => {
     return (
       <ConfigContext.Provider value={APIS_CONFIG}>
         <UserSettingsContext.Provider value={userSettings}>
-          <Navbar />
+          <Navbar setReadyForNext={setReadyForNext} />
 
           <For each={APIS_CONFIG.errors}>
             {(error) => (
@@ -172,7 +175,12 @@ function start() {
                 userSettings.userSettings().container_fluid,
             }}
           >
-            <Onsite mqtt={mqtt} cartManager={cartManager} />
+            <Onsite
+              mqtt={mqtt}
+              cartManager={cartManager}
+              readyForNext={readyForNext}
+              setReadyForNext={setReadyForNext}
+            />
           </div>
         </UserSettingsContext.Provider>
       </ConfigContext.Provider>

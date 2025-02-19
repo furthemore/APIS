@@ -1,10 +1,10 @@
-import { Component, createResource, createSignal } from "solid-js";
 import { createShortcut } from "@solid-primitives/keyboard";
+import { Component, createResource, createSignal } from "solid-js";
 import { Show } from "solid-js/web";
 
+import { CartManager } from "../cart-manager";
 import { CartActions } from "./CartActions";
 import { CartEntries } from "./CartEntries";
-import { CartManager } from "../cart-manager";
 
 export const Cart: Component<{
   cartManager: CartManager;
@@ -27,8 +27,7 @@ export const Cart: Component<{
     await props.cartManager.removeBadge(id);
   });
 
-  const anythingLoading = () =>
-    refresh.loading || clearing() || remove.loading;
+  const anythingLoading = () => refresh.loading || clearing() || remove.loading;
 
   createShortcut(["Alt", "R"], () => {
     if (anythingLoading()) return;
