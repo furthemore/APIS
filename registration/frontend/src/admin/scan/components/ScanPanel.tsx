@@ -1,10 +1,10 @@
-import { Component, createEffect, createMemo, Show } from "solid-js";
 import { createShortcut } from "@solid-primitives/keyboard";
+import { Accessor, Component, createEffect, createMemo, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 
 import { IdData, ShcData } from "..";
-import { IdEntry } from "./IdEntry";
 import { MqttEmitter } from "../../mqtt";
+import { IdEntry } from "./IdEntry";
 import { ShcEntry } from "./ShcEntry";
 import { UrlEntry } from "./UrlEntry";
 
@@ -16,6 +16,7 @@ type ScanStore = {
 
 export const ScanPanel: Component<{
   gotScannedName(name: string, birthday?: string): void;
+  readyForNext: Accessor<boolean>;
   emitter: MqttEmitter;
 }> = (props) => {
   const [store, setStore] = createStore<ScanStore>({
@@ -27,6 +28,12 @@ export const ScanPanel: Component<{
   const clear = () => {
     setStore({ id: undefined, shc: undefined, url: undefined });
   };
+
+  createEffect(() => {
+    if (props.readyForNext()) {
+      clear();
+    }
+  });
 
   let panel!: HTMLDivElement;
 

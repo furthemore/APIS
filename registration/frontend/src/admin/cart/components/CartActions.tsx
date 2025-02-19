@@ -1,3 +1,4 @@
+import { Big } from "big.js";
 import {
   Accessor,
   Component,
@@ -7,14 +8,13 @@ import {
   Setter,
   useContext,
 } from "solid-js";
-import { Big } from "big.js";
 
-import { ActionButton } from "./ActionButton";
-import { Badge, CartManager, CartResponse } from "../cart-manager";
-import { CartActionsError } from "./CartActionsError";
-import { ConfigContext } from "../../providers/config-provider";
 import { SentryErrorBoundary } from "../../../entrypoints/admin";
+import { ConfigContext } from "../../providers/config-provider";
 import { UserSettingsContext } from "../../providers/user-settings-provider";
+import { Badge, CartManager, CartResponse } from "../cart-manager";
+import { ActionButton } from "./ActionButton";
+import { CartActionsError } from "./CartActionsError";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
 
@@ -215,7 +215,12 @@ async function printBadges(
   mqttPrint: boolean
 ) {
   setLoading(true);
-  const resp = await manager.printBadges(ids, clearCart, mqttPrint, clearSearch);
+  const resp = await manager.printBadges(
+    ids,
+    clearCart,
+    mqttPrint,
+    clearSearch
+  );
   setLoading(false);
 
   if (!resp.success) {

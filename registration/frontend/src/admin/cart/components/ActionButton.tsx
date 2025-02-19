@@ -1,3 +1,4 @@
+import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
 import {
   Component,
   createEffect,
@@ -6,7 +7,6 @@ import {
   JSX,
   Setter,
 } from "solid-js";
-import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
 
 export type ActionButtonProps = {
   class: string;
