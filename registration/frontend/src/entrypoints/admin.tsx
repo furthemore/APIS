@@ -22,7 +22,6 @@ export interface ApisConfig {
   debug: boolean;
   sentry: ApisSentry;
   errors: ApisError[];
-  printer_uri: string;
   mqtt: ApisMqttConfig;
   shirt_sizes: ApisShirtSize[];
   urls: ApisUrls;
