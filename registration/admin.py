@@ -1519,7 +1519,7 @@ admin.site.register(Order, OrderAdmin)
 
 
 class PriceLevelAdmin(admin.ModelAdmin):
-    list_display = ("name", "basePrice", "startDate", "endDate", "public", "group")
+    list_display = ("name", "basePrice", "get_level_active_status", "min_age", "max_age", "public", "available_to_attendee", "available_to_marketplace", "available_to_staff", "group")
 
 
 admin.site.register(PriceLevel, PriceLevelAdmin)

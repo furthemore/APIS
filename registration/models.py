@@ -1,6 +1,7 @@
 import random
 import string
 from decimal import Decimal
+from datetime import datetime
 
 from django.conf import settings
 from django.db import models
@@ -130,12 +131,28 @@ class PriceLevel(models.Model):
     emailVIP = models.BooleanField(default=False)
     emailVIPEmails = models.CharField(max_length=400, blank=True, default="")
     isMinor = models.BooleanField(default=False)
+    min_age = models.IntegerField(default=0)
+    max_age = models.IntegerField(blank=True, null=True,
+                                  help_text="Leave blank for no limit")
+    accompanied = models.BooleanField(default=False)
+    available_to_attendee = models.BooleanField(default=False, verbose_name="Attendee")
+    available_to_marketplace = models.BooleanField(default=False, verbose_name="Marketplace")
+    available_to_staff = models.BooleanField(default=False, verbose_name="Staff")
 
     class Meta:
         db_table = "registration_price_level"
 
     def __str__(self):
         return self.name
+
+    def get_level_active_status(self):
+        tz = timezone.get_current_timezone()
+        today = tz.localize(datetime.now())
+        if self.startDate <= today <= self.endDate:
+            return True
+        return False
+    get_level_active_status.boolean = True
+    get_level_active_status.short_description = "Active"
 
 
 class Charity(LookupTable):
