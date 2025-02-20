@@ -23,13 +23,20 @@ export const CartEntries: Component<{
       .flatMap((result) => {
         let options = result.attendee_options;
         if (result.discount) {
+          let price;
+
+          if (result.discount.percent_off > 0) {
+            price = `-${result.discount.percent_off}%`;
+          } else {
+            price = `-$${result.discount.amount_off}`;
+          }
+
           options.push({
             quantity: 1,
+            price,
             item: `Discount ${result.discount.name}`,
-            price: `-${cleanMoneyAmount(result.discount.amount_off)} / ${
-              result.discount.percent_off
-            }%`,
             total: `-${cleanMoneyAmount(result.level_discount)}`,
+            reason: result.discount.reason,
           });
         }
         return options;
@@ -117,7 +124,7 @@ const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = ({
 
   return (
     <td>
-      <div>
+      <div title={item.reason}>
         {`${item.quantity} × ${item.item} (${cleanMoneyAmount(item.price)}/ea)`}
         <Show
           when={
