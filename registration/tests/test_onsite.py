@@ -213,23 +213,18 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(reverse("registration:onsite_admin"), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context["errors"]), 0)
-        self.assertEqual(len(response.context["terminals"]), 1)
+        settings = json.loads(response.context["settings"])
+        self.assertEqual(len(settings["errors"]), 0)
+        self.assertEqual(len(settings["terminals"]["available"]), 1)
 
         self.terminal.delete()
         response = self.client.get(reverse("registration:onsite_admin"))
         self.assertEqual(response.status_code, 200)
-        errors = [e["code"] for e in response.context["errors"]]
+        errors = [e["code"] for e in json.loads(response.context["settings"])["errors"]]
         self.assertTrue("ERROR_NO_TERMINAL" in errors)
 
         self.terminal = Firebase(token="test", name="Terminal 1")
         self.terminal.save()
-        response = self.client.get(
-            reverse("registration:onsite_admin"), {"search": "doesntexist"}
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue("results" in list(response.context.keys()))
-        self.assertEqual(len(response.context["results"]), 0)
 
         response = self.client.get(
             reverse("registration:onsite_admin"),
@@ -245,39 +240,21 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
 
         self.client.logout()
 
-    @patch("registration.pushy.PushyAPI.send_push_notification")
-    @patch("registration.mqtt.send_mqtt_message")
-    def test_onsite_admin_cart_not_initialized(
-        self, mock_send_mqtt_message, mock_send_push_notification
-    ):
-        self.assertTrue(self.client.login(username="admin", password="admin"))
-        response = self.client.get(reverse("registration:onsite_admin_cart"))
-        message = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(message["success"])
-        self.assertEqual(message["message"], "Cart not initialized")
-
     def test_onsite_admin_search_no_query(self):
         self.assertTrue(self.client.login(username="admin", password="admin"))
-        response = self.client.post(
+        response = self.client.get(
             reverse("registration:onsite_admin_search"),
         )
         self.assertEqual(response.status_code, 302)
 
     def test_onsite_admin_search_no_result(self):
         self.assertTrue(self.client.login(username="admin", password="admin"))
-        response = self.client.post(
+        response = self.client.get(
             reverse("registration:onsite_admin_search"),
             {"search": "Somethingthatcantpossiblyexistyet"},
         )
-        expected_errors = [
-            {
-                "type": "warning",
-                "text": 'No results for query "Somethingthatcantpossiblyexistyet"',
-            },
-        ]
-        self.assertEqual(response.context["errors"], expected_errors)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["results"]), 0)
 
     @patch("registration.pushy.PushyAPI.send_push_notification")
     @patch("registration.mqtt.send_mqtt_message")
@@ -295,30 +272,30 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self.assertTrue(self.client.login(username="admin", password="admin"))
 
         # Do search
-        response = self.client.post(
+        response = self.client.get(
             reverse("registration:onsite_admin_search"),
             {"search": "Christian"},
         )
         self.assertEqual(response.status_code, 200)
-        attendee = response.context["results"][0].attendee
+        attendee = Badge.objects.get(pk=response.json()["results"][0]["id"]).attendee
         attendee.holdType = self.boogeyman_hold
         attendee.save()
 
         response = self.client.get(
-            reverse("registration:onsite_admin"),
+            reverse("registration:onsite_admin_search"),
             {"search": "Christian", "terminal": self.terminal.id},
         )
         self.assertEqual(response.status_code, 200)
 
         # Add to cart
-        badge_id = response.context["results"][0].id
+        badge_id = response.json()["results"][0]["id"]
 
         response = self.client.get(
             reverse("registration:onsite_add_to_cart"),
             {"id": badge_id},
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(self.client.session["cart"], [str(badge_id)])
+        self.assertEqual(self.client.session["cart"], [badge_id])
 
         response = self.client.get(reverse("registration:onsite_admin_cart"))
         message = response.json()
@@ -506,6 +483,9 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         self, mock_send_mqtt_message, mock_sendPushNotification
     ):
         self.test_onsite_admin_cart_no_donations()
+        self.client.get(
+            reverse("registration:onsite_admin"), {"terminal": self.terminal.name}
+        )
         order = Order.objects.last()
         args = {
             "reference": order.reference,
@@ -667,3 +647,25 @@ class TestDrawers(OnsiteBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(message["success"])
         mock_send_mqtt_message.assert_called_once()
+
+class TestSearchFields(OnsiteBaseTestCase):
+    def test_search_fields_parse(self):
+        fields = onsite_admin.SearchFields.parse("")
+        self.assertEqual(fields.query, "")
+        self.assertIsNone(fields.birthday)
+        self.assertIsNone(fields.badge_ids)
+
+        fields = onsite_admin.SearchFields.parse(" test query ")
+        self.assertEqual(fields.query, "test query")
+        self.assertIsNone(fields.birthday)
+        self.assertIsNone(fields.badge_ids)
+
+        fields = onsite_admin.SearchFields.parse(" test query birthday:1990-01-01 ")
+        self.assertEqual(fields.query, "test query")
+        self.assertEqual(fields.birthday, "1990-01-01")
+        self.assertIsNone(fields.badge_ids)
+
+        fields = onsite_admin.SearchFields.parse("num:123,456")
+        self.assertEqual(fields.query, "")
+        self.assertIsNone(fields.birthday)
+        self.assertEqual(fields.badge_ids, [123, 456])

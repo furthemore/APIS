@@ -1,7 +1,9 @@
 import logging
 
+from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.urls import reverse
 
 import registration.views.common
 import registration.views.dealers
@@ -9,6 +11,16 @@ import registration.views.staff
 from registration.models import *
 
 logger = logging.getLogger("registration.emails")
+
+
+def _get_event_url(event: Event) -> str:
+    if event.websiteUrl:
+        return event.websiteUrl
+
+    reg_index = reverse("registration:index")
+    site_domain = Site.objects.get_current().domain
+
+    return f"https://{site_domain}{reg_index}"
 
 
 def send_registration_email(order, email, send_vip=True):
@@ -35,6 +47,7 @@ def send_registration_email(order, email, send_vip=True):
                 "orderItems": order_dict,
                 "hasMinors": has_minors,
                 "event": oi.badge.event,
+                "eventUrl": _get_event_url(oi.badge.event),
             }
             msg_txt = render_to_string(
                 "registration/emails/registration-payment.txt", data
@@ -55,6 +68,7 @@ def send_registration_email(order, email, send_vip=True):
                 "reference": order.reference,
                 "orderItem": oi,
                 "event": oi.badge.event,
+                "eventUrl": _get_event_url(oi.badge.event),
             }
             msg_txt = render_to_string("registration/emails/registration.txt", data)
             msg_html = render_to_string("registration/emails/registration.html", data)

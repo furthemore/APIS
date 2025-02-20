@@ -209,6 +209,11 @@ urlpatterns = [
         name="onsite_print_badges",
     ),
     url(
+        r"^onsite/admin/badge/print/clear/?$",
+        registration.views.onsite_admin.onsite_print_clear,
+        name="onsite_print_clear",
+    ),
+    url(
         r"^onsite/square/complete/?$",
         registration.views.onsite_admin.complete_square_transaction,
         name="complete_square_transaction",

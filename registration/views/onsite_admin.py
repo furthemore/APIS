@@ -1,17 +1,21 @@
 import base64
 import json
 import logging
+import re
 import time
 import uuid
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import timedelta
 from decimal import Decimal
+from typing import List, Optional
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
+from django.contrib.postgres.search import TrigramSimilarity
 from django.core.signing import TimestampSigner
-from django.db.models import Q, Sum
+from django.db.models import F, Func, Q, Sum, Value
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -30,6 +34,7 @@ from registration.models import (
     Firebase,
     Order,
     OrderItem,
+    ShirtSizes,
 )
 from registration.mqtt import send_mqtt_message
 from registration.pushy import PushyAPI, PushyError
@@ -63,13 +68,10 @@ def onsite_admin(request):
     # Modify a dummy session variable to keep it alive
     request.session["heartbeat"] = time.time()
 
-    event = Event.objects.get(default=True)
     terminals = list(Firebase.objects.all())
     term = request.session.get("terminal", None)
-    query = request.GET.get("search", None)
 
     errors = []
-    results = None
 
     # Set default payment terminal to use:
     if term is None and len(terminals) > 0:
@@ -95,6 +97,7 @@ def onsite_admin(request):
             terminal_obj = Firebase.objects.get(id=int(url_terminal))
             request.session["terminal"] = terminal_obj.id
         except Firebase.DoesNotExist:
+            del request.session["terminal"]
             errors.append(
                 {
                     "type": "warning",
@@ -105,60 +108,147 @@ def onsite_admin(request):
             # weren't passed an integer
             errors.append({"type": "danger", "text": "Invalid terminal specified"})
 
-    if query is not None:
-        results = Badge.objects.filter(
-            Q(attendee__lastName__icontains=query)
-            | Q(attendee__preferredName__icontains=query)
-            | Q(attendee__firstName__icontains=query),
-            Q(event=event),
-        )
-        if len(results) == 0:
-            errors.append(
-                {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
-            )
-
-        cart = request.session.get("cart", None)
-        if cart and len(results) == 1 and results[0].id not in cart:
-            onsite_add_id_to_cart(request, results[0].id)
-
     terminal = get_active_terminal(request)
     mqtt_auth = None
     if terminal:
         mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
     context = {
-        "terminals": terminals,
-        "errors": errors,
-        "results": results,
-        "printer_uri": settings.REGISTER_PRINTER_URI,
-        "mqtt_auth": mqtt_auth,
+        "settings": json.dumps({
+            "debug": getattr(settings, "DEBUG", False),
+            "sentry": {
+                "enabled": getattr(settings, "SENTRY_ENABLED", False),
+                "user_reports": getattr(settings, "SENTRY_USER_REPORTS", False),
+                "frontend_dsn": getattr(settings, "SENTRY_FRONTEND_DSN", None),
+                "environment": getattr(settings, "SENTRY_ENVIRONMENT", None),
+                "release": getattr(settings, "SENTRY_RELEASE", None),
+            },
+            "errors": errors,
+            "mqtt": {
+                "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
+                "auth": mqtt_auth,
+                "supports_printing": getattr(settings, "PRINT_VIA_MQTT", False),
+            },
+            "shirt_sizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
+            "urls": {
+                "assign_badge_number": reverse("registration:assign_badge_number"),
+                "cash_deposit": reverse("registration:cash_deposit"),
+                "cash_pickup": reverse("registration:cash_pickup"),
+                "close_drawer": reverse("registration:close_drawer"),
+                "close_terminal": reverse("registration:close_terminal"),
+                "complete_cash_transaction": reverse("registration:complete_cash_transaction"),
+                "enable_payment": reverse("registration:enable_payment"),
+                "logout": reverse("registration:logout"),
+                "no_sale": reverse("registration:no_sale"),
+                "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
+                "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
+                "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
+                "onsite_admin_search": reverse("registration:onsite_admin_search"),
+                "onsite_admin": reverse("registration:onsite_admin"),
+                "onsite_create_discount": reverse("registration:onsite_create_discount"),
+                "onsite_print_badges": reverse("registration:onsite_print_badges"),
+                "onsite_print_clear": reverse("registration:onsite_print_clear"),
+                "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
+                "onsite": reverse("registration:onsite"),
+                "open_drawer": reverse("registration:open_drawer"),
+                "open_terminal": reverse("registration:open_terminal"),
+                "pdf": reverse("registration:pdf"),
+                "ready_terminal": reverse("registration:ready_terminal"),
+                "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
+                "safe_drop": reverse("registration:safe_drop"),
+            },
+            "permissions": {
+                "cash": request.user.has_perm("registration.cash"),
+                "cash_admin": request.user.has_perm("registration.cash_admin"),
+                "discount": request.user.has_perm("registration.discount"),
+            },
+            "terminals": {
+                "selected": terminal.id if terminal else None,
+                "available": [{"id": terminal.id, "name": terminal.name} for terminal in terminals],
+            },
+        }),
     }
 
     return render(request, "registration/onsite-admin.html", context)
 
 
+@dataclass
+class SearchFields:
+    query: str
+    birthday: Optional[str] = None
+    badge_ids: Optional[List[int]] = None
+
+    @classmethod
+    def parse(cls, query: str) -> "SearchFields":
+        badge_nums = re.search(r"num:([0-9,]+)", query)
+        if badge_nums:
+            try:
+                badge_ids = [int(num) for num in badge_nums.group(1).split(",")]
+                return SearchFields(badge_ids=badge_ids, query="")
+            except ValueError:
+                query = query.replace(badge_nums.group(0), "")
+                pass
+
+        birthday = re.search(r"birthday:([0-9-]{10}) ?", query)
+        if birthday:
+            query = query.replace(birthday.group(0), "")
+            birthday = birthday.group(1)
+
+        query = query.strip()
+
+        return SearchFields(query=query, birthday=birthday)
+
+
 @staff_member_required
 def onsite_admin_search(request):
     event = Event.objects.get(default=True)
-    terminals = list(Firebase.objects.all())
-    query = request.POST.get("search", None)
+    query = request.GET.get("search", None)
     if query is None:
         return redirect("registration:onsite_admin")
 
-    errors = []
-    results = Badge.objects.filter(
-        Q(attendee__lastName__icontains=query)
-        | Q(attendee__preferredName__icontains=query)
-        | Q(attendee__firstName__icontains=query),
-        Q(event=event),
-    ).prefetch_related("attendee", "event")
-    if len(results) == 0:
-        errors = [
-            {"type": "warning", "text": 'No results for query "{0}"'.format(query)}
-        ]
+    data = []
 
-    context = {"terminals": terminals, "errors": errors, "results": results}
-    return render(request, "registration/onsite-admin.html", context)
+    def collectBadges(badges):
+        for badge in badges:
+            data.append({
+                "id": badge.id,
+                "edit_url": reverse("admin:registration_badge_change", args=(badge.id,)),
+                "attendee": {
+                    "firstName": badge.attendee.firstName,
+                    "lastName": badge.attendee.lastName,
+                    "preferredName": badge.attendee.preferredName,
+                },
+                "badgeName": badge.badgeName,
+                "badgeNumber": badge.badgeNumber,
+                "abandoned": badge.abandoned,
+            })
+
+    query = query.strip()
+
+    fields = SearchFields.parse(query)
+
+    if fields.badge_ids:
+        badges = Badge.objects.filter(event=event, badgeNumber__in=fields.badge_ids)
+        collectBadges(badges)
+
+    fullName = Func(F("attendee__firstName"), Value(" "), F("attendee__lastName"), function="CONCAT")
+    greaterSimilarity = Func("name_similarity", "badge_similarity", function="GREATEST")
+
+    filters = (Q(name_similarity__gte=0.4) | Q(badge_similarity__gte=0.6) | Q(attendee__lastName__iexact=fields.query))
+
+    if fields.birthday:
+        filters = filters & Q(attendee__birthdate=fields.birthday)
+
+    results = Badge.objects.annotate(
+        name_similarity=TrigramSimilarity(fullName, fields.query),
+        badge_similarity=TrigramSimilarity("badgeName", fields.query),
+    ).filter(
+        Q(event=event) & filters
+    ).order_by(greaterSimilarity).reverse().prefetch_related("attendee")[:50]
+
+    collectBadges(results)
+
+    return JsonResponse({"success": True, "results": data})
 
 
 @staff_member_required
@@ -319,6 +409,7 @@ def notify_terminal(request, data):
     return True
 
 
+@staff_member_required
 def assign_badge_number(request):
     request_badges = json.loads(request.body)
 
@@ -751,6 +842,8 @@ def firebase_lookup(request):
 
 def get_discount_dict(discount):
     if discount:
+        reason = "\n\n---\n\n".join(filter(None, [discount.reason, discount.notes]))
+
         return {
             "name": discount.codeName,
             "percent_off": discount.percentOff,
@@ -758,28 +851,29 @@ def get_discount_dict(discount):
             "id": discount.id,
             "valid": discount.isValid(),
             "status": discount.status,
+            "reason": reason,
         }
+
     return None
 
 
 def get_line_items(attendee_options):
     out = []
     for option in attendee_options:
+        option_dict = {
+            "item": option.option.optionName,
+            "price": option.option.optionPrice,
+            "quantity": 1,
+            "total": option.option.optionPrice,
+            "optionExtraType": option.option.optionExtraType,
+            "optionValue": option.optionValue,
+        }
+
         if option.option.optionExtraType == "int":
-            if option.optionValue:
-                option_dict = {
-                    "item": option.option.optionName,
-                    "price": option.option.optionPrice,
-                    "quantity": option.optionValue,
-                    "total": option.option.optionPrice * Decimal(option.optionValue),
-                }
-        else:
-            option_dict = {
-                "item": option.option.optionName,
-                "price": option.option.optionPrice,
-                "quantity": 1,
-                "total": option.option.optionPrice,
-            }
+            val = Decimal(option.optionValue)
+            option_dict["quantity"] = int(val)
+            option_dict["total"] = option.option.optionPrice * val
+
         out.append(option_dict)
     return out
 
@@ -788,12 +882,7 @@ def get_line_items(attendee_options):
 def onsite_admin_cart(request):
     # Returns dataset to render onsite cart preview
     request.session["heartbeat"] = time.time()  # Keep session alive
-    cart = request.session.get("cart", None)
-    if cart is None:
-        request.session["cart"] = []
-        return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=200
-        )
+    cart = request.session.get("cart", [])
 
     badges = []
     for pk in cart:
@@ -904,6 +993,13 @@ def onsite_add_id_to_cart(request, id):
             {"success": False, "reason": "Need ID parameter"}, status=400
         )
 
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
+        )
+
     cart = request.session.get("cart", None)
     if cart is None:
         request.session["cart"] = [
@@ -928,6 +1024,13 @@ def onsite_remove_from_cart(request):
             {"success": False, "reason": "Need ID parameter"}, status=400
         )
 
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
+        )
+
     cart = request.session.get("cart", None)
     if cart is None:
         return JsonResponse({"success": False, "reason": "Cart is empty"})
@@ -945,11 +1048,11 @@ def onsite_remove_from_cart(request):
 def onsite_admin_clear_cart(request):
     request.session["cart"] = []
     send_message_to_terminal(request, {"command": "clear"})
-    return onsite_admin(request)
+    return JsonResponse({"success": True, "cart": []})
 
 
 def get_b32_uuid():
-    uid = base64.b32encode(uuid.uuid4().bytes)
+    uid = base64.b32encode(uuid.uuid4().bytes).decode("ascii")
     return uid[:26]
 
 
@@ -957,7 +1060,7 @@ def get_b32_uuid():
 @permission_required("order.discount")
 def create_discount(request):
     # e.g '$10.00' or '10%'
-    amount = request.POST.get("amount")
+    amount = request.POST.get("amount").strip()
     amount_off = Decimal("0")
     percent_off = 0
 
@@ -966,6 +1069,10 @@ def create_discount(request):
             amount_off = Decimal(amount[1:])
         elif amount.startswith("%"):
             percent_off = int(amount[1:])
+        elif amount.endswith("%"):
+            percent_off = int(amount[:-1])
+        else:
+            return JsonResponse({"success": False, "reason": "Unknown discount type"}, status=400)
     except ValueError as e:
         return JsonResponse({"success": False, "reason": str(e)}, status=400)
 
@@ -973,7 +1080,7 @@ def create_discount(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=400
+            {"success": False, "reason": "Cart not initialized"}, status=400
         )
 
     discount = Discount(
@@ -981,10 +1088,10 @@ def create_discount(request):
         percentOff=percent_off,
         amountOff=amount_off,
         startDate=timezone.now(),
-        endDate=timezone.now() + datetime.timedelta(hours=1),
+        endDate=timezone.now() + timedelta(hours=1),
         notes=f"Applied by [{request.user}]",
         oneTime=True,
-        used=1,
+        used=0,
         reason="Onsite admin discount",
     )
     discount.save()
@@ -997,4 +1104,26 @@ def create_discount(request):
     orders[0].discount = discount
     orders[0].save()
 
-    JsonResponse({"success": True, "order": orders[0].pk})
+    return JsonResponse({"success": True})
+
+
+@staff_member_required
+def onsite_print_clear(request):
+    id = request.GET.get("id", None)
+    if id is None or id == "":
+        return JsonResponse(
+            {"success": False, "reason": "Need ID parameter"}, status=400
+        )
+
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
+        )
+
+    badge = Badge.objects.get(id=id)
+    badge.printed = False
+    badge.save()
+
+    return JsonResponse({"success": True})

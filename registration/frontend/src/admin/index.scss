@@ -1,0 +1,30 @@
+@use "bulma/sass";
+@use "bulma/sass/utilities/mixins";
+
+@use "@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@use "@fortawesome/fontawesome-free/scss/solid.scss" with (
+  $fa-font-path: "@fortawesome/fontawesome-free/webfonts"
+);
+
+.has-text-nowrap {
+  text-wrap: nowrap;
+}
+
+.attendee-table {
+  width: 100%;
+  max-height: max(50vh, 500px);
+  overflow-y: auto;
+
+  border-end-start-radius: var(--bulma-panel-radius);
+  border-end-end-radius: var(--bulma-panel-radius);
+}
+
+.badge-name {
+  word-break: break-word;
+}
+
+@include mixins.tablet {
+  .badge-actions {
+    flex-wrap: nowrap;
+  }
+}
