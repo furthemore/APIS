@@ -1,4 +1,4 @@
-beautifulsoup4==4.12.3
+beautifulsoup4>=4.12.3
 configobj==5.0.9
 django>=3.2.24,<4
 django-admin-env-notice~=0.4
@@ -14,14 +14,14 @@ django-redis~=5.4.0
 #django-u2f~=1.0.1
 git+https://github.com/rechner/django-u2f.git@23022f80ae4af831e3533464a0b54e6ec46b2ca1
 django-widget-tweaks==1.5.0
-freezegun==1.4.0
+freezegun>=1.4.0
 gotenberg-client~=0.7.0
 influxdb~=5.3.1          # Influx < v1.7
 influxdb-client~=1.40.0  # Influxdb 1.8, 2.x
 markuppy
 paho-mqtt==1.6.1
 Pillow>=5.3
-psycopg2-binary==2.9.9
+psycopg2-binary>=2.9.9
 PyJWT~=2.8.0
 respx==0.22.0
 sentry-sdk
