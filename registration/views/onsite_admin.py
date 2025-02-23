@@ -1126,7 +1126,7 @@ def terminal_square_token(request):
     key = request.headers.get("authorization").removeprefix("Bearer ")
 
     try:
-        terminal = Firebase.objects.get(terminal_token=key)
+        terminal = Firebase.objects.get(token=key)
     except Firebase.DoesNotExist:
         return JsonResponse(
             {"success": False, "reason": "Incorrect API key"}, status=401
