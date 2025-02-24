@@ -4,7 +4,7 @@ Your order number is: {{reference}}
 Your badge name is: {{orderItem.badge.badgeName}}
 Your attending level is: {{orderItem.priceLevel.name}}
 
-This email is for your records only. You will not need the confirmation number to pick up your badge.  In order to pick up your badge on-site, you will only need to bring your Government Issued Photo ID and Vaccine proof to the registration desk.
+This email is for your records only. You will not need the confirmation number to pick up your badge.  In order to pick up your badge on-site, you will only need to bring your Government Issued Photo ID to the registration desk.
 If you have any questions regarding your registration, please contact {{ event.registrationEmail }}.
 
 See you there!
