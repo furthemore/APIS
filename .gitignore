@@ -22,3 +22,10 @@ htmlcov/
 pgdb/
 node_modules/
 .python-version
+/registration/frontend/metafile.json
+/registration/static/admin.css
+/registration/static/admin.css.map
+/registration/static/admin.js
+/registration/static/admin.js.map
+/registration/static/fa-solid-900-5ZUYHGA7.woff2
+/registration/static/fa-solid-900-PJNKLK6W.ttf
