@@ -8,6 +8,7 @@ import registration.views.dealers
 import registration.views.onsite
 import registration.views.onsite_admin
 import registration.views.ordering
+import registration.views.pricelevels
 import registration.views.printing
 import registration.views.staff
 import registration.views.upgrade
@@ -272,7 +273,7 @@ urlpatterns = [
     path('events/', registration.views.common.get_events, name="events"),
     path('departments/', registration.views.common.get_departments, name="departments"),
     path('alldepartments/', registration.views.common.get_all_departments, name="alldepartments"),
-    path('pricelevels/', registration.views.attendee.get_price_levels, name="pricelevels"),
+    path('pricelevels/', registration.views.pricelevels.get_price_levels, name="pricelevels"),
     path('shirts/', registration.views.common.get_shirt_sizes, name="shirtsizes"),
     path('tables/', registration.views.dealers.getTableSizes, name="tablesizes"),
     path('addresses/', registration.views.common.get_session_addresses, name="addresses"),
