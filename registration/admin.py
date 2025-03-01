@@ -1075,9 +1075,11 @@ class BadgeInline(NestedTabularInline):
 
     def get_age_range(self, obj):
         born = obj.attendee.birthdate
-        today = date.today()
+        event_start = obj.event.eventStart
         age = (
-            today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+            event_start.year 
+            - born.year
+            - ((event_start.month, event_start.day) < (born.month, born.day))
         )
         if age >= 18:
             return format_html("<span>18+</span>")
@@ -1211,11 +1213,11 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     def get_age_range(self, obj):
         try:
             born = obj.attendee.birthdate
-            today = date.today()
+            event_start = obj.event.eventStart
             age = (
-                today.year
+                event_start.year 
                 - born.year
-                - ((today.month, today.day) < (born.month, born.day))
+                - ((event_start.month, event_start.day) < (born.month, born.day))
             )
             if age >= 18:
                 return format_html("<span>18+</span>")
@@ -1244,7 +1246,7 @@ class AttendeeAdmin(NestedModelAdmin):
     save_on_top = True
     actions = [make_staff]
     search_fields = ["email", "lastName", "firstName", "preferredName"]
-    list_display = ("getFirst", "lastName", "email", "get_age_range")
+    list_display = ("getFirst", "lastName", "email", "phone")
     fieldsets = (
         (
             None,
@@ -1274,18 +1276,6 @@ class AttendeeAdmin(NestedModelAdmin):
             },
         ),
     )
-
-    def get_age_range(self, obj):
-        born = obj.birthdate
-        today = date.today()
-        age = (
-            today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        )
-        if age >= 18:
-            return format_html("<span>18+</span>")
-        return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
-
-    get_age_range.short_description = "Age Group"
 
 
 admin.site.register(Attendee, AttendeeAdmin)
