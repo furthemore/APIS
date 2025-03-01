@@ -49,7 +49,7 @@ def get_price_levels(request):
                 'status': 'error',
                 'message': 'Invalid JSON data'
             }
-            return JsonResponse(response)
+            return JsonResponse(response, status=400)
 
         try:
             dob = date(int(data.get('year')), int(data.get('month')), int(data.get('day')))
@@ -59,7 +59,7 @@ def get_price_levels(request):
                 'status': 'error',
                 'message': 'Invalid birthdate or form_type'
             }
-            return JsonResponse(response)
+            return JsonResponse(response, status=400)
 
         age_at_event = (
                 current_event.eventStart.year
@@ -83,13 +83,11 @@ def get_price_levels(request):
 
         data = format_price_level_list(available_levels)
 
-        return HttpResponse(
-            json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json"
-        )
+        return JsonResponse(data, safe=False)
 
     else:
         response = {
             'status': 'error',
             'message': 'Only POST requests are allowed'
         }
-    return JsonResponse(response)
+    return JsonResponse(response, status=400)
