@@ -21,23 +21,23 @@ from .common import clear_session, handler, logger
 from .ordering import do_checkout, doZeroCheckout, get_discount_total
 
 logger = logging.getLogger(__name__)
-
+form_type = "marketplace"
 
 def dealers(request, guid):
     event = Event.objects.get(default=True)
-    context = {"token": guid, "event": event}
+    context = {"token": guid, "event": event, "form_type": form_type}
     return render(request, "registration/dealer/dealer-locate.html", context)
 
 
 def thanks_dealer(request):
     event = Event.objects.get(default=True)
-    context = {"event": event}
+    context = {"event": event, "form_type": form_type}
     return render(request, "registration/dealer/dealer-thanks.html", context)
 
 
 def done_dealer(request):
     event = Event.objects.get(default=True)
-    context = {"event": event}
+    context = {"event": event, "form_type": form_type}
     return render(request, "registration/dealer/dealer-done.html", context)
 
 
@@ -47,6 +47,7 @@ def find_dealer_to_add_assistant(request, guid):
         "token": guid,
         "event": event,
         "next": reverse("registration:find_dealer_to_add_assistant_post"),
+        "form_type": form_type
     }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
@@ -56,14 +57,15 @@ def dealer_asst(request, guid):
     context = {
         "token": guid,
         "event": event,
-        "next": reverse("registration:find_asst_dealer"),
+        "next": reverse("registration:find_asst_dealer"), 
+        "form_type": form_type
     }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
 
 def done_asst_dealer(request):
     event = Event.objects.get(default=True)
-    context = {"event": event}
+    context = {"event": event, "form_type": form_type}
     return render(request, "registration/dealer/dealerasst-done.html", context)
 
 
@@ -72,7 +74,7 @@ def new_dealer(request):
     venue = event.venue
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"event": event, "venue": venue}
+    context = {"event": event, "venue": venue, "form_type": form_type}
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
     elif event.dealerRegStart >= today:
@@ -87,7 +89,7 @@ def new_dealer(request):
 
 def info_dealer(request):
     event = Event.objects.get(default=True)
-    context = {"dealer": None, "event": event}
+    context = {"dealer": None, "event": event, "form_type": form_type}
     try:
         dealerId = request.session["dealer_id"]
     except (ValueError, KeyError):
@@ -222,11 +224,12 @@ def invoice_dealer(request):
             }
     event = Event.objects.get(default=True)
     context["event"] = event
+    context["form_type"] = form_type
     return render(request, "registration/dealer/dealer-checkout.html", context)
 
 
 def add_assistants(request):
-    context = {"attendee": None, "dealer": None}
+    context = {"attendee": None, "dealer": None, "form_type": form_type}
     try:
         dealerId = request.session["dealer_id"]
     except (KeyError, ValueError):
