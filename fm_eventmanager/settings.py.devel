@@ -130,12 +130,19 @@ WSGI_APPLICATION = 'fm_eventmanager.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# Remove this class and replace 'HOST' in DATABASES['default']
+# with the output from `python manage.py make_db` or replace
+# with your own Postgres server configuration.
+class _ReadTheREADME:
+    pass
+
 DATABASES = {
     'default': {
-        'ENGINE' : 'django.db.backends.sqlite3',
-        'NAME' : os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': _ReadTheREADME,
+        'NAME' : 'apis_dev',
         'TEST' : {
-            'NAME' : os.path.join(BASE_DIR, 'test-db.sqlite3'),
+            'NAME' : 'apis_test',
         }
     }
 }

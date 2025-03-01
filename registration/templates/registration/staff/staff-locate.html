@@ -57,16 +57,14 @@
 
   <script type="text/javascript">
 
-      $("#lookup").click(doRegister);
-
       function doRegister() {
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          let errorCount = $(".has-error").length;
           if (errorCount > 0) {
               return;
           }
 
-          var data = {
+          let data = {
               'email': $("#email").val(), 'token': $("#token").val()
           };
           $.ajax({
@@ -85,6 +83,14 @@
                   window.location = "{% url 'registration:info_staff' %}";
               }
           });
+      }
+
+      if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function() {
+              $("#lookup").click(doRegister);
+          });
+      } else {
+          $("#lookup").click(doRegister);
       }
 
   </script>

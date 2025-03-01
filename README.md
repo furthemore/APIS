@@ -108,7 +108,13 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     source venv/bin/activate
     pip install -r requirements.txt
 
-    # Review your settings
+    # Create a development database server
+    python manage.py make_db
+
+    # Start the development database server
+    python manage.py start_db
+
+    # Review your settings, including the database settings from the output from make_db.
     cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
 
     python manage.py migrate

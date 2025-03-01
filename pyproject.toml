@@ -1,0 +1,48 @@
+[project]
+name = "apis"
+version = "0.25.0"
+description = "Attendee registration software for fan conventions"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.12.3",
+    "configobj>=5.0.9",
+    "django>=3.2.24,<4",
+    "django-admin-env-notice~=0.4",
+    "django-extensions~=3.2.3",
+    "django-idempotency-key~=1.3.0",
+    "django-import-export~=3.3.7",
+    "django-maintenance-mode==0.21.1",
+    "django-mathfilters~=1.0.0",
+    "django-nested-admin>=4.1.1",
+    "django-nested-inline~=0.4.6",
+    "django-prometheus~=2.3.1",
+    "django-redis~=5.4.0",
+    "django-u2f",
+    "django-widget-tweaks~=1.5.0",
+    "freezegun>=1.4.0",
+    "gotenberg-client~=0.7.0",
+    "influxdb~=5.3.1",
+    "influxdb-client~=1.40.0",
+    "markuppy>=1.14",
+    "paho-mqtt~=1.6.1",
+    "pillow>=5.3",
+    "psycopg2-binary>=2.9.9",
+    "pygments~=2.18.0",
+    "pyjwt~=2.8.0",
+    "pytz~=2024.1",
+    "qrcode~=7.4.2",
+    "respx>=0.22.0",
+    "sentry-sdk>=2.21.0",
+    "soupsieve>=2.6",
+    "squareup==22.0.0.20220921",
+]
+
+[tool.uv.sources]
+django-u2f = { git = "https://github.com/rechner/django-u2f.git", rev = "23022f80ae4af831e3533464a0b54e6ec46b2ca1" }
+
+[dependency-groups]
+dev = [
+    "django-debug-toolbar~=4.3.0",
+    "ruff>=0.9.6",
+]
