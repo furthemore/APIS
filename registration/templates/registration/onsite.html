@@ -185,25 +185,17 @@
   </script>
 
   <script type="text/javascript">
-      var levelTemplateData = [];
-      var minorLevelTemplateData = [];
-      var accompaniedLevelTemplateData = [];
-      var freeLevelTemplateData = [];
-      var levelData = [];
-      var minorLevelData = [];
-      var accompaniedLevelData = [];
-      var freeLevelData = [];
-      var deptData = [];
-      var shirtSizes = [];
+      let levelTemplateData = [];
+      let minorLevelTemplateData = [];
+      let accompaniedLevelTemplateData = [];
+      let freeLevelTemplateData = [];
+      let levelData = [];
+      let minorLevelData = [];
+      let accompaniedLevelData = [];
+      let freeLevelData = [];
+      let deptData = [];
+      let shirtSizes = [];
       $("body").ready(function () {
-          // only init the javascript datepicker if none is provided by the browser natively
-          if (!Modernizr.inputtypes.date) {
-              $("#birthDate").datepicker({
-                  format: 'yyyy-mm-dd',
-                  changeMonth: true,
-                  changeYear: true
-              });
-          }
           $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
               levelData = data;
               $.each(data, function (key, val) {
@@ -216,42 +208,6 @@
               });
               $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
               $(".changeLevel").hide();
-
-          });
-          $.getJSON("{% url 'registration:minorpricelevels' %}", function (data) {
-              minorLevelData = data;
-              $.each(data, function (key, val) {
-                  minorLevelTemplateData.push({
-                      name: val.name,
-                      price: "$" + val.base_price,
-                      levelId: "level_" + val.id,
-                      selectText: "Select " + val.name
-                  });
-              });
-
-          });
-          $.getJSON("{% url 'registration:accompaniedpricelevels' %}", function (data) {
-              accompaniedLevelData = data;
-              $.each(data, function (key, val) {
-                  accompaniedLevelTemplateData.push({
-                      name: val.name,
-                      price: "$" + val.base_price,
-                      levelId: "level_" + val.id,
-                      selectText: "Select " + val.name
-                  });
-              });
-
-          });
-          $.getJSON("{% url 'registration:freepricelevels' %}", function (data) {
-              freeLevelData = data;
-              $.each(data, function (key, val) {
-                  freeLevelTemplateData.push({
-                      name: val.name,
-                      price: "$" + val.base_price,
-                      levelId: "level_" + val.id,
-                      selectText: "Select " + val.name
-                  });
-              });
 
           });
           $.getJSON("{% url 'registration:departments' %}", function (data) {
@@ -273,9 +229,9 @@
 
           $("#levelContainer").on('click', 'a.selectLevel', function () {
               clearLevels();
-              var levelId = $(this).attr('id').split('_')[1];
+              let levelId = $(this).attr('id').split('_')[1];
               $.each(levelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -286,7 +242,7 @@
                   }
               });
               $.each(minorLevelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -297,7 +253,7 @@
                   }
               });
               $.each(accompaniedLevelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -308,7 +264,7 @@
                   }
               });
               $.each(freeLevelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -321,22 +277,16 @@
           });
 
           $("body").on("click", '#next-personal', function () {
-              if (Modernizr.inputtypes.date) {
-                  // native datepicker - expect ISO date
-                  var birthdate = parseDate($("#birthDate").val());
-              } else {
-                  // American middle-endian format put out by datepicker javascript
-                  var birthdate = new Date(Date.parse($("#birthDate").val()));
-              }
+              let birthdate = new Date(Date.parse($("#birthDate").val()));
 
               try {
-                  var age = getAgeByEventStart(birthdate);
+                  let age = getAgeByEventStart(birthdate);
               } catch (e) {
                   console.log(e);
                   alert(e);
               }
 
-              var level_data = [];
+              let level_data = [];
 
               if (age < 0) {
                   alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
@@ -374,22 +324,22 @@
           });
       });
 
-      var clearLevels = function () {
+      let clearLevels = function () {
           $.each(levelTemplateData, function (key, val) {
               $("#" + val.levelId).text("Select " + val.name);
           });
           $("form").validator('update');
       };
 
-      var generateOptions = function (levelId) {
-          var data = [];
+      let generateOptions = function (levelId) {
+          let data = [];
           $.each(levelData, function (key, thing) {
               if (thing.id == levelId) {
                   data = thing.options;
                   return false;
               }
           });
-          var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+          let container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
           $("#levelContainer").append(container);
           if (data.length == 0) {
               $("#optionsContainer").append("<h4>None</h4>")
@@ -399,17 +349,17 @@
                   return true;
               }
               if (val.value == "0.00") {
-                  var price = " (Free) ";
+                  let price = " (Free) ";
               } else {
-                  var price = " (+$" + val.value + ") "
+                  let price = " (+$" + val.value + ") "
               }
-              var required = "";
+              let required = "";
               if (val.required) {
                   required = "required";
               }
               switch (val.type) {
                   case "bool":
-                      var template = $("#optionBoolTemplate");
+                      let template = $("#optionBoolTemplate");
                       if (val.required) {
                           template = $("#optionBoolReqTemplate");
                       }
@@ -419,7 +369,7 @@
                       }, {append: true});
                       break;
                   case "int":
-                      var template = $("#optionIntTemplate");
+                      let template = $("#optionIntTemplate");
                       if (val.required) {
                           template = $("#optionIntReqTemplate");
                       }
@@ -429,11 +379,11 @@
                       }, {append: true});
                       break;
                   case "string":
-                      var template = $("#optionStringTemplate");
+                      let template = $("#optionStringTemplate");
                       if (val.required) {
                           template = $("#optionStringReqTemplate");
                       }
-                      var placeholder = val.name;
+                      let placeholder = val.name;
                       $("#optionsContainer").loadTemplate(template, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id,
@@ -448,7 +398,7 @@
                       if (val.list == []) {
                           break;
                       }
-                      var options = [];
+                      let options = [];
                       if (!val.required) {
                           options.push({"content": "Select One...", "value": ""});
                       }
@@ -469,9 +419,9 @@
           $("form").validator('update');
       };
 
-      var getOptions = function () {
-          var options = $(".levelOptions");
-          var data = [];
+      let getOptions = function () {
+          let options = $(".levelOptions");
+          let data = [];
           $.each(options, function (key, option) {
               if ($(option).is(':checkbox')) {
                   if ($(option).is(':checked')) {
@@ -487,7 +437,7 @@
       function register_click(e) {
           e.preventDefault();
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          let errorCount = $(".has-error").length;
           if (errorCount > 0) {
               $("#register").one('click', register_click);
               return;
@@ -498,14 +448,8 @@
               $("#register").one('click', register_click);
               return;
           }
-          if (Modernizr.inputtypes.date) {
-              // native datepicker - expect ISO date
-              var birthdate = parseDate($("#birthDate").val());
-          } else {
-              // American middle-endian format put out by datepicker javascript
-              var birthdate = new Date(Date.parse($("#birthDate").val()));
-          }
-          var data = {
+          let birthdate = new Date(Date.parse($("#birthDate").val()));
+          let data = {
               'attendee': {
                   'firstName': $("#firstName").val(),
                   'lastName': $("#lastName").val(),

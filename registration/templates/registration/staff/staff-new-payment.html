@@ -100,13 +100,7 @@
           }
 
           let birthdate;
-          if (Modernizr.inputtypes.date) {
-              // native datepicker - expect ISO date
-              birthdate = parseDate($("#birthDate").val());
-          } else {
-              // American middle-endian format put out by datepicker javascript
-              birthdate = new Date(Date.parse($("#birthDate").val()));
-          }
+          birthdate = new Date(Date.parse($("#birthDate").val()));
           let age = getAgeByEventStart(birthdate);
           if (age < 18) {
               alert("You must be 18 by the first day of the event to register online.");

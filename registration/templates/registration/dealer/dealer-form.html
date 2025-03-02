@@ -4,448 +4,436 @@
 {% block content %}
 
 
-  <div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-              aria-hidden="true">&times;</span>
-          </button>
-          <h4 class="modal-title" id="ageModal_title">Why do we need your birthdate?</h4>
-        </div>
-        <div class="modal-body">
-          <p>Due to state and federal laws, minors may not sell merchandise in our Marketplace. You must be 18
-            years of age or older before the start of the convention to be a dealer. </p>
-          <p>Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if
-            you have any questions.</p>
-        </div>
+<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="ageModal_title">Why do we need your birthdate?</h4>
+      </div>
+      <div class="modal-body">
+        <p>Due to state and federal laws, minors may not sell merchandise in our Marketplace. You must be 18
+          years of age or older before the start of the convention to be a dealer. </p>
+        <p>Please contact <a href="mailto:{{ event.dealerEmail }}">{{ event.dealerEmail }}</a> if
+          you have any questions.</p>
       </div>
     </div>
   </div>
+</div>
 
-  <noscript>
-    <h1>Javascript is required to use this form.</h1>
-  </noscript>
-  <form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="personal">
-        <h1>Dealer Registration - {{ event }}</h1>
-        <p>Welcome to the registration system. To continue, enter your information below.</p>
+<noscript>
+  <h1>Javascript is required to use this form.</h1>
+</noscript>
+<form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="personal">
+      <h1>Dealer Registration - {{ event }}</h1>
+      <p>Welcome to the registration system. To continue, enter your information below.</p>
 
-        {% show_attendee_form event=event emailOptions=True %}
+      {% show_attendee_form event=event emailOptions=True %}
 
-        <div class="form-group">
-          <label for="far" class="col-sm-3 control-label">Badge Name</label>
-          <div class="col-sm-9">
-            <input type="text" id="badgename" name="badgename" placeholder="Badge Name"
-                   class="form-control form-control-text"/>
-          </div>
-        </div>
-
-        <p>&nbsp;</p>
-        <h2>Business Information</h2>
-        <p>Fill out the information related to your business below.</p>
-        <hr>
-        <div class="form-group">
-          <label for="businessName" class="col-sm-3 control-label">Business Name <span
-              style="color:red;">*</span></label>
-          <div class="col-sm-9">
-            <input type="text" id="businessName" name="businessName" placeholder="Business Name"
-                   class="form-control form-control-text" required maxlength="200">
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-        <div class="form-group">
-          <label for="license" class="col-sm-3 control-label">{{ venue.state }} Tax License <span
-              style="color:red;">*</span></label>
-          <div class="col-sm-9">
-            <input type="text" id="license" name="license" placeholder="Tax License ID"
-                   class="form-control form-control-text" required maxlength="50">
-
-            <label>
-              <input type="checkbox" id="tempLicense"/> I need a temporary tax license for {{ venue.state }}.
-            </label>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-        <div class="form-group">
-          <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
-          <div class="col-sm-9">
-            <input type="url" id="website" name="website" placeholder="http://www.mysite.org"
-                   class="form-control form-control-text" required maxlength="500"
-                   data-error="Please enter a full URL here. Ex: http://www.google.com"/>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-        <div class="form-group">
-          <label for="website" class="col-sm-3 control-label">Logo</label>
-          <div class="col-sm-9">
-            <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png"
-                   class="form-control form-control-text" maxlength="500"
-                   data-error="Please enter a full URL here. Ex: http://www.google.com/image.png"/>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-          <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location
-            map.
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="description" class="col-sm-3 control-label">Description of Wares <span style="color:red;">*</span></label>
-          <div class="col-sm-9">
-                    <textarea id="description" name="description" class="form-control form-control-textarea"
-                              required></textarea>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-
-        <div class="form-group">
-          <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity
-            Raffle</label>
-          <div class="col-sm-9">
-                    <textarea id="charityRaffle" name="charityRaffle"
-                              class="form-control form-control-textarea"> </textarea>
-          </div>
-          <div class="col-sm-9 col-sm-offset-3 small">Any donation provided may be tax deductible. Please see the
-            charity onsite for additional information and receipts. Consult your tax professional for guidance.
-          </div>
-        </div>
-
-        <p>&nbsp;</p>
-        <h2>Placement Options</h2>
-        <p>The options below may limit where you can be placed in our Marketplace.</p>
-        <hr/>
-        {% if event.dealerWifi %}
-        <div class="form-group">
-          <label for="wifi" class="col-sm-3 control-label">I need Wi-Fi</label>
-          <div class="col-sm-9">
-            <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox"/>
-          </div>
-          <div class="col-sm-9 col-sm-offset-3 small">This option adds ${{ event.dealerWifiPrice   }} to your table price. You will receive
-            Wi-Fi access details in your welcome packet at the con.
-          </div>
-        </div>
-        {% else %}
-          <input type="hidden" id="wifi" name="wifi" value="unchecked">
-        {%  endif %}
-        <div class="form-group">
-          <label for="switch" class="col-sm-3 control-label">I will consider different table types</label>
-          <div class="col-sm-9">
-            <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox"/>
-          </div>
-          <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I
-            am willing to be assigned a different spot type (Table to booth or booth to table). You can decide
-            to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept,
-            you will be responsible for any difference in price.
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
-          <div class="col-sm-9">
-            <select id="tableSize" class="form-control form-control-select"></select>
-            <div id="tableSizeDescription"></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="chairs" class="col-sm-3 control-label">Chairs</label>
-          <div class="col-sm-9">
-            <input type="number" id="chairs" name="chairs" class="form-control form-control-text"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="tables" class="col-sm-3 control-label">Tables</label>
-          <div class="col-sm-9">
-            <input type="number" id="tables" name="tables" class="form-control form-control-text"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="tables" class="col-sm-3 control-label">Partner Information</label>
-          <div class="col-sm-9" id="partnerList">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
-          <div class="col-sm-9">
-            <input type="text" id="near" name="near" placeholder="Business or Person"
-                   class="form-control form-control-text" maxlength="200"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
-          <div class="col-sm-9">
-            <input type="text" id="far" name="far" placeholder="Business or Person"
-                   class="form-control form-control-text" maxlength="200"/>
-          </div>
-        </div>
-        <hr/>
-        {% include "templatetags/coc_sig.html" %}
-
-        <div class="form-group">
-          <div class="col-sm-9 col-sm-offset-3">
-            <button id="register" type="submit" class="btn btn-primary col-sm-6 pull-right"
-                    aria-controls="profile" data-toggle="tab">Submit
-            </button>
-          </div>
+      <div class="form-group">
+        <label for="far" class="col-sm-3 control-label">Badge Name</label>
+        <div class="col-sm-9">
+          <input type="text" id="badgename" name="badgename" placeholder="Badge Name"
+            class="form-control form-control-text" />
         </div>
       </div>
-      {% csrf_token %}
+
+      <p>&nbsp;</p>
+      <h2>Business Information</h2>
+      <p>Fill out the information related to your business below.</p>
+      <hr>
+      <div class="form-group">
+        <label for="businessName" class="col-sm-3 control-label">Business Name <span style="color:red;">*</span></label>
+        <div class="col-sm-9">
+          <input type="text" id="businessName" name="businessName" placeholder="Business Name"
+            class="form-control form-control-text" required maxlength="200">
+        </div>
+        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+      </div>
+      <div class="form-group">
+        <label for="license" class="col-sm-3 control-label">{{ venue.state }} Tax License <span
+            style="color:red;">*</span></label>
+        <div class="col-sm-9">
+          <input type="text" id="license" name="license" placeholder="Tax License ID"
+            class="form-control form-control-text" required maxlength="50">
+
+          <label>
+            <input type="checkbox" id="tempLicense" /> I need a temporary tax license for {{ venue.state }}.
+          </label>
+        </div>
+        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+      </div>
+      <div class="form-group">
+        <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
+        <div class="col-sm-9">
+          <input type="url" id="website" name="website" placeholder="http://www.mysite.org"
+            class="form-control form-control-text" required maxlength="500"
+            data-error="Please enter a full URL here. Ex: http://www.google.com" />
+        </div>
+        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+      </div>
+      <div class="form-group">
+        <label for="website" class="col-sm-3 control-label">Logo</label>
+        <div class="col-sm-9">
+          <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png"
+            class="form-control form-control-text" maxlength="500"
+            data-error="Please enter a full URL here. Ex: http://www.google.com/image.png" />
+        </div>
+        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+        <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location
+          map.
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="description" class="col-sm-3 control-label">Description of Wares <span
+            style="color:red;">*</span></label>
+        <div class="col-sm-9">
+          <textarea id="description" name="description" class="form-control form-control-textarea" required></textarea>
+        </div>
+        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity
+          Raffle</label>
+        <div class="col-sm-9">
+          <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea"> </textarea>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 small">Any donation provided may be tax deductible. Please see the
+          charity onsite for additional information and receipts. Consult your tax professional for guidance.
+        </div>
+      </div>
+
+      <p>&nbsp;</p>
+      <h2>Placement Options</h2>
+      <p>The options below may limit where you can be placed in our Marketplace.</p>
+      <hr />
+      {% if event.dealerWifi %}
+      <div class="form-group">
+        <label for="wifi" class="col-sm-3 control-label">I need Wi-Fi</label>
+        <div class="col-sm-9">
+          <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 small">This option adds ${{ event.dealerWifiPrice }} to your table price.
+          You will receive
+          Wi-Fi access details in your welcome packet at the con.
+        </div>
+      </div>
+      {% else %}
+      <input type="hidden" id="wifi" name="wifi" value="unchecked">
+      {% endif %}
+      <div class="form-group">
+        <label for="switch" class="col-sm-3 control-label">I will consider different table types</label>
+        <div class="col-sm-9">
+          <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I
+          am willing to be assigned a different spot type (Table to booth or booth to table). You can decide
+          to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept,
+          you will be responsible for any difference in price.
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
+        <div class="col-sm-9">
+          <select id="tableSize" class="form-control form-control-select"></select>
+          <div id="tableSizeDescription"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="chairs" class="col-sm-3 control-label">Chairs</label>
+        <div class="col-sm-9">
+          <input type="number" id="chairs" name="chairs" class="form-control form-control-text" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="tables" class="col-sm-3 control-label">Tables</label>
+        <div class="col-sm-9">
+          <input type="number" id="tables" name="tables" class="form-control form-control-text" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="tables" class="col-sm-3 control-label">Partner Information</label>
+        <div class="col-sm-9" id="partnerList">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
+        <div class="col-sm-9">
+          <input type="text" id="near" name="near" placeholder="Business or Person"
+            class="form-control form-control-text" maxlength="200" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
+        <div class="col-sm-9">
+          <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text"
+            maxlength="200" />
+        </div>
+      </div>
+      <hr />
+      {% include "templatetags/coc_sig.html" %}
+
+      <div class="form-group">
+        <div class="col-sm-9 col-sm-offset-3">
+          <button id="register" type="submit" class="btn btn-primary col-sm-6 pull-right" aria-controls="profile"
+            data-toggle="tab">Submit
+          </button>
+        </div>
+      </div>
     </div>
-  </form>
+    {% csrf_token %}
+  </div>
+</form>
 
 {% endblock %}
 
 {% block javascript %}
 
-  <script type="text/javascript">
-      var tableSizes = [];
+<script type="text/javascript">
+  var tableSizes = [];
 
-      function setTableInfo(id) {
-          $.each(tableSizes, function (key, item) {
-              if (item.id == id) {
-                  if (item.chairMin == item.chairMax) {
-                      $("#chairs").val(item.chairMin).attr("disabled", "disabled");
-                  } else {
-                      $("#chairs").val(item.chairMin).attr("min", item.chairMin).attr("max", item.chairMax).removeAttr("disabled");
-                  }
-                  if (item.tableMin == item.tableMax) {
-                      $("#tables").val(item.tableMin).attr("disabled", "disabled");
-                  } else {
-                      $("#tables").val(item.tableMin).attr("min", item.tableMin).attr("max", item.tableMax).removeAttr("disabled");
-                  }
-                  $("#partnerList").empty();
-                  if (item.partnerMax > 0) {
-                      for (var i = item.partnerMin; i < item.partnerMax; i++) {
-                          var partner = '<div class="partnerGroup"><input type="text" id="name_' + i + '" maxlength="400" class="form-control form-control-text" placeholder="Partner Name" />' +
-                              '<input type="email" id="email_' + i + '" maxlength="200" class="form-control form-control-text" placeholder="Partner Email" />' +
-                              '<input type="text" id="license_' + i + '" maxlength="50" placeholder="Partner Tax License" class="form-control form-control-text" />' +
-                              '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label></div>'
-                          $("#partnerList").append(partner);
-                          if (i != item.partnerMax) {
-                              $("#partnerList").append("<br/>");
-                          }
-                      }
-                      $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandise, they must provide their license number or request a temporary license from the convention.</span>");
-                      $(".partnerLicense").click(partnerLicense);
-                  }
-              }
-          });
-      };
-
-
-      function partnerLicense() {
-          var id = this.id.split('_')[1];
-          if ($(this).is(":checked")) {
-              $("#license_" + id).val("temporary").attr("disabled", "disabled");
-          } else {
-              $("#license_" + id).val("").removeAttr("disabled");
+  function setTableInfo(id) {
+    $.each(tableSizes, function (key, item) {
+      if (item.id == id) {
+        if (item.chairMin == item.chairMax) {
+          $("#chairs").val(item.chairMin).attr("disabled", "disabled");
+        } else {
+          $("#chairs").val(item.chairMin).attr("min", item.chairMin).attr("max", item.chairMax).removeAttr("disabled");
+        }
+        if (item.tableMin == item.tableMax) {
+          $("#tables").val(item.tableMin).attr("disabled", "disabled");
+        } else {
+          $("#tables").val(item.tableMin).attr("min", item.tableMin).attr("max", item.tableMax).removeAttr("disabled");
+        }
+        $("#partnerList").empty();
+        if (item.partnerMax > 0) {
+          for (var i = item.partnerMin; i < item.partnerMax; i++) {
+            var partner = '<div class="partnerGroup"><input type="text" id="name_' + i + '" maxlength="400" class="form-control form-control-text" placeholder="Partner Name" />' +
+              '<input type="email" id="email_' + i + '" maxlength="200" class="form-control form-control-text" placeholder="Partner Email" />' +
+              '<input type="text" id="license_' + i + '" maxlength="50" placeholder="Partner Tax License" class="form-control form-control-text" />' +
+              '<label><input type="checkbox" id="tempLicense_' + i + '" class="partnerLicense" /> This partner needs a temporary license.</label></div>'
+            $("#partnerList").append(partner);
+            if (i != item.partnerMax) {
+              $("#partnerList").append("<br/>");
+            }
           }
+          $("#partnerList").append("<span class='small'>If any partner will be selling their own merchandise, they must provide their license number or request a temporary license from the convention.</span>");
+          $(".partnerLicense").click(partnerLicense);
+        }
       }
+    });
+  };
 
 
-      function getPartners() {
-          var partners = [];
-          var partnerList = $(".partnerGroup");
-          $.each(partnerList, function (key, item) {
-              var partner = {};
-              var itemList = $(item).find("input")
-              var hasValues = false;
-              $.each(itemList, function (key2, item2) {
-                  var id = item2.id.split('_')[0];
-                  if ($(item2).is(':checkbox')) {
-                      partner[id] = $(item2).is(':checked');
-                      if (partner[id]) {
-                          hasValues = true;
-                      }
-                  } else {
-                      partner[id] = $(item2).val();
-                      if ($(item2).val() != "") {
-                          hasValues = true;
-                      }
-                  }
-
-              });
-              if (hasValues) {
-                  partners.push(partner)
-              }
-          });
-          return partners;
-      }
+  function partnerLicense() {
+    var id = this.id.split('_')[1];
+    if ($(this).is(":checked")) {
+      $("#license_" + id).val("temporary").attr("disabled", "disabled");
+    } else {
+      $("#license_" + id).val("").removeAttr("disabled");
+    }
+  }
 
 
-      function doRegister() {
-          $("form").validator('validate');
-          var errorCount = $(".has-error").length;
-          if (errorCount > 0) {
-              return;
+  function getPartners() {
+    var partners = [];
+    var partnerList = $(".partnerGroup");
+    $.each(partnerList, function (key, item) {
+      var partner = {};
+      var itemList = $(item).find("input")
+      var hasValues = false;
+      $.each(itemList, function (key2, item2) {
+        var id = item2.id.split('_')[0];
+        if ($(item2).is(':checkbox')) {
+          partner[id] = $(item2).is(':checked');
+          if (partner[id]) {
+            hasValues = true;
           }
-          if ($("#birthDate").val() == "") {
-              alert("You must enter your birthdate to submit your application.");
-              return;
+        } else {
+          partner[id] = $(item2).val();
+          if ($(item2).val() != "") {
+            hasValues = true;
           }
-          if (Modernizr.inputtypes.date) {
-              // native datepicker - expect ISO date
-              var birthdate = parseDate($("#birthDate").val());
-          } else {
-              // American middle-endian format put out by datepicker javascript
-              var birthdate = new Date(Date.parse($("#birthDate").val()));
-          }
-          var age = getAgeByEventStart(birthdate);
-          if (age < 18) {
-              alert("You must be 18 by the first day of {{event.name}} to be a dealer.");
-              return;
-          }
-
-          let signature = $("#jsign_signature");
-          let nativeData = signature.jSignature("getData", "native");
-          if (nativeData.length < 2) {
-            alert("You must sign to acknowledge your acceptance of the Code of Conduct.");
-              $("#register").one('click', register_click);
-              return;
-          }
-
-          var data = {
-              'attendee': {
-                  'firstName': $("#firstName").val(),
-                  'lastName': $("#lastName").val(),
-                  'preferredName': $("#preferredName").val(),
-                  'address1': $("#add1").val(),
-                  'address2': $("#add2").val(),
-                  'city': $("#city").val(),
-                  'state': $("#state").val(),
-                  'country': $("#country").val(),
-                  'postal': $("#zip").val(),
-                  'phone': $("#phone").val(),
-                  'email': $("#email").val(),
-                  'birthdate': $("#birthDate").val(),
-                  'emailsOk': $("#contact").is(':checked'),
-                  'surveyOk': $("#survey").is(':checked'),
-                  'badgeName': $("#badgename").val(),
-                  'signature_svg': signature.jSignature("getData", "svgbase64")[1],
-                  'signature_bitmap': signature.jSignature("getData", "image")[1]
-              },
-              'dealer': {
-                  'businessName': $("#businessName").val(), 'website': $("#website").val(), 'logo': $("#logo").val(),
-                  'license': $("#license").val(), 'power': true, 'wifi': $("#wifi").is(':checked'),
-                  'wall': false, 'near': $("#near").val(), 'far': $("#far").val(),
-                  'description': $("#description").val(), 'tableSize': $("#tableSize").val(),
-                  'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
-                  'reception': false, 'artShow': false,
-                  'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
-                  'breakfast': false, 'switch': $('#switch').is(':checked'),
-                  'asstbreakfast': false
-              },
-              'event': '{{event}}'
-          };
-          $.ajax({
-              "type": "POST",
-              "dataType": "json",
-              "url": "{% url 'registration:addNewDealer' %}",
-              "data": JSON.stringify(data),
-              "beforeSend": function (xhr, settings) {
-                  console.log("Before Send");
-                  $.ajaxSettings.beforeSend(xhr, settings);
-              },
-              "error": function (result, status, error) {
-                  alert("An error has occurred. Please contact {{event.dealerEmail}} and we will correct the problem.")
-              },
-              "success": function () {
-                  window.location = "{% url 'registration:thanks_dealer' %}";
-              }
-          });
-      }
-
-
-      function getCookie(name) {
-          var cookieValue = null;
-          if (document.cookie && document.cookie != '') {
-              var cookies = document.cookie.split(';');
-              for (var i = 0; i < cookies.length; i++) {
-                  var cookie = jQuery.trim(cookies[i]);
-                  // Does this cookie string begin with the name we want?
-                  if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                      break;
-                  }
-              }
-          }
-          return cookieValue;
-      }
-
-      $(document).ready(function () {
-          $.ajaxSetup({
-              beforeSend: function (xhr, settings) {
-                  if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                      // Only send the token to relative URLs i.e. locally.
-                      xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-                  }
-              }
-          });
-
-          $("body").ready(function () {
-              if (!Modernizr.inputtypes.date) {
-                  $("#birthDate").datepicker({
-                      changeMonth: true,
-                      changeYear: true
-                  });
-              }
-              $.getJSON("{% url 'registration:tablesizes' %}", function (data) {
-                  tableSizes = data;
-                  $.each(tableSizes, function (key, item) {
-                      $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
-                      if (key == 0) {
-                          $("#tableSizeDescription").text(item.description);
-                          setTableInfo(item.id);
-                      }
-                  });
-              });
-          });
-          $("#tableSize").on("change", function () {
-              var id = $(this).val();
-              $.each(tableSizes, function (key, item) {
-                  if (item.id == id) {
-                      $("#tableSizeDescription").text(item.description);
-                      setTableInfo(id);
-                  }
-              });
-          });
-
-          $("#next-personal").click(function () {
-              window.scrollTo(0, 0);
-          });
-
-          $("#next-optional").click(function () {
-              window.scrollTo(0, 0);
-          });
-
-          $("#country").on("change", function () {
-              if ($(this).val() == "US") {
-                  $("#state").val("VA").removeAttr("disabled").attr("required", "required");
-                  $("#zip").val("").removeAttr("disabled").attr("required", "required");
-              } else {
-                  $("#state").val("").attr("disabled", "disabled").removeAttr("required");
-                  $("#zip").val("").attr("disabled", "disabled").removeAttr("required");
-              }
-          });
-
-          $("#tempLicense").on("click", function () {
-              if ($(this).is(":checked")) {
-                  $("#license").val("temporary").attr("disabled", "disabled");
-              } else {
-                  $("#license").val("").removeAttr("disabled");
-              }
-          });
-
-          $("#register1").click(doRegister);
-
-          $("#register").click(doRegister);
+        }
 
       });
+      if (hasValues) {
+        partners.push(partner)
+      }
+    });
+    return partners;
+  }
 
-      $(document).ready(function () {
-          $("form").fadeIn();
+
+  function doRegister() {
+    $("form").validator('validate');
+    var errorCount = $(".has-error").length;
+    if (errorCount > 0) {
+      return;
+    }
+    if ($("#birthDate").val() == "") {
+      alert("You must enter your birthdate to submit your application.");
+      return;
+    }
+
+    var birthdate = new Date(Date.parse($("#birthDate").val()));
+    var age = getAgeByEventStart(birthdate);
+    if (age < 18) {
+      alert("You must be 18 by the first day of {{event.name}} to be a dealer.");
+      return;
+    }
+
+    let signature = $("#jsign_signature");
+    let nativeData = signature.jSignature("getData", "native");
+    if (nativeData.length < 2) {
+      alert("You must sign to acknowledge your acceptance of the Code of Conduct.");
+      $("#register").one('click', register_click);
+      return;
+    }
+
+    var data = {
+      'attendee': {
+        'firstName': $("#firstName").val(),
+        'lastName': $("#lastName").val(),
+        'preferredName': $("#preferredName").val(),
+        'address1': $("#add1").val(),
+        'address2': $("#add2").val(),
+        'city': $("#city").val(),
+        'state': $("#state").val(),
+        'country': $("#country").val(),
+        'postal': $("#zip").val(),
+        'phone': $("#phone").val(),
+        'email': $("#email").val(),
+        'birthdate': $("#birthDate").val(),
+        'emailsOk': $("#contact").is(':checked'),
+        'surveyOk': $("#survey").is(':checked'),
+        'badgeName': $("#badgename").val(),
+        'signature_svg': signature.jSignature("getData", "svgbase64")[1],
+        'signature_bitmap': signature.jSignature("getData", "image")[1]
+      },
+      'dealer': {
+        'businessName': $("#businessName").val(), 'website': $("#website").val(), 'logo': $("#logo").val(),
+        'license': $("#license").val(), 'power': true, 'wifi': $("#wifi").is(':checked'),
+        'wall': false, 'near': $("#near").val(), 'far': $("#far").val(),
+        'description': $("#description").val(), 'tableSize': $("#tableSize").val(),
+        'chairs': $("#chairs").val(), 'partners': getPartners(), 'tables': $("#tables").val(),
+        'reception': false, 'artShow': false,
+        'charityRaffle': $("#charityRaffle").val(), 'agreeToRules': $("#agreeToRules").is(':checked'),
+        'breakfast': false, 'switch': $('#switch').is(':checked'),
+        'asstbreakfast': false
+      },
+      'event': '{{event}}'
+    };
+    $.ajax({
+      "type": "POST",
+      "dataType": "json",
+      "url": "{% url 'registration:addNewDealer' %}",
+      "data": JSON.stringify(data),
+      "beforeSend": function (xhr, settings) {
+        console.log("Before Send");
+        $.ajaxSettings.beforeSend(xhr, settings);
+      },
+      "error": function (result, status, error) {
+        alert("An error has occurred. Please contact {{event.dealerEmail}} and we will correct the problem.")
+      },
+      "success": function () {
+        window.location = "{% url 'registration:thanks_dealer' %}";
+      }
+    });
+  }
+
+
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var cookie = jQuery.trim(cookies[i]);
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  $(document).ready(function () {
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+          // Only send the token to relative URLs i.e. locally.
+          xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+      }
+    });
+
+    $("body").ready(function () {
+      $.getJSON("{% url 'registration:tablesizes' %}", function (data) {
+        tableSizes = data;
+        $.each(tableSizes, function (key, item) {
+          $("#tableSize").append("<option value='" + item.id + "'>" + item.name + " ($" + item.basePrice + ")</option>");
+          if (key == 0) {
+            $("#tableSizeDescription").text(item.description);
+            setTableInfo(item.id);
+          }
+        });
       });
+    });
+    $("#tableSize").on("change", function () {
+      var id = $(this).val();
+      $.each(tableSizes, function (key, item) {
+        if (item.id == id) {
+          $("#tableSizeDescription").text(item.description);
+          setTableInfo(id);
+        }
+      });
+    });
 
-  </script>
+    $("#next-personal").click(function () {
+      window.scrollTo(0, 0);
+    });
 
-  <script src="{% static 'js/date-entry.js' %}"></script>
+    $("#next-optional").click(function () {
+      window.scrollTo(0, 0);
+    });
+
+    $("#country").on("change", function () {
+      if ($(this).val() == "US") {
+        $("#state").val("VA").removeAttr("disabled").attr("required", "required");
+        $("#zip").val("").removeAttr("disabled").attr("required", "required");
+      } else {
+        $("#state").val("").attr("disabled", "disabled").removeAttr("required");
+        $("#zip").val("").attr("disabled", "disabled").removeAttr("required");
+      }
+    });
+
+    $("#tempLicense").on("click", function () {
+      if ($(this).is(":checked")) {
+        $("#license").val("temporary").attr("disabled", "disabled");
+      } else {
+        $("#license").val("").removeAttr("disabled");
+      }
+    });
+
+    $("#register1").click(doRegister);
+
+    $("#register").click(doRegister);
+
+  });
+
+  $(document).ready(function () {
+    $("form").fadeIn();
+  });
+
+</script>
+
+<script src="{% static 'js/date-entry.js' %}"></script>
 
 {% endblock %}
