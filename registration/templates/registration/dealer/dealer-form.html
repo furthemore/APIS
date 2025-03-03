@@ -281,13 +281,8 @@
               alert("You must enter your birthdate to submit your application.");
               return;
           }
-          if (Modernizr.inputtypes.date) {
-              // native datepicker - expect ISO date
-              var birthdate = parseDate($("#birthDate").val());
-          } else {
-              // American middle-endian format put out by datepicker javascript
+
               var birthdate = new Date(Date.parse($("#birthDate").val()));
-          }
           var age = getAgeByEventStart(birthdate);
           if (age < 18) {
               alert("You must be 18 by the first day of {{event.name}} to be a dealer.");
@@ -381,12 +376,6 @@
           });
 
           $("body").ready(function () {
-              if (!Modernizr.inputtypes.date) {
-                  $("#birthDate").datepicker({
-                      changeMonth: true,
-                      changeYear: true
-                  });
-              }
               $.getJSON("{% url 'registration:tablesizes' %}", function (data) {
                   tableSizes = data;
                   $.each(tableSizes, function (key, item) {

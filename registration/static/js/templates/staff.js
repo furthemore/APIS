@@ -1,14 +1,6 @@
 shirtSizes = [];
 
 $("body").ready(function () {
-    // only init the javascript datepicker if none is provided by the browser natively
-    if (!Modernizr.inputtypes.date) {
-        $("#birthDate").datepicker({
-            format: 'yyyy-mm-dd',
-            changeMonth: true,
-            changeYear: true
-        });
-    }
     $.getJSON("/registration/shirts", function (data) {
         $.each(data, function (key, val) {
             $("#shirt").append("<option value='" + val.id + "'>" + val.name + "</option>");

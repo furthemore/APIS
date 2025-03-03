@@ -196,14 +196,6 @@
       var deptData = [];
       var shirtSizes = [];
       $("body").ready(function () {
-          // only init the javascript datepicker if none is provided by the browser natively
-          if (!Modernizr.inputtypes.date) {
-              $("#birthDate").datepicker({
-                  format: 'yyyy-mm-dd',
-                  changeMonth: true,
-                  changeYear: true
-              });
-          }
           $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
               levelData = data;
               $.each(data, function (key, val) {
@@ -321,13 +313,7 @@
           });
 
           $("body").on("click", '#next-personal', function () {
-              if (Modernizr.inputtypes.date) {
-                  // native datepicker - expect ISO date
-                  var birthdate = parseDate($("#birthDate").val());
-              } else {
-                  // American middle-endian format put out by datepicker javascript
-                  var birthdate = new Date(Date.parse($("#birthDate").val()));
-              }
+              let birthdate = new Date(Date.parse($("#birthDate").val()));
 
               try {
                   var age = getAgeByEventStart(birthdate);
@@ -498,14 +484,8 @@
               $("#register").one('click', register_click);
               return;
           }
-          if (Modernizr.inputtypes.date) {
-              // native datepicker - expect ISO date
-              var birthdate = parseDate($("#birthDate").val());
-          } else {
-              // American middle-endian format put out by datepicker javascript
-              var birthdate = new Date(Date.parse($("#birthDate").val()));
-          }
-          var data = {
+          let birthdate = new Date(Date.parse($("#birthDate").val()));
+          let data = {
               'attendee': {
                   'firstName': $("#firstName").val(),
                   'lastName': $("#lastName").val(),
