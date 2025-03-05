@@ -919,6 +919,7 @@ class Firebase(models.Model):
     printer_url = models.CharField(max_length=500, null=True, blank=True)
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
+    print_via_mqtt = models.BooleanField(default=False, verbose_name="Print via MQTT")
     webview = models.CharField(
         max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
     )
