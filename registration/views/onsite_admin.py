@@ -127,7 +127,7 @@ def onsite_admin(request):
             "mqtt": {
                 "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
                 "auth": mqtt_auth,
-                "supports_printing": getattr(settings, "PRINT_VIA_MQTT", False),
+                "supports_printing": terminal.print_via_mqtt if terminal else False,
             },
             "shirt_sizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
             "urls": {
