@@ -302,7 +302,7 @@ def send_mqtt_message_to_terminal(request: Union[HttpRequest, Firebase], data: d
             return JsonResponse({"sucess": False, "reason": "No terminal associated with request"}, status=400)
 
     name = active.name
-    topic = mqtt.get_topic("terminal", name)
+    topic = f'{mqtt.get_topic("terminal", name)}/action'
 
     try:
         mqtt.send_mqtt_message(topic, data)
