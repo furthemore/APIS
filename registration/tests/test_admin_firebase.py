@@ -45,7 +45,7 @@ class TestFirebaseAdmin(TestCase):
             "mqttPort": 443,
             "mqttUsername": token["user"],
             "mqttPassword": token["token"],
-            "mqttTopic": mqtt.get_topic("terminal", firebase.name),
+            "mqttTopic": f'{mqtt.get_topic("terminal", firebase.name)}/action',
             "squareApplicationId": settings.SQUARE_APPLICATION_ID,
             "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
