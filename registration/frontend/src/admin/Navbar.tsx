@@ -415,6 +415,12 @@ export const Navbar: Component<{
                 userSettings={userSettings}
               />
 
+              <ToggleSetting
+                name="Search With Birthday"
+                key="search_birthday"
+                userSettings={userSettings}
+              />
+
               <Show when={config.mqtt.supports_printing}>
                 <ToggleSetting
                   name="Auto Print After Payment"

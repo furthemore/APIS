@@ -5,7 +5,8 @@ const STORAGE_KEY = "user-settings";
 export type UserSettingKey =
   | "clear_cart_after_print"
   | "container_fluid"
-  | "print_after_payment";
+  | "print_after_payment"
+  | "search_birthday";
 
 export type UserSettings = Record<UserSettingKey, any>;
 
@@ -13,6 +14,7 @@ const USER_DEFAULTS: UserSettings = {
   clear_cart_after_print: false,
   container_fluid: false,
   print_after_payment: true,
+  search_birthday: true,
 };
 
 export class UserSettingsManager {
