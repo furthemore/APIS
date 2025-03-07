@@ -66,7 +66,7 @@ def get_price_level_list(levels):
 def get_minor_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
-        public=False, startDate__lte=now, endDate__gte=now, name__icontains="minor"
+        startDate__lte=now, endDate__gte=now, name__icontains="minor"
     ).order_by("basePrice")
     data = get_price_level_list(levels)
     return HttpResponse(
@@ -78,7 +78,6 @@ def get_minor_price_levels(request):
 def get_accompanied_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
-        public=False,
         startDate__lte=now,
         endDate__gte=now,
         name__icontains="accompanied",
@@ -93,7 +92,7 @@ def get_accompanied_price_levels(request):
 def get_free_price_levels(request):
     now = timezone.now()
     levels = PriceLevel.objects.filter(
-        public=False, startDate__lte=now, endDate__gte=now, name__icontains="free"
+        startDate__lte=now, endDate__gte=now, name__icontains="free"
     )
     data = get_price_level_list(levels)
     return HttpResponse(
