@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("registration", "0105_add_trigram_extensions_20241114_1419"),
+        ("registration", "0106_add_badge_templates"),
     ]
 
     operations = [

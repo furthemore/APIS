@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0106_add_badge_templates'),
+        ('registration', '0107_mqtt_printing_per_terminal'),
     ]
 
     operations = [
