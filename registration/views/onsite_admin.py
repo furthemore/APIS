@@ -965,10 +965,7 @@ def onsite_admin_cart(request):
         }
     }
 
-    if data["total"] != 0:
-        send_mqtt_message_to_terminal(request, terminal_data)
-    else:
-        send_mqtt_message_to_terminal(request, {"clearCart": {}})
+    send_mqtt_message_to_terminal(request, terminal_data)
 
     return JsonResponse(data)
 
