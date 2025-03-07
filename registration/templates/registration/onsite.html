@@ -371,10 +371,11 @@
               if (!val.active) {
                   return true;
               }
+              let price;
               if (val.value == "0.00") {
-                  let price = " (Free) ";
+                  price = " (Free) ";
               } else {
-                  let price = " (+$" + val.value + ") "
+                  price = " (+$" + val.value + ") "
               }
               let required = "";
               if (val.required) {
