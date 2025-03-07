@@ -292,17 +292,17 @@ urlpatterns = [
         registration.views.webhooks.square_webhook,
         name="square_webhook",
     ),
-    url(
+    re_path(
         r"^terminal/square/token$",
         registration.views.onsite_admin.terminal_square_token,
         name="terminal_square_token"
     ),
-    url(
+    re_path(
         r"^terminal/square/completed$",
         registration.views.onsite_admin.complete_square_transaction,
         name="terminal_square_completed"
     ),
-    url(
+    re_path(
         r"^oauth/square$",
         registration.views.onsite_admin.oauth_square,
         name="oauth_square",
