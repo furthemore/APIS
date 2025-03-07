@@ -180,17 +180,9 @@ EMAIL_HOST = 'smtp.mailgun.org'
 EMAIL_HOST_USER = 'postmaster@apis.example.com'
 EMAIL_HOST_PASSWORD = '470c8710296572192aebeafcafedead2-2b4c5a6c-8c58af2d'
 
-# Return channel for Android register application
-REGISTER_KEY = 'df14e4d5469e801dbc8e1df4eebd97b3'
-
 # Print handler for cash drawer and receipts
-REGISTER_ENDPOINT = None # Use default site
-REGISTER_DEFAULT_WEBVIEW = "https://www.example.com/code-of-conduct-embed/"
 REGISTER_SQUARE_LOCATION = SQUARE_LOCATION_ID
-REGISTER_FORCE_LOCATION = True
-
-# Firebase/Pushy.me cloud-push API key
-CLOUD_MESSAGING_KEY = "AAA..."
+REGISTER_DEFAULT_WEBVIEW = "https://www.example.com/code-of-conduct-embed/"
 
 # Cron metrics recording provider and settings
 APIS_METRICS_BACKEND = "InfluxDBReporter"

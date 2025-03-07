@@ -2,6 +2,7 @@ import random
 import string
 from decimal import Decimal
 from datetime import datetime
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -929,19 +930,20 @@ class BanList(models.Model):
 
 
 class Firebase(models.Model):
-    token = models.CharField(max_length=500, help_text="Use 'none' to disable push")
+    token = models.CharField(max_length=500, default=uuid.uuid4)
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)
     printer_url = models.CharField(max_length=500, null=True, blank=True)
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
+    print_via_mqtt = models.BooleanField(default=False, verbose_name="Print via MQTT")
     webview = models.CharField(
         max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
     )
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class Cashdrawer(models.Model):

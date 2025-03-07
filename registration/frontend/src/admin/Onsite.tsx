@@ -4,12 +4,14 @@ import {
   createEffect,
   createSignal,
   Setter,
+  useContext,
 } from "solid-js";
 
 import { AttendeeSearch } from "./attendee-search";
 import { Cart, CartManager } from "./cart";
 import MqttClient from "./mqtt";
 import { ScanPanel } from "./scan";
+import { UserSettingsContext } from "./providers/user-settings-provider";
 
 export const Onsite: Component<{
   mqtt: MqttClient;
@@ -17,6 +19,8 @@ export const Onsite: Component<{
   readyForNext: Accessor<boolean>;
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
+  const userSettings = useContext(UserSettingsContext)!;
+
   const [searchQuery, setSearchQuery] = createSignal<string>();
 
   createEffect(async () => {
@@ -38,7 +42,10 @@ export const Onsite: Component<{
 
         <ScanPanel
           gotScannedName={(name, birthday) => {
-            const query = birthday ? `${name} birthday:${birthday}` : name;
+            const query =
+              birthday && userSettings.userSettings().search_birthday
+                ? `${name} birthday:${birthday}`
+                : name;
             setSearchQuery(query);
           }}
           readyForNext={props.readyForNext}

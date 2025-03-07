@@ -10,7 +10,6 @@ from django.test.utils import override_settings, tag
 from django.urls import reverse
 
 from registration.models import *
-from registration.pushy import PushyAPI, PushyError
 from registration.tests.common import *
 
 
@@ -577,25 +576,3 @@ class LookupTestCases(TestCase):
         self.assertNotEqual(reg, [])
         safety = [item for item in result if item["name"] == "Safety"]
         self.assertEqual(safety, [])
-
-
-class TestPushyAPI(TestCase):
-    @patch("urllib.request.urlopen")
-    def test_send_push_notification(self, mock_urlopen):
-        data = {"data": "some cool message here"}
-        PushyAPI.send_push_notification(data, "to", None)
-        mock_urlopen.assert_called_once()
-
-    @patch("urllib.request.urlopen")
-    def test_send_push_notification_sad_path(self, mock_urlopen):
-        data = {"data": "some cool message here"}
-        mock_urlopen.side_effect = urllib.error.HTTPError(
-            "https://api.pushy.me/push",
-            400,
-            "Pushy didn't like that!",
-            None,
-            io.StringIO(),
-        )
-        with self.assertRaises(PushyError):
-            PushyAPI.send_push_notification(data, "to", None)
-        mock_urlopen.assert_called_once()
