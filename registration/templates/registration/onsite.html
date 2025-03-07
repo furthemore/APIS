@@ -195,8 +195,24 @@
       let freeLevelData = [];
       let deptData = [];
       let shirtSizes = [];
-      $("body").ready(function () {
-          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+
+      function updatePriceLevels() {
+        levelTemplateData = [];
+
+        const [year, month, day] = [
+          $("#byear").val(),
+          $("#bmonth").val(),
+          $("#bday").val()
+        ];
+
+        if (!year || !month || !day) return;
+
+        $.post("{% url 'registration:pricelevels' %}", JSON.stringify({
+            year,
+            month,
+            day,
+            form_type: FORM_TYPE,
+          }), function (data) {
               levelData = data;
               $.each(data, function (key, val) {
                   levelTemplateData.push({
@@ -206,9 +222,14 @@
                       selectText: "Select " + val.name
                   });
               });
-              $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
               $(".changeLevel").hide();
 
+          });
+      }
+
+      $("body").ready(function () {
+          $("#bday, #bmonth, #byear").on("input", function() {
+            updatePriceLevels();
           });
           $.getJSON("{% url 'registration:departments' %}", function (data) {
               deptData = data;
@@ -279,32 +300,34 @@
           $("body").on("click", '#next-personal', function () {
               let birthdate = new Date(Date.parse($("#birthDate").val()));
 
+              let age;
               try {
-                  let age = getAgeByEventStart(birthdate);
+                  age = getAgeByEventStart(birthdate);
               } catch (e) {
                   console.log(e);
                   alert(e);
               }
 
-              let level_data = [];
+              let level_data = levelTemplateData;
+              debugger;
 
               if (age < 0) {
                   alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
                   return false;
               }
 
-              if (age < 7) {
-                  level_data = freeLevelTemplateData
+              // if (age < 7) {
+              //     level_data = freeLevelTemplateData
 
-              } else if (age < 13) {
-                  level_data = accompaniedLevelTemplateData;
+              // } else if (age < 13) {
+              //     level_data = accompaniedLevelTemplateData;
 
-              } else if (age < 18) {
-                  level_data = minorLevelTemplateData;
+              // } else if (age < 18) {
+              //     level_data = minorLevelTemplateData;
 
-              } else {
-                  level_data = levelTemplateData;
-              }
+              // } else {
+              //     level_data = levelTemplateData;
+              // }
 
               if (level_data.length == 0) {
                   alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
@@ -359,32 +382,32 @@
               }
               switch (val.type) {
                   case "bool":
-                      let template = $("#optionBoolTemplate");
+                      let optionBoolTemplate = $("#optionBoolTemplate");
                       if (val.required) {
-                          template = $("#optionBoolReqTemplate");
+                          optionBoolTemplate = $("#optionBoolReqTemplate");
                       }
-                      $("#optionsContainer").loadTemplate(template, {
+                      $("#optionsContainer").loadTemplate(optionBoolTemplate, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id
                       }, {append: true});
                       break;
                   case "int":
-                      let template = $("#optionIntTemplate");
+                      let optionIntTemplate = $("#optionIntTemplate");
                       if (val.required) {
-                          template = $("#optionIntReqTemplate");
+                          optionIntTemplate = $("#optionIntReqTemplate");
                       }
-                      $("#optionsContainer").loadTemplate(template, {
+                      $("#optionsContainer").loadTemplate(optionIntTemplate, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id
                       }, {append: true});
                       break;
                   case "string":
-                      let template = $("#optionStringTemplate");
+                      let optionStringTemplate = $("#optionStringTemplate");
                       if (val.required) {
-                          template = $("#optionStringReqTemplate");
+                          optionStringTemplate = $("#optionStringReqTemplate");
                       }
                       let placeholder = val.name;
-                      $("#optionsContainer").loadTemplate(template, {
+                      $("#optionsContainer").loadTemplate(optionStringTemplate, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id,
                           'placeholder': placeholder,
