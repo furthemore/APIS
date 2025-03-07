@@ -104,6 +104,7 @@ class OrdersTestCase(TestCase):
             endDate=now + ten_days,
             public=False,
             isMinor=True,
+            available_to_attendee=True,
         )
         self.price_minor_25 = PriceLevel(
             name="Minor",
@@ -113,6 +114,7 @@ class OrdersTestCase(TestCase):
             endDate=now + ten_days,
             public=False,
             isMinor=True,
+            available_to_attendee=True,
         )
         self.price_accompanied_0 = PriceLevel(
             name="Accompanied",
@@ -122,6 +124,7 @@ class OrdersTestCase(TestCase):
             endDate=now + ten_days,
             public=False,
             isMinor=True,
+            available_to_attendee=True,
         )
         self.price_minor_35 = PriceLevel(
             name="Minor",
@@ -131,6 +134,7 @@ class OrdersTestCase(TestCase):
             endDate=now + ten_days,
             public=True,
             isMinor=True,
+            available_to_attendee=True,
         )
         self.price_45 = PriceLevel(
             name="Attendee",
@@ -139,6 +143,7 @@ class OrdersTestCase(TestCase):
             startDate=now - ten_days,
             endDate=now + ten_days,
             public=True,
+            available_to_attendee=True,
         )
         self.price_90 = PriceLevel(
             name="Sponsor",
@@ -147,6 +152,7 @@ class OrdersTestCase(TestCase):
             startDate=now - ten_days,
             endDate=now + ten_days,
             public=True,
+            available_to_attendee=True,
         )
         self.price_150 = PriceLevel(
             name="Super",
@@ -155,6 +161,7 @@ class OrdersTestCase(TestCase):
             startDate=now + ten_days,
             endDate=now + ten_days + ten_days,
             public=True,
+            available_to_attendee=True,
         )
         self.price_235 = PriceLevel(
             name="Elite",
@@ -163,6 +170,7 @@ class OrdersTestCase(TestCase):
             startDate=now - ten_days,
             endDate=now + ten_days,
             public=False,
+            available_to_attendee=True,
         )
         self.price_675 = PriceLevel(
             name="Raven God",
@@ -173,6 +181,7 @@ class OrdersTestCase(TestCase):
             public=False,
             emailVIP=True,
             emailVIPEmails="apis@mailinator.com",
+            available_to_attendee=True,
         )
         self.price_free.save()
         self.price_minor_25.save()

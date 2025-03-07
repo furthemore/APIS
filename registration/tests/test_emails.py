@@ -84,7 +84,7 @@ class TestStaffEmails(EmailTestCase):
 
         # Make sure the correct endpoint was rendered
         expected_path = reverse("registration:new_staff", args=(self.token.token,))
-        expected_fixed_path = f"/registration/newstaff/{self.token.token}"
+        expected_fixed_path = f"/registration/newstaff/{self.token.token}/"
         self.assertEqual(expected_path, expected_fixed_path)
 
         # Make sure the correct URL was rendered

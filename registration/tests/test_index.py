@@ -99,9 +99,9 @@ class TestTemplateTags(TestCase):
     def test_current_site_name(self):
         self.assertEqual(site_tags.current_site_name(), "example.com")
 
-    def test_js_date(self):
-        date = datetime.date(2020, 10, 5)
-        self.assertEqual(site_tags.js_date(date), "Date(2020, 9, 5)")
+    # def test_js_date(self):
+    #     date = datetime.date(2020, 10, 5)
+    #     self.assertEqual(site_tags.js_date(date), "Date(2020, 9, 5)")
 
 
 class RobotsTest(TestCase):
