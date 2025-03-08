@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from abc import ABCMeta, abstractmethod
 
 from django.conf import settings
@@ -39,7 +39,7 @@ class Command(BaseCommand):
     help = "Calculates metrics for all events to record to time-series"
 
     def handle(self, *args, **options):
-        now = datetime.datetime.now()
+        now = datetime.now()
         today = now.date()
 
         backend_class = eval(settings.APIS_METRICS_BACKEND)
@@ -161,7 +161,7 @@ class InfluxDBReporter(CronReporterABC):
 
     @staticmethod
     def timestamp():
-        now = datetime.datetime.utcnow()
+        now = datetime.utcnow()
         return now.isoformat("T") + "Z"
 
     def batch(self, event, topic, value, **kwargs):
