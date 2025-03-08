@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q, Sum
+from django.utils import timezone
 from influxdb import InfluxDBClient
 
 from registration.models import *
@@ -39,7 +40,7 @@ class Command(BaseCommand):
     help = "Calculates metrics for all events to record to time-series"
 
     def handle(self, *args, **options):
-        now = datetime.now()
+        now = timezone.now()
         today = now.date()
 
         backend_class = eval(settings.APIS_METRICS_BACKEND)
@@ -160,8 +161,9 @@ class InfluxDBReporter(CronReporterABC):
         self.json_body = []
 
     @staticmethod
-    def timestamp():
-        now = datetime.utcnow()
+    def timestamp(now=None):
+        if now is None:
+            now = datetime.utcnow()
         return now.isoformat("T") + "Z"
 
     def batch(self, event, topic, value, **kwargs):
@@ -171,8 +173,16 @@ class InfluxDBReporter(CronReporterABC):
         :param event:
         :param topic:
         :param value:
+        :param \**kwargs:
+            See below
+
+        :Keyword Arguments:
+            * *timestamp* (``datetime.datetime``) --
+            Datetime timestamp to record
         :return:
         """
+        ts = kwargs.get("timestamp")
+
         tags = {
             "event": event,
             "site": Site.objects.get_current().domain,
@@ -181,7 +191,7 @@ class InfluxDBReporter(CronReporterABC):
         document = {
             "measurement": topic,
             "tags": tags,
-            "time": self.timestamp(),
+            "time": self.timestamp(ts),
             "fields": {
                 "count": value,
             },
@@ -197,6 +207,7 @@ class InfluxDBReporter(CronReporterABC):
             "event": event,
             "site": Site.objects.get_current().domain,
         }
+        ts = kwargs.get("timestamp")
         tags.update(kwargs)
         json_body = [
             {
@@ -205,7 +216,7 @@ class InfluxDBReporter(CronReporterABC):
                     "event": event,
                     "site": Site.objects.get_current().domain,
                 },
-                "time": self.timestamp(),
+                "time": self.timestamp(ts),
                 "fields": {
                     "count": value,
                 },
