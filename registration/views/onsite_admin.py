@@ -537,7 +537,7 @@ def combine_orders(orders):
         for order_item in order_items:
             old_order = order_item.order
             order_item.order = first_order
-            if old_order:
+            if old_order and old_order.id:
                 logger.warning("Deleting old order id={0}".format(old_order.id))
                 old_order.delete()
             order_item.save()
