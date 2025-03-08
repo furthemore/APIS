@@ -84,7 +84,7 @@ const ActionButton: Component<{
 };
 
 function makeStatusRequestHelper(url: string) {
-  return async function (status: "open" | "close" | "ready") {
+  return async function (status: "open" | "close" | "ready" | "gay" | "blue-light") {
     let endpoint = new URL(url, window.location.href);
     endpoint.searchParams.set("status", status);
 
@@ -171,6 +171,20 @@ const Actions: Component<{
           statusRequestHelper("ready");
           props.setReadyForNext(true);
         }}
+      />
+
+      <ActionButton
+        name="Party Mode"
+        icon="fas fa-rainbow"
+        keyboardShortcut={["Alt", "G"]}
+        action={() => statusRequestHelper("gay")}
+      />
+
+      <ActionButton
+        name="Blue Light Special"
+        icon="fas fa-k"
+        keyboardShortcut={["Alt", "K"]}
+        action={() => statusRequestHelper("blue-light")}
       />
 
       <Show when={props.config.permissions.cash_admin}>

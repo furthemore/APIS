@@ -260,6 +260,9 @@ def update_terminal_status(request, status: str) -> JsonResponse:
         stateCommand = "closed"
     mqtt.send_mqtt_message(f"{mqtt.get_topic('admin', active.name)}/terminal/state", stateCommand)
 
+    if status not in ("close", "open", "ready"):
+        return JsonResponse({"success": True})
+
     return send_mqtt_message_to_terminal(active, {
         status: {},
     })
