@@ -10,12 +10,13 @@ from . import emails
 from .models import *
 
 client = Client(
+    timeout=2,
+    max_retries=5,
     access_token=settings.SQUARE_ACCESS_TOKEN,
     environment=settings.SQUARE_ENVIRONMENT,
 )
 payments_api = client.payments
 refunds_api = client.refunds
-payments_api = client.payments
 orders_api = client.orders
 terminals_api = client.terminal
 
