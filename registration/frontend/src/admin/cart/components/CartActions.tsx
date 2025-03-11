@@ -104,6 +104,19 @@ export const CartActions: Component<{
         )}
       >
         <div class="columns">
+          <ActionButton
+            class="is-link is-outlined"
+            disabled={!allBadgesPaid()}
+            loading={loading()}
+            setLoading={setLoading}
+            action={() => printReceipts(props.manager)}
+          >
+            <span class="icon">
+              <i class="fas fa-receipt"></i>
+            </span>
+            <span>Receipt</span>
+          </ActionButton>
+
           <Show
             when={config.permissions.cash}
             fallback={<div class="column"></div>}
@@ -127,7 +140,7 @@ export const CartActions: Component<{
               <span class="icon">
                 <i class="fas fa-money-bill-alt"></i>
               </span>
-              <span>Tender Cash</span>
+              <span>Cash</span>
             </ActionButton>
           </Show>
 
@@ -142,7 +155,7 @@ export const CartActions: Component<{
             <span class="icon">
               <i class="fas fa-credit-card"></i>
             </span>
-            <span>Credit/Debit Card</span>
+            <span>Card</span>
           </ActionButton>
         </div>
 
@@ -161,25 +174,10 @@ export const CartActions: Component<{
               <span class="icon">
                 <i class="fas fa-gift"></i>
               </span>
-              <span>Create Discount</span>
+              <span>Discount</span>
             </ActionButton>
           </Show>
 
-          <ActionButton
-            class="is-link is-outlined"
-            disabled={!allBadgesPaid()}
-            loading={loading()}
-            setLoading={setLoading}
-            action={() => printReceipts(props.manager)}
-          >
-            <span class="icon">
-              <i class="fas fa-receipt"></i>
-            </span>
-            <span>Print Receipt</span>
-          </ActionButton>
-        </div>
-
-        <div class="columns">
           <ActionButton
             class="is-link"
             disabled={!hasPrintableBadges()}

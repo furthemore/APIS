@@ -90,7 +90,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
         </div>
 
         <div class="message-body p-0">
-          <table class="table is-fullwidth is-condensed">
+          <table class="table is-fullwidth is-narrow">
             <thead>
               <tr>
                 <th style="width: 60%;">Badge</th>
@@ -111,6 +111,16 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                 <td>{props.badge.effectiveLevel?.name || ""}</td>
                 <td>{cleanMoneyAmount(props.badge.effectiveLevel?.price)}</td>
               </tr>
+              <Show when={props.badge.staff}>
+                <tr>
+                  <td colSpan={3}>
+                    <span>
+                      {`Staff Shirt – `}
+                      <span class="has-text-weight-semibold">{props.badge.staff?.shirtSize || "None"}</span>
+                    </span>
+                  </td>
+                </tr>
+              </Show>
             </tbody>
           </table>
         </div>

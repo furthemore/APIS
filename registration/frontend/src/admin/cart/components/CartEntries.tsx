@@ -46,38 +46,9 @@ export const CartEntries: Component<{
 
   return (
     <>
-      <div class="panel-block">
-        <table class="table is-fullwidth is-condensed">
-          <tbody>
-            <tr>
-              <td>Subtotal:</td>
-              <td style="width: 20%;">
-                {cleanMoneyAmount(props.entries?.subtotal)}
-              </td>
-            </tr>
-            <tr>
-              <td>Discounts:</td>
-              <td>{cleanMoneyAmount(props.entries?.total_discount)}</td>
-            </tr>
-            <tr>
-              <td>Donation to Charity:</td>
-              <td>{cleanMoneyAmount(props.entries?.charityDonation)}</td>
-            </tr>
-            <tr>
-              <td>Donation to Convention:</td>
-              <td>{cleanMoneyAmount(props.entries?.orgDonation)}</td>
-            </tr>
-            <tr class="has-text-weight-semibold">
-              <td>Total:</td>
-              <td>{cleanMoneyAmount(props.entries?.total)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
       <Show when={(orderItems()?.length || 0) > 0}>
         <div class="panel-block">
-          <table class="table is-fullwidth is-condensed">
+          <table class="table is-fullwidth is-narrow">
             <thead>
               <tr>
                 <th>Order Item</th>
@@ -113,6 +84,35 @@ export const CartEntries: Component<{
           </For>
         </article>
       </Show>
+
+      <div class="panel-block">
+        <table class="table is-fullwidth is-narrow">
+          <tbody>
+            <tr>
+              <td>Subtotal:</td>
+              <td style="width: 20%;">
+                {cleanMoneyAmount(props.entries?.subtotal)}
+              </td>
+            </tr>
+            <tr>
+              <td>Discounts:</td>
+              <td>{cleanMoneyAmount(props.entries?.total_discount)}</td>
+            </tr>
+            <tr>
+              <td>Donation to Charity:</td>
+              <td>{cleanMoneyAmount(props.entries?.charityDonation)}</td>
+            </tr>
+            <tr>
+              <td>Donation to Convention:</td>
+              <td>{cleanMoneyAmount(props.entries?.orgDonation)}</td>
+            </tr>
+            <tr class="has-text-weight-semibold">
+              <td>Total:</td>
+              <td>{cleanMoneyAmount(props.entries?.total)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </>
   );
 };
@@ -168,15 +168,22 @@ function getShirtSizeName(
 export function cleanMoneyAmount(input?: string): string {
   if (!input || input == "?") return "$0.00";
 
+  let multi = 1;
+  if (input.startsWith("-")) {
+    multi = -1;
+    input = input.substring(1);
+  }
+
   if (input.startsWith("$")) {
     input = input.substring(1);
   }
 
+
   let parsed: Big;
   try {
-    parsed = new Big(input);
+    parsed = new Big(input).mul(multi);
   } catch (err) {
-    console.error(`Could not parse money: ${err}`);
+    console.error(`Could not parse money ${input}: ${err}`);
     return input;
   }
 

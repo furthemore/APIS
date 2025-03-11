@@ -533,9 +533,9 @@ class Badge(models.Model):
 
     @property
     def abandoned(self):
-        if Staff.objects.filter(attendee=self.attendee).exists():
+        if Staff.objects.filter(attendee=self.attendee, event=self.event).exists():
             return Badge.STAFF
-        if Dealer.objects.filter(attendee=self.attendee).exists():
+        if Dealer.objects.filter(attendee=self.attendee, event=self.event).exists():
             return Badge.DEALER
         if self.paidTotal() > 0:
             return Badge.PAID
