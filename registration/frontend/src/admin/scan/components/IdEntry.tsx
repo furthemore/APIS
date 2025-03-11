@@ -27,12 +27,15 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
     url.searchParams.set("firstName", props.data.first);
     url.searchParams.set("lastName", props.data.last);
     url.searchParams.set("dob", props.data.dob);
-    url.searchParams.set("address1", props.data.address);
-    if (props.data.address2)
-      url.searchParams.set("address2", props.data.address2);
-    url.searchParams.set("city", props.data.city);
-    url.searchParams.set("state", props.data.state);
-    url.searchParams.set("postalCode", props.data.ZIP.substring(0, 5));
+    if (props.data.address) {
+      const address = props.data.address;
+      url.searchParams.set("address1", address.address);
+      if (address.address2) url.searchParams.set("address2", address.address2);
+      url.searchParams.set("city", address.city);
+      url.searchParams.set("state", address.state);
+      url.searchParams.set("postalCode", address.ZIP.substring(0, 5));
+    }
+
     return url.toString();
   });
 
@@ -53,7 +56,7 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
           <span class="icon">
             <i class="fa-solid fa-id-card"></i>
           </span>
-          <span>ID Card</span>
+          <span>{`ID Card (${props.data.documentType})`}</span>
         </span>
 
         <div class="is-flex-grow-1">

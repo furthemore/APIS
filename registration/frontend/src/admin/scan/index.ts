@@ -1,14 +1,17 @@
-import { createSignal } from "solid-js";
-
 import { ScanPanel } from "./components/ScanPanel";
 
 export { ScanPanel };
 
 export interface IdData {
+  documentType: string;
   first: string;
   last: string;
   dob: string;
   expiry: string;
+  address?: AddressData;
+}
+
+export interface AddressData {
   address: string;
   address2: string;
   city: string;
@@ -38,19 +41,7 @@ export interface ShcVaccine {
   performer: string;
 }
 
-export interface ScanLog {
-  url: string | undefined;
-  id: IdData | undefined;
-  shc: ShcData | undefined;
-}
-
 export interface ShcMatch {
   name: boolean;
   dob: boolean;
 }
-
-const [scanLog, setScanLog] = createSignal<ScanLog>({
-  url: undefined,
-  id: undefined,
-  shc: undefined,
-});

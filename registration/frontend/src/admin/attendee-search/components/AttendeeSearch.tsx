@@ -8,15 +8,48 @@ import {
   For,
   Setter,
   Show,
+  untrack,
   useContext,
 } from "solid-js";
 
-import { getSearchResults } from "..";
+import { BadgeResult, getSearchResults } from "..";
 import { SentryErrorBoundary } from "../../../entrypoints/admin";
 import { CartManager } from "../../cart";
 import { ConfigContext } from "../../providers/config-provider";
 import { BadgeTableLoader } from "./BadgeTableLoader";
 import { BadgeTableRow } from "./BadgeTableRow";
+
+function hasAnyExactMatch(query: string, badge: BadgeResult): boolean {
+  const fullName = `${badge.attendee.firstName.trim()} ${badge.attendee.lastName.trim()}`;
+  const preferredName = `${badge.attendee.preferredName?.trim()} ${badge.attendee.lastName.trim()}`;
+
+  if (
+    fullName.localeCompare(query, undefined, {
+      sensitivity: "base",
+    }) === 0
+  ) {
+    return true;
+  }
+
+  if (
+    badge.attendee.preferredName &&
+    preferredName.localeCompare(query, undefined, {
+      sensitivity: "base",
+    }) === 0
+  ) {
+    return true;
+  }
+
+  if (
+    badge.badgeName
+      .trim()
+      .localeCompare(query, undefined, { sensitivity: "base" }) === 0
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 export const AttendeeSearch: Component<{
   cartManager: CartManager;
@@ -58,9 +91,30 @@ export const AttendeeSearch: Component<{
 
   createEffect(() => {
     const entries = results();
-    if (entries && entries.length === 1) {
+    const searchQuery = untrack(() => props.searchQuery()) || "";
+
+    if (entries && entries.length > 0) {
       setSelectedResult(0);
-      if (!props.cartManager.alreadyInCart(entries[0].id)) {
+
+      const cleanedSearchQuery = searchQuery
+        .replace(/ birthday:(?:[0-9-]{10})/, "")
+        .trim();
+
+      const firstResultHasExact = hasAnyExactMatch(
+        cleanedSearchQuery,
+        entries[0]
+      );
+      const anyOtherResultHasExact =
+        firstResultHasExact &&
+        entries
+          .slice(1)
+          .some((entry) => hasAnyExactMatch(cleanedSearchQuery, entry));
+
+      if (
+        !props.cartManager.alreadyInCart(entries[0].id) &&
+        firstResultHasExact &&
+        !anyOtherResultHasExact
+      ) {
         props.cartManager.addCartId(entries[0].id);
       }
     } else {
