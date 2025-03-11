@@ -158,7 +158,7 @@ export const AttendeeSearch: Component<{
     const selected = selectedResult();
 
     if (selected && entries?.[selected]) {
-      window.open(entries[selected].edit_url, "edit");
+      window.open(entries[selected].editUrl, "edit");
     }
   });
 

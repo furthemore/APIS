@@ -84,7 +84,7 @@ export const BadgeTableRow: Component<{
       <td class="is-vcentered">
         <div class="buttons is-right badge-actions">
           <a
-            href={props.badge.edit_url}
+            href={props.badge.editUrl}
             target="edit"
             class="button is-small is-info"
           >
