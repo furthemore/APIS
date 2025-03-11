@@ -196,7 +196,7 @@ def index(request):
         if discount.count() > 0:
             discount = discount.first()
 
-    context = {"event": event, "discount": discount}
+    context = {"event": event, "discount": discount, "form_type": "attendee"}
 
     if event.websiteUrl:
         context["homeRedirect"] = event.websiteUrl

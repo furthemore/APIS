@@ -23,6 +23,7 @@ from .common import (
 from .ordering import do_checkout, doZeroCheckout, get_total
 
 logger = logging.getLogger(__name__)
+form_type = "staff"
 
 
 def new_staff(request, guid):
@@ -30,7 +31,7 @@ def new_staff(request, guid):
     invite = TempToken.objects.get(token=guid)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"token": guid, "event": event}
+    context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
         return render(request, "registration/staff/staff-new.html", context)
     elif event.staffRegStart >= today:
@@ -67,7 +68,7 @@ def find_new_staff(request):
 def info_new_staff(request):
     event = Event.objects.get(default=True)
     token_value = request.session.get("new_staff")
-    context = {"staff": None, "event": event}
+    context = {"staff": None, "event": event, "form_type": form_type}
     try:
         context["token"] = TempToken.objects.get(token=token_value)
     except ObjectDoesNotExist:
@@ -165,7 +166,7 @@ def staff_index(request, guid):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"token": guid, "event": event}
+    context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd:
         return render(request, "registration/staff/staff-locate.html", context)
     elif event.staffRegStart >= today:
@@ -178,7 +179,7 @@ def staff_index(request, guid):
 
 def staff_done(request):
     event = Event.objects.get(default=True)
-    context = {"event": event}
+    context = {"event": event, "form_type": form_type}
     return render(request, "registration/staff/staff-done.html", context)
 
 
@@ -205,7 +206,7 @@ def find_staff(request):
 
 def info_staff(request):
     event = Event.objects.get(default=True)
-    context = {"staff": None, "event": event}
+    context = {"staff": None, "event": event, "form_type": form_type}
 
     staff_id = request.session.get("staff_id")
     if staff_id is None:

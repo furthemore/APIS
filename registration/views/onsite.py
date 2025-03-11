@@ -19,13 +19,14 @@ from registration.views.common import clear_session
 from .ordering import get_total
 
 logger = logging.getLogger(__name__)
+form_type = "attendee"
 
 
 def onsite(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = tz.localize(datetime.now())
-    context = {"event": event}
+    context = {"event": event, "form_type": form_type}
 
     if event.websiteUrl:
         context["homeRedirect"] = event.websiteUrl
@@ -118,12 +119,13 @@ def onsite_cart(request):
             "total": total,
             "total_discount": total_discount,
             "discount": discount,
-            "hasMinors": hasMinors,
+            "hasMinors": hasMinors
         }
+        context["form_type"] = form_type
     return render(request, "registration/onsite-checkout.html", context)
 
 
 def onsite_done(request):
-    context = {}
+    context = {"form_type": form_type}
     clear_session(request)
     return render(request, "registration/onsite-done.html", context)

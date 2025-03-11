@@ -57,6 +57,15 @@ export const CartActions: Component<{
         ?.map((badge) => badge.id) || []
   );
 
+  const allBadgesPaid = createMemo(
+    () =>
+      ((props.entries?.result?.length || 0) > 0 &&
+        props.entries?.result?.every((badge) =>
+          PRINTABLE_STATUS.has(badge.abandoned)
+        )) ||
+      false
+  );
+
   if (config.mqtt.supports_printing) {
     const autoPrintCheck = createAutoPrintCheck(printableBadgeIds);
 
@@ -95,29 +104,35 @@ export const CartActions: Component<{
         )}
       >
         <div class="columns">
+          <Show
+            when={config.permissions.cash}
+            fallback={<div class="column"></div>}
+          >
+            <ActionButton
+              class="is-primary"
+              disabled={!canTenderCash()}
+              loading={loading()}
+              setLoading={setLoading}
+              keyboardShortcut={["Alt", "M"]}
+              action={() => {
+                if (props.entries) {
+                  return attemptCashPayment(
+                    props.manager,
+                    props.entries.reference,
+                    props.entries.total
+                  );
+                }
+              }}
+            >
+              <span class="icon">
+                <i class="fas fa-money-bill-alt"></i>
+              </span>
+              <span>Tender Cash</span>
+            </ActionButton>
+          </Show>
+
           <ActionButton
             class="is-primary"
-            disabled={!canTenderCash()}
-            loading={loading()}
-            setLoading={setLoading}
-            keyboardShortcut={["Alt", "M"]}
-            action={() => {
-              if (props.entries) {
-                return attemptCashPayment(
-                  props.manager,
-                  props.entries.reference,
-                  props.entries.total
-                );
-              }
-            }}
-          >
-            <span class="icon">
-              <i class="fas fa-money-bill-alt"></i>
-            </span>
-            <span>Tender Cash</span>
-          </ActionButton>
-          <ActionButton
-            class="is-warning"
             disabled={!canUseCard()}
             loading={loading()}
             setLoading={setLoading}
@@ -130,10 +145,14 @@ export const CartActions: Component<{
             <span>Credit/Debit Card</span>
           </ActionButton>
         </div>
-        <Show when={config.permissions.discount}>
-          <div class="columns">
+
+        <div class="columns">
+          <Show
+            when={config.permissions.discount}
+            fallback={<div class="column"></div>}
+          >
             <ActionButton
-              class="is-link is-outlined"
+              class="is-warning is-outlined"
               disabled={!canUseCard()}
               loading={loading()}
               setLoading={setLoading}
@@ -144,11 +163,25 @@ export const CartActions: Component<{
               </span>
               <span>Create Discount</span>
             </ActionButton>
-          </div>
-        </Show>
+          </Show>
+
+          <ActionButton
+            class="is-link is-outlined"
+            disabled={!allBadgesPaid()}
+            loading={loading()}
+            setLoading={setLoading}
+            action={() => printReceipts(props.manager)}
+          >
+            <span class="icon">
+              <i class="fas fa-receipt"></i>
+            </span>
+            <span>Print Receipt</span>
+          </ActionButton>
+        </div>
+
         <div class="columns">
           <ActionButton
-            class="is-primary"
+            class="is-link"
             disabled={!hasPrintableBadges()}
             loading={loading()}
             setLoading={setLoading}
@@ -261,6 +294,14 @@ async function printBadges(
 
   if (!mqttPrint) {
     window.open(resp.url, "badge");
+  }
+}
+
+async function printReceipts(manager: CartManager) {
+  const resp = await manager.printReceipts();
+
+  if (!resp.success) {
+    alert(`Error printing receipts: ${resp.reason}`);
   }
 }
 

@@ -60,6 +60,7 @@
         const EVENT_COLLECT_ADDRESS = false;
     {% endif %}
     let IDEMPOTENCY_KEY = "{% idempotency_key %}";
+    const FORM_TYPE = "{{ form_type }}";
 </script>
 
 <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>

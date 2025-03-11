@@ -83,6 +83,22 @@ const ActionButton: Component<{
   );
 };
 
+function makeStatusRequestHelper(url: string) {
+  return async function (status: "open" | "close" | "ready" | "gay" | "blue-light") {
+    let endpoint = new URL(url, window.location.href);
+    endpoint.searchParams.set("status", status);
+
+    const resp = await fetch(endpoint, {
+      headers: {
+        "x-csrftoken": CSRF_TOKEN,
+      },
+    });
+    const data = await resp.json();
+
+    return data;
+  };
+}
+
 async function makeSimpleRequest(url: string) {
   const resp = await fetch(url, {
     headers: {
@@ -129,20 +145,22 @@ const Actions: Component<{
   config: ApisConfig;
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
+  const statusRequestHelper = makeStatusRequestHelper(props.config.urls.set_terminal_status);
+
   return (
     <div class="navbar-dropdown is-right">
       <ActionButton
         name="Open Position"
         icon="fas fa-check"
         keyboardShortcut={["Alt", "O"]}
-        action={() => makeSimpleRequest(props.config.urls.open_terminal)}
+        action={() => statusRequestHelper("open")}
       />
 
       <ActionButton
         name="Close Position"
         icon="fas fa-window-close"
         keyboardShortcut={["Alt", "L"]}
-        action={() => makeSimpleRequest(props.config.urls.close_terminal)}
+        action={() => statusRequestHelper("close")}
       />
 
       <ActionButton
@@ -150,9 +168,23 @@ const Actions: Component<{
         icon="fas fa-forward"
         keyboardShortcut={["Alt", "N"]}
         action={() => {
-          makeSimpleRequest(props.config.urls.ready_terminal);
+          statusRequestHelper("ready");
           props.setReadyForNext(true);
         }}
+      />
+
+      <ActionButton
+        name="Party Mode"
+        icon="fas fa-rainbow"
+        keyboardShortcut={["Alt", "G"]}
+        action={() => statusRequestHelper("gay")}
+      />
+
+      <ActionButton
+        name="Blue Light Special"
+        icon="fas fa-k"
+        keyboardShortcut={["Alt", "K"]}
+        action={() => statusRequestHelper("blue-light")}
       />
 
       <Show when={props.config.permissions.cash_admin}>
@@ -394,6 +426,12 @@ export const Navbar: Component<{
               <ToggleSetting
                 name="Clear Cart After Print"
                 key="clear_cart_after_print"
+                userSettings={userSettings}
+              />
+
+              <ToggleSetting
+                name="Search With Birthday"
+                key="search_birthday"
                 userSettings={userSettings}
               />
 

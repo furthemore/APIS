@@ -203,6 +203,19 @@ export class CartManager {
       body: formData,
     });
   }
+
+  public async printReceipts(): Promise<FallibleRequest<void>> {
+    if (!this.cartEntries()?.result) {
+      return { success: true } as FallibleRequest<void>;
+    }
+
+    let url = new URL(this.urls.onsite_print_receipts, window.location.href);
+    this.cartEntries()?.result?.forEach((badge) =>
+      url.searchParams.append("reference", badge.reference)
+    );
+
+    return await this.makeRequest(url);
+  }
 }
 
 export type FallibleRequest<T> =
@@ -239,6 +252,7 @@ export interface Badge {
   level_discount: string;
   level_total: string;
   attendee_options: AttendeeOption[];
+  reference: string;
 }
 
 export interface EffectiveLevel {

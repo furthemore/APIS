@@ -10,7 +10,6 @@ from django.test.utils import override_settings, tag
 from django.urls import reverse
 
 from registration.models import *
-from registration.pushy import PushyAPI, PushyError
 from registration.tests.common import *
 
 
@@ -22,7 +21,16 @@ class DebugURLTrigger(TestCase):
 
 class TestAttendeeCheckout(OrdersTestCase):
     def test_get_prices(self):
-        response = self.client.get(reverse("registration:pricelevels"))
+        response = self.client.post(
+            reverse("registration:pricelevels"),
+            json.dumps({
+                "year": "1990",
+                "month": "1",
+                "day": "1",
+                "form_type": "attendee",
+            }),
+            content_type="application/json",
+        )
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result.__len__(), 3)
@@ -32,42 +40,6 @@ class TestAttendeeCheckout(OrdersTestCase):
         self.assertEqual(special, [])
         minor = [item for item in result if item["name"] == "Minor"]
         self.assertEqual(minor.__len__(), 1)
-
-    def test_get_adult_prices(self):
-        response = self.client.get(reverse("registration:adultpricelevels"))
-        self.assertEqual(response.status_code, 200)
-        result = response.json()
-        self.assertEqual(result.__len__(), 2)
-        basic = [item for item in result if item["name"] == "Attendee"]
-        self.assertEqual(basic[0]["base_price"], "45.00")
-        special = [item for item in result if item["name"] == "Special"]
-        self.assertEqual(special, [])
-        minor = [item for item in result if item["name"] == "Minor"]
-        self.assertEqual(minor, [])
-
-    def test_get_accompanied_price_levels(self):
-        response = self.client.get(reverse("registration:accompaniedpricelevels"))
-        self.assertEqual(response.status_code, 200)
-        result = response.json()
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["base_price"], "0.00")
-        self.assertEqual(result[0]["name"], "Accompanied")
-
-    def test_get_minor_price_levels(self):
-        response = self.client.get(reverse("registration:minorpricelevels"))
-        self.assertEqual(response.status_code, 200)
-        result = response.json()
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["base_price"], "25.00")
-        self.assertEqual(result[0]["name"], "Minor")
-
-    def get_free_price_levels(self):
-        response = self.client.get(reverse("registration:freepricelevels"))
-        self.assertEqual(response.status_code, 200)
-        result = response.json()
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["base_price"], "0.00")
-        self.assertEqual(result[0]["name"], "Free")
 
     # Single transaction tests
     # =======================================================================
@@ -577,25 +549,3 @@ class LookupTestCases(TestCase):
         self.assertNotEqual(reg, [])
         safety = [item for item in result if item["name"] == "Safety"]
         self.assertEqual(safety, [])
-
-
-class TestPushyAPI(TestCase):
-    @patch("urllib.request.urlopen")
-    def test_send_push_notification(self, mock_urlopen):
-        data = {"data": "some cool message here"}
-        PushyAPI.send_push_notification(data, "to", None)
-        mock_urlopen.assert_called_once()
-
-    @patch("urllib.request.urlopen")
-    def test_send_push_notification_sad_path(self, mock_urlopen):
-        data = {"data": "some cool message here"}
-        mock_urlopen.side_effect = urllib.error.HTTPError(
-            "https://api.pushy.me/push",
-            400,
-            "Pushy didn't like that!",
-            None,
-            io.StringIO(),
-        )
-        with self.assertRaises(PushyError):
-            PushyAPI.send_push_notification(data, "to", None)
-        mock_urlopen.assert_called_once()

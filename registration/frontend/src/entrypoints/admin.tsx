@@ -64,7 +64,6 @@ export interface ApisUrls {
   cash_deposit: string;
   cash_pickup: string;
   close_drawer: string;
-  close_terminal: string;
   complete_cash_transaction: string;
   enable_payment: string;
   logout: string;
@@ -77,14 +76,14 @@ export interface ApisUrls {
   onsite_create_discount: string;
   onsite_print_badges: string;
   onsite_print_clear: string;
+  onsite_print_receipts: string;
   onsite_remove_from_cart: string;
   onsite: string;
   open_drawer: string;
-  open_terminal: string;
   pdf: string;
-  ready_terminal: string;
   registration_badge_change: string;
   safe_drop: string;
+  set_terminal_status: string;
 }
 
 export interface ApisPermissions {

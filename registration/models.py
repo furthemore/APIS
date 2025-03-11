@@ -1,6 +1,8 @@
 import random
 import string
 from decimal import Decimal
+from datetime import datetime
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -130,12 +132,28 @@ class PriceLevel(models.Model):
     emailVIP = models.BooleanField(default=False)
     emailVIPEmails = models.CharField(max_length=400, blank=True, default="")
     isMinor = models.BooleanField(default=False)
+    min_age = models.IntegerField(default=0)
+    max_age = models.IntegerField(blank=True, null=True,
+                                  help_text="Leave blank for no limit")
+    accompanied = models.BooleanField(default=False)
+    available_to_attendee = models.BooleanField(default=False, verbose_name="Attendee")
+    available_to_marketplace = models.BooleanField(default=False, verbose_name="Marketplace")
+    available_to_staff = models.BooleanField(default=False, verbose_name="Staff")
 
     class Meta:
         db_table = "registration_price_level"
 
     def __str__(self):
         return self.name
+
+    def get_level_active_status(self):
+        tz = timezone.get_current_timezone()
+        today = tz.localize(datetime.now())
+        if self.startDate <= today <= self.endDate:
+            return True
+        return False
+    get_level_active_status.boolean = True
+    get_level_active_status.short_description = "Active"
 
 
 class Charity(LookupTable):
@@ -912,19 +930,20 @@ class BanList(models.Model):
 
 
 class Firebase(models.Model):
-    token = models.CharField(max_length=500, help_text="Use 'none' to disable push")
+    token = models.CharField(max_length=500, default=uuid.uuid4)
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False)
     printer_url = models.CharField(max_length=500, null=True, blank=True)
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
+    print_via_mqtt = models.BooleanField(default=False, verbose_name="Print via MQTT")
     webview = models.CharField(
         max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
     )
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class Cashdrawer(models.Model):

@@ -29,17 +29,15 @@ from pygments.lexers.data import JsonLexer
 from qrcode.image.svg import SvgPathFillImage
 
 import registration.emails
+import registration.views.onsite_admin
 import registration.views.printing
 from registration import mqtt, payments
 from registration.forms import FirebaseForm
 from registration.models import *
-from registration.pushy import PushyAPI, PushyError
 
 from . import printing
 
 logger = logging.getLogger(__name__)
-
-TWOPLACES = Decimal(10) ** -2
 
 admin.site.site_url = None
 admin.site.site_header = "APIS Backoffice"
@@ -90,7 +88,7 @@ admin.site.register(User, UserProfileAdmin)
 
 
 class FirebaseAdmin(admin.ModelAdmin):
-    list_display = ("name", "token", "closed")
+    list_display = ("name", "closed")
     form = FirebaseForm
 
     def render_change_form(self, request, context, *args, **kwargs):
@@ -109,41 +107,35 @@ class FirebaseAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj.save()
+
         data = {
-            "command": "settings",
-            "json": self.get_provisioning(obj, closed=obj.closed),
+            "updateConfig": {
+                "config": self.get_provisioning(obj),
+            }
         }
 
-        try:
-            PushyAPI.send_push_notification(data, [obj.token], None)
-        except PushyError as e:
-            messages.warning(
-                request,
-                f"We tried to update the terminal's settings, but there was a problem: {e}",
-            )
+        registration.views.onsite_admin.send_mqtt_message_to_terminal(obj, data)
 
     @staticmethod
-    def get_provisioning(firebase, **kwargs):
+    def get_provisioning(firebase):
         current_site = Site.objects.get_current()
-        endpoint = settings.REGISTER_ENDPOINT
-        if endpoint is None:
-            endpoint = "https://{0}{1}".format(current_site.domain, reverse("root"))
+        endpoint = "https://{0}".format(current_site.domain)
+        token = mqtt.get_client_token(firebase)
 
-        document = {
-            "v": 1,
-            "client_id": settings.SQUARE_APPLICATION_ID,
-            "api_key": settings.REGISTER_KEY,
+        return {
+            "terminalName": firebase.name,
             "endpoint": endpoint,
-            "name": firebase.name,
-            "location_id": settings.REGISTER_SQUARE_LOCATION,
-            "force_location": settings.REGISTER_FORCE_LOCATION,
-            "bg": firebase.background_color,
-            "fg": firebase.foreground_color,
-            "webview": firebase.webview,
+            "token": firebase.token,
+            "webViewUrl": firebase.webview,
+            "themeColor": firebase.background_color,
+            "mqttHost": settings.MQTT_EXTERNAL_BROKER,
+            "mqttPort": 443,
+            "mqttUsername": token["user"],
+            "mqttPassword": token["token"],
+            "mqttTopic": f'{mqtt.get_topic("terminal", firebase.name)}/action',
+            "squareApplicationId": settings.SQUARE_APPLICATION_ID,
+            "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
-        document.update(kwargs)
-
-        return json.dumps(document)
 
     @staticmethod
     def get_qrcode(data):
@@ -154,7 +146,7 @@ class FirebaseAdmin(admin.ModelAdmin):
 
     def provision_view(self, request, pk):
         obj = Firebase.objects.get(id=pk)
-        provisioning = self.get_provisioning(obj)
+        provisioning = json.dumps(self.get_provisioning(obj))
         token = mqtt.get_client_token(obj)
 
         context = {
@@ -1075,9 +1067,11 @@ class BadgeInline(NestedTabularInline):
 
     def get_age_range(self, obj):
         born = obj.attendee.birthdate
-        today = date.today()
+        event_start = obj.event.eventStart
         age = (
-            today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+            event_start.year 
+            - born.year
+            - ((event_start.month, event_start.day) < (born.month, born.day))
         )
         if age >= 18:
             return format_html("<span>18+</span>")
@@ -1211,11 +1205,11 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     def get_age_range(self, obj):
         try:
             born = obj.attendee.birthdate
-            today = date.today()
+            event_start = obj.event.eventStart
             age = (
-                today.year
+                event_start.year 
                 - born.year
-                - ((today.month, today.day) < (born.month, born.day))
+                - ((event_start.month, event_start.day) < (born.month, born.day))
             )
             if age >= 18:
                 return format_html("<span>18+</span>")
@@ -1244,7 +1238,7 @@ class AttendeeAdmin(NestedModelAdmin):
     save_on_top = True
     actions = [make_staff]
     search_fields = ["email", "lastName", "firstName", "preferredName"]
-    list_display = ("getFirst", "lastName", "email", "get_age_range")
+    list_display = ("getFirst", "lastName", "email", "phone")
     fieldsets = (
         (
             None,
@@ -1274,18 +1268,6 @@ class AttendeeAdmin(NestedModelAdmin):
             },
         ),
     )
-
-    def get_age_range(self, obj):
-        born = obj.birthdate
-        today = date.today()
-        age = (
-            today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        )
-        if age >= 18:
-            return format_html("<span>18+</span>")
-        return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
-
-    get_age_range.short_description = "Age Group"
 
 
 admin.site.register(Attendee, AttendeeAdmin)
@@ -1450,8 +1432,33 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         my_urls = [
             url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
             url(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
+            url(r"^(.+)/receipt/$", self.receipt_view, name="order_receipt"),
         ]
         return my_urls + urls
+
+    def receipt_view(self, request, order_id, extra_context=None):
+        order = Order.objects.get(id=order_id)
+
+        api_data = order.apiData
+        if not api_data and order.billingType == Order.CREDIT:
+            messages.warning(request, "External payment data could not be decoded")
+            return HttpResponseRedirect(
+                reverse("admin:registration_order_change", args=(order_id,))
+            )
+
+        if "payment" not in api_data or "id" not in api_data["payment"]:
+            messages.warning(request, "External payment data was missing payment ID")
+            return HttpResponseRedirect(
+                reverse("admin:registration_order_change", args=(order_id,))
+            )
+
+        if not payments.print_payment_receipt(request, api_data["payment"]["id"]):
+            messages.warning(request, "Unable to print receipt for payment")
+
+        return HttpResponseRedirect(
+            reverse("admin:registration_order_change", args=(order_id,))
+        )
+
 
     def refund_view(self, request, order_id, extra_context=None):
         # TODO: Produce an error if a full refund has already been completed
@@ -1471,7 +1478,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
             form = self.RefundForm(request.POST)
 
             if form.is_valid():
-                amount = Decimal(form.cleaned_data["amount"]).quantize(TWOPLACES)
+                amount = Decimal(form.cleaned_data["amount"]).quantize(registration.views.onsite_admin.TWOPLACES)
                 reason = form.cleaned_data.get("reason")
 
                 if amount > order.total:
@@ -1519,7 +1526,7 @@ admin.site.register(Order, OrderAdmin)
 
 
 class PriceLevelAdmin(admin.ModelAdmin):
-    list_display = ("name", "basePrice", "startDate", "endDate", "public", "group")
+    list_display = ("name", "basePrice", "get_level_active_status", "min_age", "max_age", "public", "available_to_attendee", "available_to_marketplace", "available_to_staff", "group")
 
 
 admin.site.register(PriceLevel, PriceLevelAdmin)

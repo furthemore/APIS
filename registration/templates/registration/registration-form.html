@@ -71,6 +71,9 @@
         <hr/>
         <div class="container-fluid">
           <div class="row" id="levelContainer">
+            <div id="levelsNoBirthday">
+              <p>Please enter your birthdate to see available registration levels</p>
+            </div>
             <div id="levelContainerAlert" class="alert alert-danger" style="display:none">
               <b>No price levels have been set up yet!</b>
               If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add
@@ -198,24 +201,23 @@
           };
       {% endif %}
 
-      var select_level = function (levelId) {
-          $.each(levelTemplateData, function (key, val) {
-              var id = val.levelId.split('_')[1];
-              if (id == levelId) {
-                  $("#regLevel").val(val.name);
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                  $(".changeLevel").show();
-                  $(".selectLevel").text("Selected!");
-                  $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
-                  generateOptions(id);
-                  return false;
-              }
-          });
-      };
+      function updatePriceLevels() {
+        levelTemplateData = [];
 
-      $("body").ready(function () {
-          $("form").fadeIn();
-          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+        const [year, month, day] = [
+          $("#byear").val(),
+          $("#bmonth").val(),
+          $("#bday").val()
+        ];
+
+        if (!year || !month || !day) return;
+
+        $.post("{% url 'registration:pricelevels' %}", JSON.stringify({
+            year,
+            month,
+            day,
+            form_type: FORM_TYPE,
+          }), function (data) {
               levelData = data;
               $.each(data, function (key, val) {
                   var centsOff = (parseFloat(val.base_price) * discount.percentOff) / 100;
@@ -236,6 +238,28 @@
               }
               $(".changeLevel").hide();
 
+          });
+      }
+
+      var select_level = function (levelId) {
+          $.each(levelTemplateData, function (key, val) {
+              var id = val.levelId.split('_')[1];
+              if (id == levelId) {
+                  $("#regLevel").val(val.name);
+                  $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                  $(".changeLevel").show();
+                  $(".selectLevel").text("Selected!");
+                  $("#levelTemplateColumn").removeClass("col-xs-6").addClass("col-xs-12");
+                  generateOptions(id);
+                  return false;
+              }
+          });
+      };
+
+      $("body").ready(function () {
+          $("form").fadeIn();
+          $("#bday, #bmonth, #byear").on("input", function() {
+            updatePriceLevels();
           });
           $.getJSON("{% url 'registration:departments' %}", function (data) {
               deptData = data;

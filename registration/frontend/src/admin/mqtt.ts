@@ -10,7 +10,8 @@ export type MqttTopic =
   | "notification"
   | "alert"
   | "scan/id"
-  | "scan/shc";
+  | "scan/shc"
+  | "authorize_terminal";
 
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
 
@@ -91,14 +92,19 @@ export default class MqttClient {
       switch (strippedTopic) {
         case "notification":
           if (payload?.["text"]) {
-            sendNotification(payload?.["text"]);
+            sendNotification(payload["text"]);
           }
           break;
         case "alert":
           if (payload?.["text"]) {
-            alert(payload?.["text"]);
+            alert(payload["text"]);
           }
           break;
+        case "authorize_terminal":
+          if (payload?.["url"] && payload?.["state"]) {
+            document.cookie = `square_oauth_state=${payload["state"]}; path=/`;
+            window.open(payload["url"], "square_oauth");
+          }
         default:
           this.emitter.emit(strippedTopic, payload);
           break;

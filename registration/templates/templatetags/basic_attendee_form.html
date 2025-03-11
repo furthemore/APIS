@@ -148,12 +148,7 @@
         </div>
 
         <div class="col-sm-3">
-          <select autocomplete="bday-day" class="form-control" disabled id="bday" name="bday" required>
-              <option value="">Day</option>
-            {% if attendee.birthdate %}
-              <option value="{{attendee.birthdate|date:"d"}}" selected>{{attendee.birthdate|date:"d"}}</option>
-            {% endif %}
-          </select>
+          <input type="number" name="bday" id="bday" class="form-control" placeholder="Day" value="{{attendee.birthdate|date:"d"}}" max="31" min="1" maxlength="2" required autocomplete="bday-day" />
         </div>
 
         <input type="hidden" name="birthDate" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}{{ attendee.dob }}">

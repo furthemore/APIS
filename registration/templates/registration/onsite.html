@@ -185,18 +185,34 @@
   </script>
 
   <script type="text/javascript">
-      var levelTemplateData = [];
-      var minorLevelTemplateData = [];
-      var accompaniedLevelTemplateData = [];
-      var freeLevelTemplateData = [];
-      var levelData = [];
-      var minorLevelData = [];
-      var accompaniedLevelData = [];
-      var freeLevelData = [];
-      var deptData = [];
-      var shirtSizes = [];
-      $("body").ready(function () {
-          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+      let levelTemplateData = [];
+      let minorLevelTemplateData = [];
+      let accompaniedLevelTemplateData = [];
+      let freeLevelTemplateData = [];
+      let levelData = [];
+      let minorLevelData = [];
+      let accompaniedLevelData = [];
+      let freeLevelData = [];
+      let deptData = [];
+      let shirtSizes = [];
+
+      function updatePriceLevels() {
+        levelTemplateData = [];
+
+        const [year, month, day] = [
+          $("#byear").val(),
+          $("#bmonth").val(),
+          $("#bday").val()
+        ];
+
+        if (!year || !month || !day) return;
+
+        $.post("{% url 'registration:pricelevels' %}", JSON.stringify({
+            year,
+            month,
+            day,
+            form_type: FORM_TYPE,
+          }), function (data) {
               levelData = data;
               $.each(data, function (key, val) {
                   levelTemplateData.push({
@@ -206,45 +222,14 @@
                       selectText: "Select " + val.name
                   });
               });
-              $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
               $(".changeLevel").hide();
 
           });
-          $.getJSON("{% url 'registration:minorpricelevels' %}", function (data) {
-              minorLevelData = data;
-              $.each(data, function (key, val) {
-                  minorLevelTemplateData.push({
-                      name: val.name,
-                      price: "$" + val.base_price,
-                      levelId: "level_" + val.id,
-                      selectText: "Select " + val.name
-                  });
-              });
+      }
 
-          });
-          $.getJSON("{% url 'registration:accompaniedpricelevels' %}", function (data) {
-              accompaniedLevelData = data;
-              $.each(data, function (key, val) {
-                  accompaniedLevelTemplateData.push({
-                      name: val.name,
-                      price: "$" + val.base_price,
-                      levelId: "level_" + val.id,
-                      selectText: "Select " + val.name
-                  });
-              });
-
-          });
-          $.getJSON("{% url 'registration:freepricelevels' %}", function (data) {
-              freeLevelData = data;
-              $.each(data, function (key, val) {
-                  freeLevelTemplateData.push({
-                      name: val.name,
-                      price: "$" + val.base_price,
-                      levelId: "level_" + val.id,
-                      selectText: "Select " + val.name
-                  });
-              });
-
+      $("body").ready(function () {
+          $("#bday, #bmonth, #byear").on("input", function() {
+            updatePriceLevels();
           });
           $.getJSON("{% url 'registration:departments' %}", function (data) {
               deptData = data;
@@ -265,9 +250,9 @@
 
           $("#levelContainer").on('click', 'a.selectLevel', function () {
               clearLevels();
-              var levelId = $(this).attr('id').split('_')[1];
+              let levelId = $(this).attr('id').split('_')[1];
               $.each(levelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -278,7 +263,7 @@
                   }
               });
               $.each(minorLevelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -289,7 +274,7 @@
                   }
               });
               $.each(accompaniedLevelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -300,7 +285,7 @@
                   }
               });
               $.each(freeLevelTemplateData, function (key, val) {
-                  var id = val.levelId.split('_')[1];
+                  let id = val.levelId.split('_')[1];
                   if (id == levelId) {
                       $("#regLevel").val(val.name);
                       $("#levelContainer").loadTemplate($("#levelTemplate"), val);
@@ -315,32 +300,34 @@
           $("body").on("click", '#next-personal', function () {
               let birthdate = new Date(Date.parse($("#birthDate").val()));
 
+              let age;
               try {
-                  var age = getAgeByEventStart(birthdate);
+                  age = getAgeByEventStart(birthdate);
               } catch (e) {
                   console.log(e);
                   alert(e);
               }
 
-              var level_data = [];
+              let level_data = levelTemplateData;
+              debugger;
 
               if (age < 0) {
                   alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
                   return false;
               }
 
-              if (age < 7) {
-                  level_data = freeLevelTemplateData
+              // if (age < 7) {
+              //     level_data = freeLevelTemplateData
 
-              } else if (age < 13) {
-                  level_data = accompaniedLevelTemplateData;
+              // } else if (age < 13) {
+              //     level_data = accompaniedLevelTemplateData;
 
-              } else if (age < 18) {
-                  level_data = minorLevelTemplateData;
+              // } else if (age < 18) {
+              //     level_data = minorLevelTemplateData;
 
-              } else {
-                  level_data = levelTemplateData;
-              }
+              // } else {
+              //     level_data = levelTemplateData;
+              // }
 
               if (level_data.length == 0) {
                   alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
@@ -360,22 +347,22 @@
           });
       });
 
-      var clearLevels = function () {
+      let clearLevels = function () {
           $.each(levelTemplateData, function (key, val) {
               $("#" + val.levelId).text("Select " + val.name);
           });
           $("form").validator('update');
       };
 
-      var generateOptions = function (levelId) {
-          var data = [];
+      let generateOptions = function (levelId) {
+          let data = [];
           $.each(levelData, function (key, thing) {
               if (thing.id == levelId) {
                   data = thing.options;
                   return false;
               }
           });
-          var container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
+          let container = $("<div id='optionsContainer' class='col-xs-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
           $("#levelContainer").append(container);
           if (data.length == 0) {
               $("#optionsContainer").append("<h4>None</h4>")
@@ -384,43 +371,44 @@
               if (!val.active) {
                   return true;
               }
+              let price;
               if (val.value == "0.00") {
-                  var price = " (Free) ";
+                  price = " (Free) ";
               } else {
-                  var price = " (+$" + val.value + ") "
+                  price = " (+$" + val.value + ") "
               }
-              var required = "";
+              let required = "";
               if (val.required) {
                   required = "required";
               }
               switch (val.type) {
                   case "bool":
-                      var template = $("#optionBoolTemplate");
+                      let optionBoolTemplate = $("#optionBoolTemplate");
                       if (val.required) {
-                          template = $("#optionBoolReqTemplate");
+                          optionBoolTemplate = $("#optionBoolReqTemplate");
                       }
-                      $("#optionsContainer").loadTemplate(template, {
+                      $("#optionsContainer").loadTemplate(optionBoolTemplate, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id
                       }, {append: true});
                       break;
                   case "int":
-                      var template = $("#optionIntTemplate");
+                      let optionIntTemplate = $("#optionIntTemplate");
                       if (val.required) {
-                          template = $("#optionIntReqTemplate");
+                          optionIntTemplate = $("#optionIntReqTemplate");
                       }
-                      $("#optionsContainer").loadTemplate(template, {
+                      $("#optionsContainer").loadTemplate(optionIntTemplate, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id
                       }, {append: true});
                       break;
                   case "string":
-                      var template = $("#optionStringTemplate");
+                      let optionStringTemplate = $("#optionStringTemplate");
                       if (val.required) {
-                          template = $("#optionStringReqTemplate");
+                          optionStringTemplate = $("#optionStringReqTemplate");
                       }
-                      var placeholder = val.name;
-                      $("#optionsContainer").loadTemplate(template, {
+                      let placeholder = val.name;
+                      $("#optionsContainer").loadTemplate(optionStringTemplate, {
                           'name': val.name + " " + price,
                           'id': "option_" + val.id,
                           'placeholder': placeholder,
@@ -434,7 +422,7 @@
                       if (val.list == []) {
                           break;
                       }
-                      var options = [];
+                      let options = [];
                       if (!val.required) {
                           options.push({"content": "Select One...", "value": ""});
                       }
@@ -455,9 +443,9 @@
           $("form").validator('update');
       };
 
-      var getOptions = function () {
-          var options = $(".levelOptions");
-          var data = [];
+      let getOptions = function () {
+          let options = $(".levelOptions");
+          let data = [];
           $.each(options, function (key, option) {
               if ($(option).is(':checkbox')) {
                   if ($(option).is(':checked')) {
@@ -473,7 +461,7 @@
       function register_click(e) {
           e.preventDefault();
           $("form").validator('validate');
-          var errorCount = $(".has-error").length;
+          let errorCount = $(".has-error").length;
           if (errorCount > 0) {
               $("#register").one('click', register_click);
               return;
