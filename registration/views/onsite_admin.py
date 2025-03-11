@@ -34,6 +34,7 @@ from registration.models import (
     Order,
     OrderItem,
     ShirtSizes,
+    Staff,
     get_token,
 )
 from registration.views.attendee import get_attendee_age
@@ -211,7 +212,7 @@ def onsite_admin_search(request):
         for badge in badges:
             data.append({
                 "id": badge.id,
-                "edit_url": reverse("admin:registration_badge_change", args=(badge.id,)),
+                "editUrl": reverse("admin:registration_badge_change", args=(badge.id,)),
                 "attendee": {
                     "firstName": badge.attendee.firstName,
                     "lastName": badge.attendee.lastName,
@@ -884,6 +885,15 @@ def build_result(cart):
         )
         total_discount += level_discount
 
+        staff_data = None
+
+        if badge.abandoned == Badge.STAFF:
+            staff = Staff.objects.get(event=badge.event, attendee=badge.attendee)
+
+            staff_data = {
+                "shirtSize": staff.shirtsize.name if staff.shirtsize else None,
+            }
+
         item = {
             "id": badge.id,
             "firstName": badge.attendee.preferredName or badge.attendee.firstName,
@@ -901,6 +911,7 @@ def build_result(cart):
             "attendee_options": attendee_options,
             "printed": badge.printed,
             "reference": order.reference,
+            "staff": staff_data,
         }
         result.append(item)
 

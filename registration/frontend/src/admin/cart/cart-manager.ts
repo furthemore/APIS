@@ -253,6 +253,7 @@ export interface Badge {
   level_total: string;
   attendee_options: AttendeeOption[];
   reference: string;
+  staff?: Staff;
 }
 
 export interface EffectiveLevel {
@@ -275,6 +276,10 @@ export interface AttendeeOption {
   reason?: string;
   optionExtraType?: "int" | "bool" | "string" | "ShirtSizes";
   optionValue?: string;
+}
+
+export interface Staff {
+  shirtSize: string;
 }
 
 export interface BadgePrintResponse {

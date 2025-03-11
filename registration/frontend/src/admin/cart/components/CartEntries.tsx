@@ -47,7 +47,7 @@ export const CartEntries: Component<{
   return (
     <>
       <div class="panel-block">
-        <table class="table is-fullwidth is-condensed">
+        <table class="table is-fullwidth is-narrow">
           <tbody>
             <tr>
               <td>Subtotal:</td>
@@ -77,7 +77,7 @@ export const CartEntries: Component<{
 
       <Show when={(orderItems()?.length || 0) > 0}>
         <div class="panel-block">
-          <table class="table is-fullwidth is-condensed">
+          <table class="table is-fullwidth is-narrow">
             <thead>
               <tr>
                 <th>Order Item</th>

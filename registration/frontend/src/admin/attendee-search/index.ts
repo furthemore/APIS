@@ -5,7 +5,7 @@ export { AttendeeSearch };
 
 export interface BadgeResult {
   id: number;
-  edit_url: string;
+  editUrl: string;
   attendee: Attendee;
   badgeName: string;
   badgeNumber?: number;
