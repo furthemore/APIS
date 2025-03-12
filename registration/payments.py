@@ -5,17 +5,22 @@ from typing import Optional
 
 from django.conf import settings
 from square.client import Client
+from prometheus_client import Histogram
 
 from . import emails
 from .models import *
 
+SQUARE_REQUESTS = Histogram("square_requests", "HTTP requests to Square API", ["endpoint"])
+
 client = Client(
+    timeout=10,
+    max_retries=5,
+    retry_methods=["GET", "POST"],
     access_token=settings.SQUARE_ACCESS_TOKEN,
     environment=settings.SQUARE_ENVIRONMENT,
 )
 payments_api = client.payments
 refunds_api = client.refunds
-payments_api = client.payments
 orders_api = client.orders
 terminals_api = client.terminal
 
@@ -80,7 +85,8 @@ def charge_payment(order, cc_data, request=None):
     logger.debug("---- Begin Transaction ----")
     logger.debug(body)
 
-    api_response = payments_api.create_payment(body)
+    with SQUARE_REQUESTS.labels(endpoint="create_payment").time():
+        api_response = payments_api.create_payment(body)
 
     logger.debug("---- Charge Submitted ----")
     logger.debug(api_response)
@@ -132,7 +138,8 @@ def refresh_payment(order, store_api_data=None):
     except KeyError:
         logger.warning("Refresh payment: MISSING_PAYMENT_ID")
         return False, "MISSING_PAYMENT_ID"
-    payments_response = payments_api.get_payment(payment_id)
+    with SQUARE_REQUESTS.labels(endpoint="get_payment").time():
+        payments_response = payments_api.get_payment(payment_id)
 
     payment = payments_response.body.get("payment")
     if payments_response.is_success():
@@ -160,7 +167,8 @@ def refresh_payment(order, store_api_data=None):
         refund_ids.extend(stored_refund_ids)
 
     for refund_id in refund_ids:
-        refunds_response = refunds_api.get_payment_refund(refund_id)
+        with SQUARE_REQUESTS.labels(endpoint="get_payment_refund").time():
+            refunds_response = refunds_api.get_payment_refund(refund_id)
 
         if refunds_response.is_success():
             refund = refunds_response.body.get("refund")
@@ -286,7 +294,8 @@ def refund_card_payment(order, amount, reason=None, request=None):
     if reason:
         body["reason"] = reason
 
-    result = refunds_api.refund_payment(body)
+    with SQUARE_REQUESTS.labels(endpoint="refund_payment").time():
+        result = refunds_api.refund_payment(body)
     logger.debug(result.body)
 
     if result.is_error():
@@ -565,7 +574,8 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
         }
     }
 
-    result = orders_api.create_order(order_data)
+    with SQUARE_REQUESTS.labels(endpoint="create_order").time():
+        result = orders_api.create_order(order_data)
 
     if result.is_success():
         return result.body["order"]["id"]
@@ -575,7 +585,7 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
 
 
 def print_payment_receipt(request, payment_id: str) -> bool:
-    result = terminals_api.create_terminal_action({
+    data = {
         "idempotency_key": get_idempotency_key(request),
         "action": {
             "device_id": settings.SQUARE_TERMINAL_ID,
@@ -585,7 +595,10 @@ def print_payment_receipt(request, payment_id: str) -> bool:
                 "print_only": True,
             },
         },
-    })
+    }
+
+    with SQUARE_REQUESTS.labels(endpoint="create_terminal_action").time():
+        result = terminals_api.create_terminal_action(data)
 
     if result.is_error():
         logger.error("could not print receipt: %s", result.errors)
