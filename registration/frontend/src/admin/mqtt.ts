@@ -36,14 +36,17 @@ export default class MqttClient {
     if (!this.config.auth) return;
 
     const wildcardTopic = this.getPrefixedTopic("#");
-    const randomClientId = Math.random().toString(16).substr(2, 8);
 
     this.client = mqtt.connect(config.broker, {
       username: config.auth.user,
       password: config.auth.token,
-      clientId: `${config.auth.user}-${randomClientId}`,
-      clean: true,
+      clientId: `admin-${config.auth.user}`,
+      clean: false,
+      protocolVersion: 5,
       timerVariant: "native",
+      properties: {
+        sessionExpiryInterval: 300,
+      },
     });
 
     this.client.on("connect", () => {

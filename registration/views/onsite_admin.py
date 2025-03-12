@@ -116,7 +116,11 @@ def onsite_admin(request):
 
     context = {
         "settings": json.dumps({
-            "debug": getattr(settings, "DEBUG", False),
+            "user": {
+                "id": request.user.id,
+                "email": request.user.email,
+                "station": terminal.name if terminal else None,
+            },
             "sentry": {
                 "enabled": getattr(settings, "SENTRY_ENABLED", False),
                 "user_reports": getattr(settings, "SENTRY_USER_REPORTS", False),
@@ -998,23 +1002,21 @@ def onsite_add_id_to_cart(request, id):
         )
 
     try:
-        id = int(id)
+        badge = Badge.objects.get(id=id)
     except ValueError:
         return JsonResponse(
             {"success": False, "reason": "ID parameter must be integer"}, status=400
         )
 
-    cart = request.session.get("cart", None)
-    if cart is None:
-        request.session["cart"] = [
-            id,
-        ]
-        return JsonResponse({"success": True, "cart": [id]})
+    cart = request.session.get("cart", [])
 
-    if id in cart:
-        return JsonResponse({"success": True, "cart": cart})
+    order_item = OrderItem.objects.filter(badge=badge, order__isnull=False).first()
+    if order_item:
+        order_items = OrderItem.objects.filter(order=order_item.order, badge__isnull=False)
+        for order_item in order_items:
+            if order_item.badge_id not in cart:
+                cart.append(order_item.badge_id)
 
-    cart.append(id)
     request.session["cart"] = cart
 
     return JsonResponse({"success": True, "cart": cart})

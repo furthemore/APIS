@@ -19,7 +19,7 @@ declare global {
 }
 
 export interface ApisConfig {
-  debug: boolean;
+  user: ApisUser;
   sentry: ApisSentry;
   errors: ApisError[];
   mqtt: ApisMqttConfig;
@@ -27,6 +27,12 @@ export interface ApisConfig {
   urls: ApisUrls;
   permissions: ApisPermissions;
   terminals: ApisTerminalSettings;
+}
+
+export interface ApisUser {
+  id: number;
+  email: string;
+  station?: string;
 }
 
 export interface ApisSentry {
@@ -115,6 +121,15 @@ if (APIS_CONFIG.sentry.enabled) {
       return event;
     },
   });
+
+  Sentry.setUser({
+    id: APIS_CONFIG.user.id,
+    email: APIS_CONFIG.user.email,
+  });
+
+  if (APIS_CONFIG.user.station) {
+    Sentry.setTag("onsite_station", APIS_CONFIG.user.station);
+  }
 }
 
 export const SentryErrorBoundary =
