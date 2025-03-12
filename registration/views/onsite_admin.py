@@ -114,6 +114,16 @@ def onsite_admin(request):
     if terminal:
         mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
+    selected_terminal = None
+    if terminal:
+        selected_terminal = {
+            "id": terminal.id,
+            "features": {
+                "print_via_mqtt": terminal.print_via_mqtt,
+                "cashdrawer": terminal.cashdrawer,
+            }
+        }
+
     context = {
         "settings": json.dumps({
             "user": {
@@ -132,7 +142,6 @@ def onsite_admin(request):
             "mqtt": {
                 "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
                 "auth": mqtt_auth,
-                "supports_printing": terminal.print_via_mqtt if terminal else False,
             },
             "shirt_sizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
             "urls": {
@@ -168,7 +177,7 @@ def onsite_admin(request):
                 "discount": request.user.has_perm("registration.discount"),
             },
             "terminals": {
-                "selected": terminal.id if terminal else None,
+                "selected": selected_terminal,
                 "available": [{"id": terminal.id, "name": terminal.name} for terminal in terminals],
             },
         }),

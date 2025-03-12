@@ -114,7 +114,7 @@ export const Cart: Component<{
                     {APIS_CONFIG.terminals.available
                       .filter(
                         (terminal) =>
-                          terminal.id !== APIS_CONFIG.terminals.selected
+                          terminal.id !== APIS_CONFIG.terminals.selected?.id
                       )
                       .map((terminal) => (
                         <a

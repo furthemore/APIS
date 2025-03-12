@@ -84,7 +84,9 @@ const ActionButton: Component<{
 };
 
 function makeStatusRequestHelper(url: string) {
-  return async function (status: "open" | "close" | "ready" | "gay" | "blue-light") {
+  return async function (
+    status: "open" | "close" | "ready" | "gay" | "blue-light"
+  ) {
     let endpoint = new URL(url, window.location.href);
     endpoint.searchParams.set("status", status);
 
@@ -145,7 +147,9 @@ const Actions: Component<{
   config: ApisConfig;
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
-  const statusRequestHelper = makeStatusRequestHelper(props.config.urls.set_terminal_status);
+  const statusRequestHelper = makeStatusRequestHelper(
+    props.config.urls.set_terminal_status
+  );
 
   return (
     <div class="navbar-dropdown is-right">
@@ -187,7 +191,12 @@ const Actions: Component<{
         action={() => statusRequestHelper("blue-light")}
       />
 
-      <Show when={props.config.permissions.cash_admin}>
+      <Show
+        when={
+          props.config.permissions.cash_admin &&
+          props.config.terminals.selected?.features?.cashdrawer
+        }
+      >
         <>
           <hr class="navbar-divider" />
 
@@ -351,7 +360,7 @@ export const Navbar: Component<{
     if (
       availableIds.length > 0 &&
       config.terminals.selected &&
-      !availableIds.includes(config.terminals.selected)
+      !availableIds.includes(config.terminals.selected?.id)
     ) {
       switchTerminal(availableIds[0].toString());
     }
@@ -392,7 +401,7 @@ export const Navbar: Component<{
                     {(terminal) => (
                       <option
                         value={terminal.id}
-                        selected={terminal.id === config.terminals.selected}
+                        selected={terminal.id === config.terminals.selected?.id}
                       >
                         {terminal.name}
                       </option>
@@ -435,7 +444,7 @@ export const Navbar: Component<{
                 userSettings={userSettings}
               />
 
-              <Show when={config.mqtt.supports_printing}>
+              <Show when={config.terminals.selected?.features?.print_via_mqtt}>
                 <ToggleSetting
                   name="Auto Print After Payment"
                   key="print_after_payment"

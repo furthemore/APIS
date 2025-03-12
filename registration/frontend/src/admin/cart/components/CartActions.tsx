@@ -66,7 +66,7 @@ export const CartActions: Component<{
       false
   );
 
-  if (config.mqtt.supports_printing) {
+  if (config.terminals.selected?.features?.print_via_mqtt) {
     const autoPrintCheck = createAutoPrintCheck(printableBadgeIds);
 
     createEffect(async () => {
@@ -118,7 +118,10 @@ export const CartActions: Component<{
           </ActionButton>
 
           <Show
-            when={config.permissions.cash}
+            when={
+              config.permissions.cash &&
+              config.terminals.selected?.features?.cashdrawer
+            }
             fallback={<div class="column"></div>}
           >
             <ActionButton
@@ -196,7 +199,8 @@ export const CartActions: Component<{
                 setLoading,
                 userSettings.userSettings().clear_cart_after_print,
                 props.clearSearch,
-                config.mqtt.supports_printing && !holdingShift
+                !!config.terminals.selected?.features?.print_via_mqtt &&
+                  !holdingShift
               );
             }}
           >

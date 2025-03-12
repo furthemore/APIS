@@ -51,7 +51,6 @@ export interface ApisError {
 export interface ApisMqttConfig {
   broker: string;
   auth: ApisMqttAuth;
-  supports_printing: boolean;
 }
 
 export interface ApisMqttAuth {
@@ -100,8 +99,18 @@ export interface ApisPermissions {
 }
 
 export interface ApisTerminalSettings {
-  selected?: number;
+  selected?: ApisSelectedTerminal;
   available: ApisTerminal[];
+}
+
+export interface ApisSelectedTerminal {
+  id: number;
+  features: ApisTerminalFeatures;
+}
+
+export interface ApisTerminalFeatures {
+  print_via_mqtt: boolean;
+  cashdrawer: boolean;
 }
 
 export interface ApisTerminal {
