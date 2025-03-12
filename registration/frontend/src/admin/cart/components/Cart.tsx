@@ -123,6 +123,7 @@ export const Cart: Component<{
                           onClick={async (ev) => {
                             ev.preventDefault();
                             setClearing(true);
+                            props.clearSearch();
                             await props.cartManager.transfer(terminal.id);
                             setClearing(false);
                           }}
