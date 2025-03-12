@@ -5,13 +5,14 @@ import { Accessor, createSignal, Setter } from "solid-js";
 import { ApisMqttConfig } from "../entrypoints/admin";
 
 export type MqttTopic =
-  | "refresh"
-  | "open"
-  | "notification"
   | "alert"
+  | "authorize_terminal"
+  | "notification"
+  | "open"
+  | "refresh"
   | "scan/id"
   | "scan/shc"
-  | "authorize_terminal";
+  | "transfer";
 
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
 

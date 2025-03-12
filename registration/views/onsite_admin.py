@@ -69,7 +69,7 @@ def onsite_admin(request):
     # Modify a dummy session variable to keep it alive
     request.session["heartbeat"] = time.time()
 
-    terminals = list(Firebase.objects.all())
+    terminals = list(Firebase.objects.order_by("name").all())
     term = request.session.get("terminal", None)
 
     errors = []
@@ -148,6 +148,7 @@ def onsite_admin(request):
                 "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
                 "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
                 "onsite_admin_search": reverse("registration:onsite_admin_search"),
+                "onsite_admin_transfer_cart": reverse("registration:onsite_admin_transfer_cart"),
                 "onsite_admin": reverse("registration:onsite_admin"),
                 "onsite_create_discount": reverse("registration:onsite_create_discount"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
@@ -1055,6 +1056,21 @@ def onsite_admin_clear_cart(request):
     request.session["cart"] = []
     send_mqtt_message_to_terminal(request, {"clearCart": {}})
     return JsonResponse({"success": True, "cart": []})
+
+
+@staff_member_required
+def onsite_admin_transfer_cart(request):
+    terminal_id = request.GET.get("terminal_id")
+    badge_ids = request.GET.getlist("badge_id")
+
+    firebase = Firebase.objects.get(id=terminal_id)
+
+    topic = f'{mqtt.get_topic("admin", firebase.name)}/transfer'
+    mqtt.send_mqtt_message(topic, {
+        "badgeIds": [int(badge_id) for badge_id in badge_ids],
+    })
+
+    return JsonResponse({"success": True})
 
 
 def get_b32_uuid():

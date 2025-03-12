@@ -28,6 +28,9 @@ export const Cart: Component<{
   });
 
   const anythingLoading = () => refresh.loading || clearing() || remove.loading;
+  const canTransfer = () =>
+    !anythingLoading() &&
+    (props.cartManager.cartEntries()?.result?.length ?? 0) > 0;
 
   createShortcut(["Alt", "R"], () => {
     if (anythingLoading()) return;
@@ -56,6 +59,29 @@ export const Cart: Component<{
 
           <div class="column is-narrow">
             <div class="buttons">
+              <Show when={props.cartManager.pendingTransfers().length > 0}>
+                <button
+                  class="button is-light is-small"
+                  onClick={async (ev) => {
+                    ev.preventDefault();
+
+                    const transfer = props.cartManager.getNextTransfer();
+                    if (!transfer) return;
+
+                    setClearing(true);
+                    await props.cartManager.clearCart();
+                    for (let i = 0; i < transfer.length; i += 1) {
+                      await props.cartManager.addCartId(transfer[i]);
+                    }
+                    setClearing(false);
+                  }}
+                >
+                  <span class="icon">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                  </span>
+                </button>
+              </Show>
+
               <button
                 class="button is-primary is-small"
                 classList={{ "is-loading": refresh.loading }}
@@ -67,6 +93,46 @@ export const Cart: Component<{
                   <i class="fas fa-sync"></i>
                 </span>
               </button>
+
+              <div
+                class="dropdown"
+                classList={{ "is-hoverable": canTransfer() }}
+              >
+                <div class="dropdown-trigger">
+                  <button
+                    class="button is-link is-small"
+                    disabled={!canTransfer()}
+                  >
+                    <span>Transfer</span>
+                    <span class="icon is-small">
+                      <i class="fas fa-angle-down"></i>
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu">
+                  <div class="dropdown-content">
+                    {APIS_CONFIG.terminals.available
+                      .filter(
+                        (terminal) =>
+                          terminal.id !== APIS_CONFIG.terminals.selected
+                      )
+                      .map((terminal) => (
+                        <a
+                          href="#"
+                          class="dropdown-item"
+                          onClick={async (ev) => {
+                            ev.preventDefault();
+                            setClearing(true);
+                            await props.cartManager.transfer(terminal.id);
+                            setClearing(false);
+                          }}
+                        >
+                          {terminal.name}
+                        </a>
+                      ))}
+                  </div>
+                </div>
+              </div>
 
               <button
                 class="button is-warning is-small"

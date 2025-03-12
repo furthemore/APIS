@@ -162,6 +162,11 @@ urlpatterns = [
         name="onsite_remove_from_cart",
     ),
     re_path(
+        r"^onsite/admin/cart/transfer/?$",
+        registration.views.onsite_admin.onsite_admin_transfer_cart,
+        name="onsite_admin_transfer_cart",
+    ),
+    re_path(
         r"^onsite/admin/terminal/status/?$",
         registration.views.onsite_admin.set_terminal_status,
         name="terminal_status",

@@ -12,17 +12,42 @@ export class CartManager {
   public cartEntries: Accessor<CartResponse | undefined>;
   private setCartEntries: Setter<CartResponse | undefined>;
 
+  public pendingTransfers: Accessor<number[][]>;
+  private setPendingTransfers: Setter<number[][]>;
+
   constructor(urls: ApisUrls, mqtt: MqttClient) {
     this.urls = urls;
     this.mqtt = mqtt;
 
     [this.cartEntries, this.setCartEntries] = createSignal<CartResponse>();
+    [this.pendingTransfers, this.setPendingTransfers] = createSignal<
+      number[][]
+    >([], {
+      equals: false,
+    });
 
     this.mqtt.emitter.on("refresh", this.refreshCart.bind(this));
+    this.mqtt.emitter.on("transfer", this.addPendingTransfer.bind(this));
   }
 
   close() {
     this.mqtt.emitter.off("refresh", this.refreshCart.bind(this));
+    this.mqtt.emitter.off("transfer", this.addPendingTransfer.bind(this));
+  }
+
+  private addPendingTransfer(payload: object | null) {
+    const data = payload as { badgeIds: number[] };
+
+    let pendingTransfers = this.pendingTransfers();
+    pendingTransfers.push(data.badgeIds);
+    this.setPendingTransfers(pendingTransfers);
+  }
+
+  public getNextTransfer(): number[] | undefined {
+    let pendingTransfers = this.pendingTransfers();
+    const nextTransfer = pendingTransfers.shift();
+    this.setPendingTransfers(pendingTransfers);
+    return nextTransfer;
   }
 
   private async makeRequest<T>(
@@ -215,6 +240,30 @@ export class CartManager {
     );
 
     return await this.makeRequest(url);
+  }
+
+  public async transfer(terminal_id: number): Promise<FallibleRequest<void>> {
+    if (!this.cartEntries()?.result) {
+      return { success: true } as FallibleRequest<void>;
+    }
+
+    let url = new URL(
+      this.urls.onsite_admin_transfer_cart,
+      window.location.href
+    );
+    url.searchParams.append("terminal_id", terminal_id.toString());
+    this.cartEntries()?.result?.forEach((badge) => {
+      url.searchParams.append("badge_id", badge.id.toString());
+    });
+
+    const resp = await this.makeRequest(url);
+    if (!resp.success) {
+      return resp;
+    }
+
+    await this.clearCart();
+
+    return { success: true } as FallibleRequest<void>;
   }
 }
 
