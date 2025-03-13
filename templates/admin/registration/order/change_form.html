@@ -15,10 +15,6 @@
     {% endif %}
     {% if api_data.payment.id %}
         <li>
-            <a href="{% url 'admin:order_receipt' original.pk %}" class="historylink" title="Print receipt using Square Terminal">Print Receipt</a>
-        </li>
-
-        <li>
             <a href="{% url 'admin:order_refresh' original.pk %}" class="historylink">API Sync</a>
         </li>
     {% endif %}

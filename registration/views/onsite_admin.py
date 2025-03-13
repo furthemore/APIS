@@ -1268,7 +1268,7 @@ def print_receipts(request):
             if not order.apiData or "payment" not in order.apiData:
                 return JsonResponse({"success": False, "reason": "Missing payment data on credit transaction"})
 
-            if not payments.print_payment_receipt(request, order.apiData["payment"]["id"]):
+            if not payments.print_payment_receipt(request, terminal.square_terminal_id, order.apiData["payment"]["id"]):
                 return JsonResponse({"success": False, "reason": "Got error attempting to print receipt"})
 
     return JsonResponse({"success": True})

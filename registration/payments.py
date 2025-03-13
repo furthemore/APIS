@@ -586,11 +586,11 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
         return None
 
 
-def print_payment_receipt(request, payment_id: str) -> bool:
+def print_payment_receipt(request, square_device: SquareDevice, payment_id: str) -> bool:
     data = {
         "idempotency_key": get_idempotency_key(request),
         "action": {
-            "device_id": settings.SQUARE_TERMINAL_ID,
+            "device_id": square_device.device_id,
             "type": "RECEIPT",
             "receipt_options": {
                 "payment_id": payment_id,

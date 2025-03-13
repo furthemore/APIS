@@ -104,18 +104,23 @@ export const CartActions: Component<{
         )}
       >
         <div class="columns">
-          <ActionButton
-            class="is-link is-outlined"
-            disabled={!allBadgesPaid()}
-            loading={loading()}
-            setLoading={setLoading}
-            action={() => printReceipts(props.manager)}
+          <Show
+            when={config.terminals.selected?.features?.square_terminal}
+            fallback={<div class="column"></div>}
           >
-            <span class="icon">
-              <i class="fas fa-receipt"></i>
-            </span>
-            <span>Receipt</span>
-          </ActionButton>
+            <ActionButton
+              class="is-link is-outlined"
+              disabled={!allBadgesPaid()}
+              loading={loading()}
+              setLoading={setLoading}
+              action={() => printReceipts(props.manager)}
+            >
+              <span class="icon">
+                <i class="fas fa-receipt"></i>
+              </span>
+              <span>Receipt</span>
+            </ActionButton>
+          </Show>
 
           <Show
             when={

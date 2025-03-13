@@ -1430,33 +1430,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         my_urls = [
             url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
             url(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
-            url(r"^(.+)/receipt/$", self.receipt_view, name="order_receipt"),
         ]
         return my_urls + urls
-
-    def receipt_view(self, request, order_id, extra_context=None):
-        order = Order.objects.get(id=order_id)
-
-        api_data = order.apiData
-        if not api_data and order.billingType == Order.CREDIT:
-            messages.warning(request, "External payment data could not be decoded")
-            return HttpResponseRedirect(
-                reverse("admin:registration_order_change", args=(order_id,))
-            )
-
-        if "payment" not in api_data or "id" not in api_data["payment"]:
-            messages.warning(request, "External payment data was missing payment ID")
-            return HttpResponseRedirect(
-                reverse("admin:registration_order_change", args=(order_id,))
-            )
-
-        if not payments.print_payment_receipt(request, api_data["payment"]["id"]):
-            messages.warning(request, "Unable to print receipt for payment")
-
-        return HttpResponseRedirect(
-            reverse("admin:registration_order_change", args=(order_id,))
-        )
-
 
     def refund_view(self, request, order_id, extra_context=None):
         # TODO: Produce an error if a full refund has already been completed
