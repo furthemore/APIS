@@ -147,19 +147,25 @@ export const CartActions: Component<{
             </ActionButton>
           </Show>
 
-          <ActionButton
-            class="is-primary"
-            disabled={!canUseCard()}
-            loading={loading()}
-            setLoading={setLoading}
-            keyboardShortcut={["Alt", "C"]}
-            action={() => enableCardPayment(props.manager)}
+          <Show
+            when={APIS_CONFIG.terminals.selected?.features?.payment_type}
+            fallback={<div class="column"></div>}
           >
-            <span class="icon">
-              <i class="fas fa-credit-card"></i>
-            </span>
-            <span>Card</span>
-          </ActionButton>
+            <ActionButton
+              class="is-primary"
+              disabled={!canUseCard()}
+              loading={loading()}
+              setLoading={setLoading}
+              keyboardShortcut={["Alt", "C"]}
+              action={() => enableCardPayment(props.manager, false)}
+              altAction={() => enableCardPayment(props.manager, true)}
+            >
+              <span class="icon">
+                <i class="fas fa-credit-card"></i>
+              </span>
+              <span>Card</span>
+            </ActionButton>
+          </Show>
         </div>
 
         <div class="columns">
@@ -265,8 +271,8 @@ async function createAndApplyDiscount(manager: CartManager) {
   }
 }
 
-async function enableCardPayment(manager: CartManager) {
-  const resp = await manager.enableCardPayment();
+async function enableCardPayment(manager: CartManager, fallback: boolean) {
+  const resp = await manager.enableCardPayment(fallback);
   if (!resp.success) {
     alert(`Error enabling card payment: ${resp.reason}`);
   }

@@ -15,14 +15,22 @@ export type ActionButtonProps = {
   setLoading: Setter<boolean>;
   keyboardShortcut?: KbdKey[];
   action: (ev: Event) => Promise<any> | undefined;
+  altAction?: (ev: Event) => Promise<any> | undefined;
   children: JSX.Element;
 };
 
 export const ActionButton: Component<ActionButtonProps> = (props) => {
-  const [triggerEvent, setTriggerEvent] = createSignal<Event>();
+  const [triggerEvent, setTriggerEvent] = createSignal<
+    MouseEvent | KeyboardEvent
+  >();
   const [resource] = createResource(triggerEvent, async (ev) => {
     props.setLoading(true);
-    const resp = await props.action(ev);
+    let resp;
+    if (props.altAction && ev.shiftKey) {
+      resp = await props.altAction(ev);
+    } else {
+      resp = await props.action(ev);
+    }
     props.setLoading(false);
     return resp;
   });

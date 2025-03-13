@@ -143,8 +143,13 @@ export class CartManager {
     return data;
   }
 
-  public async enableCardPayment(): Promise<FallibleRequest<void>> {
-    return await this.makeRequest(this.urls.enable_payment);
+  public async enableCardPayment(
+    fallback: boolean
+  ): Promise<FallibleRequest<void>> {
+    let url = new URL(this.urls.enable_payment, window.location.href);
+    if (fallback) url.searchParams.set("fallback", "true");
+
+    return await this.makeRequest(url);
   }
 
   public async printBadges(
@@ -176,8 +181,7 @@ export class CartManager {
     if (printData.success && mqttPrint) {
       const url = new URL(printData.file, window.location.href);
 
-      this.mqtt.publishMessage(
-        "action",
+      this.mqtt.publishPrintMessage(
         JSON.stringify({
           action: "print",
           url,

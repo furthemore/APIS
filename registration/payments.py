@@ -1,11 +1,11 @@
 import logging
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Any, List, Optional
 
 from django.conf import settings
-from square.client import Client
 from prometheus_client import Histogram
+from square.client import Client
 
 from . import emails
 from .models import *
@@ -19,9 +19,11 @@ client = Client(
     access_token=settings.SQUARE_ACCESS_TOKEN,
     environment=settings.SQUARE_ENVIRONMENT,
 )
+
+devices_api = client.devices
+orders_api = client.orders
 payments_api = client.payments
 refunds_api = client.refunds
-orders_api = client.orders
 terminals_api = client.terminal
 
 logger = logging.getLogger("registration.payments")
@@ -604,3 +606,46 @@ def print_payment_receipt(request, payment_id: str) -> bool:
         logger.error("could not print receipt: %s", result.errors)
 
     return result.is_success()
+
+
+def get_terminals() -> List[dict]:
+    terminals = []
+
+    cursor = None
+    while True:
+        result = devices_api.list_devices(cursor=cursor)
+        if result.is_error():
+            raise Exception("Unable to get Square devices")
+
+        for device in result.body["devices"]:
+            terminals.append(device)
+
+        if "cursor" in result.body:
+            cursor = result.body["cursor"]
+        else:
+            break
+
+    return terminals
+
+
+def prompt_terminal_payment(request, device_id: str, total: int, reference: str, note: str, order_id: Optional[str]) -> Any:
+    data = {
+        "idempotency_key": get_idempotency_key(request),
+        "checkout": {
+            "amount_money": {
+                "amount": total,
+                "currency": settings.SQUARE_CURRENCY,
+            },
+            "reference_id": reference,
+            "device_options": {
+                "device_id": device_id,
+            },
+        }
+    }
+
+    if order_id:
+        data["checkout"]["order_id"] = order_id
+    else:
+        data["checkout"]["note"] = note
+
+    return terminals_api.create_terminal_checkout(data)

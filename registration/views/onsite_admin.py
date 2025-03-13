@@ -119,7 +119,9 @@ def onsite_admin(request):
         selected_terminal = {
             "id": terminal.id,
             "features": {
-                "print_via_mqtt": terminal.print_via_mqtt,
+                "print_via_mqtt": terminal.print_via_mqtt is not None,
+                "square_terminal": terminal.square_terminal_id is not None,
+                "payment_type": terminal.payment_type,
                 "cashdrawer": terminal.cashdrawer,
             }
         }
@@ -375,14 +377,34 @@ def enable_payment(request):
 
     order_id = payments.create_square_order(str(terminal.name), data)
 
-    return send_mqtt_message_to_terminal(terminal, {
-        "processPayment": {
-            "orderId": order_id,
-            "total": int(data["total"] * 100),
-            "reference": data["reference"],
-            "note": render_to_string("registration/customer-note.txt", data),
-        }
-    })
+    if (terminal.payment_type == Firebase.SQUARE_TERMINAL or request.GET.get("fallback", None) == "true") and terminal.square_terminal_id:
+        resp = payments.prompt_terminal_payment(
+            request,
+            str(terminal.square_terminal_id),
+            int(data["total"] * 100),
+            data["reference"],
+            render_to_string("registration/customer-note.txt", data),
+            order_id
+        )
+
+        return JsonResponse({
+            "success": resp.is_success(),
+            "reason": ", ".join([error["detail"] for error in resp.errors]) if resp.errors else None,
+        })
+    elif terminal.payment_type == Firebase.MQTT_REGISTER_APP:
+        return send_mqtt_message_to_terminal(terminal, {
+            "processPayment": {
+                "orderId": order_id,
+                "total": int(data["total"] * 100),
+                "reference": data["reference"],
+                "note": render_to_string("registration/customer-note.txt", data),
+            }
+        })
+    else:
+        return JsonResponse({
+            "success": False,
+            "reason": "Terminal does not have payment type",
+        })
 
 
 @staff_member_required

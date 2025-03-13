@@ -57,6 +57,7 @@ export interface ApisMqttAuth {
   user: string;
   token: string;
   base_topic: string;
+  print_topic?: string;
 }
 
 export interface ApisShirtSize {
@@ -110,6 +111,8 @@ export interface ApisSelectedTerminal {
 
 export interface ApisTerminalFeatures {
   print_via_mqtt: boolean;
+  square_terminal: boolean;
+  payment_type?: "mqtt-app" | "square-terminal";
   cashdrawer: boolean;
 }
 

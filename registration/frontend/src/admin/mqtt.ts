@@ -124,6 +124,13 @@ export default class MqttClient {
     this.client?.publish(this.getPrefixedTopic(topic), payload);
   }
 
+  public publishPrintMessage(payload: string) {
+    this.client?.publish(
+      this.config.auth.print_topic || this.getPrefixedTopic("action"),
+      payload
+    );
+  }
+
   private getPrefixedTopic(topic: string): string {
     return `${this.config.auth.base_topic}/${topic}`;
   }
