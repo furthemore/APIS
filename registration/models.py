@@ -945,6 +945,10 @@ class Firebase(models.Model):
     def __str__(self):
         return str(self.name)
 
+    class Meta:
+        verbose_name = "Terminal"
+        verbose_name_plural = "Terminals"
+
 
 class Cashdrawer(models.Model):
     OPEN = "Open"  # drawer opens
