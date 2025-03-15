@@ -25,7 +25,7 @@ def trigger_error(request):
 urlpatterns = [
     re_path(r"^sentry-debug/", trigger_error),
     path('', registration.views.common.index, name="index"),
-    re_path(r"^logout/$", LogoutView.as_view(), name="logout"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     re_path(
         r"^upgrade/lookup/?$",
         registration.views.upgrade.find_upgrade,
@@ -297,18 +297,18 @@ urlpatterns = [
         registration.views.webhooks.square_webhook,
         name="square_webhook",
     ),
-    re_path(
-        r"^terminal/square/token$",
+    path(
+        "terminal/square/token",
         registration.views.onsite_admin.terminal_square_token,
         name="terminal_square_token"
     ),
-    re_path(
-        r"^terminal/square/completed$",
+    path(
+        "terminal/square/completed",
         registration.views.onsite_admin.complete_square_transaction,
         name="terminal_square_completed"
     ),
-    re_path(
-        r"^oauth/square$",
+    path(
+        "oauth/square",
         registration.views.onsite_admin.oauth_square,
         name="oauth_square",
     )

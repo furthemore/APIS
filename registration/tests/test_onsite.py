@@ -113,7 +113,7 @@ class OnsiteBaseTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(post_data),
             content_type="application/json",
-            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+            headers={"idempotency-key": str(uuid.uuid4())}
         )
 
         return response
@@ -476,7 +476,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             "paymentId": "JUNK",
         }
         response = self.client.post(
-            reverse("registration:complete_square_transaction"), json.dumps(args), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.terminal.token}"
+            reverse("registration:complete_square_transaction"), json.dumps(args), content_type="application/json", headers={"authorization": f"Bearer {self.terminal.token}"}
         )
         self.assertEqual(response.status_code, 200)
         message = response.json()

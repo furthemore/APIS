@@ -7,7 +7,7 @@ from io import BytesIO
 
 import qrcode
 from django import forms
-from django.conf.urls import url
+from django.urls import re_path
 from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -50,6 +50,9 @@ admin.site.register(TableSize)
 admin.site.register(Cart)
 
 
+@admin.action(
+    description="Disable 2FA"
+)
 def disable_two_factor(modeladmin, request, queryset):
     for user in queryset:
         obj = user.totp_devices.filter(user=user)
@@ -60,7 +63,6 @@ def disable_two_factor(modeladmin, request, queryset):
         obj.delete()
 
 
-disable_two_factor.short_description = "Disable 2FA"
 
 
 class UserProfileAdmin(auth.admin.UserAdmin):
@@ -76,17 +78,20 @@ class UserProfileAdmin(auth.admin.UserAdmin):
         disable_two_factor,
     ]
 
+    @admin.display(
+        description="2FA",
+        boolean=True,
+    )
     def two_factor_enabled(self, obj):
         return obj.totp_devices.first() is not None or obj.u2f_keys.first() is not None
 
-    two_factor_enabled.boolean = True
-    two_factor_enabled.short_description = "2FA"
 
 
 admin.site.unregister(User)
 admin.site.register(User, UserProfileAdmin)
 
 
+@admin.register(Firebase)
 class FirebaseAdmin(admin.ModelAdmin):
     list_display = ("name", "cashdrawer", "print_via_mqtt", "background_color", "webview")
     form = FirebaseForm
@@ -99,7 +104,7 @@ class FirebaseAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(FirebaseAdmin, self).get_urls()
         my_urls = [
-            url(r"^(.+)/provision/$", self.provision_view, name="firebase_provision"),
+            re_path(r"^(.+)/provision/$", self.provision_view, name="firebase_provision"),
         ]
         return my_urls + urls
 
@@ -155,16 +160,18 @@ class FirebaseAdmin(admin.ModelAdmin):
         return render(request, "admin/firebase_qr.html", context)
 
 
-admin.site.register(Firebase, FirebaseAdmin)
 
 
+@admin.register(BanList)
 class BanListAdmin(admin.ModelAdmin):
     list_display = ("firstName", "lastName", "email", "reason")
 
 
-admin.site.register(BanList, BanListAdmin)
 
 
+@admin.action(
+    description="Send New Staff registration email"
+)
 def send_staff_token_email(modeladmin, request, queryset):
     if queryset.count() == 0:
         messages.error("Invalid token selected")
@@ -182,17 +189,19 @@ def send_staff_token_email(modeladmin, request, queryset):
         messages.success(request, "Successfully sent email to %s" % queryset[0].email)
 
 
-send_staff_token_email.short_description = "Send New Staff registration email"
 
 
+@admin.register(TempToken)
 class TempTokenAdmin(admin.ModelAdmin):
     actions = [send_staff_token_email]
     list_display = ["email", "token", "sent", "used"]
 
 
-admin.site.register(TempToken, TempTokenAdmin)
 
 
+@admin.action(
+    description="Send approval email and payment instructions"
+)
 def send_approval_email(modeladmin, request, queryset):
     registration.emails.send_dealer_approval_email(queryset)
     queryset.update(emailed=True)
@@ -202,9 +211,11 @@ def send_approval_email(modeladmin, request, queryset):
         messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
-send_approval_email.short_description = "Send approval email and payment instructions"
 
 
+@admin.action(
+    description="Approve selected dealers"
+)
 def mark_as_approved(modeladmin, request, queryset):
     for dealer in queryset:
         dealer.approved = True
@@ -215,9 +226,11 @@ def mark_as_approved(modeladmin, request, queryset):
         messages.success(request, "Successfully approved %s" % queryset[0].attendee)
 
 
-mark_as_approved.short_description = "Approve selected dealers"
 
 
+@admin.action(
+    description="Resend payment confirmation email"
+)
 def send_payment_email(modeladmin, request, queryset):
     for dealer in queryset:
         badge = dealer.getBadge()
@@ -230,9 +243,11 @@ def send_payment_email(modeladmin, request, queryset):
         messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
-send_payment_email.short_description = "Resend payment confirmation email"
 
 
+@admin.action(
+    description="Send assistant addition form email"
+)
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
         registration.emails.send_dealer_assistant_form_email(dealer)
@@ -242,7 +257,6 @@ def send_assistant_form_email(modeladmin, request, queryset):
         messages.success(request, "Successfully emailed %s" % queryset[0].attendee)
 
 
-send_assistant_form_email.short_description = "Send assistant addition form email"
 
 
 class DealerAsstInline(NestedTabularInline):
@@ -287,6 +301,9 @@ class DealerAsstResource(resources.ModelResource):
         return badge.badgeName
 
 
+@admin.action(
+    description="Send registration instructions"
+)
 def send_assistant_registration_email(modeladmin, request, queryset):
     for assistant in queryset:
         registration.emails.send_dealer_assistant_registration_invite(assistant)
@@ -301,9 +318,9 @@ def send_assistant_registration_email(modeladmin, request, queryset):
         )
 
 
-send_assistant_registration_email.short_description = "Send registration instructions"
 
 
+@admin.register(DealerAsst)
 class DealerAsstAdmin(ImportExportModelAdmin):
     save_on_top = True
     list_display = (
@@ -330,22 +347,25 @@ class DealerAsstAdmin(ImportExportModelAdmin):
     def dealer_businessname(self, obj):
         return obj.dealer.businessName
 
+    @admin.display(
+        boolean=True
+    )
     def dealer_approved(self, obj):
         return obj.dealer.approved
 
-    dealer_approved.boolean = True
 
+    @admin.display(
+        description="Assistant Registered",
+        boolean=True,
+    )
     def asst_registered(self, obj):
         if obj.attendee is not None:
             return True
         else:
             return False
 
-    asst_registered.boolean = True
-    asst_registered.short_description = "Assistant Registered"
 
 
-admin.site.register(DealerAsst, DealerAsstAdmin)
 
 
 class DealerResource(resources.ModelResource):
@@ -439,6 +459,7 @@ class DealerResource(resources.ModelResource):
         return badge.badgeName
 
 
+@admin.register(Dealer)
 class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_display = (
         "attendee",
@@ -506,25 +527,29 @@ class DealerAdmin(NestedModelAdmin, ImportExportModelAdmin):
         ("Contributions", {"fields": ("artShow", "buttonOffer", "charityRaffle")}),
     )
 
+    @admin.display(
+        description="Attendee Email"
+    )
     def get_email(self, obj):
         if obj.attendee:
             return obj.attendee.email
         return "--"
 
-    get_email.short_description = "Attendee Email"
 
+    @admin.display(
+        description="Badge Name"
+    )
     def get_badge(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
         if badge is None:
             return "--"
         return badge.badgeName
 
-    get_badge.short_description = "Badge Name"
 
 
-admin.site.register(Dealer, DealerAdmin)
 
 
+@admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ("name", "eventStart", "eventEnd", "default")
     fieldsets = (
@@ -602,27 +627,30 @@ class EventAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Event, EventAdmin)
 
 ########################################################
 #   Staff Admin
 
 
+@admin.action(
+    description="Check in staff"
+)
 def checkin_staff(modeladmin, request, queryset):
     for staff in queryset:
         staff.checkedIn = True
         staff.save()
 
 
-checkin_staff.short_description = "Check in staff"
 
 
+@admin.action(
+    description="Send registration instructions"
+)
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
         registration.emails.send_staff_promotion_email(staff)
 
 
-send_staff_registration_email.short_description = "Send registration instructions"
 
 
 class StaffResource(resources.ModelResource):
@@ -694,6 +722,7 @@ class StaffResource(resources.ModelResource):
         return badge.badgeName
 
 
+@admin.register(Staff)
 class StaffAdmin(ImportExportModelAdmin):
     save_on_top = True
     actions = [send_staff_registration_email, checkin_staff, "copy_to_event"]
@@ -743,28 +772,34 @@ class StaffAdmin(ImportExportModelAdmin):
         ),
     )
 
+    @admin.display(
+        description="Email"
+    )
     def get_email(self, obj):
         if obj.attendee:
             return obj.attendee.email
         return "--"
 
-    get_email.short_description = "Email"
 
+    @admin.display(
+        description="Badge Name"
+    )
     def get_badge(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
         if badge is None:
             return "--"
         return badge.badgeName
 
-    get_badge.short_description = "Badge Name"
 
+    @admin.display(
+        description="Badge Number"
+    )
     def get_badge_id(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
         if badge is None:
             return "--"
         return badge.badgeNumber
 
-    get_badge_id.short_description = "Badge Number"
 
     def staff_total(self, obj):
         badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
@@ -776,6 +811,9 @@ class StaffAdmin(ImportExportModelAdmin):
         _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
         event = forms.ModelChoiceField(Event.objects)
 
+    @admin.action(
+        description="Copy to Event..."
+    )
     def copy_to_event(self, request, queryset):
         form = None
 
@@ -814,16 +852,17 @@ class StaffAdmin(ImportExportModelAdmin):
             request, "admin/copy_event.html", {"staff": queryset, "form": form}
         )
 
-    copy_to_event.short_description = "Copy to Event..."
 
 
-admin.site.register(Staff, StaffAdmin)
 
 
 ########################################################
 #   Attendee/Badge Admin
 
 
+@admin.action(
+    description="Add to Staff"
+)
 def make_staff(modeladmin, request, queryset):
     event = Event.objects.get(default=True)
     skipped = 0
@@ -849,9 +888,11 @@ def make_staff(modeladmin, request, queryset):
         )
 
 
-make_staff.short_description = "Add to Staff"
 
 
+@admin.action(
+    description="Send upgrade info email"
+)
 def send_upgrade_form_email(modeladmin, request, queryset):
     for badge in queryset:
         registration.emails.send_upgrade_instructions(badge)
@@ -863,9 +904,11 @@ def send_upgrade_form_email(modeladmin, request, queryset):
         messages.success(request, "Successfully sent email to %s" % queryset[0])
 
 
-send_upgrade_form_email.short_description = "Send upgrade info email"
 
 
+@admin.action(
+    description="Resend confirmation email"
+)
 def resend_confirmation_email(modeladmin, request, queryset):
     for badge in queryset:
         order = badge.getOrder()
@@ -880,9 +923,11 @@ def resend_confirmation_email(modeladmin, request, queryset):
         messages.success(request, "Successfully sent email to %s" % queryset[0])
 
 
-resend_confirmation_email.short_description = "Resend confirmation email"
 
 
+@admin.action(
+    description="Assign badge number"
+)
 @transaction.atomic
 def assign_badge_numbers(modeladmin, request, queryset):
     first_badge = queryset[0]
@@ -921,16 +966,17 @@ def assign_badge_numbers(modeladmin, request, queryset):
         badge.save()
 
 
-assign_badge_numbers.short_description = "Assign badge number"
 
 
+@admin.action(
+    description="Assign Number and Print"
+)
 def assign_numbers_and_print(modeladmin, request, queryset):
     assign_badge_numbers(modeladmin, request, queryset)
     response = print_badges(modeladmin, request, queryset)
     return response
 
 
-assign_numbers_and_print.short_description = "Assign Number and Print"
 
 
 def get_attendee_age(attendee):
@@ -940,6 +986,9 @@ def get_attendee_age(attendee):
     return age
 
 
+@admin.action(
+    description="Print Badges"
+)
 def print_badges(modeladmin, request, queryset):
     if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
         signer = TimestampSigner()
@@ -1006,7 +1055,6 @@ def generate_badge_labels(queryset, request):
     return pdf_path
 
 
-print_badges.short_description = "Print Badges"
 
 
 def get_badge_type(badge):
@@ -1063,6 +1111,9 @@ class BadgeInline(NestedTabularInline):
         "registrationToken",
     ]
 
+    @admin.display(
+        description="Age Group"
+    )
     def get_age_range(self, obj):
         born = obj.attendee.birthdate
         event_start = obj.event.eventStart
@@ -1075,7 +1126,6 @@ class BadgeInline(NestedTabularInline):
             return format_html("<span>18+</span>")
         return format_html('<span style="color:red">MINOR FORM<br/>REQUIRED</span>')
 
-    get_age_range.short_description = "Age Group"
 
 
 class BadgeResource(resources.ModelResource):
@@ -1146,6 +1196,7 @@ class PriceLevelFilter(admin.SimpleListFilter):
             return queryset.filter(orderitem__priceLevel__name=priceLevel)
 
 
+@admin.register(Badge)
 class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_per_page = 30
     inlines = [OrderItemInlineBadge]
@@ -1200,6 +1251,9 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     def image_signature(self, obj):
         return format_html('<img src="data:image/png;base64,{}">', obj.signature_bitmap)
 
+    @admin.display(
+        description="Age Group"
+    )
     def get_age_range(self, obj):
         try:
             born = obj.attendee.birthdate
@@ -1215,8 +1269,10 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         except BaseException:
             return "Invalid DOB"
 
-    get_age_range.short_description = "Age Group"
 
+    @admin.action(
+        description="Cull Abandoned Carts (Use with caution!)"
+    )
     def cull_abandoned_carts(self, request, queryset):
         abandoned = [x for x in Badge.objects.filter() if x.abandoned == "Abandoned"]
         for obj in abandoned:
@@ -1225,12 +1281,11 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
             request, "Removed {0} abandoned orders.".format(len(abandoned))
         )
 
-    cull_abandoned_carts.short_description = "Cull Abandoned Carts (Use with caution!)"
 
 
-admin.site.register(Badge, BadgeAdmin)
 
 
+@admin.register(Attendee)
 class AttendeeAdmin(NestedModelAdmin):
     inlines = [BadgeInline]
     save_on_top = True
@@ -1268,10 +1323,10 @@ class AttendeeAdmin(NestedModelAdmin):
     )
 
 
-admin.site.register(Attendee, AttendeeAdmin)
 admin.site.register(AttendeeOptions)
 
 
+@admin.register(OrderItem)
 class OrderItemAdmin(ImportExportModelAdmin):
     raw_id_fields = ("order", "badge")
     readonly_fields = ("enteredBy",)
@@ -1282,17 +1337,19 @@ class OrderItemAdmin(ImportExportModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-admin.site.register(OrderItem, OrderItemAdmin)
 
 
+@admin.action(
+    description="Send registration email"
+)
 def send_registration_email(modeladmin, request, queryset):
     for order in queryset:
         registration.emails.send_registration_email(order, order.billingEmail)
 
 
-send_registration_email.short_description = "Send registration email"
 
 
+@admin.register(Order)
 class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
     list_display = (
         "reference",
@@ -1428,8 +1485,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
     def get_urls(self):
         urls = super(OrderAdmin, self).get_urls()
         my_urls = [
-            url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
-            url(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
+            re_path(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
+            re_path(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
         ]
         return my_urls + urls
 
@@ -1495,16 +1552,16 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         return render(request, "admin/refund_form.html", context)
 
 
-admin.site.register(Order, OrderAdmin)
 
 
+@admin.register(PriceLevel)
 class PriceLevelAdmin(admin.ModelAdmin):
     list_display = ("name", "basePrice", "get_level_active_status", "min_age", "max_age", "public", "available_to_attendee", "available_to_marketplace", "available_to_staff", "group")
 
 
-admin.site.register(PriceLevel, PriceLevelAdmin)
 
 
+@admin.register(PriceLevelOption)
 class PriceLevelOptionAdmin(admin.ModelAdmin):
     list_display = (
         "optionName",
@@ -1516,24 +1573,24 @@ class PriceLevelOptionAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(PriceLevelOption, PriceLevelOptionAdmin)
 
 
+@admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
     list_display = ("codeName", "amountOff", "percentOff", "oneTime", "used", "status")
     save_on_top = True
 
 
-admin.site.register(Discount, DiscountAdmin)
 
 
+@admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ("name", "volunteerListOk")
 
 
-admin.site.register(Department, DepartmentAdmin)
 
 
+@admin.register(Cashdrawer)
 class CashdrawerAdmin(ImportExportModelAdmin):
     list_display = ("timestamp", "action", "total", "tendered", "user", "position")
     list_select_related = ("user", "position")
@@ -1545,9 +1602,9 @@ class CashdrawerAdmin(ImportExportModelAdmin):
         obj.save()
 
 
-admin.site.register(Cashdrawer, CashdrawerAdmin)
 
 
+@admin.register(Venue)
 class VenueAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -1560,7 +1617,6 @@ class VenueAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Venue, VenueAdmin)
 
 
 class PrettyJSONWidget(widgets.Textarea):
@@ -1592,6 +1648,7 @@ def json_highlight_format_value(value):
     return mark_safe(style + response)
 
 
+@admin.register(PaymentWebhookNotification)
 class PaymentWebhookAdmin(admin.ModelAdmin):
     list_display = ("event_id", "event_type", "timestamp", "integration", "processed")
     list_filter = ("event_type", "processed")
@@ -1599,6 +1656,9 @@ class PaymentWebhookAdmin(admin.ModelAdmin):
     readonly_fields = ("processed", "body_highlighted", "headers_highlighted")
     exclude = ("body", "headers")
 
+    @admin.display(
+        description="Headers"
+    )
     def body_highlighted(self, instance):
         return json_highlight_format_value(instance.body)
 
@@ -1607,12 +1667,11 @@ class PaymentWebhookAdmin(admin.ModelAdmin):
     def headers_highlighted(self, instance):
         return json_highlight_format_value(instance.headers)
 
-    body_highlighted.short_description = "Headers"
 
 
-admin.site.register(PaymentWebhookNotification, PaymentWebhookAdmin)
 
 
+@admin.register(BadgeTemplate)
 class BadgeTemplateAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -1654,8 +1713,8 @@ class BadgeTemplateAdmin(admin.ModelAdmin):
         ),
     )
 
-admin.site.register(BadgeTemplate, BadgeTemplateAdmin)
 
+@admin.register(SquareDevice)
 class SquareDeviceAdmin(admin.ModelAdmin):
     list_display = ("name", "device_type", "device_id")
     change_list_template = "admin/square_devices_list.html"
@@ -1696,4 +1755,3 @@ class SquareDeviceAdmin(admin.ModelAdmin):
 
         return HttpResponseRedirect("../")
 
-admin.site.register(SquareDevice, SquareDeviceAdmin)
