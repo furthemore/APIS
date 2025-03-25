@@ -114,6 +114,18 @@ def onsite_admin(request):
     if terminal:
         mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
+    selected_terminal = None
+    if terminal:
+        selected_terminal = {
+            "id": terminal.id,
+            "features": {
+                "print_via_mqtt": terminal.print_via_mqtt is not None,
+                "square_terminal": terminal.square_terminal_id is not None,
+                "payment_type": terminal.payment_type,
+                "cashdrawer": terminal.cashdrawer,
+            }
+        }
+
     context = {
         "settings": json.dumps({
             "user": {
@@ -132,7 +144,6 @@ def onsite_admin(request):
             "mqtt": {
                 "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
                 "auth": mqtt_auth,
-                "supports_printing": terminal.print_via_mqtt if terminal else False,
             },
             "shirt_sizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
             "urls": {
@@ -168,7 +179,7 @@ def onsite_admin(request):
                 "discount": request.user.has_perm("registration.discount"),
             },
             "terminals": {
-                "selected": terminal.id if terminal else None,
+                "selected": selected_terminal,
                 "available": [{"id": terminal.id, "name": terminal.name} for terminal in terminals],
             },
         }),
@@ -366,14 +377,34 @@ def enable_payment(request):
 
     order_id = payments.create_square_order(str(terminal.name), data)
 
-    return send_mqtt_message_to_terminal(terminal, {
-        "processPayment": {
-            "orderId": order_id,
-            "total": int(data["total"] * 100),
-            "reference": data["reference"],
-            "note": render_to_string("registration/customer-note.txt", data),
-        }
-    })
+    if (terminal.payment_type == Firebase.SQUARE_TERMINAL or request.GET.get("fallback", None) == "true") and terminal.square_terminal_id:
+        resp = payments.prompt_terminal_payment(
+            request,
+            str(terminal.square_terminal_id),
+            int(data["total"] * 100),
+            data["reference"],
+            render_to_string("registration/customer-note.txt", data),
+            order_id
+        )
+
+        return JsonResponse({
+            "success": resp.is_success(),
+            "reason": ", ".join([error["detail"] for error in resp.errors]) if resp.errors else None,
+        })
+    elif terminal.payment_type == Firebase.MQTT_REGISTER_APP:
+        return send_mqtt_message_to_terminal(terminal, {
+            "processPayment": {
+                "orderId": order_id,
+                "total": int(data["total"] * 100),
+                "reference": data["reference"],
+                "note": render_to_string("registration/customer-note.txt", data),
+            }
+        })
+    else:
+        return JsonResponse({
+            "success": False,
+            "reason": "Terminal does not have payment type",
+        })
 
 
 @staff_member_required
@@ -1237,7 +1268,7 @@ def print_receipts(request):
             if not order.apiData or "payment" not in order.apiData:
                 return JsonResponse({"success": False, "reason": "Missing payment data on credit transaction"})
 
-            if not payments.print_payment_receipt(request, order.apiData["payment"]["id"]):
+            if not payments.print_payment_receipt(request, terminal.square_terminal_id, order.apiData["payment"]["id"]):
                 return JsonResponse({"success": False, "reason": "Got error attempting to print receipt"})
 
     return JsonResponse({"success": True})

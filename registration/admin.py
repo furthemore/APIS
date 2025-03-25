@@ -17,7 +17,7 @@ from django.db.models import Max
 from django.forms import NumberInput, widgets
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import reverse
+from django.urls import path, reverse
 from django.utils.html import format_html, urlencode
 from django.utils.safestring import mark_safe
 from import_export import fields, resources
@@ -88,12 +88,10 @@ admin.site.register(User, UserProfileAdmin)
 
 
 class FirebaseAdmin(admin.ModelAdmin):
-    list_display = ("name", "closed")
+    list_display = ("name", "cashdrawer", "print_via_mqtt", "background_color", "webview")
     form = FirebaseForm
 
     def render_change_form(self, request, context, *args, **kwargs):
-        obj = kwargs.get("obj")
-
         return super(FirebaseAdmin, self).render_change_form(
             request, context, *args, **kwargs
         )
@@ -1069,7 +1067,7 @@ class BadgeInline(NestedTabularInline):
         born = obj.attendee.birthdate
         event_start = obj.event.eventStart
         age = (
-            event_start.year 
+            event_start.year
             - born.year
             - ((event_start.month, event_start.day) < (born.month, born.day))
         )
@@ -1207,7 +1205,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
             born = obj.attendee.birthdate
             event_start = obj.event.eventStart
             age = (
-                event_start.year 
+                event_start.year
                 - born.year
                 - ((event_start.month, event_start.day) < (born.month, born.day))
             )
@@ -1432,33 +1430,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
         my_urls = [
             url(r"^(.+)/refund/$", self.refund_view, name="order_refund"),
             url(r"^(.+)/refresh/$", self.refresh_view, name="order_refresh"),
-            url(r"^(.+)/receipt/$", self.receipt_view, name="order_receipt"),
         ]
         return my_urls + urls
-
-    def receipt_view(self, request, order_id, extra_context=None):
-        order = Order.objects.get(id=order_id)
-
-        api_data = order.apiData
-        if not api_data and order.billingType == Order.CREDIT:
-            messages.warning(request, "External payment data could not be decoded")
-            return HttpResponseRedirect(
-                reverse("admin:registration_order_change", args=(order_id,))
-            )
-
-        if "payment" not in api_data or "id" not in api_data["payment"]:
-            messages.warning(request, "External payment data was missing payment ID")
-            return HttpResponseRedirect(
-                reverse("admin:registration_order_change", args=(order_id,))
-            )
-
-        if not payments.print_payment_receipt(request, api_data["payment"]["id"]):
-            messages.warning(request, "Unable to print receipt for payment")
-
-        return HttpResponseRedirect(
-            reverse("admin:registration_order_change", args=(order_id,))
-        )
-
 
     def refund_view(self, request, order_id, extra_context=None):
         # TODO: Produce an error if a full refund has already been completed
@@ -1682,3 +1655,45 @@ class BadgeTemplateAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(BadgeTemplate, BadgeTemplateAdmin)
+
+class SquareDeviceAdmin(admin.ModelAdmin):
+    list_display = ("name", "device_type", "device_id")
+    change_list_template = "admin/square_devices_list.html"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_urls(self):
+        urls = super(SquareDeviceAdmin, self).get_urls()
+        my_urls = [
+            path(r"sync/", self.sync_view),
+        ]
+        return my_urls + urls
+
+    def sync_view(self, request):
+        existing_devices = SquareDevice.objects.all()
+        current_devices = payments.get_terminals()
+
+        keep_ids = set()
+        for device in current_devices:
+            SquareDevice.objects.update_or_create(
+                device_id=device["id"], defaults={
+                    "name": device["attributes"]["name"],
+                    "device_type": device["attributes"]["type"],
+                },
+            )
+            keep_ids.add(device["id"])
+
+        for existing in existing_devices:
+            if existing.device_id not in keep_ids:
+                existing.delete()
+
+        return HttpResponseRedirect("../")
+
+admin.site.register(SquareDevice, SquareDeviceAdmin)

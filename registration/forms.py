@@ -8,7 +8,16 @@ from .models import Firebase
 class FirebaseForm(ModelForm):
     class Meta:
         model = Firebase
-        fields = "__all__"
+        fields = (
+            "name",
+            "token",
+            "cashdrawer",
+            "payment_type",
+            "square_terminal_id",
+            "print_via_mqtt",
+            "webview",
+            "background_color",
+        )
         widgets = {
             "foreground_color": TextInput(attrs={"type": "color"}),
             "background_color": TextInput(attrs={"type": "color"}),

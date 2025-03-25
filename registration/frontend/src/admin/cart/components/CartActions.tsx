@@ -66,7 +66,7 @@ export const CartActions: Component<{
       false
   );
 
-  if (config.mqtt.supports_printing) {
+  if (config.terminals.selected?.features?.print_via_mqtt) {
     const autoPrintCheck = createAutoPrintCheck(printableBadgeIds);
 
     createEffect(async () => {
@@ -104,21 +104,29 @@ export const CartActions: Component<{
         )}
       >
         <div class="columns">
-          <ActionButton
-            class="is-link is-outlined"
-            disabled={!allBadgesPaid()}
-            loading={loading()}
-            setLoading={setLoading}
-            action={() => printReceipts(props.manager)}
+          <Show
+            when={config.terminals.selected?.features?.square_terminal}
+            fallback={<div class="column"></div>}
           >
-            <span class="icon">
-              <i class="fas fa-receipt"></i>
-            </span>
-            <span>Receipt</span>
-          </ActionButton>
+            <ActionButton
+              class="is-link is-outlined"
+              disabled={!allBadgesPaid()}
+              loading={loading()}
+              setLoading={setLoading}
+              action={() => printReceipts(props.manager)}
+            >
+              <span class="icon">
+                <i class="fas fa-receipt"></i>
+              </span>
+              <span>Receipt</span>
+            </ActionButton>
+          </Show>
 
           <Show
-            when={config.permissions.cash}
+            when={
+              config.permissions.cash &&
+              config.terminals.selected?.features?.cashdrawer
+            }
             fallback={<div class="column"></div>}
           >
             <ActionButton
@@ -144,19 +152,25 @@ export const CartActions: Component<{
             </ActionButton>
           </Show>
 
-          <ActionButton
-            class="is-primary"
-            disabled={!canUseCard()}
-            loading={loading()}
-            setLoading={setLoading}
-            keyboardShortcut={["Alt", "C"]}
-            action={() => enableCardPayment(props.manager)}
+          <Show
+            when={APIS_CONFIG.terminals.selected?.features?.payment_type}
+            fallback={<div class="column"></div>}
           >
-            <span class="icon">
-              <i class="fas fa-credit-card"></i>
-            </span>
-            <span>Card</span>
-          </ActionButton>
+            <ActionButton
+              class="is-primary"
+              disabled={!canUseCard()}
+              loading={loading()}
+              setLoading={setLoading}
+              keyboardShortcut={["Alt", "C"]}
+              action={() => enableCardPayment(props.manager, false)}
+              altAction={() => enableCardPayment(props.manager, true)}
+            >
+              <span class="icon">
+                <i class="fas fa-credit-card"></i>
+              </span>
+              <span>Card</span>
+            </ActionButton>
+          </Show>
         </div>
 
         <div class="columns">
@@ -196,7 +210,8 @@ export const CartActions: Component<{
                 setLoading,
                 userSettings.userSettings().clear_cart_after_print,
                 props.clearSearch,
-                config.mqtt.supports_printing && !holdingShift
+                !!config.terminals.selected?.features?.print_via_mqtt &&
+                  !holdingShift
               );
             }}
           >
@@ -261,8 +276,8 @@ async function createAndApplyDiscount(manager: CartManager) {
   }
 }
 
-async function enableCardPayment(manager: CartManager) {
-  const resp = await manager.enableCardPayment();
+async function enableCardPayment(manager: CartManager, fallback: boolean) {
+  const resp = await manager.enableCardPayment(fallback);
   if (!resp.success) {
     alert(`Error enabling card payment: ${resp.reason}`);
   }

@@ -929,21 +929,59 @@ class BanList(models.Model):
         verbose_name_plural = "Ban list"
 
 
+class SquareDevice(models.Model):
+    device_id = models.CharField(primary_key=True, max_length=100)
+    device_type = models.CharField(max_length=100, blank=False, null=False)
+    name = models.CharField(max_length=200, blank=False, null=False)
+
+    def __str__(self):
+        return f"{self.name} ({self.device_id})"
+
+
 class Firebase(models.Model):
+    MQTT_REGISTER_APP = "mqtt-app"
+    SQUARE_TERMINAL = "square-terminal"
+    PAYMENT_CHOICES = (
+        (MQTT_REGISTER_APP, "iPad"),
+        (SQUARE_TERMINAL, "Square Terminal"),
+    )
     token = models.CharField(max_length=500, default=uuid.uuid4)
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
-    cashdrawer = models.BooleanField(default=False)
+    cashdrawer = models.BooleanField(default=False, verbose_name="Cash drawer")
+    print_via_mqtt = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Print via MQTT",
+        help_text="Which terminal to use for printing via MQTT, if it should be used at this terminal."
+    )
     printer_url = models.CharField(max_length=500, null=True, blank=True)
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
-    print_via_mqtt = models.BooleanField(default=False, verbose_name="Print via MQTT")
     webview = models.CharField(
-        max_length=500, null=True, blank=True, default=settings.REGISTER_DEFAULT_WEBVIEW
+        max_length=500,
+        null=True,
+        blank=True,
+        default=settings.REGISTER_DEFAULT_WEBVIEW,
+        verbose_name="Web view URL"
     )
+    square_terminal_id = models.ForeignKey(
+        SquareDevice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Square Terminal"
+    )
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_CHOICES, null=True, blank=True)
 
     def __str__(self):
         return str(self.name)
+
+    class Meta:
+        verbose_name = "Terminal"
+        verbose_name_plural = "Terminals"
 
 
 class Cashdrawer(models.Model):
