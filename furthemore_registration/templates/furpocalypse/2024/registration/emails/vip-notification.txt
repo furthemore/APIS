@@ -1,0 +1,5 @@
+A VIP ({{badge.effectiveLevel}}) has just registered:
+
+Badge Name - {{badge.badgeName}}
+Real Name  - {{badge.attendee}}
+Email      - {{badge.attendee.email}}

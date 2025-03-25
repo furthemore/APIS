@@ -1,0 +1,33 @@
+{% load registration_tags static %}
+
+<div class="form-group">
+          <div class="checkbox col-sm-12">
+            <label>
+              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-control form-control-checkbox"
+                     required data-error="You must agree to the code of conduct to register." />
+              I agree to abide by the {{ event.name }} <a href="{{ event.codeOfConduct }}" target="_blank">Code of
+              Conduct</a>. By registering for {{ event }} you attest that you are not listed on any sexual offender
+              registry.
+            </label>
+          </div>
+          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+        </div>
+<div>Please Sign Below:</div>
+<div class='jsign-container'
+     data-config='{"width": "300px", "height": "200px", "color": "#000", "background-color": "#FFF", "decor-color": "#DDD", "lineWidth": 0, "UndoButton": false, "ResetButton": true}'
+     data-initial-value='[]'
+     id='jsign_signature'
+     style="border: dashed darkgray; margin-bottom: 10px">
+</div>
+
+<input type='button' value='Clear Signature' class="btn btn-xs" style="margin-bottom: 20px">
+
+<script>
+window.addEventListener("load", () => {
+    $("#jsign_signature").jSignature();
+    $("input[value='Clear Signature']").on("click", function() {
+        $("#jsign_signature").jSignature('clear');
+    })
+})
+
+</script>

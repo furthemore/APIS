@@ -1,0 +1,15 @@
+{% load site %}
+{% autoescape off %}
+A dealer has registered:
+
+Name: {{dealer.attendee.firstName}} {{dealer.attendee.lastName}}
+Email: {{dealer.attendee.email}}
+
+Business Name: {{dealer.businessName}}
+Business Website: {{dealer.website}}
+Description of Wares: {{dealer.description}}
+
+Requested Table Size: {{dealer.tableSize}}
+
+View the full dealer record: https://{% current_domain %}{% url 'admin:registration_dealer_change' dealer.id %}
+{% endautoescape %}

@@ -1,0 +1,47 @@
+{% load mathfilters %}
+<p>Salutations Vendor,</p>
+
+<p>Thank you for participating in {{event}}'s Dealers Den!<br>
+  If you have any questions or concerns, please email <a href="{{ event.dealerEmail }}">{{ event.dealerEmail }}</a>.</p>
+
+<p>Your confirmation number is: {{order.reference}}</p>
+<p><b>Dealer Invoice for {{dealer.attendee}}, {{dealer.businessName}}</b></p>
+<hr/>
+<table>
+
+<tr><td>Table Type - {{dealer.tableSize}}</td><td> ${{dealer.tableSize.basePrice}}</td></tr>
+{% if dealer.needWifi %}
+<tr><td>Wi-Fi Access</td><td>$50.00</td></tr>
+{% endif %}
+{% if dealer.getUnpaidPartnerCount > 0%}
+<tr><td>Partners x{{dealer.getUnpaidPartnerCount}}</td><td>${{dealer.getUnpaidPartnerCount|mul:55}}.00</td></tr>
+{% endif %}
+{% if dealer.asstBreakfast%}
+<tr><td>Partner Breakfast x{{dealer.getPartnerCount}}</td><td>${{dealer.getPartnerCount|mul:60}}.00</td></tr>
+{% endif %}
+<tr><td>Attendee Level - {{orderItem.priceLevel}}</td><td>${{orderItem.priceLevel.basePrice}}</td></tr>
+
+{% for ao in options %}
+    {% if ao.option.optionExtraType == 'int' %}
+    <tr><td>Option: {{ao.option.optionName}} x{{ao.optionValue}}</td><td>${{ao.getTotal}}</td></tr>
+    {% else %}
+    <tr><td>Option: {{ao.option.optionName}}</td><td>${{ao.option.optionPrice}}</td></tr>
+    {% endif %}
+{% endfor %}
+
+{% if dealer.discount > 0 %}
+<tr><td>Other Discount {{dealer.discountReason}}</td><td>-${{dealer.discount}}</td></tr>
+{% endif %}
+
+{% if order.charityDonation > 0 %}
+<tr><td>Charity Donation</td><td>${{order.charityDonation}}</td></tr>
+{% endif %}
+{% if order.orgDonation > 0 %}
+<tr><td>{{event}} Donation</td><td>${{order.orgDonation}}</td></tr>
+{% endif %}
+
+<tr><td><b>Total</b></td><td><b>${{order.total}}</b></td></tr>
+</table>
+<hr/>
+
+<p>If you have listed any partners, they will receive an email with instructions about how to register.</p>

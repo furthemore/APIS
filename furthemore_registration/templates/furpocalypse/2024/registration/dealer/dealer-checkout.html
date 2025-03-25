@@ -1,0 +1,323 @@
+{% extends "registration/master.html" %}
+{% load settings mathfilters registration_tags static %}
+
+{% block content %}
+
+  {% if orderItems %}
+
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Checkout</h1>
+        <h3>Review the invoice below and checkout</h3>
+        <hr>
+
+        <h3>Your Order</h3>
+
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-1"><h4>Dealer</h4></div>
+          <div class="col-sm-2"><h4>Price</h4></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-1">Table Type - {{ dealer.tableSize }}</div>
+          <div class="col-sm-2">${{ dealer.tableSize.basePrice }}</div>
+          <div class="col-sm-2">
+          </div>
+        </div>
+
+        {% if dealer.getUnpaidPartnerCount > 0 %}
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">Partners x{{ dealer.getUnpaidPartnerCount }}</div>
+            <div class="col-sm-2">${{ dealer.getUnpaidPartnerCount|mul:event.dealerPartnerPrice }}</div>
+            <div class="col-sm-2">
+            </div>
+          </div>
+        {% endif %}
+
+        {% if dealer.needWifi %}
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">Wifi</div>
+            <div class="col-sm-2">${{ event.dealerWifiPrice }}</div>
+            <div class="col-sm-2"></div>
+          </div>
+        {% endif %}
+
+
+
+        {% for item in orderItems %}
+          <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">{{ item.badge.attendee }} - {{ item.priceLevel }}</div>
+            <div class="col-sm-2">${{ item.priceLevel.basePrice }}</div>
+            <div class="col-sm-2">
+            </div>
+          </div>
+
+          {% for option in item.getOptions %}
+            <div class="row">
+              {% if option.option.optionExtraType == "int" %}
+                {% if option.optionValue != '0' %}
+                  <div class="col-sm-6 col-sm-offset-1">{{ option.option.optionName }} x {{ option.optionValue }}</div>
+                  {% if option.option.optionPrice == 0 %}
+                    <div class="col-sm-2">Free</div>
+                  {% else %}
+                    <div class="col-sm-2">${{ option.option.optionPrice }} each</div>
+                  {% endif %}
+                {% else %}
+                  <div class="col-sm-5 col-sm-offset-1">{{ option.option }} x 0</div>
+                  <div class="col-sm-2">--</div>
+                {% endif %}
+
+              {% else %}
+
+                <div class="col-sm-6 col-sm-offset-1">{{ option.option.optionName }}</div>
+                {% if option.option.optionPrice == 0 %}
+                  <div class="col-sm-2">Free</div>
+                {% else %}
+                  <div class="col-sm-2">${{ option.option.optionPrice }}</div>
+                {% endif %}
+
+              {% endif %}
+
+            </div>
+          {% endfor %}
+
+          {% if dealer.attendee.effectiveLevel %}
+            <div class="row">
+              <div class="col-sm-6 col-sm-offset-1">Dealer Badge - {{ item.priceLevel }}</div>
+              <div class="col-sm-2">- $50.00</div>
+              <div class="col-sm-2">
+              </div>
+            </div>
+          {% endif %}
+          {% if discount and not dealer.paidTotal %}
+            <div class="row">
+              <div class="col-sm-6 col-sm-offset-1">Discount - {{ discount.codeName }}</div>
+              <div class="col-sm-2">- ${{ discount.amountOff }}</div>
+              <div class="col-sm-2">
+              </div>
+            </div>
+          {% endif %}
+          {% if dealer.discount %}
+            <div class="row">
+              <div class="col-sm-6 col-sm-offset-1">Discount - {{ dealer.discountReason }}</div>
+              <div class="col-sm-2">- ${{ dealer.discount }}</div>
+              <div class="col-sm-2">
+              </div>
+            </div>
+          {% endif %}
+          <div class="row" style="height:10px;">&nbsp;</div>
+
+        {% endfor %}
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-1"><h4>Total</h4></div>
+          <div class="col-sm-2"><h4>${{ total }}</h4></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12"><h3 style="color: red; text-align: center">Please review the total and invoice items
+            above carefully!</h3></div>
+        </div>
+
+
+        <br/>
+        <a id="cancel" href="#">Cancel and Restart</a>
+        <hr/>
+        {% if total > 0 %}
+
+          <form class="form-horizontal" role="form" data-toggle="validator">
+
+            <h3>Extra Donations</h3>
+            <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+              {% if event.charity %}
+                If you would like to make an extra gift to our annual charity,
+                {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}
+                  {{ event.charity }}{% endif %}, or to the convention, please enter it below.
+              {% else %}
+                If you would like to make an extra gift to the convention, please enter it below.
+              {% endif %}
+            </div>
+            {% if event.charity %}
+              <div class="form-group">
+                <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+                <div class="col-sm-4">
+                  <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateCharity"
+                           class="form-control validate" data-error="Please use only numbers and a decimal."/>
+                  </div>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+            {% endif %}
+
+            <div class="form-group">
+              <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event }}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <div class="input-group-addon">$</div>
+                  <input type="text" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg"
+                         class="form-control validate" data-error="Please use only numbers and a decimal."/>
+                </div>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <hr/>
+
+
+            <h3>Billing Information</h3>
+
+
+            <div class="form-group">
+              <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+              <div class="col-sm-9">
+                <select id="useFrom" class="form-control">
+                  <option value="" selected>The Fields Below</option>
+                  {% for oi in orderItems %}
+                    {% if oi.attendee %}
+                      <option
+                          value="{{ forloop.counter0 }}">{% attendee_get_first oi.attendee %} {{ oi.attendee.lastName }}</option>
+                    {% else %}
+                      <option value="{{ forloop.counter0 }}">{{ oi.badge.attendee }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="billingName" class="col-sm-3 control-label">Billing Name</label>
+              <div class="col-sm-4">
+                <input type="text" id="fname" placeholder="Billing First Name" class="form-control" required
+                       data-error="Billing name is required. "/>
+              </div>
+              <div class="col-sm-5">
+                <input type="text" id="lname" placeholder="Billing Last Name" class="form-control" required
+                       data-error="Billing name is required. "/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="email" class="col-sm-3 control-label">Email</label>
+              <div class="col-sm-9">
+                <input type="email" id="email" placeholder="Email" class="form-control" required
+                       data-error="Email is required. "/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="add1" class="col-sm-3 control-label">Billing Address</label>
+              <div class="col-sm-9">
+                <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control" required/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+              <div class="col-sm-9">
+                <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control"/>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <div class="form-group">
+              <label for="city" class="col-sm-3 control-label">City/State</label>
+              <div class="col-sm-5">
+                <input type="text" name="city" id="city" placeholder="City" class="form-control" required
+                       data-error="City is required."/>
+              </div>
+              <div class="col-sm-4">
+                <select class="form-control bfh-states" id="state" data-country="US" data-state="{{ event.venue.state }}"
+                        name="state"></select>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+
+            </div>
+            <div class="form-group">
+              <label for="country" class="col-sm-3 control-label">Country</label>
+              <div class="col-sm-9">
+                <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+              </div>
+            </div>
+            <hr/>
+            <input type="hidden" name="postal" id="postal" value="">
+
+            <div class="form-group">
+              <form id="payment-form">
+                <div id="card-container"></div>
+              </form>
+              <div id="payment-status-container"></div>
+            </div>
+            <br/>
+            <input type="hidden" id="card-nonce" name="nonce">
+            {% csrf_token %}
+
+            <div class="form-group" style="margin-right:0px;">
+              <button class="btn btn-primary col-sm-3 col-sm-offset-9" style="padding-right:10px;" id="checkout">
+                Checkout
+              </button>
+            </div>
+          </form>
+
+
+        {% else %}
+
+          {% csrf_token %}
+          <div class="row">
+            <a class="btn btn-primary col-sm-3 col-sm-offset-9" id="checkout">Checkout</a>
+          </div>
+
+        {% endif %}
+
+      </div>
+    </div>
+  {% else %}
+
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Checkout</h1>
+        <h3>There are no dealers in your order</h3>
+        <div>Please click on the link in your email to begin.</div>
+
+
+      </div>
+    </div>
+
+  {% endif %}
+
+{% endblock %}
+
+
+{% block javascript %}
+  {% if total > 0 %}
+    {% if SQUARE_ENVIRONMENT == "sandbox" %}
+      <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    {% else %}
+      <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+    {% endif %}
+  {% endif %}
+  <script type="text/javascript">
+      /* Square & Payments constants */
+      const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
+      const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
+
+      /* APIS URLs */
+      const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout_dealer' %}";
+      const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
+      const URL_REGISTRATION_DONE = "{% url 'registration:done_dealer' %}";
+      const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
+      const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+      const URL_REGISTRATION_REMOVE_FROM_CART = "{% url 'registration:remove_from_cart' %}";
+      const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:flush' %}";
+
+      /* Application data */
+      let cart_total = {{ total|default:0 }};
+      let paid_total = {{ paid_total|default:0 }};
+
+
+      $("#cancel").click(function (e) {
+          $.getJSON(URL_REGISTRATION_CANCEL_ORDER, function (data) {
+              window.location.reload();
+          });
+      });
+
+
+  </script>
+  <script type="application/javascript" src="{% static "js/checkout.js" %}"></script>
+  <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+{% endblock %}

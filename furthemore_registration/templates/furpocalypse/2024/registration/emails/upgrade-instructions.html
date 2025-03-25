@@ -1,0 +1,7 @@
+{% load site %}
+<h3>Upgrade your {{event}} registration</h3>
+<p>To upgrade your registration, follow this link: <a href='https://{% current_domain %}{% url 'registration:upgrade' guid=badge.registrationToken %}'>Upgrade your registration</a></p>
+<p>If you have any questions regarding your registration, please contact <a href='mailto:{{event.registrationEmail}}'>{{event.registrationEmail}}</a>.</p>
+<p>See you at the convention!</p>
+<p>&nbsp;</p>
+<p>{{event}} Registration</p>

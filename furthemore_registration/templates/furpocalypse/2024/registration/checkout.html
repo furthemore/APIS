@@ -1,0 +1,440 @@
+{% extends "registration/master.html" %}
+{% load settings static registration_tags %}
+
+{% block title %}| Checkout{% endblock %}
+{% block head %}
+{% endblock %}
+
+{% block content %}
+  <div class="tab-content">
+  {% if orderItems %}
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+      <h1>Checkout</h1>
+      <h3>Add another attendee to your order, or checkout</h3>
+      <div class="col-sm-12">
+        <div id="alert-bar" class="alert alert-danger alert-hidden" role="alert"><b>Test alert....</b></div>
+      </div>
+      <hr>
+
+      <h3>Your Order</h3>
+
+      <table class="table table-hover">
+        <tr>
+          <th>Attendee</th>
+          <th>Price Level</th>
+          <th>Price</th>
+        </tr>
+        {% for item in orderItems %}
+          <tr class="active">
+            {% if item.attendee %}
+            <td>{% attendee_get_first item.attendee %} {{ item.attendee.lastName }}</td>
+            <td>{{ item.priceLevel }}</td>
+            <td>${{ item.priceLevel.basePrice }} <a class="deleteAttendee" id="delete_{{ item.id }}">&times; Remove</a></td>
+          {% else %}
+            <td>{{ item.badge.attendee }} - {{ item.priceLevel }}</td>
+          {% endif %}
+          </tr>
+          {% for option in item.options %}
+            <tr>
+            {% if "number" in option and option.number %}
+              <td id="sub-item">{{ option.name }} x{{ option.number }}</td>
+            {% else %}
+              <td id="sub-item">{{ option.name }}</td>
+            {% endif %}
+              <td></td>
+            {% if option.total == 0 %}
+              <td>Free</td>
+            {% else %}
+              <td>${{ option.total }}</td>
+            {% endif %}
+            </tr>
+          {% endfor %}
+          {% if paid_total > 0 %}
+          <tr>
+            <td>Previous Payment</td>
+            <td></td>
+            <td>${{ paid_total }}</td>
+          </tr>
+        {% endif %}
+        {% if discount %}
+          <tr>
+            <td id="sub-item">Discount - {{ discount.codeName }}</td>
+            <td></td>
+            {% if discount.amountOff == 0 %}
+              <td>- ${{ total_discount|floatformat:2 }}</td>
+            {% else %}
+              <td>- ${{ discount.amountOff|floatformat:2 }}</td>
+            {% endif %}
+          </tr>
+        {% endif %}
+      {% endfor %}
+        <tr class="success">
+          <td></td>
+          <td><span id="total">Total</span></td>
+          <td><span id="total">{{ total|floatformat:2 }}</span></td>
+        </tr>
+      </table>
+
+      <br/>
+      {% if not discount.newStaffEvent and not discount.staffEvent %}
+        <a class="btn btn-primary" id="addAnother">Add Another Attendee</a>
+        <a class="btn btn-danger" id="cancel">Cancel Registration</a>
+      {% endif %}
+
+      {% if hasMinors %}
+        <hr/>
+        <h3>Important Information About Minor Registration</h3>
+        <div class="row">
+          <div class="col-sm-11 col-sm-offset-1">
+            One or more of the attendees in this order will still be minors at the start of the convention.
+            Please note that we require a parent or guardian to be present at registration to sign our
+            consent form for all minor attendees. Any attendee under the age of 13 (by the start of the convention)
+            must have a parent or guardian also register and accompany them during the event. If you have
+            any questions about our policies, please contact
+            <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>.
+          </div>
+        </div>
+      {% endif %}
+
+      <hr/>
+      {% if total > 0 %}
+
+        {% if not discount %}
+
+          <h3>Discount</h3>
+          <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount
+            code, enter it below:
+          </div>
+          <div class="row">
+          <div class="col-sm-11 col-sm-offset-1">
+            <div class="form-inline">
+              <div class="form-group">
+                <label for="discount" class="sr-only">Discount Code</label>
+                <input type="text" id="discount" class="form-control"/>
+              </div>
+              <button class="btn btn-primary" id="apply_discount">Apply</button>
+              <p>&nbsp;</p>
+            </div>
+          </div>
+
+        {% endif %}
+        <div class="container" style="width: inherit">
+          <form class="form-horizontal" role="form" data-toggle="validator">
+
+            <h3>Extra Donations</h3>
+            <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">
+              {% if event.charity %}
+                If you would like to make an extra gift to our annual charity,
+                {% if event.charity.url %}<a href="{{ event.charity.url }}">{{ event.charity }}</a>{% else %}
+                  {{ event.charity }}{% endif %}, or to the convention, please enter it below.
+              {% else %}
+                If you would like to make an extra gift to the convention, please enter it below.
+              {% endif %}
+            </div>
+            {% if event.charity %}
+              <div class="form-group">
+                <label for="donateCharity" class="col-sm-3 control-label">Donate to {{ event.charity }}</label>
+                <div class="col-sm-4">
+                  <div class="input-group">
+                    <div class="input-group-addon">$</div>
+                    <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00"
+                           id="donateCharity" class="form-control validate"
+                           data-error="Please use only numbers and a decimal."/>
+                  </div>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+            {% endif %}
+
+            <div class="form-group">
+              <label for="donateOrg" class="col-sm-3 control-label">Donate to {{ event }}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <div class="input-group-addon">$</div>
+                  <input type="number" min="0" step="1" pattern="^\d+(?:\.\d{0,2})?$" placeholder="0.00" id="donateOrg"
+                         class="form-control validate" data-error="Please use only numbers and a decimal."/>
+                </div>
+              </div>
+              <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+            </div>
+            <hr/>
+
+            {% if event.collectBillingAddress %}
+              <h3>Billing Information</h3>
+
+              {% if event.collectAddress %}
+                <div class="form-group">
+                  <label for="useFrom" class="col-sm-3 control-label">Use Billing Info From</label>
+                  <div class="col-sm-9">
+                    <select id="useFrom" class="form-control">
+                      <option value="" selected>The Fields Below</option>
+                      {% for oi in orderItems %}
+                        {% if not oi.attendee.isMinor %}
+                        {% if oi.attendee %}
+                          <option
+                              value="{{ forloop.counter0 }}">{% attendee_get_first oi.attendee %} {{ oi.attendee.lastName }}</option>
+                        {% else %}
+                          <option value="{{ forloop.counter0 }}">{{ oi.badge.attendee }}</option>
+                        {% endif %}
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              {% endif %}
+
+              <div class="form-group">
+                <label for="billingName" class="col-sm-3 control-label">Legal Billing Name<span
+                    style="color:red;">*</span></label>
+                <div class="col-sm-4">
+                  <input type="text" id="fname" placeholder="Billing First Name" class="form-control validate" required
+                         data-error="Billing name is required. "/>
+                </div>
+                <div class="col-sm-5">
+                  <input type="text" id="lname" placeholder="Billing Last Name" class="form-control validate" required
+                         data-error="Billing name is required. "/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="email" class="col-sm-3 control-label">Email<span style="color:red;">*</span></label>
+                <div class="col-sm-9">
+                  <input type="email" id="email" placeholder="Email" class="form-control validate" required
+                         data-error="Email is required. "/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="add1" class="col-sm-3 control-label">Billing Address<span
+                    style="color:red;">*</span></label>
+                <div class="col-sm-9">
+                  <input type="text" name="add1" id="add1" placeholder="Address Line 1" class="form-control validate"
+                         required/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="add2" class="col-sm-3 control-label">&nbsp;</label>
+                <div class="col-sm-9">
+                  <input type="text" name="add2" id="add2" placeholder="Address Line 2" class="form-control"/>
+                </div>
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="city" class="col-sm-3 control-label">City/State<span style="color:red;">*</span></label>
+                <div class="col-sm-4">
+                  <input type="text" name="city" id="city" placeholder="City" class="form-control validate" required
+                         data-error="City is required."/>
+                </div>
+                <div class="col-sm-5">
+                  <select class="form-control bfh-states" id="state" data-country="country" data-state="VA"
+                          name="state"></select>
+                </div>
+
+                <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
+              </div>
+              <div class="form-group">
+                <label for="country" class="col-sm-3 control-label">Country<span style="color:red;">*</span></label>
+                <div class="col-sm-9">
+                  <select id="country" class="form-control bfh-countries" data-country="US" name="country"></select>
+                </div>
+              </div>
+              <input type="hidden" name="postal" id="postal" value="">
+              <hr/>
+            {% endif %}
+
+            <div>
+              <form id="payment-form">
+                <div id="card-container"></div>
+              </form>
+              <div id="payment-status-container"></div>
+            </div>
+            <br/>
+            {% csrf_token %}
+
+            <div class="row">
+              <div class="col-sm-3 col-sm-offset-9">
+                <button class="btn btn-primary btn-block" id="checkout">Checkout</button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      {% else %}
+
+        {% csrf_token %}
+        <div class="container-fluid">
+          <div class="row">
+            <button class="btn btn-primary col-sm-3 col-sm-offset-9 col-xs-12" id="checkout">Checkout</button>
+          </div>
+        </div>
+
+      {% endif %}
+
+      </div>
+    </div>
+  {% else %}
+    <div role="tabpanel" class="tab-pane fade in active" id="personal">
+        <h1>Checkout</h1>
+        <h3>There are no attendees in your order</h3>
+        <hr>
+        <a class="btn btn-primary" href="{% url 'registration:index' %}">Add Attendee</a>
+
+
+      </div>
+  {% endif %}
+  </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+  {% if total > 0 %}
+    {% if SQUARE_ENVIRONMENT == "sandbox" %}
+      <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+    {% else %}
+      <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+    {% endif %}
+  {% endif %}
+  <script type="text/javascript">
+      /* Square & Payments constants */
+      const APPLICATION_ID = "{% settings_value 'SQUARE_APPLICATION_ID' %}";
+      const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
+
+      /* APIS URLs */
+      const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout' %}";
+      const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
+      const URL_REGISTRATION_DONE = "{% url 'registration:done' %}";
+      const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
+      const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+      const URL_REGISTRATION_REMOVE_FROM_CART = "{% url 'registration:remove_from_cart' %}";
+      const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:cancel_order' %}";
+
+      /* Application data */
+      let cart_total = {{ total|default:0 }};
+      let paid_total = {{ paid_total|default:0 }};
+  </script>
+  <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
+  {% if total > 0 %}
+    <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+  {% else %}
+    <script type="application/javascript">
+        async function checkout(event) {
+            event.preventDefault();
+            const checkoutButton = document.getElementById('checkout');
+            checkoutButton.disabled = true;
+            hideAlert();
+
+            const body = JSON.stringify({});
+            try {
+                const response = await postJSON(URL_REGISTRATION_CHECKOUT, body);
+                if (response.ok) {
+                    window.location = URL_REGISTRATION_DONE;
+                    return;
+                } else {
+                    const reason = await formatError(response);
+                    showAlert(
+                        `<b>Sorry, an unknown error occurred while submitting your registration for the following reason:</b>` +
+                        `<br><br>${reason}<br><br>  Please try again later.  If the problem persists, please contact ` +
+                        `<a href="mailto:${EVENT_REGISTRATION_EMAIL}">${EVENT_REGISTRATION_EMAIL}</a> for assistance.`
+                    );
+                }
+            } catch (e) {
+                alert(`Sorry, an error occurred while submitting your registration:\n\n${e}`);
+            }
+
+            checkoutButton.disabled = false;
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const cardButton = document.getElementById('checkout');
+            if (cardButton === null) {
+                return;
+            }
+
+            cardButton.addEventListener('click', async function (event) {
+                await checkout(event);
+            });
+        });
+    </script>
+  {% endif %}
+  <script type="text/javascript">
+      $(document).ready(function () {
+          //$("#donateCharity").change(setTwoNumberDecimal);
+          //$("#donateOrg").change(setTwoNumberDecimal);
+
+          $(".deleteAttendee").click(function (e) {
+              const id = this.id.split('_')[1];
+              const data = {'id': id};
+              $.ajax({
+                  "type": "POST",
+                  "dataType": "json",
+                  "contentType": "application/json; charset=utf-8",
+                  "url": URL_REGISTRATION_REMOVE_FROM_CART,
+                  "data": JSON.stringify(data),
+                  "beforeSend": function (xhr, settings) {
+                      console.log("Before Send");
+                      $.ajaxSettings.beforeSend(xhr, settings);
+                  },
+                  "error": function (result, status, error) {
+                      alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                  },
+                  "success": function (result, status) {
+                      if (result.success) {
+                          window.location.reload();
+                      } else {
+                          alert(`An error has occurred: ${result.message}. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                      }
+                  }
+              });
+          });
+
+          $("#addAnother").click(function () {
+              window.location = URL_REGISTRATION_INDEX;
+          });
+
+          $("#cancel").click(function () {
+              const cancel = window.confirm("Are you sure you want to cancel your registration? This will remove all attendees from your order.");
+              if (cancel == false) {
+                  return;
+              }
+
+              $.getJSON(URL_REGISTRATION_CANCEL_ORDER, function (data) {
+                  window.location = URL_REGISTRATION_INDEX;
+              });
+          });
+
+
+          $("#apply_discount").click(function (e) {
+              const discount = $("#discount").val();
+              if (discount == '') {
+                  alert("You must enter a discount to apply.");
+                  return;
+              }
+              const data = {'discount': discount};
+              $.ajax({
+                  "type": "POST",
+                  "dataType": "json",
+                  "contentType": "application/json; charset=utf-8",
+                  "url": URL_REGISTRATION_DISCOUNT,
+                  "data": JSON.stringify(data),
+                  "beforeSend": function (xhr, settings) {
+                      console.log("Before Send");
+                      $.ajaxSettings.beforeSend(xhr, settings);
+                  },
+                  "error": function (result, status, error) {
+                      alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                  },
+                  "success": function (result, status) {
+                      if (result.success) {
+                          window.location.reload();
+                      } else {
+                          alert(`An error has occurred: ${result.message} If this error continues, please contact ` +
+                              `${EVENT_REGISTRATION_EMAIL} for assistance.`);
+                      }
+                  }
+              });
+          });
+      });
+  </script>
+{% endblock %}

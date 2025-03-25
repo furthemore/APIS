@@ -60,7 +60,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Tests
       run: |
-        cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+        cp convention_event_manager_django_site/settings.py.travis convention_event_manager_django_site/settings.py
         coverage run ./manage.py test registration
       env:
         SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}

@@ -1,0 +1,17 @@
+Hello {{ order.billingName }},
+
+Our systems have detected a chargeback dispute initated in relation to your registration transaction.
+
+Consistent with our refund policy as outlined by the attendee code of conduct, your order has been placed on hold,
+and you will be unable to retrieve your badge or register for {{ event.name }} again at least until
+the dispute is settled.
+
+Chargeback disputes (denying a charge) made for the sole purpose of avoiding payment, made without sufficient cause,
+or that are made without first attempting to resolve the dispute directly may result in permanent revocation of
+membership privileges.
+
+Please contact {{ event.registrationEmail }} for any questions or assistance.
+
+--
+{{ event.name }} <{{ event.registrationEmail }}>
+{{ event.codeOfConduct }}

@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+
+<p>This form will copy the selected staff into an existing event. </p>
+
+<p>Select an event:</p>
+
+<form action="" method="post">
+
+    {{ form }}
+
+    <p>The staff to be copied:</p>
+
+    <ul>{{ staff|unordered_list }}</ul>
+
+    <input type="hidden" name="action" value="copy_to_event" />
+    {% csrf_token %}
+    <input type="submit" name="apply" value="Copy" />
+</form>
+
+{% endblock %}

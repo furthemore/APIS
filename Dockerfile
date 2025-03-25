@@ -11,7 +11,7 @@ EXPOSE 443
 WORKDIR /app
 
 COPY . /app/
-COPY ./fm_eventmanager/settings.py.docker /app/fm_eventmanager/settings.py
+COPY ./convention_event_manager_django_site/settings.py.docker /app/convention_event_manager_django_site/settings.py
 
 ENTRYPOINT ["/entrypoint.sh"]
 

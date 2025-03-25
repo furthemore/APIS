@@ -74,9 +74,9 @@ dev-setup:
 	python3 -m venv venv
 	source venv/bin/activate
 	pip install -r requirements.txt
-	cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
+	cp convention_event_manager_django_site/settings.py.devel convention_event_manager_django_site/settings.py
 
-	@echo "ACTION REQUIRED: Review fm_eventmanager/settings.py"
+	@echo "ACTION REQUIRED: Review convention_event_manager_django_site/settings.py"
 
 pre-commit-setup:
 	pip3 install pre-commit

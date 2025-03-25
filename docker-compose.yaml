@@ -8,7 +8,7 @@ services:
       - 8000:8000
     volumes:
       - ./registration:/app/registration
-      - ./fm_eventmanager/settings.py.docker:/app/fm_eventmanager/settings.py
+      - ./convention_event_manager_django_site/settings.py.docker:/app/convention_event_manager_django_site/settings.py
     env_file:
       - .env
     depends_on:

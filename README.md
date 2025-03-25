@@ -109,7 +109,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     pip install -r requirements.txt
 
     # Review your settings
-    cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
+    cp convention_event_manager_django_site/settings.py.devel convention_event_manager_django_site/settings.py
 
     python manage.py migrate
     python manage.py createsuperuser

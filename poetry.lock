@@ -386,6 +386,17 @@ test = ["certifi (>=2024)", "cryptography-vectors (==44.0.0)", "pretend (>=0.7)"
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
+name = "cups"
+version = "0.0.6"
+description = "A simple cups generator library"
+optional = false
+python-versions = "*"
+files = [
+    {file = "cups-0.0.6-py3-none-any.whl", hash = "sha256:aa2c5b5c4f430917d32b9e0a7b367c6bf6961fa410d6de6adb16554f31455c40"},
+    {file = "cups-0.0.6.tar.gz", hash = "sha256:6330d46aa3969278009d80514cbb2bee83ac3afbda18dae7a44ade3e2312c377"},
+]
+
+[[package]]
 name = "deprecation"
 version = "2.1.0"
 description = "A library to handle automated deprecations"
@@ -1627,4 +1638,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "9d83e9fda16a49b2aba57fae478e9881940d8797b4b5d237d05eafb2cf19a620"
+content-hash = "1c7967369c769ccfe2168e62b03b7821dd814e4342a2973c9c0994e54255fe92"

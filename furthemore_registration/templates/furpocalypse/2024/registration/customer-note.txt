@@ -1,0 +1,5 @@
+Reference: {{ reference }}
+{% for badge in result %}{{ badge.effectiveLevel.name }} - ${{ badge.price }}{% endfor %}
+Charity donation: ${{ charityDonation }}
+Organisation donation: ${{ orgDonation }}
+Total: ${{ total }}

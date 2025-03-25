@@ -1,0 +1,75 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+{% if perms.registration.issue_refund %}
+<h1>Issue refund (<a href="{% url 'admin:registration_order_change' order.id %}">{{ order.reference }}</a>)</h1>
+
+    <strong>Order total:</strong> ${{ order.total }}<br>
+    Billing type: {{ order.billingType }} ({{ order.status }})<br>
+
+    Notes: {{ order.notes }}<br><br>
+
+    {% if order.billingType == "Credit" %}
+        <u>
+        <strong>Card refund to </strong>
+        {{ api_data.payment.card_details.card.card_brand }} ending in {{ api_data.payment.card_details.card.last_4  }}
+        </u><br><br>
+    {% endif %}
+    <div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <fieldset class="module aligned">
+                {% for field in form %}
+                    <div class="form-row">
+                    <div class="field-box">
+                        {{ field.label_tag }}</label>
+                        {{ field.errors }}
+                        {{ field }}
+                        {{ field.help_text }}
+                    </div>
+                    </div>
+
+                {% endfor %}
+                </fieldset>
+
+                <input type="submit" name="apply" class="active" value="Partial Refund" class="button" />
+            </form>
+
+
+        <hr><br>
+
+        <script>
+            function update_reason_form() {
+                document.getElementById("hidden_reason").value = document.getElementById("id_reason").value;
+                return true;
+             }
+        </script>
+
+        <form method="post" onsubmit="update_reason_form()">
+            {% csrf_token %}
+            <input type="hidden" name="amount" value="{{ form.amount.value }}" />
+            <input type="hidden" name="reason" id="hidden_reason" value="" />
+            <input type="button" onclick="javascript:window.history.back();" class="cancel" value="Cancel"/>
+            <input type="submit" class="default" name="apply" value="Full Refund ${{order.total}}" id="submit"/>
+        </form>
+
+    </div>
+{% else %}
+    <h1>Access denied</h1>
+    <p>You do not have permission to issue refunds.  Please contact your systems administrator.</p>
+    <input type="button" onclick="javascript:window.history.back();" class="button" value="Go Back"/>
+
+{% endif %}
+
+<style>
+    .cancel {
+        background: #ba2121 !important;
+    }
+    #submit {
+        float: none !important;
+    }
+</style>
+{% endblock %}

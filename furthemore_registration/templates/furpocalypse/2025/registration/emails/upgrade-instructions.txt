@@ -1,0 +1,13 @@
+{% load site %}
+Upgrade your {{event}} registration
+
+To upgrade your registration, please follow this link:
+https://{% current_domain %}{% url 'registration:upgrade' guid=badge.registrationToken %}
+
+If you have any questions regarding your registration, please contact {{event.registrationEmail}}
+
+See you at the convention!
+
+--
+
+{{event}} Registration

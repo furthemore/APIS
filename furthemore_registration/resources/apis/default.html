@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta charset="utf-8">
+
+    <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+
+    <style>
+      body {
+        margin: 0px 0px;
+        background-color: white;
+        font-family: sans-serif;
+      }
+
+      .container {
+        width: 300px;
+        padding-left: 12px;
+      }
+
+      .name {
+	position: absolute;
+	left: 30px;
+    top: 55px;
+        max-height: 50px;
+        width: 400px;
+        text-align: center;
+        font-size: 80px;
+      }
+
+      span {
+        vertical-align: middle;
+      }
+
+      .pull-right {
+        float: right;
+        position: absolute;
+        top: 100px;
+        left: 325px;
+        font-size: 2.0em;
+      }
+
+      .pull-left {
+        float: left;
+        position: absolute;
+        top: 100px;
+        left: 40px;
+        font-size: 2.0em;
+      }
+
+      .name-container {
+        position: absolute;
+        top: 0px;
+        left: 10px;
+        height: 80px;
+        width: 380px;
+        overflow: hidden;
+        vertical-align: middle;
+
+      }
+
+      img.emoji {
+           height: 1em;
+           width: 1em;
+           margin: 0 .05em 0 .1em;
+           vertical-align: -0.1em;
+           filter: grayscale(100%);
+           -webkit-filter: grayscale(1);
+            -webkit-filter: grayscale(100%);
+            filter: gray;
+            filter: grayscale(100%);
+       }
+    </style>
+
+</head>
+<body>
+
+  <div class="container">
+    <!-- max 10 characters: 5em -->
+       <div class="name resize">%NAME%</div>
+    <span class="pull-left">%LEVEL%</span>
+    <span class="pull-right">%NUMBER%</span>
+  </div>
+
+  <script src="jquery-1.12.0.min.js"></script>
+<!--
+  <script src="jquery.fittext.js"></script>
+-->
+
+  <script>
+var autoSizeText;
+autoSizeText = function() {
+  var el, elements, _i, _len, _results;
+  elements = $('.resize');
+  console.log(elements);
+  if (elements.length < 0) {
+    return;
+  }
+  _results = [];
+  for (_i = 0, _len = elements.length; _i < _len; _i++) {
+    el = elements[_i];
+    _results.push((function(el) {
+      var resizeText, _results1;
+      resizeText = function() {
+        var elNewFontSize;
+        elNewFontSize = (parseInt($(el).css('font-size').slice(0, -2)) - 1) + 'px';
+        return $(el).css('font-size', elNewFontSize);
+      };
+      _results1 = [];
+      while (el.scrollHeight > el.offsetHeight) {
+        _results1.push(resizeText());
+      }
+      return _results1;
+    })(el));
+  }
+  return _results;
+};
+
+$(document).ready(function () {
+    autoSizeText();
+    twemoji.parse(document.body);
+});
+  </script>
+</body>
+</html>
