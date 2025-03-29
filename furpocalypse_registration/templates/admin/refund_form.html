@@ -3,7 +3,7 @@
 
 {% block content %}
 {% if perms.registration.issue_refund %}
-<h1>Issue refund (<a href="{% url 'admin:registration_order_change' order.id %}">{{ order.reference }}</a>)</h1>
+<h1>Issue refund (<a href="{% url 'admin:furpocalypse_registration_order_change' order.id %}">{{ order.reference }}</a>)</h1>
 
     <strong>Order total:</strong> ${{ order.total }}<br>
     Billing type: {{ order.billingType }} ({{ order.status }})<br>

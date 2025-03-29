@@ -64,7 +64,7 @@ class TestFirebaseAdmin(TestCase):
         }
 
         response = self.client.post(
-            reverse("admin:registration_firebase_change", args=(terminal_red.id,)),
+            reverse("admin:furpocalypse_registration_firebase_change", args=(terminal_red.id,)),
             form_data,
             follow=True,
         )
@@ -91,7 +91,7 @@ class TestFirebaseAdmin(TestCase):
         mock_send_push_notification.side_effect = PushyError()
 
         response = self.client.post(
-            reverse("admin:registration_firebase_change", args=(terminal_red.id,)),
+            reverse("admin:furpocalypse_registration_firebase_change", args=(terminal_red.id,)),
             form_data,
             follow=True,
         )
@@ -129,13 +129,13 @@ class TestFirebaseAdmin(TestCase):
     def test_change_form_superuser(self):
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
-            reverse("admin:registration_firebase_change", args=(self.terminal_blue.id,))
+            reverse("admin:furpocalypse_registration_firebase_change", args=(self.terminal_blue.id,))
         )
         self.assertIn(b"Provision App", response.content)
 
     def test_change_form_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))
         response = self.client.get(
-            reverse("admin:registration_firebase_change", args=(self.terminal_blue.id,))
+            reverse("admin:furpocalypse_registration_firebase_change", args=(self.terminal_blue.id,))
         )
         self.assertNotIn(b"Provision App", response.content)

@@ -1427,7 +1427,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 ),
             )
             return HttpResponseRedirect(
-                reverse("admin:registration_order_change", args=(order_id,))
+                reverse("admin:furpocalypse_registration_order_change", args=(order_id,))
             )
 
         if success:
@@ -1442,7 +1442,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                 ),
             )
         return HttpResponseRedirect(
-            reverse("admin:registration_order_change", args=(order_id,))
+            reverse("admin:furpocalypse_registration_order_change", args=(order_id,))
         )
 
     def get_urls(self):
@@ -1497,7 +1497,7 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                     else:
                         messages.error(request, msg)
                     return HttpResponseRedirect(
-                        reverse("admin:registration_order_change", args=(order_id,))
+                        reverse("admin:furpocalypse_registration_order_change", args=(order_id,))
                     )
                 return HttpResponseRedirect(request.get_full_path())
             else:

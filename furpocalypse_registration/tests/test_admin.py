@@ -205,14 +205,14 @@ class TestOrderAdmin(TestCase):
         self.client.logout()
         self.assertTrue(self.client.login(username="admin", password="admin"))
         response = self.client.get(
-            reverse("admin:registration_order_change", args=(self.cash_order.id,))
+            reverse("admin:furpocalypse_registration_order_change", args=(self.cash_order.id,))
         )
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Access denied")
         self.assertNotContains(response, "Square data")
 
         response = self.client.get(
-            reverse("admin:registration_order_change", args=(self.square_order.id,))
+            reverse("admin:furpocalypse_registration_order_change", args=(self.square_order.id,))
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Square data")
@@ -448,7 +448,7 @@ class TestOrderAdmin(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("admin:registration_order_change", args=(self.credit_order.id,)),
+            reverse("admin:furpocalypse_registration_order_change", args=(self.credit_order.id,)),
         )
         self.assertContains(
             response,
@@ -463,7 +463,7 @@ class TestOrderAdmin(TestCase):
         self.assertRedirects(
             response,
             reverse(
-                "admin:registration_order_change", args=(self.square_order_bad_id.id,)
+                "admin:furpocalypse_registration_order_change", args=(self.square_order_bad_id.id,)
             ),
         )
         self.assertContains(
@@ -479,7 +479,7 @@ class TestOrderAdmin(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("admin:registration_order_change", args=(order.id,)),
+            reverse("admin:furpocalypse_registration_order_change", args=(order.id,)),
         )
         order = Order.objects.get(id=order.id)
         self.assertEqual(order.status, order.FAILED)
@@ -490,7 +490,7 @@ class TestOrderAdmin(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("admin:registration_order_change", args=(order.id,)),
+            reverse("admin:furpocalypse_registration_order_change", args=(order.id,)),
         )
         order = Order.objects.get(id=order.id)
         self.assertEqual(order.status, order.CAPTURED)
@@ -516,7 +516,7 @@ class TestOrderAdmin(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse("admin:registration_order_change", args=(order.id,)),
+            reverse("admin:furpocalypse_registration_order_change", args=(order.id,)),
         )
         self.assertContains(
             response, "Refreshed order information from Square successfully"
@@ -541,7 +541,7 @@ class TestCashDrawerAdmin(TestCase):
         }
 
         response = self.client.post(
-            reverse("admin:registration_cashdrawer_add"), form_data, follow=True
+            reverse("admin:furpocalypse_registration_cashdrawer_add"), form_data, follow=True
         )
         cash_drawer = Cashdrawer.objects.get(id=1)
         self.assertEqual(cash_drawer.tendered, 0)
@@ -601,7 +601,7 @@ class TestOrderItemAdmin(OrdersTestCase):
         }
 
         response = self.client.post(
-            reverse("admin:registration_orderitem_change", args=(self.order_item.pk,)),
+            reverse("admin:furpocalypse_registration_orderitem_change", args=(self.order_item.pk,)),
             form_data,
             follow=True,
         )

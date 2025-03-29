@@ -128,7 +128,7 @@
                   <td class="results">{{ badge.badgeName }}</td>
                   <td>{{ badge.abandoned }}</td>
                   <td style="text-align: right">
-                    <a target="_blank" href="{% url 'admin:registration_badge_change' badge.id %}" class="btn btn-info"
+                    <a target="_blank" href="{% url 'admin:furpocalypse_registration_badge_change' badge.id %}" class="btn btn-info"
                        title="Edit attendee"><i class="fas fa-edit"></i></a>
                     <a href="#" class="btn btn-success add-badge" data-id="{{ badge.id }}"
                        title="Add {{ badge.attendee.firstName }} to cart"><i class="fas fa-plus"></i></a>
@@ -441,7 +441,7 @@
       const URL_REGISTRATION_NO_SALE = "{% url 'registration:no_sale' %}";
       const URL_REGISTRATION_ENABLE_PAYMENT = "{% url 'registration:enable_payment' %}";
       const URL_REGISTRATION_COMPLETE_CASH_TRANSACTION = "{% url 'registration:complete_cash_transaction' %}";
-      const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:registration_badge_change' 0 %}";
+      const URL_ADMIN_REGISTRATION_BADGE = "{% url 'admin:furpocalypse_registration_badge_change' 0 %}";
       const URL_REGISTRATION_ONSITE_ADMIN_CREATE_DISCOUNT = "{% url 'registration:onsite_create_discount' %}";
 
       // MQTT credentials for in-browser push notifications
