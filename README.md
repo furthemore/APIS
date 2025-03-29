@@ -7,8 +7,8 @@ Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 Stack:
   + Ubuntu 20.04 (LTS)
   + Postgres
-  + Python 3.8 - 3.10
-  + Django 3.2
+  + Python 3.12+
+  + Django 5.1
   + Bootstrap 3
   + jQuery 1.12
 
@@ -102,24 +102,60 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
 ### Locally without docker (recommended for developers)
 
-    git clone https://github.com/furthemore/APIS.git
-    cd APIS
-    python3 -v venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+This repository leverages nix and direnv on Linux systems (Including WSL2) to automatically setup the dev environment.
 
-    # Review your settings
-    cp convention_event_manager_django_site/settings.py.devel convention_event_manager_django_site/settings.py
+* Install Nix: https://nixos.org/download/
+* Install direnv: https://direnv.net/docs/installation.html
 
-    python manage.py migrate
-    python manage.py createsuperuser
+This project leverages [Poetry](https://python-poetry.org/) for dependency management and packaging.
 
-    # Create a self-signed certificate if you want to test or hack on U2F
-    openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:2048 \
-      -keyout localhost.key -out localhost.crt -subj /CN=localhost
+#### Manual development environment setup
 
-    # Get it running (omit --cert localhost for HTTP)
-    python manage.py runserver_plus --cert localhost.crt
+If you cannot use Nix and direnv (e.g. native Windows filesystem), perform the following steps:
+
+1. Install [Git](https://git-scm.com/downloads) and [Python 3.12+](https://www.python.org/downloads/) if they aren't already installed.
+2. Install [Poetry](https://python-poetry.org/docs/#installing-with-the-official-installer).
+    * Make sure that the directory containing the poetry script is added to your PATH after installation - check the command line output for instructions after Poetry is installed!
+3. Clone the repository.
+4. Install dependencies:
+
+```
+poetry sync
+poetry env activate
+```
+
+5. Run the command output after `poetry env activate` to activate the python venv.
+6. Set up the development server settings:
+
+```
+cp convention_event_manager_django_site/settings.py.devel convention_event_manager_django_site/settings.py
+```
+
+7. Set up the development database and a super admin account:
+
+```
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+8. Run the server!
+
+```
+python manage.py runserver
+```
+
+#### Run with a self-signed certificate
+
+To test functionality over HTTPS, you'll need to create a self-signed certificate and run the server with it using a different commmand:
+
+```
+# Create a self-signed certificate if you want to test or hack on U2F
+openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:2048 \
+    -keyout localhost.key -out localhost.crt -subj /CN=localhost
+
+# Get it running (omit --cert localhost for HTTP)
+python manage.py runserver_plus --cert localhost.crt
+```
 
 [square]: https://square.com/
 [android]: https://github.com/furthemore/APIS-register
