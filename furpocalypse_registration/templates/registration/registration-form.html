@@ -215,7 +215,7 @@
 
       $("body").ready(function () {
           $("form").fadeIn();
-          $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+          $.getJSON("{% url 'furpocalypse_registration:pricelevels' %}", function (data) {
               levelData = data;
               $.each(data, function (key, val) {
                   var centsOff = (parseFloat(val.base_price) * discount.percentOff) / 100;
@@ -237,13 +237,13 @@
               $(".changeLevel").hide();
 
           });
-          $.getJSON("{% url 'registration:departments' %}", function (data) {
+          $.getJSON("{% url 'furpocalypse_registration:departments' %}", function (data) {
               deptData = data;
               $.each(data, function (key, val) {
                   $("#volunteer").append("<option value='" + val.id + "'>" + val.name + "</option>");
               });
           });
-          $.getJSON("{% url 'registration:shirtsizes' %}", function (data) {
+          $.getJSON("{% url 'furpocalypse_registration:shirtsizes' %}", function (data) {
               shirtSizes = data;
           });
       });
@@ -457,7 +457,7 @@
               "type": "POST",
               "dataType": "json",
               "contentType": "application/json; charset=utf-8",
-              "url": "{% url 'registration:add_to_cart' %}",
+              "url": "{% url 'furpocalypse_registration:add_to_cart' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -465,7 +465,7 @@
               },
               "success": function (result) {
                   if (result.success) {
-                      window.location = "{% url 'registration:cart' %}";
+                      window.location = "{% url 'furpocalypse_registration:cart' %}";
                   } else {
                       alert(result.message);
                       $("#register").one('click', register_click);
