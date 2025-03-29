@@ -13,7 +13,7 @@ import furpocalypse_registration.views.staff
 import furpocalypse_registration.views.upgrade
 import furpocalypse_registration.views.webhooks
 
-app_name = "registration"
+app_name = "furpocalypse_registration"
 
 
 def trigger_error(request):
