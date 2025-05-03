@@ -11,7 +11,7 @@ test-db.sqlite3-journal
 registration/resources/nametag/apis/tmp*.html
 .idea/
 .coverage
-.envrc
+.envrc.secrets
 fm_eventmanager/maintenance_mode_state.txt
 localhost.crt
 localhost.key
