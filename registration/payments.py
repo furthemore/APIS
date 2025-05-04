@@ -473,7 +473,7 @@ def process_webhook_dispute_created_or_updated(
                 firstName=attendee.firstName,
                 lastName=attendee.lastName,
                 email=attendee.email,
-                reason=f"Initiated chargeback [APIS {datetime.now().isoformat()}]",
+                reason=f"Initiated chargeback [APIS {datetime.datetime.now().isoformat()}]",
             )
 
             ban.save()
