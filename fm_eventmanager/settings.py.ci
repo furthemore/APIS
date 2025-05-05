@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'django_admin_env_notice',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.postgres',
     'django.contrib.contenttypes',
     'django.contrib.humanize',
     'django.contrib.messages',
