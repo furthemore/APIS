@@ -1,10 +1,11 @@
 @use "bulma/sass";
 @use "bulma/sass/utilities/mixins";
 
-@use "@fortawesome/fontawesome-free/scss/fontawesome.scss";
-@use "@fortawesome/fontawesome-free/scss/solid.scss" with (
-  $fa-font-path: "@fortawesome/fontawesome-free/webfonts"
+@use "@fortawesome/fontawesome-free/scss/variables.scss" with (
+  $font-path: "@fortawesome/fontawesome-free/webfonts"
 );
+@use "@fortawesome/fontawesome-free/scss/fontawesome.scss";
+@use "@fortawesome/fontawesome-free/scss/solid.scss";
 
 .has-text-nowrap {
   text-wrap: nowrap;
