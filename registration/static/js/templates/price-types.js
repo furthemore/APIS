@@ -9,31 +9,50 @@ $("body").ready(function () {
         return;
     }
 
-    let url = "/registration/pricelevels";
-    if (adult) {
-        url = "/registration/adultpricelevels";
+    function updatePriceLevels() {
+        levelTemplateData = [];
+
+        const [year, month, day] = [
+            $("#byear").val(),
+            $("#bmonth").val(),
+            $("#bday").val()
+        ];
+
+        if (!year || !month || !day) return;
+
+        $.post("/registration/pricelevels/", JSON.stringify({
+            year,
+            month,
+            day,
+            form_type: FORM_TYPE,
+        }), function (data) {
+            levelData = data;
+            $.each(data, function (key, val) {
+                let price = val.base_price;
+
+                if (discount) {
+                    price = Math.max(val.base_price - discount - paid_total, 0);
+                }
+
+                if (price >= 0) {
+                    levelTemplateData.push({
+                        name: val.name,
+                        price: "$" + price,
+                        levelId: "level_" + val.id,
+                        selectText: "Select " + val.name
+                    });
+                }
+            });
+
+            $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+            $(".changeLevel").hide();
+        });
     }
 
-    $.getJSON(url, function (data) {
-        levelData = data;
-        $.each(data, function (key, val) {
-            var price = val.base_price;
-            if (discount) {
-                price = Math.max(val.base_price - discount - paid_total, 0);
-            }
+    updatePriceLevels();
 
-            if (price >= 0) {
-                levelTemplateData.push({
-                    name: val.name,
-                    price: "$" + price,
-                    levelId: "level_" + val.id,
-                    selectText: "Select " + val.name
-                });
-            }
-        });
-        $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-        $(".changeLevel").hide();
-
+    $("#bday, #bmonth, #byear").on("input", function() {
+        updatePriceLevels();
     });
 
     $.getJSON("/registration/shirts", function (data) {

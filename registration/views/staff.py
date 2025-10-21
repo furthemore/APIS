@@ -231,6 +231,7 @@ def info_staff(request):
             "badge": badge,
             "event": event,
             "paid_total": paid_total,
+            "form_type": form_type,
         }
     return render(request, "registration/staff/staff-payment.html", context)
 

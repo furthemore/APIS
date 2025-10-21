@@ -79,7 +79,6 @@
 {% block javascript %}
   <script>
       let discount = {{event.staffDiscount.amountOff|default:0}};
-      let adult = true;
       let paid_total = {{ paid_total|default:0 }};
   </script>
   <script type="text/javascript" src="/static/js/templates/price-types.js"></script>

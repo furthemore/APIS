@@ -258,7 +258,6 @@
 {% block javascript %}
   <script>
       let discount = {{event.dealerDiscount.amountOff|default:0.0}};
-      let adult = true;
   </script>
   <script type="text/javascript" src="{% static "js/main.js" %}"></script>
   {% if dealer %}
