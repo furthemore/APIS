@@ -339,6 +339,7 @@ if DEBUG:
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/apis/static/'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
