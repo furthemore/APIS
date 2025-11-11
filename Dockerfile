@@ -25,6 +25,8 @@ COPY . /app/
 COPY ./fm_eventmanager/settings.py.docker /app/fm_eventmanager/settings.py
 COPY --from=assets /app/registration/static/ /app/registration/static/
 
+RUN DJANGO_SECRET_KEY=collectstatic ./manage.py collectstatic --noinput
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["/start.sh"]
