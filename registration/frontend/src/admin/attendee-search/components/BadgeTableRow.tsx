@@ -1,6 +1,6 @@
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { type Component, createEffect, createSignal, Show } from "solid-js";
 
-import { BadgeResult } from "..";
+import { type BadgeResult } from "..";
 import { CartManager } from "../../cart";
 
 export const BadgeTableRow: Component<{
@@ -28,7 +28,7 @@ export const BadgeTableRow: Component<{
     props.badge.attendee.preferredName.localeCompare(
       props.badge.attendee.firstName,
       undefined,
-      { sensitivity: "base" }
+      { sensitivity: "base" },
     ) !== 0;
 
   const fullName = () =>

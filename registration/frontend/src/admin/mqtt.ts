@@ -1,8 +1,8 @@
+import mitt, { type Emitter } from "mitt";
 import mqtt from "mqtt";
-import mitt, { Emitter } from "mitt";
 
-import { Accessor, createSignal, Setter } from "solid-js";
-import { ApisMqttConfig } from "../entrypoints/admin";
+import { type Accessor, createSignal, type Setter } from "solid-js";
+import { type ApisMqttConfig } from ".";
 
 export type MqttTopic =
   | "alert"
@@ -59,7 +59,7 @@ export default class MqttClient {
         } else {
           this.client?.publish(
             this.getPrefixedTopic("admin_presence"),
-            JSON.stringify(":3")
+            JSON.stringify(":3"),
           );
         }
       });
@@ -81,7 +81,7 @@ export default class MqttClient {
       let strippedTopic: MqttTopic;
       if (topic.startsWith(config.auth.base_topic)) {
         strippedTopic = topic.slice(
-          config.auth.base_topic.length + 1
+          config.auth.base_topic.length + 1,
         ) as MqttTopic;
       } else {
         console.warn(`Got topic with unexpected prefix: ${topic}`);
@@ -127,7 +127,7 @@ export default class MqttClient {
   public publishPrintMessage(payload: string) {
     this.client?.publish(
       this.config.auth.print_topic || this.getPrefixedTopic("action"),
-      payload
+      payload,
     );
   }
 

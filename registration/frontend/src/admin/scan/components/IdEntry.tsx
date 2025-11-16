@@ -1,8 +1,8 @@
 import { createShortcut } from "@solid-primitives/keyboard";
 import { differenceInYears } from "date-fns/differenceInYears";
-import { Component, createMemo, Show, useContext } from "solid-js";
+import { type Component, createMemo, Show, useContext } from "solid-js";
 
-import { IdData } from "..";
+import { type IdData } from "..";
 import { ConfigContext } from "../../providers/config-provider";
 import { CloseButton } from "./CloseButton";
 import { NameBirthday } from "./ScanPii";
@@ -46,7 +46,7 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
     },
     {
       preventDefault: true,
-    }
+    },
   );
 
   return (

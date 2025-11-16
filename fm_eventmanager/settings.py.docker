@@ -129,6 +129,7 @@ INSTALLED_APPS = [
     'nested_inline',
     'debug_toolbar',
     'django_prometheus',
+    'django_vite',
 ]
 
 MIDDLEWARE = [
@@ -407,3 +408,5 @@ ENVIRONMENT_FLOAT = os.getenv('ENVIRONMENT_FLOAT', False)
 
 PRINT_RENDERER = os.getenv('PRINT_RENDERER', 'wkhtmltopdf')
 GOTENBERG_HOST = os.getenv('GOTENBERG_HOST', None)
+
+DJANGO_VITE_STATIC_URL_PREFIX = "bundler"

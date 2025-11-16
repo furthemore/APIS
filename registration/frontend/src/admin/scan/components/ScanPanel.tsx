@@ -1,9 +1,15 @@
 import { createShortcut } from "@solid-primitives/keyboard";
-import { Accessor, Component, createEffect, createMemo, Show } from "solid-js";
+import {
+  type Accessor,
+  type Component,
+  createEffect,
+  createMemo,
+  Show,
+} from "solid-js";
 import { createStore } from "solid-js/store";
 
-import { IdData, ShcData } from "..";
-import { MqttEmitter } from "../../mqtt";
+import { type IdData, type ShcData } from "..";
+import { type MqttEmitter } from "../../mqtt";
 import { IdEntry } from "./IdEntry";
 import { ShcEntry } from "./ShcEntry";
 import { UrlEntry } from "./UrlEntry";

@@ -1,7 +1,7 @@
 import { differenceInYears } from "date-fns/differenceInYears";
-import { Component } from "solid-js";
+import { type Component } from "solid-js";
 
-import { ShcMatch } from "..";
+import { type ShcMatch } from "..";
 import { MismatchedData } from "./MismatchedData";
 
 export const NameBirthday: Component<{

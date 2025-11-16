@@ -1,6 +1,6 @@
 import { Big } from "big.js";
 import {
-  Component,
+  type Component,
   createMemo,
   For,
   Match,
@@ -9,9 +9,13 @@ import {
   useContext,
 } from "solid-js";
 
-import { ApisConfig } from "../../../entrypoints/admin";
+import { type ApisConfig } from "../..";
 import { ConfigContext } from "../../providers/config-provider";
-import { AttendeeOption, CartManager, CartResponse } from "../cart-manager";
+import {
+  type AttendeeOption,
+  CartManager,
+  type CartResponse,
+} from "../cart-manager";
 import { CartBadge } from "./CartBadge";
 
 export const CartEntries: Component<{
@@ -41,7 +45,7 @@ export const CartEntries: Component<{
         }
         return options;
       })
-      .flat()
+      .flat(),
   );
 
   return (
@@ -154,12 +158,12 @@ const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = ({
 
 function getShirtSizeName(
   config: ApisConfig,
-  optionValue?: string
+  optionValue?: string,
 ): string | undefined {
   if (!optionValue) return;
 
   const sizeName = config.shirt_sizes.find(
-    (entry) => entry.id === parseInt(optionValue, 10)
+    (entry) => entry.id === parseInt(optionValue, 10),
   )?.name;
 
   return sizeName || optionValue;
@@ -177,7 +181,6 @@ export function cleanMoneyAmount(input?: string): string {
   if (input.startsWith("$")) {
     input = input.substring(1);
   }
-
 
   let parsed: Big;
   try {

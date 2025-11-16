@@ -1,7 +1,17 @@
 {
-    "compilerOptions": {
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
-        "strict": true
-    }
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "lib": ["es2022", "dom"],
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2020",
+    "useDefineForClassFields": true,
+    "verbatimModuleSyntax": true
+  }
 }

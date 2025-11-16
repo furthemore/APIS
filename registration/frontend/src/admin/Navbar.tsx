@@ -1,20 +1,20 @@
 import { Dialog } from "@kobalte/core/dialog";
-import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
+import { createShortcut, type KbdKey } from "@solid-primitives/keyboard";
 import { Big } from "big.js";
 import {
-  Component,
+  type Component,
   createEffect,
   createSignal,
   For,
-  Setter,
+  type Setter,
   Show,
   useContext,
 } from "solid-js";
 
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
+import { type ApisConfig, CSRF_TOKEN } from ".";
 import { ConfigContext } from "./providers/config-provider";
 import {
-  UserSettingKey,
+  type UserSettingKey,
   UserSettingsContext,
   UserSettingsManager,
 } from "./providers/user-settings-provider";
@@ -85,7 +85,7 @@ const ActionButton: Component<{
 
 function makeStatusRequestHelper(url: string) {
   return async function (
-    status: "open" | "close" | "ready" | "gay" | "blue-light"
+    status: "open" | "close" | "ready" | "gay" | "blue-light",
   ) {
     let endpoint = new URL(url, window.location.href);
     endpoint.searchParams.set("status", status);
@@ -148,7 +148,7 @@ const Actions: Component<{
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
   const statusRequestHelper = makeStatusRequestHelper(
-    props.config.urls.set_terminal_status
+    props.config.urls.set_terminal_status,
   );
 
   return (
@@ -206,7 +206,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.open_drawer,
-                "Enter initial amount in drawer"
+                "Enter initial amount in drawer",
               )
             }
           />
@@ -217,7 +217,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.cash_deposit,
-                "Enter amount added to drawer"
+                "Enter amount added to drawer",
               )
             }
           />
@@ -228,7 +228,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.safe_drop,
-                "Enter amount dropped into safe"
+                "Enter amount dropped into safe",
               )
             }
           />
@@ -239,7 +239,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.cash_pickup,
-                "Enter amount picked up from drawer"
+                "Enter amount picked up from drawer",
               )
             }
           />
@@ -250,7 +250,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.close_drawer,
-                "Enter final amount in drawer"
+                "Enter final amount in drawer",
               )
             }
           />
@@ -323,7 +323,7 @@ const ToggleSetting: Component<{
         ev.preventDefault();
         props.userSettings.store(
           props.key,
-          !props.userSettings.userSettings()[props.key]
+          !props.userSettings.userSettings()[props.key],
         );
       }}
     >
@@ -355,7 +355,7 @@ export const Navbar: Component<{
 
   createEffect(() => {
     const availableIds = config.terminals.available.map(
-      (terminal) => terminal.id
+      (terminal) => terminal.id,
     );
     if (
       availableIds.length > 0 &&

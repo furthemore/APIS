@@ -1,10 +1,10 @@
-import { Component, createResource, createSignal, Show } from "solid-js";
+import { type Component, createResource, createSignal, Show } from "solid-js";
 
-import { Badge, CartManager } from "../cart-manager";
+import { type Badge, CartManager } from "../cart-manager";
 import { cleanMoneyAmount } from "./CartEntries";
 
 export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
-  props
+  props,
 ) => {
   const [clearPrintBadgeId, setClearPrintBadgeId] = createSignal<number>();
   const [clearPrint] = createResource(clearPrintBadgeId, async (id) => {
@@ -49,7 +49,7 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                 onClick={() => {
                   if (
                     confirm(
-                      "Are you sure you need to clear the print flag for this badge?"
+                      "Are you sure you need to clear the print flag for this badge?",
                     )
                   ) {
                     setClearPrintBadgeId(props.badge.id);
@@ -116,7 +116,9 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                   <td colSpan={3}>
                     <span>
                       {`Staff Shirt – `}
-                      <span class="has-text-weight-semibold">{props.badge.staff?.shirtSize || "None"}</span>
+                      <span class="has-text-weight-semibold">
+                        {props.badge.staff?.shirtSize || "None"}
+                      </span>
                     </span>
                   </td>
                 </tr>
