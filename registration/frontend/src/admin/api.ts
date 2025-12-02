@@ -16,13 +16,29 @@ export type FallibleRequest<T> =
     }
   | ({ success: true } & T);
 
+export type Terminals = {
+  terminals: TerminalDetail[];
+};
+
+export type PaymentType = "mqtt-app" | "square-terminal";
+
+export type TerminalDetail = {
+  id: number;
+  name: string;
+  cashdrawer: boolean;
+  printViaMqtt?: string;
+  paymentType?: PaymentType;
+  backgroundColor: string;
+  foregroundColor: string;
+  squareTerminal: boolean;
+};
+
 export type OnsiteAdminContext = {
   user: {
     id: number;
     email: string;
-    station?: string;
   };
-  mqtt: {
+  mqtt?: {
     broker: string;
     auth: {
       user: string;
@@ -59,7 +75,7 @@ export type SelectedTerminal = {
   features: {
     printViaMqtt: boolean;
     squareTerminal: boolean;
-    paymentType?: "mqtt-app" | "square-terminal";
+    paymentType?: PaymentType;
     cashdrawer: boolean;
   };
 };
@@ -168,6 +184,20 @@ const checkFallibleResponse = <T>(resp: FallibleRequest<T>): T => {
   }
 };
 
+const fetchTerminals = async (init?: RequestInit): Promise<Terminals> => {
+  const url = new URL("/registration/onsite/admin/terminals", BASE_URL);
+
+  return api.get(url, init).json();
+};
+
+export const terminalQueryOptions = () =>
+  queryOptions({
+    queryKey: [...KEY_PREFIX, "terminals"],
+    queryFn: ({ signal }) => fetchTerminals({ signal }),
+    throwOnError: true,
+    staleTime: 1000 * 60 * 5,
+  });
+
 const fetchContext = async (
   id?: number,
   init?: RequestInit,
@@ -186,6 +216,7 @@ export const contextQueryOptions = (id?: number) =>
     queryFn: ({ signal }) => fetchContext(id, { signal }),
     throwOnError: true,
     staleTime: 1000 * 60 * 5,
+    enabled: !!id,
   });
 
 const fetchCart = async (init?: RequestInit): Promise<CartResponse> => {

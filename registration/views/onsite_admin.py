@@ -71,39 +71,61 @@ def onsite_admin(request):
 
     terminal = get_terminal_from_request(request)
 
-    if request.GET.get("terminal") is None:
-        return redirect(reverse("registration:onsite_admin") + f"?terminal={terminal.id}")
-
     return render(request, "registration/onsite-admin.html")
+
+
+@staff_member_required
+def onsite_admin_terminals(request):
+    terminals = list(Firebase.objects.order_by("name").all())
+
+    data = []
+    for terminal in terminals:
+        data.append({
+            "id": terminal.id,
+            "name": terminal.name,
+            "cashdrawer": terminal.cashdrawer,
+            "printViaMqtt": terminal.print_via_mqtt.name if terminal.print_via_mqtt else None,
+            "paymentType": terminal.payment_type,
+            "backgroundColor": terminal.background_color,
+            "foregroundColor": terminal.foreground_color,
+            "squareTerminal": terminal.square_terminal_id is not None,
+        })
+
+    return JsonResponse({"terminals": data})
 
 
 @staff_member_required
 def onsite_admin_context(request):
     terminals = list(Firebase.objects.order_by("name").all())
 
-    terminal = get_terminal_from_request(request)
-    mqtt_auth = mqtt.get_onsite_admin_token(terminal)
+    selected_terminal = None
+    mqtt_context = None
 
-    selected_terminal = {
-        "id": terminal.id,
-        "features": {
-            "printViaMqtt": terminal.print_via_mqtt is not None,
-            "squareTerminal": terminal.square_terminal_id is not None,
-            "paymentType": terminal.payment_type,
-            "cashdrawer": terminal.cashdrawer,
+    terminal_id = request.GET.get("terminal", None)
+    if terminal_id:
+        terminal = Firebase.objects.get(id=terminal_id)
+        request.session["terminal"] = terminal.id
+
+        selected_terminal = {
+            "id": terminal.id,
+            "features": {
+                "printViaMqtt": terminal.print_via_mqtt is not None,
+                "squareTerminal": terminal.square_terminal_id is not None,
+                "paymentType": terminal.payment_type,
+                "cashdrawer": terminal.cashdrawer,
+            }
         }
-    }
+        mqtt_context = {
+            "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
+            "auth": mqtt.get_onsite_admin_token(terminal)
+        }
 
     context = {
         "user": {
             "id": request.user.id,
             "email": request.user.email,
-            "station": terminal.name if terminal else None,
         },
-        "mqtt": {
-            "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
-            "auth": mqtt_auth,
-        },
+        "mqtt": mqtt_context,
         "shirtSizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
         "permissions": {
             "cash": request.user.has_perm("registration.cash"),
@@ -240,9 +262,6 @@ def get_terminal_from_request(request) -> Optional[Firebase]:
             active = Firebase.objects.get(id=int(session_terminal))
         except Firebase.DoesNotExist:
             return None
-
-    if not active:
-        active = Firebase.objects.first()
 
     return active
 

@@ -4,9 +4,14 @@ import { render } from "solid-js/web";
 import "vite/modulepreload-polyfill";
 
 import "./index.scss";
+import { queryClient } from "./queries";
 import { routeTree } from "./routeTree.gen";
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  context: { queryClient },
+  scrollRestoration: true,
+});
 
 declare module "@tanstack/solid-router" {
   interface Register {

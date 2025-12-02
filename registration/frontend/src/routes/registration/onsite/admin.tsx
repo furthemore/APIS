@@ -3,28 +3,27 @@ import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, getRouteApi } from "@tanstack/solid-router";
 import {
   type Component,
+  Match,
   Show,
+  Switch,
   createMemo,
   createSignal,
   onCleanup,
 } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import {
-  type OnsiteAdminSearch,
-  contextQueryOptions,
-} from "../../../admin/api";
-import { Navbar } from "../../../admin/components/navbar";
-import { Onsite } from "../../../admin/components/onsite";
-import MqttClient from "../../../admin/mqtt";
-import { ConfigContext } from "../../../admin/providers/config-provider";
-import { MqttContext } from "../../../admin/providers/mqtt-provider";
+import { type OnsiteAdminSearch, contextQueryOptions } from "@admin/api";
+import { Navbar } from "@admin/components/navbar";
+import { Onsite } from "@admin/components/onsite";
+import { TerminalSelection } from "@admin/components/terminal-selection";
+import MqttClient from "@admin/mqtt";
+import { ConfigContext } from "@admin/providers/config-provider";
+import { MqttContext } from "@admin/providers/mqtt-provider";
 import {
   UserSettingsContext,
   UserSettingsManager,
-} from "../../../admin/providers/user-settings-provider";
-import { Container } from "../../../components/container";
-import { queryClient } from "../../../queries";
+} from "@admin/providers/user-settings-provider";
+import { Container } from "@components/container";
 
 const OnsiteAdmin: Component = () => {
   const route = getRouteApi("/registration/onsite/admin");
@@ -32,12 +31,12 @@ const OnsiteAdmin: Component = () => {
 
   const [readyForNext, setReadyForNext] = createSignal(false);
 
-  const query = useQuery(() => contextQueryOptions(search().terminal));
+  const context = useQuery(() => contextQueryOptions(search().terminal));
 
   const userSettings = createMemo(() => new UserSettingsManager());
 
   const mqtt = createMemo(() => {
-    const config = query.data?.mqtt;
+    const config = context.data?.mqtt;
     if (!config) return;
 
     const m = new MqttClient();
@@ -51,21 +50,26 @@ const OnsiteAdmin: Component = () => {
   });
 
   return (
-    <ConfigContext.Provider value={query.data}>
+    <ConfigContext.Provider value={context.data}>
       <UserSettingsContext.Provider value={userSettings}>
         <Navbar setReadyForNext={setReadyForNext} />
 
         <Container>
-          <Show when={query.status === "success"} fallback={<ContextLoading />}>
-            <MqttConnecting mqtt={mqtt()} />
+          <Switch fallback={<ContextLoading />}>
+            <Match when={search().terminal === undefined}>
+              <TerminalSelection />
+            </Match>
+            <Match when={context.isEnabled && context.isFetched}>
+              <MqttConnecting mqtt={mqtt()} />
 
-            <MqttContext.Provider value={mqtt}>
-              <Onsite
-                readyForNext={readyForNext()}
-                setReadyForNext={setReadyForNext}
-              />
-            </MqttContext.Provider>
-          </Show>
+              <MqttContext.Provider value={mqtt}>
+                <Onsite
+                  readyForNext={readyForNext()}
+                  setReadyForNext={setReadyForNext}
+                />
+              </MqttContext.Provider>
+            </Match>
+          </Switch>
         </Container>
 
         <Portal>
@@ -80,7 +84,7 @@ const OnsiteAdmin: Component = () => {
 
 const ContextLoading: Component = () => {
   return (
-    <div class="alert alert-warning">
+    <div class="alert alert-warning my-3">
       <span>Loading</span>{" "}
       <div class="spinner-border spinner-border-sm" role="status" />
     </div>
@@ -117,11 +121,11 @@ const MqttConnecting: Component<{ mqtt?: MqttClient }> = (props) => {
 export const Route = createFileRoute("/registration/onsite/admin")({
   validateSearch: (search): OnsiteAdminSearch => {
     return {
-      terminal: search?.terminal ? Number(search.terminal) : undefined,
+      terminal: search.terminal ? Number(search.terminal) : undefined,
     };
   },
   loaderDeps: ({ search: { terminal } }) => ({ terminal }),
-  loader: ({ deps: { terminal } }) =>
+  loader: ({ deps: { terminal }, context: { queryClient } }) =>
     queryClient.ensureQueryData(contextQueryOptions(terminal)),
   component: OnsiteAdmin,
 });

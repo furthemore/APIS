@@ -91,7 +91,7 @@ export const CartActions: Component<{
   const autoPrintCheck = createAutoPrintCheck();
   createEffect(() => {
     if (
-      !config.terminals.selected?.features?.printViaMqtt ||
+      !config.terminals.selected?.features.printViaMqtt ||
       !userSettings().settings().printAfterPayment
     )
       return;
@@ -111,10 +111,10 @@ export const CartActions: Component<{
   });
 
   const hasSquareTerminal = () =>
-    config.terminals.selected?.features?.squareTerminal;
+    config.terminals.selected?.features.squareTerminal;
   const canUseCash = () =>
-    config.permissions.cash && config.terminals.selected?.features?.cashdrawer;
-  const paymentType = () => config.terminals.selected?.features?.paymentType;
+    config.permissions.cash && config.terminals.selected?.features.cashdrawer;
+  const paymentType = () => config.terminals.selected?.features.paymentType;
 
   const canTenderCash = () =>
     config.permissions.cash && !hasHold() && allNeedPayment();
@@ -183,8 +183,7 @@ export const CartActions: Component<{
           action={(holdingShift) => {
             const badgeIds = printableBadgeIds();
             const printViaMqtt =
-              config.terminals.selected?.features?.printViaMqtt &&
-              !holdingShift;
+              config.terminals.selected?.features.printViaMqtt && !holdingShift;
 
             return printBadgesHelper(
               badgeIds,

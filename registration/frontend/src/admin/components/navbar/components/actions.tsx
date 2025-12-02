@@ -54,7 +54,7 @@ export const Actions: Component<{
 
   const showCashActions = () =>
     props.config.permissions.cashAdmin &&
-    props.config.terminals.selected?.features?.cashdrawer;
+    props.config.terminals.selected?.features.cashdrawer;
 
   const standardActions: Action[] = [
     {

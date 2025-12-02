@@ -35,7 +35,7 @@ export const Navbar: Component<{
   const selectedTerminalName = () =>
     config.terminals.available.find(
       (terminal) => terminal.id === config.terminals.selected?.id,
-    )?.name;
+    )?.name || "No Terminal Selected";
 
   const notificationPermission = createPermission({ name: "notifications" });
   const canPromptForNotification = () => notificationPermission() === "prompt";
@@ -120,7 +120,7 @@ export const Navbar: Component<{
                     />
 
                     <Show
-                      when={config.terminals.selected?.features?.printViaMqtt}
+                      when={config.terminals.selected?.features.printViaMqtt}
                     >
                       <ToggleSetting
                         name="Auto Print After Payment"

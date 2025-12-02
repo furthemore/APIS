@@ -2,7 +2,7 @@ import type { UseQueryResult } from "@tanstack/solid-query";
 import {
   type Component,
   For,
-  Suspense,
+  Show,
   createMemo,
   createSelector,
 } from "solid-js";
@@ -50,7 +50,8 @@ export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
           </tr>
         </thead>
         <tbody>
-          <Suspense
+          <Show
+            when={!props.attendees.isFetching}
             fallback={<BadgeTableLoader count={attendeesWhenSearching()} />}
           >
             <For each={props.attendees.data} fallback={noResults}>
@@ -63,7 +64,7 @@ export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
                 />
               )}
             </For>
-          </Suspense>
+          </Show>
         </tbody>
       </table>
     </div>
