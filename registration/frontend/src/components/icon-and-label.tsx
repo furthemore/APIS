@@ -12,8 +12,7 @@ export const IconAndLabel: Component<IconAndLabelProps> = (props) => {
 
   return (
     <>
-      <Fa {...iconProps} class={`me-1 ${iconProps.class || ""}`} />
-      {labelProps.children}
+      <Fa {...iconProps} /> {labelProps.children}
     </>
   );
 };

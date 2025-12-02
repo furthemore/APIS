@@ -52,6 +52,10 @@ export const Actions: Component<{
 
   const readyForNext = () => props.setReadyForNext(true);
 
+  const showCashActions = () =>
+    props.config.permissions.cashAdmin &&
+    props.config.terminals.selected?.features?.cashdrawer;
+
   const standardActions: Action[] = [
     {
       name: "Open Position",
@@ -93,6 +97,65 @@ export const Actions: Component<{
     },
   ];
 
+  const cashActions: Action[] = [
+    {
+      name: "Open Drawer",
+      icon: faMoneyBillWave,
+      action: () =>
+        amountRequest(
+          cashOpen,
+          "Enter initial amount in drawer",
+          "Opened cash drawer",
+        ),
+    },
+    {
+      name: "Cash Deposit",
+      icon: faPlus,
+      action: () =>
+        amountRequest(
+          cashDeposit,
+          "Enter amount added to drawer",
+          "Deposited to cash drawer",
+        ),
+    },
+    {
+      name: "Safe Drop",
+      icon: faVault,
+      action: () =>
+        amountRequest(
+          cashSafeDrop,
+          "Enter amount dropped into safe",
+          "Added to safe amount",
+        ),
+    },
+    {
+      name: "Cash Pickup",
+      icon: faMinus,
+      action: () =>
+        amountRequest(
+          cashPickup,
+          "Enter amount picked up from drawer",
+          "Marked as picked up",
+        ),
+    },
+    {
+      name: "Close Drawer",
+      icon: faStoreAltSlash,
+      action: () =>
+        amountRequest(
+          cashClose,
+          "Enter final amount in drawer",
+          "Closed cash drawer",
+        ),
+    },
+    {
+      name: "No Sale",
+      icon: faBlenderPhone,
+      spin: true,
+      action: () => mutateThenToast(cashNoSale, undefined, "Marked no sale"),
+    },
+  ];
+
   for (const action of standardActions) {
     if (!action.keyboardShortcut) continue;
     createShortcut(action.keyboardShortcut, () => action.action());
@@ -110,85 +173,15 @@ export const Actions: Component<{
             {(action) => <ActionButton {...action} />}
           </For>
 
-          <Show
-            when={
-              props.config.permissions.cashAdmin &&
-              props.config.terminals.selected?.features?.cashdrawer
-            }
-          >
+          <Show when={showCashActions()}>
             <>
               <li>
                 <DropdownMenu.Separator class="dropdown-divider" />
               </li>
 
-              <ActionButton
-                name="Open Drawer"
-                icon={faMoneyBillWave}
-                action={() =>
-                  amountRequest(
-                    cashOpen,
-                    "Enter initial amount in drawer",
-                    "Opened cash drawer",
-                  )
-                }
-              />
-
-              <ActionButton
-                name="Cash Deposit"
-                icon={faPlus}
-                action={() =>
-                  amountRequest(
-                    cashDeposit,
-                    "Enter amount added to drawer",
-                    "Deposited to cash drawer",
-                  )
-                }
-              />
-
-              <ActionButton
-                name="Safe Drop"
-                icon={faVault}
-                action={() =>
-                  amountRequest(
-                    cashSafeDrop,
-                    "Enter amount dropped into safe",
-                    "Added to safe amount",
-                  )
-                }
-              />
-
-              <ActionButton
-                name="Cash Pickup"
-                icon={faMinus}
-                action={() =>
-                  amountRequest(
-                    cashPickup,
-                    "Enter amount picked up from drawer",
-                    "Marked as picked up",
-                  )
-                }
-              />
-
-              <ActionButton
-                name="Close Drawer"
-                icon={faStoreAltSlash}
-                action={() =>
-                  amountRequest(
-                    cashClose,
-                    "Enter final amount in drawer",
-                    "Closed cash drawer",
-                  )
-                }
-              />
-
-              <ActionButton
-                name="No Sale"
-                icon={faBlenderPhone}
-                spin
-                action={() =>
-                  mutateThenToast(cashNoSale, undefined, "Marked no sale")
-                }
-              />
+              <For each={cashActions}>
+                {(action) => <ActionButton {...action} />}
+              </For>
             </>
           </Show>
         </DropdownMenu.Content>

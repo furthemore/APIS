@@ -42,7 +42,7 @@ export const Cart: Component<{
   const config = useContext(ConfigContext)!;
   const mqtt = useContext(MqttContext)!;
 
-  const cart = useQuery(() => fetchCartOptions());
+  const cart = useQuery(fetchCartOptions);
 
   const clearCart = useClearCart();
   const addBadgeToCart = useAddBadgeToCart();

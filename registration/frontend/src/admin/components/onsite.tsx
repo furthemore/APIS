@@ -9,13 +9,13 @@ import {
   useContext,
 } from "solid-js";
 
+import { MqttContext } from "@admin/providers/mqtt-provider";
+import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 import { ActionToast } from "@components/action-toast";
+import { ErrorCard } from "@components/error-card";
 
 import { SentryErrorBoundary } from "../../common";
-import { ErrorCard } from "../../components/error-card";
 import { fetchCartOptions, updateResultsFromCart, useClearCart } from "../api";
-import { MqttContext } from "../providers/mqtt-provider";
-import { UserSettingsContext } from "../providers/user-settings-provider";
 import { AttendeeSearch } from "./attendee-search";
 import { Cart } from "./cart";
 import { Scan } from "./scan";
