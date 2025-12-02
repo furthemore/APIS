@@ -163,7 +163,7 @@ export const Actions: Component<{
 
   return (
     <DropdownMenu>
-      <DropdownMenu.Trigger as="a" class="nav-link dropdown-toggle">
+      <DropdownMenu.Trigger as="button" class="nav-link dropdown-toggle">
         <Fa icon={faCog} />
       </DropdownMenu.Trigger>
 

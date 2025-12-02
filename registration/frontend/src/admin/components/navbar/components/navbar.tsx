@@ -19,6 +19,7 @@ import {
 
 import { ConfigContext } from "@admin/providers/config-provider";
 import { Container } from "@components/container";
+import { IconAndLabel } from "@components/icon-and-label";
 
 import { Actions } from "./actions";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
@@ -50,7 +51,10 @@ export const Navbar: Component<{
           <ul class="navbar-nav">
             <li class="nav-item dropdown">
               <DropdownMenu>
-                <DropdownMenu.Trigger as="a" class="nav-link dropdown-toggle">
+                <DropdownMenu.Trigger
+                  as="button"
+                  class="nav-link dropdown-toggle"
+                >
                   {selectedTerminalName()}
                 </DropdownMenu.Trigger>
 
@@ -91,7 +95,10 @@ export const Navbar: Component<{
               />
 
               <DropdownMenu>
-                <DropdownMenu.Trigger as="a" class="nav-link dropdown-toggle">
+                <DropdownMenu.Trigger
+                  as="button"
+                  class="nav-link dropdown-toggle"
+                >
                   <Fa icon={faUser} />
                 </DropdownMenu.Trigger>
 
@@ -108,11 +115,6 @@ export const Navbar: Component<{
                     />
 
                     <ToggleSetting
-                      name="Clear Cart After Print"
-                      key="clearCartAfterPrint"
-                    />
-
-                    <ToggleSetting
                       name="Search With Birthday"
                       key="searchBirthday"
                     />
@@ -126,28 +128,39 @@ export const Navbar: Component<{
                       />
                     </Show>
 
+                    <ToggleSetting
+                      name="Clear Cart After Print"
+                      key="clearCartAfterPrint"
+                    />
+
                     <DropdownMenu.Item>
                       <DropdownMenu.Separator class="dropdown-divider" />
                     </DropdownMenu.Item>
 
                     <DropdownMenu.Item as="li">
                       <button
-                        class="dropdown-item d-flex align-items-center column-gap-2"
+                        class="dropdown-item"
                         onClick={() => setShowKeyboardShortcuts(true)}
                       >
-                        <Fa icon={faKeyboard} fw />
-                        Keyboard Shortcuts
+                        <IconAndLabel
+                          children="Keyboard Shortcuts"
+                          icon={faKeyboard}
+                          fw
+                        />
                       </button>
                     </DropdownMenu.Item>
 
                     <Show when={canPromptForNotification()}>
                       <DropdownMenu.Item as="li">
                         <button
-                          class="dropdown-item d-flex align-items-center column-gap-2"
+                          class="dropdown-item"
                           onClick={() => Notification.requestPermission()}
                         >
-                          <Fa icon={faBell} fw />
-                          Allow Notifications
+                          <IconAndLabel
+                            children="Allow Notifications"
+                            icon={faBell}
+                            fw
+                          />
                         </button>
                       </DropdownMenu.Item>
                     </Show>
@@ -161,8 +174,11 @@ export const Navbar: Component<{
                         href="/registration/logout"
                         class="dropdown-item text-danger d-flex align-items-center column-gap-2"
                       >
-                        <Fa icon={faSignOutAlt} fw />
-                        Sign out
+                        <IconAndLabel
+                          children="Sign Out"
+                          icon={faSignOutAlt}
+                          fw
+                        />
                       </a>
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
