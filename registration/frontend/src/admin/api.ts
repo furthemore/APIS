@@ -590,28 +590,60 @@ export const useCashAmountAction = (action: CashAction) =>
     };
   });
 
+const CHECKED_BADGE_FIELDS: (keyof BadgeResult & keyof Badge)[] = [
+  "abandoned",
+  "badgeName",
+  "badgeNumber",
+];
+
+const getBadgesWithChanges = (
+  badgeResults: BadgeResult[],
+  cartBadges: Badge[],
+): BadgeResult[] => {
+  return badgeResults.flatMap((badgeResult) => {
+    const cartBadge = cartBadges.find((badge) => badge.id === badgeResult.id);
+    if (!cartBadge) return [];
+
+    const hasFieldChanges = CHECKED_BADGE_FIELDS.some(
+      (field) => badgeResult[field] !== cartBadge[field],
+    );
+    if (!hasFieldChanges) return [];
+
+    return [
+      {
+        ...badgeResult,
+        abandoned: cartBadge.abandoned,
+        badgeName: cartBadge.badgeName,
+        badgeNumber: cartBadge.badgeNumber,
+      },
+    ];
+  });
+};
+
 export const updateResultsFromCart = (
   queryClient: QueryClient,
   badges: Badge[],
 ) => {
   queryClient.setQueriesData(
     { queryKey: [...KEY_PREFIX, "attendee", "search"] },
-    (previousData: SearchResults): SearchResults => {
-      const results = previousData.results.map((previousBadge) => {
-        const newBadge = badges.find((badge) => badge.id === previousBadge.id);
+    (previousData: SearchResults): SearchResults | undefined => {
+      const badgesWithChanges = getBadgesWithChanges(
+        previousData.results,
+        badges,
+      );
 
-        if (newBadge) {
-          const updatedBadge = structuredClone(previousBadge);
-          updatedBadge.abandoned = newBadge.abandoned;
-          updatedBadge.badgeName = newBadge.badgeName;
-          updatedBadge.badgeNumber = newBadge.badgeNumber;
-          return updatedBadge;
-        } else {
-          return previousBadge;
-        }
-      });
+      if (badgesWithChanges) {
+        const results = previousData.results.map((badge) => {
+          const change = badgesWithChanges.find(
+            (change) => change.id === badge.id,
+          );
+          return change || badge;
+        });
 
-      return { results };
+        return {
+          results,
+        };
+      }
     },
   );
 };

@@ -25,6 +25,8 @@ export const BadgeTableRow: Component<{
     }
   });
 
+  const cleanedSearchQuery = () => props.searchQuery?.trim();
+
   const hasPreferredName = () =>
     props.badge.attendee.preferredName &&
     props.badge.attendee.preferredName.localeCompare(
@@ -37,16 +39,17 @@ export const BadgeTableRow: Component<{
     `${props.badge.attendee.firstName} ${props.badge.attendee.lastName}`;
 
   const hasIdenticalName = () =>
-    props.searchQuery?.localeCompare(fullName(), undefined, {
+    cleanedSearchQuery()?.localeCompare(fullName(), undefined, {
       sensitivity: "base",
     }) === 0;
 
-  const hasSearchedId = () =>
-    !!props.searchQuery &&
-    parseInt(props.searchQuery, 10) === props.badge.badgeNumber;
+  const hasSearchedId = () => {
+    const query = cleanedSearchQuery();
+    return query && parseInt(query, 10) === props.badge.badgeNumber;
+  };
 
   const hasIdenticalBadgeName = () =>
-    props.searchQuery?.localeCompare(props.badge.badgeName, undefined, {
+    cleanedSearchQuery()?.localeCompare(props.badge.badgeName, undefined, {
       sensitivity: "base",
     }) === 0;
 

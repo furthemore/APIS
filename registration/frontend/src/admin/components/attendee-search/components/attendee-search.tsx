@@ -1,4 +1,8 @@
-import { faPlus, faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPeopleLine,
+  faPlus,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 import { createShortcut } from "@solid-primitives/keyboard";
 import { useQuery } from "@tanstack/solid-query";
 import Fa from "solid-fa";
@@ -156,7 +160,9 @@ export const AttendeeSearch: Component<{
       <div class="card-header">
         <div class="row align-items-center">
           <div class="col">
-            <h5 class="card-heading mb-0">Attendee Search</h5>
+            <h5 class="card-heading mb-0">
+              <IconAndLabel children="Attendee Search" icon={faPeopleLine} fw />
+            </h5>
           </div>
 
           <div class="col-auto">

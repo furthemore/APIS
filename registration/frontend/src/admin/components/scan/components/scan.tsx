@@ -1,4 +1,4 @@
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faBarcode, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { createShortcut } from "@solid-primitives/keyboard";
 import {
   type Component,
@@ -117,11 +117,13 @@ export const Scan: Component<{
   });
 
   return (
-    <div class="card pb-3" ref={panel}>
+    <div class="card mb-3 pb-3" ref={panel}>
       <div class="card-header">
         <div class="row align-items-center">
           <div class="col">
-            <h5 class="card-title mb-0">Scans</h5>
+            <h5 class="card-title mb-0">
+              <IconAndLabel children="Scans" icon={faBarcode} fw />
+            </h5>
           </div>
 
           <div class="col-auto">

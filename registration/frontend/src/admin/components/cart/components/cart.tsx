@@ -1,5 +1,6 @@
 import {
   faAngleDown,
+  faBasketShopping,
   faSatelliteDish,
   faSync,
   faXmark,
@@ -121,7 +122,9 @@ export const Cart: Component<{
       <div class="card-header">
         <div class="row align-items-center">
           <div class="col">
-            <h5 class="card-heading mb-0">Cart</h5>
+            <h5 class="card-heading mb-0">
+              <IconAndLabel children="Cart" icon={faBasketShopping} fw />
+            </h5>
           </div>
 
           <div class="col-auto">
