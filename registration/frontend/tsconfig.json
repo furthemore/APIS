@@ -12,6 +12,12 @@
     "strict": true,
     "target": "es2020",
     "useDefineForClassFields": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@admin/*": ["./src/admin/*"]
+    }
   }
 }

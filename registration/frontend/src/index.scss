@@ -1,0 +1,56 @@
+$color-mode-type: media-query;
+
+@import "bootswatch/dist/cerulean/variables";
+@import "bootstrap/scss/bootstrap";
+@import "bootswatch/dist/cerulean/bootswatch";
+
+.attendee-table {
+  max-height: max(50vh, 500px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.badge-name {
+  word-break: break-word;
+}
+
+.card.flush-table {
+  table {
+    @extend .mb-0;
+  }
+
+  .table-responsive,
+  tr {
+    border-bottom-left-radius: var(--bs-card-border-radius);
+    border-bottom-right-radius: var(--bs-card-border-radius);
+  }
+
+  tbody tr:last-of-type {
+    border-bottom: transparent;
+  }
+}
+
+.btn-loader {
+  display: grid;
+  text-align: center;
+
+  .spinner {
+    visibility: hidden;
+  }
+
+  .content,
+  .spinner {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  &[aria-busy="true"] {
+    .content {
+      visibility: hidden;
+    }
+
+    .spinner {
+      visibility: visible;
+    }
+  }
+}

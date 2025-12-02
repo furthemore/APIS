@@ -11,18 +11,14 @@
   <title>APIS Register</title>
   <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
 
-  <script>
-    const APIS_CONFIG = {{ settings|safe }};
-  </script>
-
-  {% vite_asset "src/entrypoints/admin.tsx" %}
+  {% vite_asset "src/index.tsx" %}
 
   {% block head %}{% endblock %}
 </head>
 
 <body>
 
-  <div id="onsite"></div>
+  <div id="root"></div>
 
 </body>
 

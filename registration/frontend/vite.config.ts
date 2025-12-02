@@ -1,16 +1,35 @@
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import devtools from "solid-devtools/vite";
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   base: "/static/bundler/",
-  plugins: [solid()],
+  plugins: [
+    tsconfigPaths(),
+    devtools({
+      autoname: true,
+    }),
+    tanstackRouter({
+      target: "solid",
+      autoCodeSplitting: true,
+    }),
+    solid(),
+  ],
   build: {
     manifest: "manifest.json",
     emptyOutDir: true,
     outDir: "../static/bundler/",
     rollupOptions: {
-      input: {
-        admin: "src/entrypoints/admin.tsx",
+      input: "src/index.tsx",
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true,
+        silenceDeprecations: ["color-functions", "import"],
       },
     },
   },

@@ -69,123 +69,54 @@ def onsite_admin(request):
     # Modify a dummy session variable to keep it alive
     request.session["heartbeat"] = time.time()
 
+    terminal = get_terminal_from_request(request)
+
+    if request.GET.get("terminal") is None:
+        return redirect(reverse("registration:onsite_admin") + f"?terminal={terminal.id}")
+
+    return render(request, "registration/onsite-admin.html")
+
+
+@staff_member_required
+def onsite_admin_context(request):
     terminals = list(Firebase.objects.order_by("name").all())
-    term = request.session.get("terminal", None)
 
-    errors = []
+    terminal = get_terminal_from_request(request)
+    mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
-    # Set default payment terminal to use:
-    if term is None and len(terminals) > 0:
-        request.session["terminal"] = terminals[0].id
-
-    if len(terminals) == 0:
-        errors.append(
-            {
-                "type": "danger",
-                "code": "ERROR_NO_TERMINAL",
-                "text": "It looks like no payment terminals have been configured "
-                "for this server yet. Check that the APIS Terminal app is "
-                "running, and has been configured for the correct URL and API key.",
-            }
-        )
-
-    # No terminal selection saved in session - see if one's
-    # on the URL (that way it'll survive session timeouts)
-    url_terminal = request.GET.get("terminal", None)
-    logger.info("Terminal from GET parameter: {0}".format(url_terminal))
-    if url_terminal is not None:
-        try:
-            terminal_obj = Firebase.objects.get(id=int(url_terminal))
-            request.session["terminal"] = terminal_obj.id
-        except Firebase.DoesNotExist:
-            del request.session["terminal"]
-            errors.append(
-                {
-                    "type": "warning",
-                    "text": "The payment terminal specified has not registered with the server",
-                }
-            )
-        except ValueError:
-            # weren't passed an integer
-            errors.append({"type": "danger", "text": "Invalid terminal specified"})
-
-    terminal = get_active_terminal(request)
-    mqtt_auth = None
-    if terminal:
-        mqtt_auth = mqtt.get_onsite_admin_token(terminal)
-
-    selected_terminal = None
-    if terminal:
-        selected_terminal = {
-            "id": terminal.id,
-            "features": {
-                "print_via_mqtt": terminal.print_via_mqtt is not None,
-                "square_terminal": terminal.square_terminal_id is not None,
-                "payment_type": terminal.payment_type,
-                "cashdrawer": terminal.cashdrawer,
-            }
+    selected_terminal = {
+        "id": terminal.id,
+        "features": {
+            "printViaMqtt": terminal.print_via_mqtt is not None,
+            "squareTerminal": terminal.square_terminal_id is not None,
+            "paymentType": terminal.payment_type,
+            "cashdrawer": terminal.cashdrawer,
         }
-
-    context = {
-        "settings": json.dumps({
-            "user": {
-                "id": request.user.id,
-                "email": request.user.email,
-                "station": terminal.name if terminal else None,
-            },
-            "sentry": {
-                "enabled": getattr(settings, "SENTRY_ENABLED", False),
-                "user_reports": getattr(settings, "SENTRY_USER_REPORTS", False),
-                "frontend_dsn": getattr(settings, "SENTRY_FRONTEND_DSN", None),
-                "environment": getattr(settings, "SENTRY_ENVIRONMENT", None),
-                "release": getattr(settings, "SENTRY_RELEASE", None),
-            },
-            "errors": errors,
-            "mqtt": {
-                "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
-                "auth": mqtt_auth,
-            },
-            "shirt_sizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
-            "urls": {
-                "assign_badge_number": reverse("registration:assign_badge_number"),
-                "cash_deposit": reverse("registration:cash_deposit"),
-                "cash_pickup": reverse("registration:cash_pickup"),
-                "close_drawer": reverse("registration:close_drawer"),
-                "complete_cash_transaction": reverse("registration:complete_cash_transaction"),
-                "enable_payment": reverse("registration:enable_payment"),
-                "logout": reverse("registration:logout"),
-                "no_sale": reverse("registration:no_sale"),
-                "onsite_add_to_cart": reverse("registration:onsite_add_to_cart"),
-                "onsite_admin_cart": reverse("registration:onsite_admin_cart"),
-                "onsite_admin_clear_cart": reverse("registration:onsite_admin_clear_cart"),
-                "onsite_admin_search": reverse("registration:onsite_admin_search"),
-                "onsite_admin_transfer_cart": reverse("registration:onsite_admin_transfer_cart"),
-                "onsite_admin": reverse("registration:onsite_admin"),
-                "onsite_create_discount": reverse("registration:onsite_create_discount"),
-                "onsite_print_badges": reverse("registration:onsite_print_badges"),
-                "onsite_print_clear": reverse("registration:onsite_print_clear"),
-                "onsite_print_receipts": reverse("registration:onsite_print_receipts"),
-                "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
-                "onsite": reverse("registration:onsite"),
-                "open_drawer": reverse("registration:open_drawer"),
-                "pdf": reverse("registration:pdf"),
-                "registration_badge_change": reverse("admin:registration_badge_change", args=(0,)),
-                "safe_drop": reverse("registration:safe_drop"),
-                "set_terminal_status": reverse("registration:terminal_status"),
-            },
-            "permissions": {
-                "cash": request.user.has_perm("registration.cash"),
-                "cash_admin": request.user.has_perm("registration.cash_admin"),
-                "discount": request.user.has_perm("registration.discount"),
-            },
-            "terminals": {
-                "selected": selected_terminal,
-                "available": [{"id": terminal.id, "name": terminal.name} for terminal in terminals],
-            },
-        }),
     }
 
-    return render(request, "registration/onsite-admin.html", context)
+    context = {
+        "user": {
+            "id": request.user.id,
+            "email": request.user.email,
+            "station": terminal.name if terminal else None,
+        },
+        "mqtt": {
+            "broker": getattr(settings, "MQTT_EXTERNAL_BROKER", None),
+            "auth": mqtt_auth,
+        },
+        "shirtSizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
+        "permissions": {
+            "cash": request.user.has_perm("registration.cash"),
+            "cashAdmin": request.user.has_perm("registration.cash_admin"),
+            "discount": request.user.has_perm("registration.discount"),
+        },
+        "terminals": {
+            "selected": selected_terminal,
+            "available": [{"id": terminal.id, "name": terminal.name} for terminal in terminals],
+        },
+    }
+
+    return JsonResponse(context)
 
 
 @dataclass
@@ -309,6 +240,9 @@ def get_terminal_from_request(request) -> Optional[Firebase]:
             active = Firebase.objects.get(id=int(session_terminal))
         except Firebase.DoesNotExist:
             return None
+
+    if not active:
+        active = Firebase.objects.first()
 
     return active
 
@@ -932,6 +866,7 @@ def build_result(cart):
 
         item = {
             "id": badge.id,
+            "orderId": order.id,
             "firstName": badge.attendee.preferredName or badge.attendee.firstName,
             "lastName": badge.attendee.lastName,
             "badgeName": badge.badgeName,

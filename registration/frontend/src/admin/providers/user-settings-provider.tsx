@@ -1,59 +1,62 @@
 import {
   type Accessor,
+  type Setter,
   createContext,
   createSignal,
-  type Setter,
 } from "solid-js";
 
 const STORAGE_KEY = "user-settings";
 
 export type UserSettingKey =
-  | "clear_cart_after_print"
-  | "container_fluid"
-  | "print_after_payment"
-  | "search_birthday";
+  | "clearCartAfterPrint"
+  | "containerFluid"
+  | "multipleBadgeColumns"
+  | "printAfterPayment"
+  | "searchBirthday";
 
-export type UserSettings = Record<UserSettingKey, any>;
+export type UserSettings = Record<UserSettingKey, boolean>;
 
 const USER_DEFAULTS: UserSettings = {
-  clear_cart_after_print: false,
-  container_fluid: false,
-  print_after_payment: true,
-  search_birthday: true,
+  clearCartAfterPrint: false,
+  containerFluid: false,
+  multipleBadgeColumns: true,
+  printAfterPayment: true,
+  searchBirthday: true,
 };
 
 export class UserSettingsManager {
-  public userSettings: Accessor<UserSettings>;
-  private setUserSettings: Setter<UserSettings>;
+  public settings: Accessor<UserSettings>;
+  private setSettings: Setter<UserSettings>;
 
   constructor() {
     const settingsData = window.localStorage.getItem(STORAGE_KEY);
-    let settings: UserSettings;
+    let userSettings: UserSettings;
 
     if (settingsData) {
       try {
-        settings = { ...USER_DEFAULTS, ...JSON.parse(settingsData) };
+        userSettings = { ...USER_DEFAULTS, ...JSON.parse(settingsData) };
       } catch (err) {
         console.error(`Could not parse settings: ${err}`);
-        settings = USER_DEFAULTS;
+        userSettings = USER_DEFAULTS;
       }
     } else {
-      settings = USER_DEFAULTS;
+      userSettings = USER_DEFAULTS;
     }
 
-    [this.userSettings, this.setUserSettings] =
-      createSignal<UserSettings>(settings);
+    const [settings, setSettings] = createSignal<UserSettings>(userSettings);
+    [this.settings, this.setSettings] = [settings, setSettings];
   }
 
   private saveSettings() {
-    const data = JSON.stringify(this.userSettings());
+    const data = JSON.stringify(this.settings());
     window.localStorage.setItem(STORAGE_KEY, data);
   }
 
-  store(setting: UserSettingKey, value: any) {
-    this.setUserSettings({ ...this.userSettings(), [setting]: value });
+  store(setting: UserSettingKey, value: boolean) {
+    this.setSettings({ ...this.settings(), [setting]: value });
     this.saveSettings();
   }
 }
 
-export const UserSettingsContext = createContext<UserSettingsManager>();
+export const UserSettingsContext =
+  createContext<Accessor<UserSettingsManager>>();

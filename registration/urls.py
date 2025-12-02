@@ -141,6 +141,7 @@ urlpatterns = [
         registration.views.onsite_admin.onsite_admin,
         name="onsite_admin",
     ),
+    path("onsite/admin/context", registration.views.onsite_admin.onsite_admin_context, name="onsite_admin_context"),
     re_path(
         r"^onsite/admin/search/?$",
         registration.views.onsite_admin.onsite_admin_search,

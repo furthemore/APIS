@@ -1,11 +1,22 @@
 import mitt, { type Emitter } from "mitt";
 import mqtt from "mqtt";
+import { type Accessor, type Setter, createSignal } from "solid-js";
 
-import { type Accessor, createSignal, type Setter } from "solid-js";
-import { type ApisMqttConfig } from ".";
+export type ApisMqttConfig = {
+  broker: string;
+  auth: ApisMqttAuth;
+};
+
+export type ApisMqttAuth = {
+  user: string;
+  token: string;
+  base_topic: string;
+  print_topic?: string;
+};
 
 export type MqttTopic =
   | "alert"
+  | "admin_presence"
   | "authorize_terminal"
   | "notification"
   | "open"
@@ -16,32 +27,66 @@ export type MqttTopic =
 
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
 
+const LOCK_KEY = "mqtt-connection";
+
+const dec2hex = (dec: number) => {
+  return dec.toString(16).padStart(2, "0");
+};
+
 export default class MqttClient {
   public errorMessage: Accessor<string | undefined>;
   private setErrorMessage: Setter<string | undefined>;
 
+  public isConnected: Accessor<boolean>;
+  private setIsConnected: Setter<boolean>;
+
   public emitter: Emitter<Record<MqttTopic, object | null>>;
 
   private client?: mqtt.MqttClient;
-  private config: ApisMqttConfig;
+  private config?: ApisMqttConfig;
 
-  constructor(config: ApisMqttConfig) {
-    this.config = config;
+  constructor() {
+    console.debug("Creating new MQTT client");
+
+    const [isConnected, setIsConnected] = createSignal(false);
+    [this.isConnected, this.setIsConnected] = [isConnected, setIsConnected];
 
     const [errorMessage, setErrorMessage] = createSignal<string>();
-    this.errorMessage = errorMessage;
-    this.setErrorMessage = setErrorMessage;
+    [this.errorMessage, this.setErrorMessage] = [errorMessage, setErrorMessage];
 
     this.emitter = mitt();
+  }
 
-    if (!this.config.auth) return;
+  public async connect(config: ApisMqttConfig) {
+    if ("locks" in navigator) {
+      navigator.locks.request(LOCK_KEY, async () => {
+        await this._connect(config);
+      });
+    } else {
+      await this._connect(config);
+    }
+  }
 
+  private async _connect(config: ApisMqttConfig) {
+    console.debug("Connecting to MQTT");
+
+    await this._disconnect();
+
+    this.config = config;
     const wildcardTopic = this.getPrefixedTopic("#");
+
+    let connectResolve: (() => void) | undefined;
+    let connectReject: ((err: Error) => void) | undefined;
+
+    const promise = new Promise<void>((resolve, reject) => {
+      connectResolve = resolve;
+      connectReject = reject;
+    });
 
     this.client = mqtt.connect(config.broker, {
       username: config.auth.user,
       password: config.auth.token,
-      clientId: `admin-${config.auth.user}`,
+      clientId: `admin-${config.auth.user}-${this.getClientId()}`,
       clean: false,
       protocolVersion: 5,
       timerVariant: "native",
@@ -50,24 +95,41 @@ export default class MqttClient {
       },
     });
 
-    this.client.on("connect", () => {
+    this.client.on("connect", async () => {
+      this.setIsConnected(true);
       this.setErrorMessage(undefined);
+
       console.debug(`Subscribing to ${wildcardTopic}`);
-      this.client?.subscribe(wildcardTopic, (err) => {
-        if (err) {
-          console.error(`MQTT subscription failed: ${err}`);
-        } else {
-          this.client?.publish(
-            this.getPrefixedTopic("admin_presence"),
-            JSON.stringify(":3"),
-          );
-        }
-      });
+      await this.client?.subscribeAsync(wildcardTopic);
+      await this.client?.publishAsync(
+        this.getPrefixedTopic("admin_presence"),
+        JSON.stringify(this.getClientId()),
+      );
+
+      if (connectResolve) {
+        connectResolve();
+        connectResolve = undefined;
+      }
     });
 
     this.client.on("error", (err: Error) => {
       console.error(`MQTT error: ${err}`);
       this.setErrorMessage(err.toString());
+
+      if (connectReject) {
+        connectReject(err);
+        connectReject = undefined;
+      }
+    });
+
+    this.client.on("close", () => {
+      console.debug("MQTT close");
+      this.setIsConnected(false);
+    });
+
+    this.client.on("disconnect", (evt) => {
+      console.debug(`MQTT disconnect: ${evt.reasonCode}`);
+      this.setErrorMessage(`Disconnected: ${evt.reasonCode || "Unknown"}`);
     });
 
     this.client.on("reconnect", () => {
@@ -75,7 +137,7 @@ export default class MqttClient {
     });
 
     this.client.on("message", (topic, message) => {
-      let data = message.toString();
+      const data = message.toString();
       console.debug("MQTT message", topic, data);
 
       let strippedTopic: MqttTopic;
@@ -91,12 +153,18 @@ export default class MqttClient {
       let payload = null;
       try {
         payload = JSON.parse(data);
-      } catch (err) {}
+      } catch {
+        console.warn("Payload was not valid JSON", data);
+      }
 
       switch (strippedTopic) {
         case "notification":
           if (payload?.["text"]) {
-            sendNotification(payload["text"]);
+            if (Notification.permission === "granted") {
+              new Notification(payload["text"]);
+            } else {
+              alert(payload["text"]);
+            }
           }
           break;
         case "alert":
@@ -109,37 +177,64 @@ export default class MqttClient {
             document.cookie = `square_oauth_state=${payload["state"]}; path=/`;
             window.open(payload["url"], "square_oauth");
           }
+          break;
+        case "admin_presence":
+          if (payload && payload !== this.getClientId()) {
+            console.warn("Another device has connected to this station");
+            this.emitter?.emit("admin_presence", payload);
+          }
+          break;
         default:
-          this.emitter.emit(strippedTopic, payload);
+          this.emitter?.emit(strippedTopic, payload);
           break;
       }
     });
+
+    await promise;
   }
 
-  public disconnect() {
-    this.client?.end();
+  public async disconnect() {
+    if ("locks" in navigator) {
+      navigator.locks.request(LOCK_KEY, async () => {
+        await this._disconnect();
+      });
+    } else {
+      await this._disconnect();
+    }
   }
 
-  public publishMessage(topic: string, payload: string) {
-    this.client?.publish(this.getPrefixedTopic(topic), payload);
+  private async _disconnect() {
+    if (!this.client) return;
+
+    console.debug("Disconnect requested, ending client");
+    await this.client?.endAsync();
+
+    this.client = undefined;
   }
 
-  public publishPrintMessage(payload: string) {
-    this.client?.publish(
-      this.config.auth.print_topic || this.getPrefixedTopic("action"),
-      payload,
-    );
+  public async publishMessage(topic: string, payload: string) {
+    console.debug(`Publishing MQTT message to topic ${topic}`, payload);
+    await this.client?.publishAsync(topic, payload);
+  }
+
+  public async publishPrintMessage(payload: string) {
+    const topic =
+      this.config?.auth.print_topic || this.getPrefixedTopic("action");
+    await this.publishMessage(topic, payload);
   }
 
   private getPrefixedTopic(topic: string): string {
-    return `${this.config.auth.base_topic}/${topic}`;
+    return `${this.config!.auth.base_topic}/${topic}`;
   }
-}
 
-function sendNotification(message: string) {
-  if (Notification.permission === "granted") {
-    return new Notification(message);
-  } else {
-    alert(message);
+  private getClientId(): string {
+    let clientId = localStorage.getItem("client-id");
+    if (clientId) return clientId;
+
+    const vals = new Uint8Array(8);
+    window.crypto.getRandomValues(vals);
+    clientId = Array.from(vals, dec2hex).join("");
+    localStorage.setItem("client-id", clientId);
+    return clientId;
   }
 }

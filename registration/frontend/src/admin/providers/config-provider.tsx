@@ -1,5 +1,5 @@
 import { createContext } from "solid-js";
 
-import { type ApisConfig } from "..";
+import type { OnsiteAdminContext } from "../api";
 
-export const ConfigContext = createContext<ApisConfig>();
+export const ConfigContext = createContext<OnsiteAdminContext>();

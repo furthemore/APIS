@@ -7,7 +7,7 @@ WORKDIR /app/registration/frontend
 COPY ./registration/frontend/package.json ./registration/frontend/package-lock.json /app/registration/frontend/
 RUN npm install
 COPY ./registration/frontend/ /app/registration/frontend/
-RUN node esbuild.mjs
+RUN npm run build
 
 FROM ghcr.io/furthemore/apis:apis-base-924ec88
 
