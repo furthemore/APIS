@@ -1,6 +1,7 @@
 import {
   type IconDefinition,
   faBlenderPhone,
+  faCashRegister,
   faCheck,
   faCog,
   faForward,
@@ -16,7 +17,7 @@ import {
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { type KbdKey, createShortcut } from "@solid-primitives/keyboard";
 import Fa from "solid-fa";
-import { type Component, type Setter, Show } from "solid-js";
+import { type Component, type Setter, Show, createSignal } from "solid-js";
 import { For } from "solid-js";
 
 import {
@@ -25,9 +26,11 @@ import {
   useCashNoSale,
   useSetTerminalStatus,
 } from "@admin/api";
+import { IconAndLabel } from "@components/icon-and-label";
 
 import { amountRequest, mutateThenToast } from "../utils";
 import { ActionButton } from "./action-button";
+import { CashdrawerStatus } from "./cashdrawer-status";
 
 type Action = {
   name: string;
@@ -41,6 +44,8 @@ export const Actions: Component<{
   config: OnsiteAdminContext;
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
+  const [showCashStatus, setShowCashStatus] = createSignal(false);
+
   const setTerminalStatus = useSetTerminalStatus();
 
   const cashNoSale = useCashNoSale();
@@ -162,30 +167,47 @@ export const Actions: Component<{
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenu.Trigger as="button" class="nav-link dropdown-toggle">
-        <Fa icon={faCog} />
-      </DropdownMenu.Trigger>
+    <>
+      <CashdrawerStatus signal={[showCashStatus, setShowCashStatus]} />
 
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content as="ul" class="dropdown-menu show">
-          <For each={standardActions}>
-            {(action) => <ActionButton {...action} />}
-          </For>
+      <DropdownMenu>
+        <DropdownMenu.Trigger as="button" class="nav-link dropdown-toggle">
+          <Fa icon={faCog} />
+        </DropdownMenu.Trigger>
 
-          <Show when={showCashActions()}>
-            <>
-              <li>
-                <DropdownMenu.Separator class="dropdown-divider" />
-              </li>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content as="ul" class="dropdown-menu show">
+            <For each={standardActions}>
+              {(action) => <ActionButton {...action} />}
+            </For>
 
-              <For each={cashActions}>
-                {(action) => <ActionButton {...action} />}
-              </For>
-            </>
-          </Show>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu>
+            <Show when={showCashActions()}>
+              <>
+                <li>
+                  <DropdownMenu.Separator class="dropdown-divider" />
+                </li>
+
+                <DropdownMenu.Item as="li">
+                  <button
+                    class="dropdown-item"
+                    onClick={() => setShowCashStatus(true)}
+                  >
+                    <IconAndLabel
+                      children="Cashdrawer Status"
+                      icon={faCashRegister}
+                      fw
+                    />
+                  </button>
+                </DropdownMenu.Item>
+
+                <For each={cashActions}>
+                  {(action) => <ActionButton {...action} />}
+                </For>
+              </>
+            </Show>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu>
+    </>
   );
 };

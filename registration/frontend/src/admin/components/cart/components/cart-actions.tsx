@@ -29,7 +29,11 @@ import { MqttContext } from "@admin/providers/mqtt-provider";
 import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
-import { createAutoClearCheck, createAutoPrintCheck } from "../utils";
+import {
+  cleanMoneyAmount,
+  createAutoClearCheck,
+  createAutoPrintCheck,
+} from "../utils";
 import { ActionButton } from "./action-button";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
@@ -230,7 +234,7 @@ async function attemptCashPayment(
     tendered,
   });
 
-  alert(`Change: $${change.toFixed(2)}`);
+  alert(`Change: ${cleanMoneyAmount(change.toString())}`);
 }
 
 async function createAndApplyDiscountHelper(

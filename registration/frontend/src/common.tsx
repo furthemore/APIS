@@ -3,7 +3,7 @@ import { ErrorBoundary } from "solid-js";
 
 export const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
   "meta[name='csrf_token']",
-)!.content;
+)?.content;
 
 export const SentryErrorBoundary =
   Sentry.withSentryErrorBoundary(ErrorBoundary);

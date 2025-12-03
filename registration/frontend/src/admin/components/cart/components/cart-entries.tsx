@@ -1,5 +1,4 @@
 import { faSackDollar, faShirt } from "@fortawesome/free-solid-svg-icons";
-import { Big } from "big.js";
 import Fa from "solid-fa";
 import {
   type Component,
@@ -21,6 +20,7 @@ import type {
 import { ConfigContext } from "@admin/providers/config-provider";
 import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 
+import { cleanMoneyAmount } from "../utils";
 import { CartBadge } from "./cart-badge";
 
 export const CartEntries: Component<{
@@ -210,29 +210,4 @@ function getShirtSizeName(
   )?.name;
 
   return sizeName || optionValue;
-}
-
-export function cleanMoneyAmount(input?: string): string {
-  if (!input || input == "?") return "$0.00";
-  if (input.endsWith("%")) return input;
-
-  let multi = 1;
-  if (input.startsWith("-")) {
-    multi = -1;
-    input = input.substring(1);
-  }
-
-  if (input.startsWith("$")) {
-    input = input.substring(1);
-  }
-
-  let parsed: Big;
-  try {
-    parsed = new Big(input).mul(multi);
-  } catch (err) {
-    console.error(`Could not parse money ${input}: ${err}`);
-    return input;
-  }
-
-  return `$${parsed.toFixed(2)}`;
 }

@@ -4,12 +4,13 @@ import ky from "ky";
 import { CSRF_TOKEN } from "./common";
 
 export const api = ky.extend({
-  redirect: "error",
-  prefixUrl: window.location.origin,
+  prefixUrl: import.meta.env.VITE_API_PREFIX_URL || window.location.origin,
   hooks: {
     beforeRequest: [
       (request) => {
-        request.headers.set("x-csrftoken", CSRF_TOKEN);
+        if (request.method.toLowerCase() === "post" && CSRF_TOKEN) {
+          request.headers.set("x-csrftoken", CSRF_TOKEN);
+        }
       },
     ],
   },

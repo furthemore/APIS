@@ -136,8 +136,8 @@ urlpatterns = [
     re_path(r"^onsite/?$", registration.views.onsite.onsite, name="onsite"),
     re_path(r"^onsite/cart/?$", registration.views.onsite.onsite_cart, name="onsite_cart"),
     re_path(r"^onsite/done/?$", registration.views.onsite.onsite_done, name="onsite_done"),
-    re_path(
-        r"^onsite/admin/?$",
+    path(
+        "onsite/admin",
         registration.views.onsite_admin.onsite_admin,
         name="onsite_admin",
     ),
@@ -151,58 +151,58 @@ urlpatterns = [
         registration.views.onsite_admin.onsite_admin_context,
         name="onsite_admin_context",
     ),
-    re_path(
-        r"^onsite/admin/search/?$",
+    path(
+        "onsite/admin/search",
         registration.views.onsite_admin.onsite_admin_search,
         name="onsite_admin_search",
     ),
-    re_path(
-        r"^onsite/admin/cart/?$",
+    path(
+        "onsite/admin/cart",
         registration.views.onsite_admin.onsite_admin_cart,
         name="onsite_admin_cart",
     ),
-    re_path(
-        r"^onsite/admin/cart/add/?$",
+    path(
+        "onsite/admin/cart/add",
         registration.views.onsite_admin.onsite_add_to_cart,
         name="onsite_add_to_cart",
     ),
-    re_path(
-        r"^onsite/admin/cart/remove/?$",
+    path(
+        "onsite/admin/cart/remove",
         registration.views.onsite_admin.onsite_remove_from_cart,
         name="onsite_remove_from_cart",
     ),
-    re_path(
-        r"^onsite/admin/cart/transfer/?$",
+    path(
+        "onsite/admin/cart/transfer",
         registration.views.onsite_admin.onsite_admin_transfer_cart,
         name="onsite_admin_transfer_cart",
     ),
-    re_path(
-        r"^onsite/admin/terminal/status/?$",
+    path(
+        "onsite/admin/terminal/status",
         registration.views.onsite_admin.set_terminal_status,
         name="terminal_status",
     ),
-    re_path(
-        r"^onsite/admin/payment/?$",
+    path(
+        "onsite/admin/payment",
         registration.views.onsite_admin.enable_payment,
         name="enable_payment",
     ),
-    re_path(
-        r"^onsite/admin/clear/?$",
+    path(
+        "onsite/admin/clear",
         registration.views.onsite_admin.onsite_admin_clear_cart,
         name="onsite_admin_clear_cart",
     ),
-    re_path(
-        r"^onsite/admin/badge/assign/?$",
+    path(
+        "onsite/admin/badge/assign",
         registration.views.onsite_admin.assign_badge_number,
         name="assign_badge_number",
     ),
-    re_path(
-        r"^onsite/admin/badge/print/?$",
+    path(
+        "onsite/admin/badge/print",
         registration.views.onsite_admin.onsite_print_badges,
         name="onsite_print_badges",
     ),
-    re_path(
-        r"^onsite/admin/badge/print/clear/?$",
+    path(
+        "onsite/admin/badge/print/clear",
         registration.views.onsite_admin.onsite_print_clear,
         name="onsite_print_clear",
     ),
@@ -211,53 +211,53 @@ urlpatterns = [
         registration.views.onsite_admin.complete_square_transaction,
         name="complete_square_transaction",
     ),
-    re_path(
-        r"^onsite/cash/complete/?$",
+    path(
+        "onsite/cash/complete",
         registration.views.onsite_admin.complete_cash_transaction,
         name="complete_cash_transaction",
     ),
-    re_path(
-        r"^onsite/admin/receipt/?$",
+    path(
+        "onsite/admin/receipt",
         registration.views.onsite_admin.print_receipts,
         name="onsite_print_receipts",
     ),
-    re_path(
-        r"^onsite/cashdrawer/status/?$",
+    path(
+        "onsite/cashdrawer/status",
         registration.views.onsite_admin.drawer_status,
         name="drawer_status",
     ),
-    re_path(
-        r"^onsite/cashdrawer/open/?$",
+    path(
+        "onsite/cashdrawer/open",
         registration.views.onsite_admin.open_drawer,
         name="open_drawer",
     ),
-    re_path(
-        r"^onsite/cashdrawer/deposit/?$",
+    path(
+        "onsite/cashdrawer/deposit",
         registration.views.onsite_admin.cash_deposit,
         name="cash_deposit",
     ),
-    re_path(
-        r"^onsite/cashdrawer/safedrop/?$",
+    path(
+        "onsite/cashdrawer/safedrop",
         registration.views.onsite_admin.safe_drop,
         name="safe_drop",
     ),
-    re_path(
-        r"^onsite/cashdrawer/pickup/?$",
+    path(
+        "onsite/cashdrawer/pickup",
         registration.views.onsite_admin.cash_pickup,
         name="cash_pickup",
     ),
-    re_path(
-        r"^onsite/cashdrawer/close/?$",
+    path(
+        "onsite/cashdrawer/close",
         registration.views.onsite_admin.close_drawer,
         name="close_drawer",
     ),
-    re_path(
-        r"^onsite/cashdrawer/no_sale/?$",
+    path(
+        "onsite/cashdrawer/no-sale",
         registration.views.onsite_admin.no_sale,
         name="no_sale",
     ),
-    re_path(
-        r"^onsite/admin/discount/create/?$",
+    path(
+        "onsite/admin/discount/create",
         registration.views.onsite_admin.create_discount,
         name="onsite_create_discount",
     ),

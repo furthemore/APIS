@@ -10,7 +10,7 @@ import {
 } from "@admin/api";
 import { Button } from "@components/button";
 
-import { cleanMoneyAmount } from "./cart-entries";
+import { cleanMoneyAmount } from "../utils";
 
 export const CartBadge: Component<{
   badge: Badge;

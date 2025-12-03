@@ -1,6 +1,38 @@
+import { Big } from "big.js";
 import isEqual from "lodash/isEqual";
 
 import type { Badge } from "@admin/api";
+
+const { format } = new Intl.NumberFormat(undefined, {
+  style: "currency",
+  currency: "USD",
+  trailingZeroDisplay: "stripIfInteger",
+});
+
+export const cleanMoneyAmount = (input?: string): string => {
+  if (!input || input == "?") return "$0.00";
+  if (input.endsWith("%")) return input;
+
+  let multi = 1;
+  if (input.startsWith("-")) {
+    multi = -1;
+    input = input.substring(1);
+  }
+
+  if (input.startsWith("$")) {
+    input = input.substring(1);
+  }
+
+  let parsed: Big;
+  try {
+    parsed = new Big(input).mul(multi);
+  } catch (err) {
+    console.error(`Could not parse money ${input}: ${err}`);
+    return input;
+  }
+
+  return format(parsed.toNumber());
+};
 
 export const getBadgeIds = (badges: Badge[]): Set<number> => {
   return new Set(badges.map((badge) => badge.id));
