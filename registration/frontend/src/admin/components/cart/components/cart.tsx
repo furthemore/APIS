@@ -86,9 +86,7 @@ export const Cart: Component<{
     removeBadgeFromCart.mutate(lastBadge.id);
   });
 
-  const receiveTransfer = async (ev: Event) => {
-    ev.preventDefault();
-
+  const receiveTransfer = async () => {
     const transfer = takeNextTransfer();
     if (!transfer) return;
 
@@ -131,6 +129,7 @@ export const Cart: Component<{
             <div class="d-flex column-gap-1">
               <Show when={pendingTransfers().length > 0}>
                 <Button
+                  type="button"
                   class="btn btn-sm btn-info"
                   title="Receive Transfer"
                   onClick={receiveTransfer}

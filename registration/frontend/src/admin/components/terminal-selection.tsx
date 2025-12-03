@@ -23,12 +23,14 @@ export const TerminalSelection: Component = () => {
         <div class="table-responsive">
           <table class="table">
             <thead>
-              <th>Name</th>
-              <th>Payment Type</th>
-              <th>MQTT Print Target</th>
-              <th>Cash Drawer</th>
-              <th>Square Terminal</th>
-              <th />
+              <tr>
+                <th>Name</th>
+                <th>Payment Type</th>
+                <th>MQTT Print Target</th>
+                <th>Cash Drawer</th>
+                <th>Square Terminal</th>
+                <th />
+              </tr>
             </thead>
             <tbody class="align-middle">
               <For each={terminals.data?.terminals}>

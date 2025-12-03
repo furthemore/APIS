@@ -7,8 +7,6 @@ import type MqttClient from "./mqtt";
 
 const KEY_PREFIX = ["onsiteAdmin"];
 
-const BASE_URL = window.location.href;
-
 export type FallibleRequest<T> =
   | {
       success: false;
@@ -168,7 +166,7 @@ export type TerminalStatus = "open" | "close" | "ready" | "gay" | "blue-light";
 export type CashAction = "open" | "deposit" | "safedrop" | "pickup" | "close";
 
 export const urlForBadge = (id: number): URL =>
-  new URL(`/admin/registration/badge/${id}/change/`, BASE_URL);
+  new URL(`/admin/registration/badge/${id}/change/`, window.location.href);
 
 const invalidateCart = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries({
@@ -185,9 +183,7 @@ const checkFallibleResponse = <T>(resp: FallibleRequest<T>): T => {
 };
 
 const fetchTerminals = async (init?: RequestInit): Promise<Terminals> => {
-  const url = new URL("/registration/onsite/admin/terminals", BASE_URL);
-
-  return api.get(url, init).json();
+  return api.get("registration/onsite/admin/terminals", init).json();
 };
 
 export const terminalQueryOptions = () =>
@@ -202,12 +198,12 @@ const fetchContext = async (
   id?: number,
   init?: RequestInit,
 ): Promise<OnsiteAdminContext> => {
-  const url = new URL("/registration/onsite/admin/context", BASE_URL);
-  if (id) {
-    url.searchParams.set("terminal", id.toString());
-  }
-
-  return api.get(url, init).json();
+  return api
+    .get("registration/onsite/admin/context", {
+      ...init,
+      searchParams: { terminal: id },
+    })
+    .json();
 };
 
 export const contextQueryOptions = (id?: number) =>
@@ -220,9 +216,7 @@ export const contextQueryOptions = (id?: number) =>
   });
 
 const fetchCart = async (init?: RequestInit): Promise<CartResponse> => {
-  const url = new URL("/registration/onsite/admin/cart/", BASE_URL);
-
-  return api.get(url, init).json();
+  return api.get("registration/onsite/admin/cart/", init).json();
 };
 
 export const fetchCartOptions = () =>
@@ -237,13 +231,12 @@ const clearBadgePrinted = async (
   id: number,
   init?: RequestInit,
 ): Promise<FallibleRequest<void>> => {
-  const url = new URL(
-    "/registration/onsite/admin/badge/print/clear/",
-    BASE_URL,
-  );
-  url.searchParams.set("id", id.toString());
-
-  return api.post(url, init).json();
+  return api
+    .post("registration/onsite/admin/badge/print/clear/", {
+      ...init,
+      searchParams: { id },
+    })
+    .json();
 };
 
 export const useClearBadgePrinted = () =>
@@ -261,9 +254,7 @@ export const useClearBadgePrinted = () =>
   });
 
 const clearCart = async (): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/clear/", BASE_URL);
-
-  return api.post(url).json();
+  return api.post("registration/onsite/admin/clear/").json();
 };
 
 export const useClearCart = () =>
@@ -281,10 +272,9 @@ export const useClearCart = () =>
   });
 
 const addBadgeToCart = (id: number): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/cart/add/", BASE_URL);
-  url.searchParams.set("id", id.toString());
-
-  return api.post(url).json();
+  return api
+    .post("registration/onsite/admin/cart/add/", { searchParams: { id } })
+    .json();
 };
 
 export const useAddBadgeToCart = () =>
@@ -302,10 +292,9 @@ export const useAddBadgeToCart = () =>
   });
 
 const removeBadgeFromCart = (id: number): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/cart/remove/", BASE_URL);
-  url.searchParams.set("id", id.toString());
-
-  return api.post(url).json();
+  return api
+    .post("registration/onsite/admin/cart/remove/", { searchParams: { id } })
+    .json();
 };
 
 export const useRemoveBadgeFromCart = () =>
@@ -325,13 +314,11 @@ export const useRemoveBadgeFromCart = () =>
 const createAndApplyDiscount = (
   amount: string,
 ): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/discount/create/", BASE_URL);
-
   const formData = new FormData();
   formData.set("amount", amount);
 
   return api
-    .post(url, {
+    .post("registration/onsite/admin/discount/create/", {
       body: formData,
     })
     .json();
@@ -360,10 +347,11 @@ export type CashPaymentOpts = {
 const enableCardPayment = (
   fallback: boolean,
 ): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/payment/", BASE_URL);
-  if (fallback) url.searchParams.set("fallback", "true");
-
-  return api.post(url).json();
+  return api
+    .post("registration/onsite/admin/payment/", {
+      searchParams: { fallback: fallback || undefined },
+    })
+    .json();
 };
 
 export const useEnableCardPayment = () =>
@@ -377,17 +365,12 @@ export const useEnableCardPayment = () =>
     };
   });
 
-const applyCashPayment = ({
-  reference,
-  total,
-  tendered,
-}: CashPaymentOpts): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/cash/complete/", BASE_URL);
-  url.searchParams.set("reference", reference);
-  url.searchParams.set("total", total);
-  url.searchParams.set("tendered", tendered);
-
-  return api.post(url).json();
+const applyCashPayment = (
+  opts: CashPaymentOpts,
+): Promise<FallibleRequest<void>> => {
+  return api
+    .post("registration/onsite/cash/complete/", { searchParams: opts })
+    .json();
 };
 
 export const useApplyCashPayment = () =>
@@ -407,12 +390,11 @@ export const useApplyCashPayment = () =>
 const printReceipts = (
   references: string[],
 ): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/receipt/", BASE_URL);
-  references.forEach((reference) =>
-    url.searchParams.append("reference", reference),
-  );
+  const searchParams = references.map((reference) => ["reference", reference]);
 
-  return api.post(url).json();
+  return api
+    .post("registration/onsite/admin/receipt/", { searchParams })
+    .json();
 };
 
 export const usePrintReceipts = () =>
@@ -429,17 +411,12 @@ export const usePrintReceipts = () =>
 const printBadges = async (
   ids: number[],
 ): Promise<FallibleRequest<BadgePrintResponse>> => {
-  const assignUrl = new URL(
-    "/registration/onsite/admin/badge/assign/",
-    BASE_URL,
-  );
-
   const idObjects = ids.map((id) => {
     return { id };
   });
 
   const assignmentData = await api
-    .post<FallibleRequest<void>>(assignUrl, {
+    .post<FallibleRequest<void>>("registration/onsite/admin/badge/assign/", {
       body: JSON.stringify(idObjects),
     })
     .json();
@@ -448,11 +425,12 @@ const printBadges = async (
     return { success: false };
   }
 
-  const printUrl = new URL("/registration/onsite/admin/badge/print/", BASE_URL);
-  ids.forEach((id) => printUrl.searchParams.append("id", id.toString()));
+  const searchParams = ids.map((id) => ["id", id]);
 
   const printData = await api
-    .post<FallibleRequest<BadgePrintResponse>>(printUrl)
+    .post<
+      FallibleRequest<BadgePrintResponse>
+    >("registration/onsite/admin/badge/print/", { searchParams })
     .json();
 
   return printData;
@@ -478,11 +456,14 @@ const transferCart = async ({
   terminalId,
   badgeIds,
 }: TransferCartOpts): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/cart/transfer/", BASE_URL);
-  url.searchParams.append("terminal_id", terminalId.toString());
-  badgeIds.forEach((id) => url.searchParams.append("badge_id", id.toString()));
+  const searchParams = [
+    ["terminal_id", terminalId],
+    ...badgeIds.map((badgeId) => ["badge_id", badgeId]),
+  ];
 
-  return api.post(url).json();
+  return api
+    .post("registration/onsite/admin/cart/transfer/", { searchParams })
+    .json();
 };
 
 export const useTransferCart = () =>
@@ -539,10 +520,12 @@ const searchAttendees = async (
     return { success: true, results: [] };
   }
 
-  const url = new URL("/registration/onsite/admin/search/", BASE_URL);
-  url.searchParams.set("search", query);
-
-  return api.get(url, init).json();
+  return api
+    .get("registration/onsite/admin/search/", {
+      ...init,
+      searchParams: { search: query },
+    })
+    .json();
 };
 
 export const searchAttendeesOptions = (query: string) =>
@@ -560,10 +543,11 @@ export const searchAttendeesOptions = (query: string) =>
 const setTerminalStatus = (
   status: TerminalStatus,
 ): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/admin/terminal/status/", BASE_URL);
-  url.searchParams.set("status", status);
-
-  return api.get(url).json();
+  return api
+    .get("registration/onsite/admin/terminal/status/", {
+      searchParams: { status },
+    })
+    .json();
 };
 
 export const useSetTerminalStatus = () =>
@@ -577,9 +561,7 @@ export const useSetTerminalStatus = () =>
   });
 
 const cashNoSale = (): Promise<FallibleRequest<void>> => {
-  const url = new URL("/registration/onsite/cashdrawer/no_sale/", BASE_URL);
-
-  return api.get(url).json();
+  return api.get("registration/onsite/cashdrawer/no_sale/").json();
 };
 
 export const useCashNoSale = () =>
@@ -601,12 +583,12 @@ const cashAmountAction = ({
   action,
   amount,
 }: CashAmountActionOpts): Promise<FallibleRequest<void>> => {
-  const url = new URL(`/registration/onsite/cashdrawer/${action}/`, BASE_URL);
-
   const formData = new FormData();
   formData.set("amount", amount.toString());
 
-  return api.post(url, { body: formData }).json();
+  return api
+    .post(`registration/onsite/cashdrawer/${action}/`, { body: formData })
+    .json();
 };
 
 export const useCashAmountAction = (action: CashAction) =>
@@ -663,7 +645,7 @@ export const updateResultsFromCart = (
         badges,
       );
 
-      if (badgesWithChanges) {
+      if (badgesWithChanges.length > 0) {
         const results = previousData.results.map((badge) => {
           const change = badgesWithChanges.find(
             (change) => change.id === badge.id,

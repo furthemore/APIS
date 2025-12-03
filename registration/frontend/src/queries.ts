@@ -5,6 +5,7 @@ import { CSRF_TOKEN } from "./common";
 
 export const api = ky.extend({
   redirect: "error",
+  prefixUrl: window.location.origin,
   hooks: {
     beforeRequest: [
       (request) => {
