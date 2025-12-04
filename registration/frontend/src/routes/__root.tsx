@@ -1,27 +1,21 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import type { QueryClient } from "@tanstack/solid-query";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { Outlet, createRootRouteWithContext } from "@tanstack/solid-router";
 import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools";
-import type { Component } from "solid-js";
-
-import { queryClient } from "../queries";
-
-type RouterContext = {
-  queryClient: QueryClient;
-};
+import { type Component } from "solid-js";
 
 const RootLayout: Component = () => {
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <Outlet />
-        <TanStackRouterDevtools />
-        <SolidQueryDevtools />
-      </QueryClientProvider>
+      <Outlet />
+      <SolidQueryDevtools />
+      <TanStackRouterDevtools />
     </>
   );
 };
 
-export const Route = createRootRouteWithContext<RouterContext>()({
-  component: RootLayout,
-});
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
+  {
+    component: RootLayout,
+  },
+);

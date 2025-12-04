@@ -17,15 +17,21 @@ import {
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { type KbdKey, createShortcut } from "@solid-primitives/keyboard";
 import Fa from "solid-fa";
-import { type Component, type Setter, Show, createSignal } from "solid-js";
+import {
+  type Component,
+  type Setter,
+  Show,
+  createSignal,
+  useContext,
+} from "solid-js";
 import { For } from "solid-js";
 
 import {
-  type OnsiteAdminContext,
   useCashAmountAction,
   useCashNoSale,
   useSetTerminalStatus,
 } from "@admin/api";
+import { ConfigContext } from "@admin/providers/config-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
 import { amountRequest, mutateThenToast } from "../utils";
@@ -41,9 +47,10 @@ type Action = {
 };
 
 export const Actions: Component<{
-  config: OnsiteAdminContext;
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
+  const config = useContext(ConfigContext)!;
+
   const [showCashStatus, setShowCashStatus] = createSignal(false);
 
   const setTerminalStatus = useSetTerminalStatus();
@@ -58,8 +65,8 @@ export const Actions: Component<{
   const readyForNext = () => props.setReadyForNext(true);
 
   const showCashActions = () =>
-    props.config.permissions.cashAdmin &&
-    props.config.terminals.selected?.features.cashdrawer;
+    config()?.permissions.cashAdmin &&
+    config()?.terminals.selected?.features.cashdrawer;
 
   const standardActions: Action[] = [
     {

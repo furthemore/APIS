@@ -52,8 +52,8 @@ export const Cart: Component<{
   const [pendingTransfers, takeNextTransfer] = usePendingTransfers(mqtt);
 
   const otherTerminals = createMemo(() =>
-    config.terminals.available.filter(
-      (terminal) => terminal.id !== config.terminals.selected?.id,
+    config()?.terminals.available.filter(
+      (terminal) => terminal.id !== config()?.terminals.selected?.id,
     ),
   );
 

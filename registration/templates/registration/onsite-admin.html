@@ -11,6 +11,7 @@
   <title>APIS Register</title>
   <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
 
+  {% vite_hmr_client %}
   {% vite_asset "src/index.tsx" %}
 
   {% block head %}{% endblock %}

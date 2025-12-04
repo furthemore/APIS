@@ -5,9 +5,11 @@ import {
   Show,
   createMemo,
   createSelector,
+  useContext,
 } from "solid-js";
 
 import type { BadgeResult } from "@admin/api";
+import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 
 import { BadgeTableLoader } from "./badge-table-loader";
 import { BadgeTableRow } from "./badge-table-row";
@@ -22,6 +24,10 @@ export type AttendeeTableProps = {
 };
 
 export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
+  const userSettings = useContext(UserSettingsContext)!;
+  const showSearchStatus = () =>
+    userSettings().settings().showSearchStatus || false;
+
   const attendeeIdSelector = createSelector(() => props.selectedAttendee);
 
   const attendeesWhenSearching = createMemo((previous: number) => {
@@ -44,8 +50,10 @@ export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
         <thead>
           <tr class="sticky-top z-1">
             <th style={{ width: "35%" }}>Name</th>
-            <th style={{ width: "40%" }}>Badge</th>
-            <th style={{ width: "10%" }}>Status</th>
+            <th style={{ width: showSearchStatus() ? "40%" : "50%" }}>Badge</th>
+            <Show when={showSearchStatus()}>
+              <th style={{ width: "10%" }}>Status</th>
+            </Show>
             <th style={{ width: "15%" }} />
           </tr>
         </thead>
@@ -60,6 +68,7 @@ export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
                   selected={attendeeIdSelector(index())}
                   badge={badge}
                   inCart={props.idsInCart.includes(badge.id)}
+                  showStatus={showSearchStatus()}
                   searchQuery={props.searchQuery}
                 />
               )}

@@ -14,9 +14,9 @@ Stack:
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
-    and in-person with an [Android app][android] as a customer-facing
+    and in-person with an [iPad app][ipad] as a customer-facing
     display, with cash drawer and receipt printer integration.
-  + Manage staff registration and department heirarchies.
+  + Manage staff registration and department hierarchies.
   + Handle dealer applications, registration, and payments.
   + Create limited-use discounts.
   + Handle on-site registration on your own kiosks, or via a public URL.
@@ -73,16 +73,11 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 or
     # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository.
 
-    # Build base docker image:
-    make build-base-docker-image
-
-    # Edit Dockerfile and replace the first line with output from last command. (The console will remind you.)
-
     # Give yourself permission to run Docker commands
     sudo usermod -aG docker ${USER}
     # Log out and back in to make it take effect
 
-    # Build final image
+    # Build image
     make build-docker-image
 
     # Run in Docker
@@ -128,12 +123,12 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     python manage.py runserver_plus --cert localhost.crt
 
 [square]: https://square.com/
-[android]: https://github.com/furthemore/APIS-register
+[ipad]: https://github.com/furthemore/APIS-Register-Swift
 
 ## Development
 
 ### Using [pre-commit](https://pre-commit.com/)
 1. Install: `pip install pre-commit` or `brew install pre-commit`.
-2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to evey commit
+2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to every commit
 
 ```

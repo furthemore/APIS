@@ -14,6 +14,7 @@ django-redis~=5.4.0
 #django-u2f~=1.0.1
 git+https://github.com/rechner/django-u2f.git@23022f80ae4af831e3533464a0b54e6ec46b2ca1
 django-widget-tweaks==1.5.0
+django-vite~=3.1.0
 freezegun>=1.4.0
 gotenberg-client~=0.7.0
 influxdb~=5.3.1          # Influx < v1.7

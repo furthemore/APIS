@@ -12,7 +12,11 @@ import {
 } from "solid-js";
 import { Portal } from "solid-js/web";
 
-import { type OnsiteAdminSearch, contextQueryOptions } from "@admin/api";
+import {
+  type OnsiteAdminSearch,
+  contextQueryOptions,
+  terminalQueryOptions,
+} from "@admin/api";
 import { Navbar } from "@admin/components/navbar";
 import { Onsite } from "@admin/components/onsite";
 import { TerminalSelection } from "@admin/components/terminal-selection";
@@ -50,7 +54,7 @@ const OnsiteAdmin: Component = () => {
   });
 
   return (
-    <ConfigContext.Provider value={context.data}>
+    <ConfigContext.Provider value={() => context.data}>
       <UserSettingsContext.Provider value={userSettings}>
         <Navbar setReadyForNext={setReadyForNext} />
 
@@ -125,7 +129,12 @@ export const Route = createFileRoute("/registration/onsite/admin")({
     };
   },
   loaderDeps: ({ search: { terminal } }) => ({ terminal }),
-  loader: ({ deps: { terminal }, context: { queryClient } }) =>
-    queryClient.ensureQueryData(contextQueryOptions(terminal)),
+  loader: ({ deps: { terminal }, context: { queryClient } }) => {
+    if (terminal) {
+      queryClient.ensureQueryData(contextQueryOptions(terminal));
+    } else {
+      queryClient.ensureQueryData(terminalQueryOptions());
+    }
+  },
   component: OnsiteAdmin,
 });

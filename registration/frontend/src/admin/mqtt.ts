@@ -83,17 +83,26 @@ export default class MqttClient {
       connectReject = reject;
     });
 
-    this.client = mqtt.connect(config.broker, {
-      username: config.auth.user,
-      password: config.auth.token,
-      clientId: `admin-${config.auth.user}-${this.getClientId()}`,
-      clean: false,
-      protocolVersion: 5,
-      timerVariant: "native",
-      properties: {
-        sessionExpiryInterval: 300,
-      },
-    });
+    try {
+      this.client = mqtt.connect(config.broker, {
+        username: config.auth.user,
+        password: config.auth.token,
+        clientId: `admin-${config.auth.user}-${this.getClientId()}`,
+        clean: false,
+        protocolVersion: 5,
+        timerVariant: "native",
+        properties: {
+          sessionExpiryInterval: 300,
+        },
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        this.setErrorMessage(`Connection error: ${err}`);
+      } else {
+        this.setErrorMessage("Connection error");
+      }
+      return;
+    }
 
     this.client.on("connect", async () => {
       this.setIsConnected(true);

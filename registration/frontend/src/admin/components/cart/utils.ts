@@ -1,7 +1,14 @@
+import type { UseMutationResult } from "@tanstack/solid-query";
 import { Big } from "big.js";
 import isEqual from "lodash/isEqual";
 
-import type { Badge } from "@admin/api";
+import type {
+  BadgeCart,
+  BadgePrintResponse,
+  CashPaymentOpts,
+  OnsiteAdminContext,
+} from "@admin/api";
+import type MqttClient from "@admin/mqtt";
 
 const { format } = new Intl.NumberFormat(undefined, {
   style: "currency",
@@ -34,17 +41,17 @@ export const cleanMoneyAmount = (input?: string): string => {
   return format(parsed.toNumber());
 };
 
-export const getBadgeIds = (badges: Badge[]): Set<number> => {
+export const getBadgeIds = (badges: BadgeCart[]): Set<number> => {
   return new Set(badges.map((badge) => badge.id));
 };
 
 export const createAutoPrintCheck = (): ((
   printableIds: number[],
-  currentBadges: Badge[],
+  currentBadges: BadgeCart[],
 ) => boolean) => {
-  let previousBadges: Badge[] = [];
+  let previousBadges: BadgeCart[] = [];
 
-  return function (printableIds: number[], nextBadges: Badge[]): boolean {
+  return function (printableIds: number[], nextBadges: BadgeCart[]): boolean {
     const currentBadges = previousBadges;
     previousBadges = nextBadges;
 
@@ -74,11 +81,11 @@ export const createAutoPrintCheck = (): ((
 };
 
 export const createAutoClearCheck = (): ((
-  currentBadges: Badge[],
+  currentBadges: BadgeCart[],
 ) => boolean) => {
-  let previousBadges: Badge[] = [];
+  let previousBadges: BadgeCart[] = [];
 
-  return function (nextBadges: Badge[]): boolean {
+  return function (nextBadges: BadgeCart[]): boolean {
     const currentBadges = previousBadges;
     previousBadges = nextBadges;
 
@@ -96,4 +103,85 @@ export const createAutoClearCheck = (): ((
 
     return hasSameBadges && currentHadUnprinted && nextAllPrinted;
   };
+};
+
+export const attemptCashPayment = async (
+  applyCashPayment: UseMutationResult<void, Error, CashPaymentOpts>,
+  reference: string,
+  total: string,
+) => {
+  const totalAmount = new Big(total);
+
+  const tendered = prompt("Enter tendered amount");
+  if (!tendered) return;
+
+  let tenderedAmount: Big;
+  try {
+    tenderedAmount = new Big(tendered);
+  } catch {
+    alert("Invalid amount.");
+    return;
+  }
+
+  if (tenderedAmount.lt(totalAmount)) {
+    alert("Insufficient payment, split tender unsupported.");
+    return;
+  }
+
+  const change = tenderedAmount.sub(totalAmount);
+
+  await applyCashPayment.mutateAsync({
+    reference,
+    total,
+    tendered,
+  });
+
+  alert(`Change: ${cleanMoneyAmount(change.toString())}`);
+};
+
+export const createAndApplyDiscountHelper = async (
+  createAndApplyDiscount: UseMutationResult<void, Error, string>,
+) => {
+  const discountAmount = prompt(
+    "Enter discount amount, starting with either $ or %",
+  );
+  if (!discountAmount) return;
+
+  await createAndApplyDiscount.mutateAsync(discountAmount);
+};
+
+export const printBadgesHelper = async (
+  badgeIds: number[],
+  printBadges: UseMutationResult<BadgePrintResponse, Error, number[]>,
+  mqtt?: MqttClient,
+) => {
+  await printBadges.mutateAsync(badgeIds, {
+    onSuccess: async (data) => {
+      if (mqtt !== undefined) {
+        const url = new URL(data.file, window.location.href);
+
+        mqtt.publishPrintMessage(
+          JSON.stringify({
+            action: "print",
+            url,
+          }),
+        );
+      } else {
+        window.open(data.url, "badge");
+      }
+    },
+  });
+};
+
+export const getShirtSizeName = (
+  config?: OnsiteAdminContext,
+  optionValue?: string,
+): string | undefined => {
+  if (!optionValue) return;
+
+  const sizeName = config?.shirtSizes.find(
+    (entry) => entry.id === parseInt(optionValue, 10),
+  )?.name;
+
+  return sizeName || optionValue;
 };

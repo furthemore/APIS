@@ -1,9 +1,10 @@
 import { faPaw, faPrint, faTrash } from "@fortawesome/free-solid-svg-icons";
 import Fa from "solid-fa";
-import { type Component, Show } from "solid-js";
+import { type Component, Show, createMemo } from "solid-js";
 
 import {
-  type Badge,
+  type BadgeCart,
+  type BadgeState,
   urlForBadge,
   useClearBadgePrinted,
   useRemoveBadgeFromCart,
@@ -12,14 +13,38 @@ import { Button } from "@components/button";
 
 import { cleanMoneyAmount } from "../utils";
 
+const STATE_COLORS: Record<BadgeState, string> = {
+  Abandoned: "text-bg-warning",
+  Unpaid: "text-bg-warning",
+  Comp: "text-bg-success",
+  Paid: "text-bg-success",
+  Dealer: "text-bg-info",
+  Staff: "text-bg-primary",
+};
+
+const BADGE_SYMBOLS: [RegExp, string][] = [
+  [/fox/gi, "🦊"],
+  [/wolf/gi, "🐺"],
+  [/cat|kitty/gi, "🐈"],
+  [/frog/gi, "🐸"],
+];
+
 export const CartBadge: Component<{
-  badge: Badge;
+  badge: BadgeCart;
   hoveredOrderIdSelector: (key?: number) => boolean;
 }> = (props) => {
   const clearBadgePrinted = useClearBadgePrinted();
 
   const removeBadgeFromCart = useRemoveBadgeFromCart();
   const isRemovingBadge = () => removeBadgeFromCart.isPending;
+
+  const badgeSymbol = createMemo(() => {
+    const badgeName = props.badge.badgeName;
+
+    return BADGE_SYMBOLS.find(([matcher]) => {
+      return matcher.test(badgeName);
+    })?.[1];
+  });
 
   return (
     <div
@@ -30,23 +55,21 @@ export const CartBadge: Component<{
     >
       <div class="card-header d-flex column-gap-2 align-items-center">
         <div class="flex-grow-1">
-          <Fa icon={faPaw} fw class="me-1" />
+          <Show
+            when={badgeSymbol()}
+            fallback={<Fa icon={faPaw} fw class="me-1" />}
+          >
+            <span class="me-1" style={{ height: "1.25em", width: "1.25em" }}>
+              {badgeSymbol()}
+            </span>
+          </Show>
 
           <a href={urlForBadge(props.badge.id).toString()} target="edit">
             {`${props.badge.firstName} ${props.badge.lastName}`}
           </a>
 
           <div class="d-flex align-items-center column-gap-2 flex-wrap">
-            <span
-              class="badge"
-              classList={{
-                "text-bg-success": props.badge.abandoned === "Paid",
-                "text-bg-info": props.badge.abandoned === "Comp",
-                "text-bg-warning": !["Paid", "Comp"].includes(
-                  props.badge.abandoned,
-                ),
-              }}
-            >
+            <span class={`badge ${STATE_COLORS[props.badge.abandoned]}`}>
               {props.badge.abandoned}
             </span>
 
@@ -92,7 +115,9 @@ export const CartBadge: Component<{
             <tr>
               <th style={{ width: "60%" }}>Badge</th>
               <th style={{ width: "20%" }}>Level</th>
-              <th style={{ width: "20%" }}>Price</th>
+              <th class="text-end" style={{ width: "20%" }}>
+                Price
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -106,7 +131,9 @@ export const CartBadge: Component<{
                 </Show>
               </td>
               <td>{props.badge.effectiveLevel?.name || ""}</td>
-              <td>{cleanMoneyAmount(props.badge.effectiveLevel?.price)}</td>
+              <td class="text-end">
+                {cleanMoneyAmount(props.badge.effectiveLevel?.price)}
+              </td>
             </tr>
             <Show when={props.badge.staff}>
               <tr>

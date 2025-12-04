@@ -5,7 +5,6 @@ import {
   faPrint,
   faReceipt,
 } from "@fortawesome/free-solid-svg-icons";
-import { Big } from "big.js";
 import {
   type Component,
   type Setter,
@@ -23,16 +22,17 @@ import {
   usePrintBadges,
   usePrintReceipts,
 } from "@admin/api";
-import type MqttClient from "@admin/mqtt";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
 import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
 import {
-  cleanMoneyAmount,
+  attemptCashPayment,
+  createAndApplyDiscountHelper,
   createAutoClearCheck,
   createAutoPrintCheck,
+  printBadgesHelper,
 } from "../utils";
 import { ActionButton } from "./action-button";
 
@@ -95,7 +95,7 @@ export const CartActions: Component<{
   const autoPrintCheck = createAutoPrintCheck();
   createEffect(() => {
     if (
-      !config.terminals.selected?.features.printViaMqtt ||
+      !config()?.terminals.selected?.features.printViaMqtt ||
       !userSettings().settings().printAfterPayment
     )
       return;
@@ -115,13 +115,14 @@ export const CartActions: Component<{
   });
 
   const hasSquareTerminal = () =>
-    config.terminals.selected?.features.squareTerminal;
+    config()?.terminals.selected?.features.squareTerminal;
   const canUseCash = () =>
-    config.permissions.cash && config.terminals.selected?.features.cashdrawer;
-  const paymentType = () => config.terminals.selected?.features.paymentType;
+    config()?.permissions.cash &&
+    config()?.terminals.selected?.features.cashdrawer;
+  const paymentType = () => config()?.terminals.selected?.features.paymentType;
 
   const canTenderCash = () =>
-    config.permissions.cash && !hasHold() && allNeedPayment();
+    config()?.permissions.cash && !hasHold() && allNeedPayment();
   const canUseCard = () => !hasHold() && allNeedPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
 
@@ -132,12 +133,14 @@ export const CartActions: Component<{
     <div>
       <div class="row g-2 mb-2">
         <ActionButton
-          class="btn-outline-info"
-          disabled={loading() || !hasSquareTerminal() || !allBadgesPaid()}
+          class="btn-outline-warning"
+          disabled={
+            loading() || !config()?.permissions.discount || !canUseCard()
+          }
           setLoading={setLoading}
-          action={() => printReceipts.mutateAsync(badgeReferences())}
+          action={() => createAndApplyDiscountHelper(createAndApplyDiscount)}
         >
-          <IconAndLabel children="Receipt" icon={faReceipt} fw />
+          <IconAndLabel children="Discount" icon={faGift} fw />
         </ActionButton>
 
         <ActionButton
@@ -171,12 +174,12 @@ export const CartActions: Component<{
 
       <div class="row g-2">
         <ActionButton
-          class="btn-outline-warning"
-          disabled={loading() || !config.permissions.discount || !canUseCard()}
+          class="btn-outline-info"
+          disabled={loading() || !hasSquareTerminal() || !allBadgesPaid()}
           setLoading={setLoading}
-          action={() => createAndApplyDiscountHelper(createAndApplyDiscount)}
+          action={() => printReceipts.mutateAsync(badgeReferences())}
         >
-          <IconAndLabel children="Discount" icon={faGift} fw />
+          <IconAndLabel children="Receipt" icon={faReceipt} fw />
         </ActionButton>
 
         <ActionButton
@@ -187,7 +190,8 @@ export const CartActions: Component<{
           action={(holdingShift) => {
             const badgeIds = printableBadgeIds();
             const printViaMqtt =
-              config.terminals.selected?.features.printViaMqtt && !holdingShift;
+              config()?.terminals.selected?.features.printViaMqtt &&
+              !holdingShift;
 
             return printBadgesHelper(
               badgeIds,
@@ -202,71 +206,3 @@ export const CartActions: Component<{
     </div>
   );
 };
-
-async function attemptCashPayment(
-  applyCashPayment: ReturnType<typeof useApplyCashPayment>,
-  reference: string,
-  total: string,
-) {
-  const totalAmount = new Big(total);
-
-  const tendered = prompt("Enter tendered amount");
-  if (!tendered) return;
-
-  let tenderedAmount: Big;
-  try {
-    tenderedAmount = new Big(tendered);
-  } catch {
-    alert("Invalid amount.");
-    return;
-  }
-
-  if (tenderedAmount.lt(totalAmount)) {
-    alert("Insufficient payment, split tender unsupported.");
-    return;
-  }
-
-  const change = tenderedAmount.sub(totalAmount);
-
-  await applyCashPayment.mutateAsync({
-    reference,
-    total,
-    tendered,
-  });
-
-  alert(`Change: ${cleanMoneyAmount(change.toString())}`);
-}
-
-async function createAndApplyDiscountHelper(
-  createAndApplyDiscount: ReturnType<typeof useCreateAndApplyDiscount>,
-) {
-  const discountAmount = prompt(
-    "Enter discount amount, starting with either $ or %",
-  );
-  if (!discountAmount) return;
-
-  await createAndApplyDiscount.mutateAsync(discountAmount);
-}
-
-async function printBadgesHelper(
-  badgeIds: number[],
-  printBadges: ReturnType<typeof usePrintBadges>,
-  mqtt?: MqttClient,
-) {
-  await printBadges.mutateAsync(badgeIds, {
-    onSuccess: async (data) => {
-      if (mqtt !== undefined) {
-        const url = new URL(data.file, window.location.href);
-
-        mqtt.publishPrintMessage(
-          JSON.stringify({
-            action: "print",
-            url,
-          }),
-        );
-      } else {
-        window.open(data.url, "badge");
-      }
-    },
-  });
-}

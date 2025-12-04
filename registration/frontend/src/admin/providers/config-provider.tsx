@@ -1,5 +1,6 @@
-import { createContext } from "solid-js";
+import { type Accessor, createContext } from "solid-js";
 
 import type { OnsiteAdminContext } from "../api";
 
-export const ConfigContext = createContext<OnsiteAdminContext>();
+export const ConfigContext =
+  createContext<Accessor<OnsiteAdminContext | undefined>>();

@@ -340,7 +340,9 @@ if DEBUG:
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/apis/static/'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+STATICFILES_DIRS = (("bundler", "/app/apis/static/bundler"),)
+STATICFILES_STORAGE = 'fm_eventmanager.file_storage.SelectiveManifestStaticFilesStorage'
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -409,4 +411,4 @@ ENVIRONMENT_FLOAT = os.getenv('ENVIRONMENT_FLOAT', False)
 PRINT_RENDERER = os.getenv('PRINT_RENDERER', 'wkhtmltopdf')
 GOTENBERG_HOST = os.getenv('GOTENBERG_HOST', None)
 
-DJANGO_VITE_STATIC_URL_PREFIX = "bundler"
+DJANGO_VITE_STATIC_URL_PREFIX = "bundler/"

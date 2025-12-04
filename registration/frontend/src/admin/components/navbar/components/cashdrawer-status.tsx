@@ -27,61 +27,65 @@ export const CashdrawerStatus: Component<{ signal: ModalSignal }> = (props) => {
   return (
     <Modal signal={props.signal}>
       <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-header">
-          <Dialog.Title as="h5" class="modal-title">
-            Cashdrawer Status
-          </Dialog.Title>
+        <div class="modal-content">
+          <div class="modal-header">
+            <Dialog.Title as="h5" class="modal-title">
+              Cashdrawer Status
+            </Dialog.Title>
 
-          <Dialog.CloseButton type="button" class="btn-close" />
-        </div>
+            <Dialog.CloseButton type="button" class="btn-close" />
+          </div>
 
-        <Dialog.Description as="div" class="modal-body">
-          <Suspense fallback="Loading...">
-            <div class="table-responsive">
-              <table class="table">
-                <tbody>
-                  <tr>
-                    <th scope="row" style={{ width: "33%" }}>
-                      Status
-                    </th>
-                    <td
-                      classList={{
-                        "table-success": status.data?.status === "OPEN",
-                        "table-secondary": status.data?.status === "CLOSED",
-                        "table-danger": status.data?.status === "SHORT",
-                      }}
-                    >
-                      {status.data?.status}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Total</th>
-                    <td>
-                      {status.data?.total &&
-                        cleanMoneyAmount(status.data.total)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Last Updated</th>
-                    <td>{timeAgo()}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </Suspense>
-        </Dialog.Description>
+          <Dialog.Description as="div" class="modal-body">
+            <Suspense fallback="Loading...">
+              <div class="table-responsive">
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th scope="row" style={{ width: "33%" }}>
+                        Status
+                      </th>
+                      <td
+                        classList={{
+                          "table-success": status.data?.status === "OPEN",
+                          "table-secondary": status.data?.status === "CLOSED",
+                          "table-danger": status.data?.status === "SHORT",
+                        }}
+                      >
+                        {status.data?.status}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Total</th>
+                      <td>
+                        {status.data?.total &&
+                          cleanMoneyAmount(status.data.total)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Last Updated</th>
+                      <td>{timeAgo()}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </Suspense>
+          </Dialog.Description>
 
-        <div class="modal-footer">
-          <Button
-            type="button"
-            class="btn btn-secondary"
-            onClick={() => status.refetch()}
-            loading={status.isFetching}
-          >
-            <IconAndLabel children="Refresh" icon={faRefresh} />
-          </Button>
+          <div class="modal-footer">
+            <Button
+              type="button"
+              class="btn btn-secondary"
+              onClick={() => status.refetch()}
+              loading={status.isFetching}
+            >
+              <IconAndLabel children="Refresh" icon={faRefresh} />
+            </Button>
 
-          <Dialog.CloseButton class="btn btn-primary">Close</Dialog.CloseButton>
+            <Dialog.CloseButton class="btn btn-primary">
+              Close
+            </Dialog.CloseButton>
+          </div>
         </div>
       </div>
     </Modal>

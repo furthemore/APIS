@@ -33,8 +33,8 @@ export const Navbar: Component<{
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = createSignal(false);
 
   const selectedTerminalName = () =>
-    config.terminals.available.find(
-      (terminal) => terminal.id === config.terminals.selected?.id,
+    config()?.terminals.available.find(
+      (terminal) => terminal.id === config()?.terminals.selected?.id,
     )?.name || "No Terminal Selected";
 
   const notificationPermission = createPermission({ name: "notifications" });
@@ -49,45 +49,45 @@ export const Navbar: Component<{
 
         <div class="navbar-collapse collapse flex-grow-0">
           <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-              <DropdownMenu>
-                <DropdownMenu.Trigger
-                  as="button"
-                  class="nav-link dropdown-toggle"
-                >
-                  {selectedTerminalName()}
-                </DropdownMenu.Trigger>
+            <Show when={config}>
+              <li class="nav-item dropdown">
+                <DropdownMenu>
+                  <DropdownMenu.Trigger
+                    as="button"
+                    class="nav-link dropdown-toggle"
+                  >
+                    {selectedTerminalName()}
+                  </DropdownMenu.Trigger>
 
-                <DropdownMenu.Portal>
-                  <DropdownMenu.Content as="ul" class="dropdown-menu show">
-                    <For each={config.terminals.available}>
-                      {(terminal) => (
-                        <DropdownMenu.Item as="li">
-                          <Link
-                            to="/registration/onsite/admin"
-                            class="dropdown-item"
-                            classList={{
-                              active:
-                                terminal.id === config.terminals.selected?.id,
-                            }}
-                            search={{ terminal: terminal.id }}
-                          >
-                            {terminal.name}
-                          </Link>
-                        </DropdownMenu.Item>
-                      )}
-                    </For>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-              </DropdownMenu>
-            </li>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.Content as="ul" class="dropdown-menu show">
+                      <For each={config()?.terminals.available}>
+                        {(terminal) => (
+                          <DropdownMenu.Item as="li">
+                            <Link
+                              to="/registration/onsite/admin"
+                              class="dropdown-item"
+                              classList={{
+                                active:
+                                  terminal.id ===
+                                  config()?.terminals.selected?.id,
+                              }}
+                              search={{ terminal: terminal.id }}
+                            >
+                              {terminal.name}
+                            </Link>
+                          </DropdownMenu.Item>
+                        )}
+                      </For>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Portal>
+                </DropdownMenu>
+              </li>
 
-            <li class="nav-item dropdown">
-              <Actions
-                config={config}
-                setReadyForNext={props.setReadyForNext}
-              />
-            </li>
+              <li class="nav-item dropdown">
+                <Actions setReadyForNext={props.setReadyForNext} />
+              </li>
+            </Show>
 
             <li class="nav-item dropdown">
               <KeyboardShortcuts
@@ -115,12 +115,17 @@ export const Navbar: Component<{
                     />
 
                     <ToggleSetting
+                      name="Show Search Status"
+                      key="showSearchStatus"
+                    />
+
+                    <ToggleSetting
                       name="Search With Birthday"
                       key="searchBirthday"
                     />
 
                     <Show
-                      when={config.terminals.selected?.features.printViaMqtt}
+                      when={config()?.terminals.selected?.features.printViaMqtt}
                     >
                       <ToggleSetting
                         name="Auto Print After Payment"

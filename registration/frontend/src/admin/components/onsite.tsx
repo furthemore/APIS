@@ -89,7 +89,7 @@ export const Onsite: Component<{
   return (
     <>
       <div class="row my-3">
-        <div class="col-md-6">
+        <div class="col-md-5 col-xxl-4">
           <SentryErrorBoundary
             fallback={(err, reset) => (
               <ErrorCard
@@ -109,10 +109,16 @@ export const Onsite: Component<{
             />
           </SentryErrorBoundary>
 
-          <Scan
-            gotScannedName={gotScannedName}
-            readyForNext={props.readyForNext}
-          />
+          <SentryErrorBoundary
+            fallback={(err, reset) => (
+              <ErrorCard title="Scan Error" err={err} reset={reset} />
+            )}
+          >
+            <Scan
+              gotScannedName={gotScannedName}
+              readyForNext={props.readyForNext}
+            />
+          </SentryErrorBoundary>
         </div>
 
         <div class="col">

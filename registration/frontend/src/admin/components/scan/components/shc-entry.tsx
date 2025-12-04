@@ -113,9 +113,9 @@ export const ShcEntry: Component<{
               {(vaccine) => {
                 return (
                   <tr>
-                    <td>{vaccine.date}</td>
+                    <td class="text-nowrap">{vaccine.date}</td>
                     <td>{vaccine.name}</td>
-                    <td>{vaccine.lotNumber}</td>
+                    <td class="text-nowrap">{vaccine.lotNumber}</td>
                   </tr>
                 );
               }}

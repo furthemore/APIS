@@ -11,15 +11,17 @@ export type UserSettingKey =
   | "clearCartAfterPrint"
   | "containerFluid"
   | "multipleBadgeColumns"
+  | "showSearchStatus"
   | "printAfterPayment"
   | "searchBirthday";
 
-export type UserSettings = Record<UserSettingKey, boolean>;
+export type UserSettings = Record<UserSettingKey, boolean | undefined>;
 
 const USER_DEFAULTS: UserSettings = {
   clearCartAfterPrint: false,
   containerFluid: false,
   multipleBadgeColumns: true,
+  showSearchStatus: false,
   printAfterPayment: true,
   searchBirthday: true,
 };

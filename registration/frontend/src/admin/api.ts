@@ -101,6 +101,21 @@ export type SelectedTerminal = {
   };
 };
 
+export type BadgeState =
+  | "Staff"
+  | "Dealer"
+  | "Paid"
+  | "Unpaid"
+  | "Comp"
+  | "Abandoned";
+
+export type Badge = {
+  id: number;
+  abandoned: BadgeState;
+  badgeName: string;
+  badgeNumber?: number;
+};
+
 export type CartResponse = {
   charityDonation: string;
   order_id: number;
@@ -109,16 +124,12 @@ export type CartResponse = {
   subtotal: string;
   total: string;
   total_discount: string;
-  result: Badge[];
+  result: BadgeCart[];
 };
 
-export type Badge = {
-  id: number;
+export type BadgeCart = Badge & {
   orderId: number;
-  abandoned: string;
   age: number;
-  badgeName: string;
-  badgeNumber?: number;
   firstName: string;
   lastName: string;
   holdType?: string;
@@ -169,13 +180,9 @@ export type SearchResults = {
   results: BadgeResult[];
 };
 
-export type BadgeResult = {
-  id: number;
+export type BadgeResult = Badge & {
   editUrl: string;
   attendee: Attendee;
-  badgeName: string;
-  badgeNumber?: number;
-  abandoned: string;
 };
 
 export type Attendee = {
@@ -219,7 +226,7 @@ export const terminalQueryOptions = () =>
     queryKey: [...KEY_PREFIX, "terminals"],
     queryFn: ({ signal }) => fetchTerminals({ signal }),
     throwOnError: true,
-    staleTime: 1000 * 60 * 5,
+    staleTime: Infinity,
   });
 
 const fetchContext = async (
@@ -239,7 +246,7 @@ export const contextQueryOptions = (id?: number) =>
     queryKey: [...KEY_PREFIX, "context", { terminal: id }],
     queryFn: ({ signal }) => fetchContext(id, { signal }),
     throwOnError: true,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 60 * 24,
     enabled: !!id,
   });
 
@@ -647,7 +654,7 @@ export const useCashAmountAction = (action: CashAction) =>
     };
   });
 
-const CHECKED_BADGE_FIELDS: (keyof BadgeResult & keyof Badge)[] = [
+const CHECKED_BADGE_FIELDS: (keyof Badge)[] = [
   "abandoned",
   "badgeName",
   "badgeNumber",
@@ -655,7 +662,7 @@ const CHECKED_BADGE_FIELDS: (keyof BadgeResult & keyof Badge)[] = [
 
 const getBadgesWithChanges = (
   badgeResults: BadgeResult[],
-  cartBadges: Badge[],
+  cartBadges: BadgeCart[],
 ): BadgeResult[] => {
   return badgeResults.flatMap((badgeResult) => {
     const cartBadge = cartBadges.find((badge) => badge.id === badgeResult.id);
@@ -679,11 +686,13 @@ const getBadgesWithChanges = (
 
 export const updateResultsFromCart = (
   queryClient: QueryClient,
-  badges: Badge[],
+  badges: BadgeCart[],
 ) => {
   queryClient.setQueriesData(
     { queryKey: [...KEY_PREFIX, "attendee", "search"] },
-    (previousData: SearchResults): SearchResults | undefined => {
+    (previousData: SearchResults | undefined): SearchResults | undefined => {
+      if (!previousData) return;
+
       const badgesWithChanges = getBadgesWithChanges(
         previousData.results,
         badges,

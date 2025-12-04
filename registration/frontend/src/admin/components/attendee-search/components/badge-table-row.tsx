@@ -9,6 +9,7 @@ export const BadgeTableRow: Component<{
   badge: BadgeResult;
   inCart: boolean;
   selected: boolean;
+  showStatus: boolean;
   searchQuery?: string;
 }> = (props) => {
   const addBadgeToCart = useAddBadgeToCart();
@@ -82,7 +83,9 @@ export const BadgeTableRow: Component<{
           <span class="badge text-bg-info ms-1">{props.badge.badgeNumber}</span>
         </Show>
       </td>
-      <td>{props.badge.abandoned}</td>
+      <Show when={props.showStatus}>
+        <td>{props.badge.abandoned}</td>
+      </Show>
       <td class="text-end">
         <div class="btn-group">
           <a
