@@ -771,6 +771,7 @@ class TestStaffInvite(TestCase):
         response = self.client.get(
             reverse("admin:registration_staffinvite_add")
         )
+        self.assertEqual(200, response.status_code)
         soup = BeautifulSoup(response.content, "html.parser")
         form = soup.find("form", id="staffinvite_form")
         csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
