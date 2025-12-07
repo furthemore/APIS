@@ -94,28 +94,23 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
 ### Locally without docker (recommended for developers)
 
+If you have installed `direnv`, environment setup and dependency installation should already be handled for you by entering the project directory.
+
     git clone https://github.com/furthemore/APIS.git
     cd APIS
-    uv sync
 
-    # Create a development database server
-    python manage.py make_db
+If direnv doesn't automatically do this, run `.envrc` manually to set up the virtual environment and install dependencies:
 
-    # Start the development database server
-    python manage.py start_db
+    ./.envrc
 
-    # Review your settings, including the database settings from the output from make_db.
+After this, rename/copy the development settings file, run migrations to set up the database, and then launch the server.
+
     cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
-
     python manage.py migrate
     python manage.py createsuperuser
+    python manage.py runserver
 
-    # Create a self-signed certificate if you want to test or hack on U2F
-    openssl req -x509 -nodes -sha256 -days 365 -newkey rsa:2048 \
-      -keyout localhost.key -out localhost.crt -subj /CN=localhost
-
-    # Get it running (omit --cert localhost for HTTP)
-    python manage.py runserver_plus --cert localhost.crt
+You should be able to access the APIS instance at http://127.0.0.1:8000 with the superuser account you created.
 
 [square]: https://square.com/
 [ipad]: https://github.com/furthemore/APIS-Register-Swift
@@ -128,6 +123,4 @@ Please see [this documentation](https://github.com/furthemore/APIS/wiki/MQTT-Con
 
 ### Using [pre-commit](https://pre-commit.com/)
 1. Install: `pip install pre-commit` or `brew install pre-commit`.
-2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to every commit
-
-```
+2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to evey commit
