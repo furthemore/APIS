@@ -71,9 +71,7 @@ dev:
 
 
 dev-setup:
-	python3 -m venv venv
-	source venv/bin/activate
-	pip install -r requirements.txt
+	uv sync
 	cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
 
 	@echo "ACTION REQUIRED: Review fm_eventmanager/settings.py"

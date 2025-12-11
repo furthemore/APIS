@@ -43,6 +43,7 @@ django-prometheus = { git = "https://github.com/ulgens/django-prometheus", rev =
 
 [dependency-groups]
 dev = [
+    "coveralls>=4.0.2",
     "django-debug-toolbar~=6.1.0",
     "ruff>=0.9.6",
     "werkzeug>=3.1.4",
