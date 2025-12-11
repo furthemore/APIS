@@ -104,9 +104,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
-    python3 -v venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    uv sync
 
     # Create a development database server
     python manage.py make_db

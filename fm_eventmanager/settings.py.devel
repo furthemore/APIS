@@ -75,17 +75,20 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
+    'django.contrib.humanize',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'widget_tweaks',
     'mathfilters',
     'nested_inline',
     'import_export',
     'django_extensions',
-    'django_u2f',
     'maintenance_mode',
+    'allauth',
+    'allauth.account',
+    'allauth.mfa',
     'registration',
 ]
 
@@ -98,6 +101,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
@@ -184,11 +188,22 @@ USE_TZ = True
 
 SITE_ID = 1
 
-MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
-MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
-LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
-LOGIN_URL = 'u2f:login'
+ACCOUNT_ADAPTER = "fm_eventmanager.adapters.account.RegistrationAccountAdapter"
+
+MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = True
+MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
+
+LOGIN_REDIRECT_URL = "admin"
+
+MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
+MAINTENANCE_MODE_IGNORE_URLS = ("^/accounts/",)
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -249,3 +264,5 @@ ENVIRONMENT_NAME = "Production Server"
 ENVIRONMENT_COLOR = "#FF0000"
 ENVIRONMENT_TEXT_COLOR = "#00FF00"
 ENVIRONMENT_FLOAT = True
+
+VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

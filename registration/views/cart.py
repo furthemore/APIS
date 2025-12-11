@@ -64,7 +64,7 @@ def get_cart(request):
             evt = event.eventStart
             tz = timezone.get_current_timezone()
             try:
-                birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+                birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
             except ValueError:
                 logger.warning(
                     f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')"
@@ -130,7 +130,7 @@ def saveCart(cart):
     evt = postData["event"]
 
     tz = timezone.get_current_timezone()
-    birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
 
     event = Event.objects.get(name=evt)
 

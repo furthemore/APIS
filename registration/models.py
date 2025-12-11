@@ -148,7 +148,7 @@ class PriceLevel(models.Model):
 
     def get_level_active_status(self):
         tz = timezone.get_current_timezone()
-        today = tz.localize(datetime.now())
+        today = datetime.now(tz=tz)
         if self.startDate <= today <= self.endDate:
             return True
         return False

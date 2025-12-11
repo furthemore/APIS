@@ -63,7 +63,7 @@ def clear_session(request):
 
 
 def get_client_ip(request):
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    x_forwarded_for = request.headers.get("x-forwarded-for")
     if x_forwarded_for:
         ip = x_forwarded_for.split(",")[0]
     else:
@@ -73,8 +73,8 @@ def get_client_ip(request):
 
 def get_request_meta(request):
     values = {}
-    values["HTTP_REFERER"] = request.META.get("HTTP_REFERER")
-    values["HTTP_USER_AGENT"] = request.META.get("HTTP_USER_AGENT")
+    values["HTTP_REFERER"] = request.headers.get("referer")
+    values["HTTP_USER_AGENT"] = request.headers.get("user-agent")
     values["IP"] = get_client_ip(request)
     return json.dumps(values)
 
@@ -189,7 +189,7 @@ def index(request):
         return render(request, "registration/docs/no-event.html")
 
     tz = timezone.get_current_timezone()
-    today = tz.localize(datetime.now())
+    today = datetime.now(tz=tz)
     discount = request.session.get("discount")
     if discount:
         discount = Discount.objects.filter(codeName=discount)
