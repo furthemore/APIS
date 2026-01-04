@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from django.conf import settings
+from django.db.utils import NotSupportedError
 from prometheus_client import Histogram
 from square import Square
 from square.core.api_error import ApiError
@@ -338,11 +339,19 @@ def process_webhook_refund_update(notification: PaymentWebhookNotification) -> b
     refund_id = notification.body["data"]["id"]
     try:
         order = Order.objects.get(apiData__refunds__contains=[{"id": refund_id}])
+        # The above is not supported on all DB backends.
     except Order.DoesNotExist:
         logger.warning(
             f"Got refund.updated webhook update for a refund id not found: {refund_id}"
         )
         return False
+    except NotSupportedError:
+        orders = [rec for rec in Order.objects.all() if "id" in rec["apiData"] and rec["apiData"]["id"] == refund_id ]
+        if len(orders) == 0:
+            logger.warning(
+                f"Got refund.updated webhook update for a refund id not found: {refund_id}"
+            )
+            return False
 
     webhook_refund = notification.body["data"]["object"]["refund"]
 
