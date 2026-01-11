@@ -593,6 +593,8 @@ class AdminTestCase(TestCase):
         self.admin_site = AdminSite()
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user.save()
 
 
 class TestDealerAdmin(AdminTestCase):
