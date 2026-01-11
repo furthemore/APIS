@@ -107,7 +107,7 @@ To help keep credentials out of the repository during development, the .envrc sc
     cp ./APIS/.envrc.secrets.example ./APIS/.envrc.secrets
     nano ./APIS/.envrc.secrets #Or use whatever your favorite editor is
 
-Then copy the settings file template tailored for direnv use, modify other settings if desired, and enter the directory. uv will install itself, set up a python venv, install all dependencies, and load secrets into environment variables:
+Then copy the settings file template tailored for direnv use, modify other settings if desired, and enter the directory. uv will install itself, set up a python venv, install all dependencies, load secrets into environment variables, and install pre-commit hooks:
 
     cp ./APIS/fm_eventmanager/settings.py.direnv ./APIS/fm_eventmanager/settings.py
     nano ./APIS/fm_eventmanager/settings.py # Optional
@@ -134,17 +134,23 @@ Next, copy the development settings file template for development and make any c
     # Windows
     Copy-Item .\APIS\fm_eventmanager\settings.py.devel .\APIS\fm_eventmanager\settings.py
 
-Finally, enter the directory, set up the python virtual environment, and install dependencies with uv:
+Next, enter the directory, set up the python virtual environment, and install dependencies with uv:
 
     # Linux
+    cd APIS
     uv venv
     source .venv/bin/activate
     uv sync
 
     # Windows
+    Set-Location APIS
     uv venv
     .venv\Scripts\activate
     uv sync
+
+Finally, set up pre-commit hooks:
+
+    uv tool run pre-commit install
 
 Be sure to run `deactivate` when finished to close the python venv!
 
@@ -158,12 +164,6 @@ After getting everything set up by either method above, run migrations to set up
 
 You should be able to access the APIS instance at http://127.0.0.1:8000 with the superuser account you created.
 
-[square]: https://square.com/
-[ipad]: https://github.com/furthemore/APIS-Register-Swift
-[android]: https://github.com/furthemore/APIS-register
-[uv]: https://docs.astral.sh/uv/
-[uv-install]: https://docs.astral.sh/uv/#installation
-
 ### Production use
 For production use you will also need an MQTT broker for some features like taking on-site payments with the iPad application.
 Please see [this documentation](https://github.com/furthemore/APIS/wiki/MQTT-Configuration) for notes about configuring a broker.
@@ -173,3 +173,9 @@ Please see [this documentation](https://github.com/furthemore/APIS/wiki/MQTT-Con
 ### Using [pre-commit](https://pre-commit.com/)
 1. Install: `pip install pre-commit` or `brew install pre-commit`.
 2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to evey commit
+
+[square]: https://square.com/
+[ipad]: https://github.com/furthemore/APIS-Register-Swift
+[android]: https://github.com/furthemore/APIS-register
+[uv]: https://docs.astral.sh/uv/
+[uv-install]: https://docs.astral.sh/uv/#installation
