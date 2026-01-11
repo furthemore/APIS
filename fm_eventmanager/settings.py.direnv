@@ -63,7 +63,6 @@ LOGGING = {
 
 ADMINS = [('Super Adminton', 'admin@example.com'),]
 SERVER_EMAIL = "no-reply@example.com"
-DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 ALLOWED_HOSTS = ['*']
 
@@ -77,22 +76,17 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.postgres',
     'django.contrib.contenttypes',
-    'django.contrib.humanize',
-    'django.contrib.messages',
     'django.contrib.sessions',
-    'django.contrib.sites',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'widget_tweaks',
     'mathfilters',
     'nested_inline',
     'import_export',
     'django_extensions',
     'maintenance_mode',
-    'allauth',
-    'allauth.account',
-    'allauth.mfa',
     'registration',
-    'django_vite',
 ]
 
 MIDDLEWARE = [
@@ -104,7 +98,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
 
@@ -131,6 +124,8 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'fm_eventmanager.wsgi.application'
+
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -143,12 +138,8 @@ class _ReadTheREADME:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': _ReadTheREADME,
-        'NAME' : 'apis_dev',
-        'TEST' : {
-            'NAME' : 'apis_test',
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME' : BASE_DIR + "/db.sqlite3",
     }
 }
 
@@ -189,22 +180,11 @@ USE_TZ = True
 
 SITE_ID = 1
 
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
-]
-
-ACCOUNT_ADAPTER = "fm_eventmanager.adapters.account.RegistrationAccountAdapter"
-
-MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
-MFA_PASSKEY_LOGIN_ENABLED = True
-MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = True
-MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
-
-LOGIN_REDIRECT_URL = "admin:index"
-
 MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
-MAINTENANCE_MODE_IGNORE_URLS = ("^/accounts/",)
+MAINTENANCE_MODE_IGNORE_URLS = ()
+
+# LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
+# LOGIN_URL = 'u2f:login'
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -221,22 +201,18 @@ SESSION_COOKIE_AGE = 60*60  # 1hr
 # Default email to display as part of error messages
 APIS_DEFAULT_EMAIL = "registration@example.com"
 
-# Sandbox values - DO NOT check in production ids
-AUTHNET_NAME = '426rwVfr3G47'
-AUTHNET_TRANSACTIONKEY = '399UTfznCV7gz224'
-
 # Sandbox values = DO NOT check in production ids
-SQUARE_APPLICATION_ID = 'sandbox-sq0idp-1a_xxxxxxxxxxxxxxxxxxx'
-SQUARE_ACCESS_TOKEN = 'sandbox-sq0atb-xxxxxxxxxxxxxxxxxxxxxx'
-SQUARE_LOCATION_ID = 'xxxxxxxxx...'
+SQUARE_APPLICATION_ID = os.environ['SQUARE_APPLICATION_ID']
+SQUARE_ACCESS_TOKEN = os.environ['SQUARE_ACCESS_TOKEN']
+SQUARE_LOCATION_ID = os.environ['SQUARE_LOCATION_ID']
 SQUARE_CURRENCY = 'USD'
-SQUARE_ENVIRONMENT = 'sandbox'  # Or "production"
-SQUARE_WEBHOOK_SIGNATURE_KEY = 'xj-...'
+SQUARE_ENVIRONMENT = 'sandbox'
+SQUARE_WEBHOOK_SIGNATURE_KEY = os.getenv('SQUARE_WEBHOOK_SIGNATURE_KEY', 'unset')
 
 # Sandbox values - DO NOT check in production credentials
-EMAIL_HOST = 'smtp.mailgun.org'
-EMAIL_HOST_USER = 'postmaster@sandboxcdfc4543b9e84e0ea21d82a527e714fc.mailgun.org'
-EMAIL_HOST_PASSWORD = '8aee7562e054466c362ebd84e7227703'
+EMAIL_HOST = 'localhost'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 # Print handler for cash drawer and receipts
 REGISTER_SQUARE_LOCATION = SQUARE_LOCATION_ID
@@ -258,14 +234,10 @@ MQTT_BROKER = {
 # This URL is passed to browsers to connect to MQTT over websockets for push messages
 MQTT_EXTERNAL_BROKER = "wss://mqtt.furthemore.org/mqtt"
 
-MQTT_JWT_SECRET = "secret=="
+MQTT_JWT_SECRET = os.getenv('MQTT_JWT_SECRET')
 MQTT_JWT_ALGORITHM = "HS256"
 
 ENVIRONMENT_NAME = "Development Server"
 ENVIRONMENT_COLOR = "#999999"
 ENVIRONMENT_TEXT_COLOR = "#FFFFFF"
 ENVIRONMENT_FLOAT = True
-
-DJANGO_VITE_STATIC_URL_PREFIX = "bundler"
-
-VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

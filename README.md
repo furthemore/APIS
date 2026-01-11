@@ -94,18 +94,64 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
 ### Locally without docker (recommended for developers)
 
-If you have installed `direnv`, environment setup and dependency installation should already be handled for you by entering the project directory.
+The recommended development environment is Linux, or WSL if you're on Windows. All instructions below assume you've freshly cloned the repository but have NOT entered the new directory yet.
 
-    git clone https://github.com/furthemore/APIS.git
+## Automatic setup with direnv
+
+If you have installed `direnv`, environment setup and dependency installation should be handled for you by entering the project directory after you allow direnv load the `/envrc` file.
+
+    direnv allow ./APIS
+
+To help keep credentials out of the repository during development, the .envrc script is set up to read a file named `.envrc.secrets` and load those secrets into the environment. Make a copy of `.envrc.secrets.example` then put the needed secrets into the file:
+
+    cp ./APIS/.envrc.secrets.example ./APIS/.envrc.secrets
+    nano ./APIS/.envrc.secrets #Or use whatever your favorite editor is
+
+Then copy the settings file template tailored for direnv use, modify other settings if desired, and enter the directory. uv will install itself, set up a python venv, install all dependencies, and load secrets into environment variables:
+
+    cp ./APIS/fm_eventmanager/settings.py.direnv ./APIS/fm_eventmanager/settings.py
+    nano ./APIS/fm_eventmanager/settings.py # Optional
     cd APIS
 
-If direnv doesn't automatically do this, run `.envrc` manually to set up the virtual environment and install dependencies:
+## Manual setup
 
-    ./.envrc
+APIS uses [uv][uv] for project configuration, dependency management, and virtual environment configuration. Install it as per [its documentation][uv-install]:
 
-After this, rename/copy the development settings file, run migrations to set up the database, and then launch the server.
+    # Linux/WSL using curl
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 
-    cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
+    # Linux/WSL using wget
+    wget -qO- https://astral.sh/uv/install.sh | sh
+
+    # Windows without WSL
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+Next, copy the development settings file template for development and make any changes you need to configure the database, mail server, Square, etc
+
+    # Linux
+    cp ./APIS/fm_eventmanager/settings.py.devel ./APIS/fm_eventmanager/settings.py
+
+    # Windows
+    Copy-Item .\APIS\fm_eventmanager\settings.py.devel .\APIS\fm_eventmanager\settings.py
+
+Finally, enter the directory, set up the python virtual environment, and install dependencies with uv:
+
+    # Linux
+    uv venv
+    source .venv/bin/activate
+    uv sync
+
+    # Windows
+    uv venv
+    .venv\Scripts\activate
+    uv sync
+
+Be sure to run `deactivate` when finished to close the python venv!
+
+## First run
+
+After getting everything set up by either method above, run migrations to set up the database, create the superuser, and then launch the server.
+
     python manage.py migrate
     python manage.py createsuperuser
     python manage.py runserver
@@ -114,6 +160,9 @@ You should be able to access the APIS instance at http://127.0.0.1:8000 with the
 
 [square]: https://square.com/
 [ipad]: https://github.com/furthemore/APIS-Register-Swift
+[android]: https://github.com/furthemore/APIS-register
+[uv]: https://docs.astral.sh/uv/
+[uv-install]: https://docs.astral.sh/uv/#installation
 
 ### Production use
 For production use you will also need an MQTT broker for some features like taking on-site payments with the iPad application.
