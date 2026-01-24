@@ -102,12 +102,12 @@ If you have installed `direnv`, environment setup and dependency installation sh
 
     direnv allow ./APIS
 
-To help keep credentials out of the repository during development, the .envrc script is set up to read a file named `.envrc.secrets` and load those secrets into the environment. Make a copy of `.envrc.secrets.example` then put the needed secrets into the file:
+To help keep credentials out of the repository during development, the .envrc script is set up to read a file named `.env` and load those secrets (and other configuration) into the environment. Make a copy of `.env.example` then put the needed configuration and secrets into the file:
 
-    cp ./APIS/.envrc.secrets.example ./APIS/.envrc.secrets
-    nano ./APIS/.envrc.secrets #Or use whatever your favorite editor is
+    cp ./APIS/.env.example ./APIS/.env
+    nano ./APIS/.env #Or use whatever your favorite editor is
 
-Then copy the settings file template tailored for direnv use, modify other settings if desired, and enter the directory. uv will install itself, set up a python venv, install all dependencies, load secrets into environment variables, and install pre-commit hooks:
+Then copy the settings file template tailored for direnv use, modify other settings if desired, and enter the directory. uv will install itself, set up a python venv, install all dependencies, load config into environment variables, and install pre-commit hooks:
 
     cp ./APIS/fm_eventmanager/settings.py.direnv ./APIS/fm_eventmanager/settings.py
     nano ./APIS/fm_eventmanager/settings.py # Optional
@@ -156,8 +156,15 @@ Be sure to run `deactivate` when finished to close the python venv!
 
 ## First run
 
-After getting everything set up by either method above, run migrations to set up the database, create the superuser, and then launch the server.
+After getting everything set up by either method above, set up the Postgres database and run migrations to set it up, create the superuser, and then launch the server.
 
+**NOTE**: Recent versions of Debian and its derivatives (e.g. Ubuntu, Linux Mint) package Postgres in a way that allows multiple versions to run concurrently, thus the binaries that these scripts use aren't on the PATH. You will need to set up your Postgres instance manually and skip to the `migrate` command in this case.
+
+    # Create and start the development database server (except on Debian)
+    python manage.py make_db
+    python manage.py start_db
+
+    # Set up database tables, create the admin user, and run the server.
     python manage.py migrate
     python manage.py createsuperuser
     python manage.py runserver
