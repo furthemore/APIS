@@ -88,7 +88,7 @@ admin.site.register(User, UserProfileAdmin)
 
 
 class FirebaseAdmin(admin.ModelAdmin):
-    list_display = ("name", "cashdrawer", "print_via_mqtt", "background_color", "webview")
+    list_display = ("name", "cashdrawer", "print_via_mqtt", "print_via_payment", "background_color", "webview")
     form = FirebaseForm
 
     def render_change_form(self, request, context, *args, **kwargs):
@@ -131,6 +131,7 @@ class FirebaseAdmin(admin.ModelAdmin):
             "mqttUsername": token["user"],
             "mqttPassword": token["token"],
             "mqttTopic": f'{mqtt.get_topic("terminal", firebase.name)}/action',
+            "mqttPublishTopicPrefix": f'{mqtt.get_topic("admin", firebase.name)}',
             "squareApplicationId": settings.SQUARE_APPLICATION_ID,
             "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }

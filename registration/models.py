@@ -957,7 +957,11 @@ class Firebase(models.Model):
         verbose_name="Print via MQTT",
         help_text="Which terminal to use for printing via MQTT, if it should be used at this terminal."
     )
-    printer_url = models.CharField(max_length=500, null=True, blank=True)
+    print_via_payment = models.BooleanField(
+        default=False,
+        verbose_name="Print via payment",
+        help_text="When MQTT printing is enabled, print via payment device instead of station."
+    )
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
     webview = models.CharField(

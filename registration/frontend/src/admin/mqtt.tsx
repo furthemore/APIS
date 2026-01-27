@@ -1,7 +1,8 @@
-import mqtt from "mqtt";
+import { Toast, toaster } from "@kobalte/core/toast";
 import mitt, { Emitter } from "mitt";
+import mqtt from "mqtt";
+import { Accessor, Setter, createSignal } from "solid-js";
 
-import { Accessor, createSignal, Setter } from "solid-js";
 import { ApisMqttConfig } from "../entrypoints/admin";
 
 export type MqttTopic =
@@ -12,9 +13,17 @@ export type MqttTopic =
   | "refresh"
   | "scan/id"
   | "scan/shc"
+  | "payment_notification"
   | "transfer";
 
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
+
+const KNOWN_MESSAGES: Record<string, [string, string]> = {
+  payment_opened: ["Payment screen opened", "is-info"],
+  payment_cancelled: ["Payment cancelled", "is-warning"],
+  payment_failed: ["Payment failed", "is-danger"],
+  payment_completed: ["Payment completed", "is-success"],
+};
 
 export default class MqttClient {
   public errorMessage: Accessor<string | undefined>;
@@ -59,7 +68,7 @@ export default class MqttClient {
         } else {
           this.client?.publish(
             this.getPrefixedTopic("admin_presence"),
-            JSON.stringify(":3")
+            JSON.stringify(":3"),
           );
         }
       });
@@ -81,7 +90,7 @@ export default class MqttClient {
       let strippedTopic: MqttTopic;
       if (topic.startsWith(config.auth.base_topic)) {
         strippedTopic = topic.slice(
-          config.auth.base_topic.length + 1
+          config.auth.base_topic.length + 1,
         ) as MqttTopic;
       } else {
         console.warn(`Got topic with unexpected prefix: ${topic}`);
@@ -109,6 +118,24 @@ export default class MqttClient {
             document.cookie = `square_oauth_state=${payload["state"]}; path=/`;
             window.open(payload["url"], "square_oauth");
           }
+        case "payment_notification":
+          const message =
+            KNOWN_MESSAGES[payload as keyof typeof KNOWN_MESSAGES];
+          const [text, className] = (message && [message[0], message[1]]) || [
+            payload,
+            "is-info",
+          ];
+
+          toaster.show((props) => (
+            <Toast
+              as="div"
+              toastId={props.toastId}
+              class={`notification toast ${className}`}
+              onClick={() => toaster.dismiss(props.toastId)}
+            >
+              {text}
+            </Toast>
+          ));
         default:
           this.emitter.emit(strippedTopic, payload);
           break;
@@ -120,6 +147,10 @@ export default class MqttClient {
     this.client?.end();
   }
 
+  public publishUnprefixedMessage(topic: string, payload: string) {
+    this.client?.publish(topic, payload);
+  }
+
   public publishMessage(topic: string, payload: string) {
     this.client?.publish(this.getPrefixedTopic(topic), payload);
   }
@@ -127,7 +158,7 @@ export default class MqttClient {
   public publishPrintMessage(payload: string) {
     this.client?.publish(
       this.config.auth.print_topic || this.getPrefixedTopic("action"),
-      payload
+      payload,
     );
   }
 
