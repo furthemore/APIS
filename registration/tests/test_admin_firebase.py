@@ -46,6 +46,7 @@ class TestFirebaseAdmin(TestCase):
             "mqttUsername": token["user"],
             "mqttPassword": token["token"],
             "mqttTopic": f'{mqtt.get_topic("terminal", firebase.name)}/action',
+            "mqttPublishTopicPrefix": f'{mqtt.get_topic("admin", firebase.name)}',
             "squareApplicationId": settings.SQUARE_APPLICATION_ID,
             "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
@@ -94,7 +95,7 @@ class TestFirebaseAdmin(TestCase):
             b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ",
             response.content,
         )
-        self.assertIn(b'height="113mm"', response.content)
+        self.assertIn(b'height="117mm"', response.content)
 
     def test_provision_page_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))
