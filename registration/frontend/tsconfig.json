@@ -1,7 +1,8 @@
 {
-    "compilerOptions": {
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
-        "strict": true
-    }
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "strict": true,
+    "lib": ["dom", "es2022"]
+  }
 }

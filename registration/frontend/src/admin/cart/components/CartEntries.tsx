@@ -1,11 +1,11 @@
 import { Big } from "big.js";
 import {
   Component,
-  createMemo,
   For,
   Match,
   Show,
   Switch,
+  createMemo,
   useContext,
 } from "solid-js";
 
@@ -41,7 +41,7 @@ export const CartEntries: Component<{
         }
         return options;
       })
-      .flat()
+      .flat(),
   );
 
   return (
@@ -154,12 +154,12 @@ const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = ({
 
 function getShirtSizeName(
   config: ApisConfig,
-  optionValue?: string
+  optionValue?: string,
 ): string | undefined {
   if (!optionValue) return;
 
   const sizeName = config.shirt_sizes.find(
-    (entry) => entry.id === parseInt(optionValue, 10)
+    (entry) => entry.id === parseInt(optionValue, 10),
   )?.name;
 
   return sizeName || optionValue;
@@ -177,7 +177,6 @@ export function cleanMoneyAmount(input?: string): string {
   if (input.startsWith("$")) {
     input = input.substring(1);
   }
-
 
   let parsed: Big;
   try {
