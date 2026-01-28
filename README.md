@@ -157,7 +157,7 @@ Be sure to run `deactivate` when finished to close the python venv!
 
 After getting everything set up by either method above, set up the Postgres database and run migrations to set it up, create the superuser, and then launch the server.
 
-**NOTE**: Recent versions of Debian and its derivatives (e.g. Ubuntu, Linux Mint) package Postgres in a way that allows multiple versions to run concurrently, thus the binaries that these scripts use aren't on the PATH. You will need to set up your Postgres instance manually and skip to the `migrate` command in this case.
+**NOTE**: Recent versions of Debian and its derivatives (e.g. Ubuntu, Linux Mint) package Postgres in a way that allows multiple versions to run concurrently, thus the binaries that these scripts use aren't on the PATH. You will need to set up your Postgres instance manually, make sure the database name, user, and password are set in the config (or the `.env` file if using direnv), and skip to the `migrate` command in this case.
 
     # Create and start the development database server (except on Debian)
     python manage.py make_db
