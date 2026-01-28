@@ -22,10 +22,24 @@ updates:
   # Enable version updates for npm
   - package-ecosystem: "npm"
     # Look for `package.json` and `lock` files in the `root` directory
-    directory: "/"
+    directory: "/registration/frontend"
     # Check the npm registry for updates every day (weekdays)
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    groups:
+      # Low risk - merge without much review
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Higher risk - review more carefully
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
