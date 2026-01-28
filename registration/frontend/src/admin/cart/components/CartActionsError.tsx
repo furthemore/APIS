@@ -1,7 +1,7 @@
-import { Component, createEffect, Show } from "solid-js";
+import { Component, Show, createEffect } from "solid-js";
 
 export const CartActionsError: Component<{ err: any; reset(): void }> = (
-  props
+  props,
 ) => {
   createEffect(() => {
     console.error("Cart had error", props.err);

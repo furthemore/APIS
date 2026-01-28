@@ -2,11 +2,11 @@ import { Big } from "big.js";
 import {
   Accessor,
   Component,
+  Setter,
+  Show,
   createEffect,
   createMemo,
   createSignal,
-  Setter,
-  Show,
   useContext,
 } from "solid-js";
 
@@ -32,15 +32,15 @@ export const CartActions: Component<{
   const hasHold = createMemo(
     () =>
       props.entries?.result?.some((entry) => !!entry.holdType) ||
-      isNaN(parseFloat(props?.entries?.total || ""))
+      isNaN(parseFloat(props?.entries?.total || "")),
   );
 
   const allNeedPayment = createMemo(
     () =>
       parseFloat(props.entries?.total || "") > 0 &&
       props.entries?.result.every(
-        (entry) => !PRINTABLE_STATUS.has(entry.abandoned)
-      )
+        (entry) => !PRINTABLE_STATUS.has(entry.abandoned),
+      ),
   );
 
   const printableBadgeIds = createMemo(
@@ -54,16 +54,16 @@ export const CartActions: Component<{
 
           return isPrintable;
         })
-        ?.map((badge) => badge.id) || []
+        ?.map((badge) => badge.id) || [],
   );
 
   const allBadgesPaid = createMemo(
     () =>
       ((props.entries?.result?.length || 0) > 0 &&
         props.entries?.result?.every((badge) =>
-          PRINTABLE_STATUS.has(badge.abandoned)
+          PRINTABLE_STATUS.has(badge.abandoned),
         )) ||
-      false
+      false,
   );
 
   if (config.terminals.selected?.features?.print_via_mqtt) {
@@ -79,7 +79,8 @@ export const CartActions: Component<{
           setLoading,
           userSettings.userSettings().clear_cart_after_print,
           props.clearSearch,
-          true
+          config.terminals.selected?.features.print_via_mqtt || false,
+          config.terminals.selected?.features.mqtt_print_topic,
         );
       }
     });
@@ -140,7 +141,7 @@ export const CartActions: Component<{
                   return attemptCashPayment(
                     props.manager,
                     props.entries.reference,
-                    props.entries.total
+                    props.entries.total,
                   );
                 }
               }}
@@ -210,8 +211,10 @@ export const CartActions: Component<{
                 setLoading,
                 userSettings.userSettings().clear_cart_after_print,
                 props.clearSearch,
-                !!config.terminals.selected?.features?.print_via_mqtt &&
-                  !holdingShift
+                (!holdingShift &&
+                  config.terminals.selected?.features?.print_via_mqtt) ||
+                  false,
+                config.terminals.selected?.features?.mqtt_print_topic,
               );
             }}
           >
@@ -229,7 +232,7 @@ export const CartActions: Component<{
 async function attemptCashPayment(
   manager: CartManager,
   reference: string,
-  total: string
+  total: string,
 ) {
   const totalAmount = new Big(total);
 
@@ -264,7 +267,7 @@ async function attemptCashPayment(
 
 async function createAndApplyDiscount(manager: CartManager) {
   const discountAmount = prompt(
-    "Enter discount amount, starting with either $ or %"
+    "Enter discount amount, starting with either $ or %",
   );
   if (!discountAmount) return;
 
@@ -289,14 +292,16 @@ async function printBadges(
   setLoading: Setter<boolean>,
   clearCart: boolean,
   clearSearch: () => void,
-  mqttPrint: boolean
+  mqttPrint: "station" | "payment" | false,
+  mqttPrintTopic: string | undefined,
 ) {
   setLoading(true);
   const resp = await manager.printBadges(
     ids,
     clearCart,
     mqttPrint,
-    clearSearch
+    mqttPrintTopic,
+    clearSearch,
   );
   setLoading(false);
 
@@ -319,7 +324,7 @@ async function printReceipts(manager: CartManager) {
 }
 
 function createAutoPrintCheck(
-  printableBadgeIds: Accessor<number[]>
+  printableBadgeIds: Accessor<number[]>,
 ): (currentBadges: Badge[]) => boolean {
   let previousBadges: Badge[] = [];
 

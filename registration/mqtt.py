@@ -53,6 +53,9 @@ def get_onsite_admin_token(firebase):
     if firebase.print_via_mqtt and firebase.print_via_mqtt.id != firebase.id:
         print_topic = f"{get_topic('admin')}/{format_topic(firebase.print_via_mqtt.name)}/action"
         topics.append(print_topic)
+    if firebase.print_via_mqtt and firebase.print_via_payment:
+        print_topic = f"{get_topic('terminal')}/{format_topic(firebase.print_via_mqtt.name)}/action"
+        topics.append(print_topic)
     token = get_token(user, subs=topics, publ=topics)
     return {
         "user": user,

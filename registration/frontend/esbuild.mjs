@@ -1,8 +1,7 @@
-import { writeFileSync } from "fs";
-
 import esbuild from "esbuild";
-import { sassPlugin } from "esbuild-sass-plugin";
 import { solidPlugin } from "esbuild-plugin-solid";
+import { sassPlugin } from "esbuild-sass-plugin";
+import { writeFileSync } from "fs";
 
 const IS_PROD = process.env.NODE_ENVIRONMENT === "production";
 
@@ -14,7 +13,7 @@ const result = await esbuild.build({
   minify: IS_PROD,
   outdir: "../static/",
   sourcemap: true,
-  target: ["es2020"],
+  target: ["es2022"],
   loader: {
     ".woff": "file",
     ".woff2": "file",

@@ -1,5 +1,5 @@
 import { createShortcut } from "@solid-primitives/keyboard";
-import { Accessor, Component, createEffect, createMemo, Show } from "solid-js";
+import { Accessor, Component, Show, createEffect, createMemo } from "solid-js";
 import { createStore } from "solid-js/store";
 
 import { IdData, ShcData } from "..";

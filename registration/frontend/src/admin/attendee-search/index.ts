@@ -20,7 +20,7 @@ export interface Attendee {
 
 export async function getSearchResults(
   urls: ApisUrls,
-  query: string
+  query: string,
 ): Promise<BadgeResult[]> {
   // Clear results if we search for an empty string.
   if (query.trim().length === 0) {

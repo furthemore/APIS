@@ -24,6 +24,24 @@
   word-break: break-word;
 }
 
+.toast-container {
+  width: 100%;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  right: 0;
+  top: 0;
+  text-align: right;
+  align-items: flex-end;
+  z-index: 100;
+}
+
+.toast {
+  width: auto;
+  display: inline-flex;
+}
+
 @include mixins.tablet {
   .badge-actions {
     flex-wrap: nowrap;

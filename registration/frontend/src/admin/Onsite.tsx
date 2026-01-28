@@ -1,17 +1,17 @@
 import {
   Accessor,
   Component,
+  Setter,
   createEffect,
   createSignal,
-  Setter,
   useContext,
 } from "solid-js";
 
 import { AttendeeSearch } from "./attendee-search";
 import { Cart, CartManager } from "./cart";
 import MqttClient from "./mqtt";
-import { ScanPanel } from "./scan";
 import { UserSettingsContext } from "./providers/user-settings-provider";
+import { ScanPanel } from "./scan";
 
 export const Onsite: Component<{
   mqtt: MqttClient;

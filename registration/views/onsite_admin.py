@@ -116,11 +116,22 @@ def onsite_admin(request):
 
     selected_terminal = None
     if terminal:
+        print_via_mqtt = False
+        mqtt_print_topic = None
+        if terminal.print_via_mqtt:
+            if terminal.print_via_payment:
+                print_via_mqtt = "payment"
+                mqtt_print_topic = f"{mqtt.get_topic('terminal')}/{mqtt.format_topic(terminal.print_via_mqtt.name)}/action"
+            else:
+                print_via_mqtt = "station"
+                mqtt_print_topic = f"{mqtt.get_topic('admin')}/{mqtt.format_topic(terminal.print_via_mqtt.name)}/action"
+
         selected_terminal = {
             "id": terminal.id,
             "features": {
-                "print_via_mqtt": terminal.print_via_mqtt is not None,
                 "square_terminal": terminal.square_terminal_id is not None,
+                "print_via_mqtt": print_via_mqtt,
+                "mqtt_print_topic": mqtt_print_topic,
                 "payment_type": terminal.payment_type,
                 "cashdrawer": terminal.cashdrawer,
             }

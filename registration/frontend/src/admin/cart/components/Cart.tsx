@@ -11,7 +11,7 @@ export const Cart: Component<{
   clearSearch(): void;
 }> = (props) => {
   const [refresh, { refetch: refetchCart }] = createResource(
-    async () => await props.cartManager.refreshCart()
+    async () => await props.cartManager.refreshCart(),
   );
 
   const [clearing, setClearing] = createSignal<boolean>(false);
@@ -114,7 +114,7 @@ export const Cart: Component<{
                     {APIS_CONFIG.terminals.available
                       .filter(
                         (terminal) =>
-                          terminal.id !== APIS_CONFIG.terminals.selected?.id
+                          terminal.id !== APIS_CONFIG.terminals.selected?.id,
                       )
                       .map((terminal) => (
                         <a
