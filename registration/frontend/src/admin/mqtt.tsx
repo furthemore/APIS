@@ -6,14 +6,15 @@ import { Accessor, Setter, createSignal } from "solid-js";
 import { ApisMqttConfig } from "../entrypoints/admin";
 
 export type MqttTopic =
-  | "alert"
-  | "authorize_terminal"
-  | "notification"
-  | "open"
+  | "authorize/square"
+  | "notify/alert"
+  | "notify/info"
+  | "notify/payment"
+  | "notify/scan/id"
+  | "notify/scan/shc"
+  | "notify/scan/url"
+  | "presence"
   | "refresh"
-  | "scan/id"
-  | "scan/shc"
-  | "payment_notification"
   | "transfer";
 
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
@@ -23,6 +24,15 @@ const KNOWN_MESSAGES: Record<string, [string, string]> = {
   payment_cancelled: ["Payment cancelled", "is-warning"],
   payment_failed: ["Payment failed", "is-danger"],
   payment_completed: ["Payment completed", "is-success"],
+};
+
+const getDeviceId = (): string => {
+  const existingValue = localStorage.getItem("device-id");
+  if (existingValue) return existingValue;
+
+  const newValue = window.crypto.randomUUID();
+  localStorage.setItem("device-id", newValue);
+  return newValue;
 };
 
 export default class MqttClient {
@@ -50,7 +60,7 @@ export default class MqttClient {
     this.client = mqtt.connect(config.broker, {
       username: config.auth.user,
       password: config.auth.token,
-      clientId: `admin-${config.auth.user}`,
+      clientId: `web-${config.auth.user}-${getDeviceId()}`,
       clean: false,
       protocolVersion: 5,
       timerVariant: "native",
@@ -66,10 +76,7 @@ export default class MqttClient {
         if (err) {
           console.error(`MQTT subscription failed: ${err}`);
         } else {
-          this.client?.publish(
-            this.getPrefixedTopic("admin_presence"),
-            JSON.stringify(":3"),
-          );
+          this.publishMessage("web/presence", JSON.stringify(getDeviceId()));
         }
       });
     });
@@ -83,15 +90,15 @@ export default class MqttClient {
       console.debug("Reconnecting to MQTT");
     });
 
+    const webPrefix = `${config.auth.root_topic}/web/`;
+
     this.client.on("message", (topic, message) => {
       let data = message.toString();
       console.debug("MQTT message", topic, data);
 
       let strippedTopic: MqttTopic;
-      if (topic.startsWith(config.auth.base_topic)) {
-        strippedTopic = topic.slice(
-          config.auth.base_topic.length + 1,
-        ) as MqttTopic;
+      if (topic.startsWith(webPrefix)) {
+        strippedTopic = topic.slice(webPrefix.length) as MqttTopic;
       } else {
         console.warn(`Got topic with unexpected prefix: ${topic}`);
         return;
@@ -103,22 +110,17 @@ export default class MqttClient {
       } catch (err) {}
 
       switch (strippedTopic) {
-        case "notification":
-          if (payload?.["text"]) {
-            sendNotification(payload["text"]);
-          }
-          break;
-        case "alert":
-          if (payload?.["text"]) {
-            alert(payload["text"]);
-          }
-          break;
-        case "authorize_terminal":
+        case "authorize/square":
           if (payload?.["url"] && payload?.["state"]) {
             document.cookie = `square_oauth_state=${payload["state"]}; path=/`;
             window.open(payload["url"], "square_oauth");
           }
-        case "payment_notification":
+        case "notify/alert":
+          if (payload?.["text"]) {
+            alert(payload["text"]);
+          }
+          break;
+        case "notify/payment":
           const message =
             KNOWN_MESSAGES[payload as keyof typeof KNOWN_MESSAGES];
           const [text, className] = (message && [message[0], message[1]]) || [
@@ -136,6 +138,21 @@ export default class MqttClient {
               {text}
             </Toast>
           ));
+          break;
+        case "presence":
+          if (payload !== getDeviceId()) {
+            toaster.show((props) => (
+              <Toast
+                as="div"
+                toastId={props.toastId}
+                class={`notification toast is-warning`}
+                onClick={() => toaster.dismiss(props.toastId)}
+              >
+                Another connection has been opened to this station
+              </Toast>
+            ));
+          }
+          break;
         default:
           this.emitter.emit(strippedTopic, payload);
           break;
@@ -147,30 +164,18 @@ export default class MqttClient {
     this.client?.end();
   }
 
-  public publishUnprefixedMessage(topic: string, payload: string) {
-    this.client?.publish(topic, payload);
-  }
-
   public publishMessage(topic: string, payload: string) {
     this.client?.publish(this.getPrefixedTopic(topic), payload);
   }
 
   public publishPrintMessage(payload: string) {
     this.client?.publish(
-      this.config.auth.print_topic || this.getPrefixedTopic("action"),
+      this.config.auth.print_topic || this.getPrefixedTopic("station/print"),
       payload,
     );
   }
 
   private getPrefixedTopic(topic: string): string {
-    return `${this.config.auth.base_topic}/${topic}`;
-  }
-}
-
-function sendNotification(message: string) {
-  if (Notification.permission === "granted") {
-    return new Notification(message);
-  } else {
-    alert(message);
+    return `${this.config.auth.root_topic}/${topic}`;
   }
 }

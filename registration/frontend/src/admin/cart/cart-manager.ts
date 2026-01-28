@@ -155,8 +155,7 @@ export class CartManager {
   public async printBadges(
     ids: number[],
     clearCart: boolean = true,
-    mqttPrint: "station" | "payment" | false = false,
-    mqttPrintTopic: string | undefined = undefined,
+    mqttPrint: boolean = false,
     beforeClearingCart?: () => void,
   ): Promise<FallibleRequest<BadgePrintResponse>> {
     const assignData = await this.makeRequest(this.urls.assign_badge_number, {
@@ -179,25 +178,10 @@ export class CartManager {
 
     const printData = await this.makeRequest<BadgePrintResponse>(url);
 
-    if (printData.success && mqttPrint && mqttPrintTopic) {
+    if (printData.success && mqttPrint) {
       const url = new URL(printData.file, window.location.href);
 
-      if (mqttPrint === "station") {
-        this.mqtt.publishUnprefixedMessage(
-          mqttPrintTopic,
-          JSON.stringify({
-            action: "print",
-            url,
-          }),
-        );
-      } else if (mqttPrint === "payment") {
-        this.mqtt.publishUnprefixedMessage(
-          mqttPrintTopic,
-          JSON.stringify({
-            printUrl: { url: url },
-          }),
-        );
-      }
+      this.mqtt.publishPrintMessage(JSON.stringify({ url }));
 
       if (clearCart) {
         beforeClearingCart?.();

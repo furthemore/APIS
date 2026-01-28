@@ -118,7 +118,7 @@ class FirebaseAdmin(admin.ModelAdmin):
     def get_provisioning(firebase):
         current_site = Site.objects.get_current()
         endpoint = "https://{0}".format(current_site.domain)
-        token = mqtt.get_client_token(firebase)
+        token = mqtt.get_payment_token(firebase)
 
         return {
             "terminalName": firebase.name,
@@ -130,8 +130,7 @@ class FirebaseAdmin(admin.ModelAdmin):
             "mqttPort": 443,
             "mqttUsername": token["user"],
             "mqttPassword": token["token"],
-            "mqttTopic": f'{mqtt.get_topic("terminal", firebase.name)}/action',
-            "mqttPublishTopicPrefix": f'{mqtt.get_topic("admin", firebase.name)}',
+            "mqttPrefix": token["root_topic"],
             "squareApplicationId": settings.SQUARE_APPLICATION_ID,
             "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
@@ -146,11 +145,14 @@ class FirebaseAdmin(admin.ModelAdmin):
     def provision_view(self, request, pk):
         obj = Firebase.objects.get(id=pk)
         provisioning = json.dumps(self.get_provisioning(obj))
-        token = mqtt.get_client_token(obj)
+
+        receipt_token = mqtt.get_receipt_token(obj)
+        station_token = mqtt.get_station_token(obj)
 
         context = {
             "qr_svg": self.get_qrcode(provisioning).decode("utf-8"),
-            "token": token,
+            "receipt_token": receipt_token,
+            "station_token": station_token,
         }
 
         return render(request, "admin/firebase_qr.html", context)

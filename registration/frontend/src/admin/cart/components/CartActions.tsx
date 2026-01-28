@@ -66,7 +66,7 @@ export const CartActions: Component<{
       false,
   );
 
-  if (config.terminals.selected?.features?.print_via_mqtt) {
+  if (config.mqtt.auth.print_topic) {
     const autoPrintCheck = createAutoPrintCheck(printableBadgeIds);
 
     createEffect(async () => {
@@ -79,8 +79,7 @@ export const CartActions: Component<{
           setLoading,
           userSettings.userSettings().clear_cart_after_print,
           props.clearSearch,
-          config.terminals.selected?.features.print_via_mqtt || false,
-          config.terminals.selected?.features.mqtt_print_topic,
+          !!config.mqtt.auth.print_topic,
         );
       }
     });
@@ -154,7 +153,7 @@ export const CartActions: Component<{
           </Show>
 
           <Show
-            when={APIS_CONFIG.terminals.selected?.features?.payment_type}
+            when={APIS_CONFIG.terminals.selected?.features?.card}
             fallback={<div class="column"></div>}
           >
             <ActionButton
@@ -211,10 +210,7 @@ export const CartActions: Component<{
                 setLoading,
                 userSettings.userSettings().clear_cart_after_print,
                 props.clearSearch,
-                (!holdingShift &&
-                  config.terminals.selected?.features?.print_via_mqtt) ||
-                  false,
-                config.terminals.selected?.features?.mqtt_print_topic,
+                !holdingShift && !!config.mqtt.auth.print_topic,
               );
             }}
           >
@@ -292,15 +288,13 @@ async function printBadges(
   setLoading: Setter<boolean>,
   clearCart: boolean,
   clearSearch: () => void,
-  mqttPrint: "station" | "payment" | false,
-  mqttPrintTopic: string | undefined,
+  mqttPrint: boolean,
 ) {
   setLoading(true);
   const resp = await manager.printBadges(
     ids,
     clearCart,
     mqttPrint,
-    mqttPrintTopic,
     clearSearch,
   );
   setLoading(false);
