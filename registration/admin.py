@@ -106,13 +106,9 @@ class FirebaseAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save()
 
-        data = {
-            "updateConfig": {
-                "config": self.get_provisioning(obj),
-            }
-        }
-
-        registration.views.onsite_admin.send_mqtt_message_to_terminal(obj, data)
+        registration.views.onsite_admin.send_mqtt_message_to_terminal(
+            obj, ["payment", "update", "config"], self.get_provisioning(obj)
+        )
 
     @staticmethod
     def get_provisioning(firebase):
