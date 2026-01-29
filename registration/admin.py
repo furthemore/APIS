@@ -144,11 +144,13 @@ class FirebaseAdmin(admin.ModelAdmin):
 
         receipt_token = mqtt.get_receipt_token(obj)
         station_token = mqtt.get_station_token(obj)
+        state_token = mqtt.get_state_token(obj)
 
         context = {
             "qr_svg": self.get_qrcode(provisioning).decode("utf-8"),
             "receipt_token": receipt_token,
             "station_token": station_token,
+            "state_token": state_token,
         }
 
         return render(request, "admin/firebase_qr.html", context)

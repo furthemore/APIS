@@ -40,8 +40,8 @@ def get_payment_token(firebase: Firebase) -> dict:
     sub = get_topic("payment", "#", name=str(firebase.name))
 
     pub = [
-        get_topic("station", "notify", "alert", name=str(firebase.name)),
-        get_topic("station", "notify", "payment", name=str(firebase.name)),
+        get_topic("web", "notify", "alert", name=str(firebase.name)),
+        get_topic("web", "notify", "payment", name=str(firebase.name)),
     ]
 
     user = format_topic(str(firebase.name))
@@ -88,9 +88,10 @@ def get_onsite_admin_token(firebase: Firebase) -> dict:
 
 def get_receipt_token(firebase: Firebase) -> dict:
     sub = get_topic("receipt", "#", name=str(firebase.name))
+    pub = get_topic("web", "notify", "alert", name=str(firebase.name))
 
     user = format_topic(str(firebase.name))
-    token = get_token(user, subs=[sub], publ=[], exp=60 * 60 * 24 * 7)
+    token = get_token(user, subs=[sub], publ=[pub], exp=60 * 60 * 24 * 7)
 
     return {
         "user": user,
@@ -100,10 +101,7 @@ def get_receipt_token(firebase: Firebase) -> dict:
 
 def get_station_token(firebase: Firebase) -> dict:
     sub = get_topic("station", "#", name=str(firebase.name))
-
-    pub = [
-        get_topic("web", "notify", "#", name=str(firebase.name))
-    ]
+    pub = [get_topic("web", "notify", "#", name=str(firebase.name))]
 
     user = format_topic(str(firebase.name))
     token = get_token(user, subs=[sub], publ=pub, exp=60 * 60 * 24 * 7)
@@ -113,6 +111,15 @@ def get_station_token(firebase: Firebase) -> dict:
         "token": token,
         "base_topic": get_topic("station", name=str(firebase.name)),
     }
+
+
+def get_state_token(firebase: Firebase) -> dict:
+    sub = get_topic("payment", "state", name=str(firebase.name))
+
+    user = format_topic(str(firebase.name))
+    token = get_token(user, subs=[sub], publ=[])
+
+    return {"user": user, "token": token}
 
 
 def get_token(sub, exp=None, subs=None, publ=None) -> str:
