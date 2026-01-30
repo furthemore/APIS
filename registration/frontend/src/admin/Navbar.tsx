@@ -11,7 +11,7 @@ import {
   useContext,
 } from "solid-js";
 
-import { ApisConfig } from "../entrypoints/admin";
+import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
 import { FallibleRequest, api } from "./api";
 import { ConfigContext } from "./providers/config-provider";
 import {
@@ -445,12 +445,20 @@ export const Navbar: Component<{
 
               <hr class="navbar-divider" />
 
-              <a class="navbar-item has-text-danger" href={config.urls.logout}>
-                <span class="icon">
-                  <i class="fas fa-sign-out-alt"></i>
-                </span>
-                <span>Sign Out</span>
-              </a>
+              <form method="post" action={config.urls.logout}>
+                <input
+                  type="hidden"
+                  name="csrfmiddlewaretoken"
+                  value={CSRF_TOKEN}
+                />
+
+                <button class="navbar-item has-text-danger">
+                  <span class="icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                  </span>
+                  <span>Sign Out</span>
+                </button>
+              </form>
             </div>
           </div>
         </div>

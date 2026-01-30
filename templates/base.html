@@ -6,7 +6,6 @@
         <title>{% current_site_name %} {% block title %}{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link href="{% static 'css/bs-yeti.css' %}" rel="stylesheet" media="screen">
         <link href="{% static 'css/bootstrap-darkly.min.css' %}" rel="stylesheet" media="screen">
 
         {% block head %}{% endblock %}
@@ -14,7 +13,7 @@
     <body>
         {% block nav %}
         <nav class="navbar navbar-default">
-          <div class="container-fluid">
+          <div class="container">
             <div class="navbar-header">
               <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
                 <span class="sr-only">Toggle navigation</span>
@@ -26,11 +25,19 @@
             </div>
 
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-
               {% if user.is_authenticated %}
+              <form method="post" action="{% url 'admin:logout' %}" class="navbar-form navbar-right">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+              </form>
+
               <ul class="nav navbar-nav navbar-right">
-                <li><p class="navbar-text"><span class="glyphicon glyphicon-user"></span> {{ user }}</p></li>
-                <li><a href="{% url 'admin:logout' %}">Logout</a></li>
+                <li>
+                  <p class="navbar-text">
+                    <span class="glyphicon glyphicon-user"></span>
+                    {{ user }}
+                  </p>
+                </li>
               </ul>
               {% endif %}
             </div>
@@ -38,7 +45,7 @@
         </nav>
         {% endblock %}
 
-        <div class="container-fluid">
+        <div class="container">
             {% if messages %}
                 {% for message in messages %}
                 <div class="alert {% if message.tags %}{% bootstrap_message message.tags %}{% endif %}" role="alert">
