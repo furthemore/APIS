@@ -159,6 +159,7 @@ def onsite_admin(request):
                 "onsite_admin_search": reverse("registration:onsite_admin_search"),
                 "onsite_admin_transfer_cart": reverse("registration:onsite_admin_transfer_cart"),
                 "onsite_admin": reverse("registration:onsite_admin"),
+                "onsite_attendee_details": reverse("registration:onsite_attendee_details"),
                 "onsite_create_discount": reverse("registration:onsite_create_discount"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
                 "onsite_print_clear": reverse("registration:onsite_print_clear"),
@@ -1195,6 +1196,42 @@ def regtoken(request):
     })
 
     return JsonResponse({"success": True, "token": data})
+
+
+@staff_member_required
+def attendee_details(request):
+    id = request.GET.get("id", None)
+    if id is None or id == "":
+        return JsonResponse(
+            {"success": False, "reason": "Need ID parameter"}, status=400
+        )
+
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
+        )
+
+    attendee = Badge.objects.get(id=id).attendee
+
+    return JsonResponse({
+        "success": True,
+        "attendee": {
+            "firstName": attendee.firstName,
+            "lastName": attendee.lastName,
+            "preferredName": attendee.preferredName,
+            "email": attendee.email,
+            "phone": attendee.phone,
+            "address1": attendee.address1,
+            "address2": attendee.address2,
+            "city": attendee.city,
+            "state": attendee.state,
+            "country": attendee.country,
+            "postalCode": attendee.postalCode,
+            "dob": attendee.birthdate,
+        }
+    })
 
 
 @csrf_exempt

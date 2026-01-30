@@ -80,6 +80,7 @@ export interface ApisUrls {
   onsite_admin_search: string;
   onsite_admin_transfer_cart: string;
   onsite_admin: string;
+  onsite_attendee_details: string;
   onsite_create_discount: string;
   onsite_print_badges: string;
   onsite_print_clear: string;

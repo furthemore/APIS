@@ -1,13 +1,64 @@
+import { ContextMenu } from "@kobalte/core/context-menu";
 import { Component, Show, createResource, createSignal } from "solid-js";
 
+import { AttendeeDetails } from "../../components/DisplayRegistration";
 import { Badge, CartManager } from "../cart-manager";
 import { cleanMoneyAmount } from "./CartEntries";
+
+type AttendeeDetailField = keyof AttendeeDetails;
+
+const BASIC_FIELDS: AttendeeDetailField[] = [
+  "address1",
+  "address2",
+  "city",
+  "state",
+  "country",
+  "postalCode",
+];
+const CLONE_FIELDS: AttendeeDetailField[] = (
+  ["lastName", "email", "phone"] as AttendeeDetailField[]
+).concat(BASIC_FIELDS);
+
+const filterDetails = (
+  details: AttendeeDetails,
+  fields: AttendeeDetailField[],
+): AttendeeDetails => {
+  for (const detailKey in details) {
+    const key = detailKey as AttendeeDetailField;
+    if (!fields.includes(key)) delete details[key];
+  }
+  return details;
+};
+
+const createAttendee = async (
+  cartManager: CartManager,
+  badgeId: number,
+  onlyBasic: boolean,
+  prompt: boolean,
+) => {
+  const details = await cartManager.fetchAttendeeDetails(badgeId);
+  if (!details.success) {
+    return alert("Unable to get attendee details");
+  }
+
+  const fields = filterDetails(
+    details.attendee,
+    onlyBasic ? BASIC_FIELDS : CLONE_FIELDS,
+  );
+
+  if (prompt) {
+    await cartManager.displayRegistration(fields);
+  } else {
+    const url = cartManager.getOnsiteUrl(fields);
+    window.open(url, "register");
+  }
+};
 
 export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
   props,
 ) => {
   const [clearPrintBadgeId, setClearPrintBadgeId] = createSignal<number>();
-  const [clearPrint] = createResource(clearPrintBadgeId, async (id) => {
+  createResource(clearPrintBadgeId, async (id) => {
     const resp = await props.manager.clearBadgePrinted(id);
     if (resp.success) {
       await props.manager.refreshCart();
@@ -20,6 +71,17 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
   const [remove] = createResource(removeBadgeId, async (id) => {
     await props.manager.removeBadge(id);
   });
+
+  const promptClearPrint = () => {
+    if (
+      confirm("Are you sure you need to clear the print flag for this badge?")
+    ) {
+      setClearPrintBadgeId(props.badge.id);
+    }
+  };
+
+  const create = (onlyBasic: boolean, prompt: boolean) =>
+    createAttendee(props.manager, props.badge.id, onlyBasic, prompt);
 
   return (
     <div class="block control">
@@ -42,31 +104,76 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
             </Show>
 
             <Show when={props.badge.printed}>
-              <button
-                class="tag is-link"
-                classList={{ "is-loading": clearPrint.loading }}
-                title="Already printed"
-                onClick={() => {
-                  if (
-                    confirm(
-                      "Are you sure you need to clear the print flag for this badge?",
-                    )
-                  ) {
-                    setClearPrintBadgeId(props.badge.id);
-                  }
-                }}
-              >
+              <span class="tag is-link" title="Already printed">
                 <span class="icon">
                   <i class="fas fa-print" />
                 </span>
-              </button>
+              </span>
             </Show>
           </div>
 
           <div class="mr-2 is-flex-grow-1">
-            <a href={props.manager.urlForBadge(props.badge.id)} target="edit">
-              {`${props.badge.firstName} ${props.badge.lastName}`}
-            </a>
+            <ContextMenu preventScroll={false}>
+              <ContextMenu.Trigger
+                as="a"
+                href={props.manager.urlForBadge(props.badge.id)}
+                target="edit"
+              >
+                {`${props.badge.firstName} ${props.badge.lastName}`}
+              </ContextMenu.Trigger>
+
+              <ContextMenu.Portal>
+                <ContextMenu.Content class="dropdown is-active">
+                  <div class="dropdown-menu">
+                    <div class="dropdown-content">
+                      <ContextMenu.Item
+                        as="a"
+                        class="dropdown-item"
+                        classList={{ "is-disabled": !props.badge.printed }}
+                        disabled={!props.badge.printed}
+                        onClick={promptClearPrint}
+                      >
+                        Clear Print
+                      </ContextMenu.Item>
+
+                      <ContextMenu.Separator class="dropdown-divider" />
+
+                      <ContextMenu.Item
+                        as="a"
+                        class="dropdown-item"
+                        onClick={() => create(true, false)}
+                      >
+                        New Basic
+                      </ContextMenu.Item>
+
+                      <ContextMenu.Item
+                        as="a"
+                        class="dropdown-item"
+                        onClick={() => create(false, false)}
+                      >
+                        New Clone
+                      </ContextMenu.Item>
+
+                      <ContextMenu.Item
+                        as="a"
+                        class="dropdown-item"
+                        onClick={() => create(true, true)}
+                      >
+                        Prompt Basic
+                      </ContextMenu.Item>
+
+                      <ContextMenu.Item
+                        as="a"
+                        class="dropdown-item"
+                        onClick={() => create(false, true)}
+                      >
+                        Prompt Clone
+                      </ContextMenu.Item>
+                    </div>
+                  </div>
+                </ContextMenu.Content>
+              </ContextMenu.Portal>
+            </ContextMenu>
           </div>
 
           <div>

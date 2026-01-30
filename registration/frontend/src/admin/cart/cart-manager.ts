@@ -290,7 +290,7 @@ export class CartManager {
     details: AttendeeDetails,
   ): Promise<FallibleRequest<void>> {
     let url = new URL(this.urls.onsite_regtoken, window.location.href);
-    const resp = await this.makeRequest<{ token: String }>(url);
+    const resp = await api.post(url).json<FallibleRequest<{ token: String }>>();
     if (!resp.success) {
       return resp;
     }
@@ -308,6 +308,16 @@ export class CartManager {
 
   public cancelRegistration() {
     this.mqtt.publishMessage("payment/registration/cancel", JSON.stringify({}));
+  }
+
+  public async fetchAttendeeDetails(
+    badgeId: number,
+  ): Promise<FallibleRequest<{ attendee: AttendeeDetails }>> {
+    return await api
+      .get(this.urls.onsite_attendee_details, {
+        searchParams: { id: badgeId },
+      })
+      .json();
   }
 }
 
