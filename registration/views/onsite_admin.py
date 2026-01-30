@@ -163,6 +163,7 @@ def onsite_admin(request):
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
                 "onsite_print_clear": reverse("registration:onsite_print_clear"),
                 "onsite_print_receipts": reverse("registration:onsite_print_receipts"),
+                "onsite_regtoken": reverse("registration:onsite_regtoken"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "onsite": reverse("registration:onsite"),
                 "open_drawer": reverse("registration:open_drawer"),
@@ -1178,6 +1179,22 @@ def onsite_print_clear(request):
     badge.save()
 
     return JsonResponse({"success": True})
+
+
+@staff_member_required
+def regtoken(request):
+    terminal = get_active_terminal(request)
+    if not terminal:
+        return JsonResponse(
+            {"success": False, "reason": "No terminal attached to session"}, status=400
+        )
+
+    signer = TimestampSigner()
+    data = signer.sign_object({
+        "terminal": terminal.name,
+    })
+
+    return JsonResponse({"success": True, "token": data})
 
 
 @csrf_exempt

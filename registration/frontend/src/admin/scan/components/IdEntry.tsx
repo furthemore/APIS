@@ -1,15 +1,21 @@
 import { createShortcut } from "@solid-primitives/keyboard";
 import { differenceInYears } from "date-fns/differenceInYears";
-import { Component, Show, createMemo, useContext } from "solid-js";
+import { Component, Show } from "solid-js";
 
 import { IdData } from "..";
-import { ConfigContext } from "../../providers/config-provider";
+import { CartManager } from "../../cart";
+import {
+  AttendeeDetails,
+  DisplayRegistrationButton,
+} from "../../components/DisplayRegistration";
 import { CloseButton } from "./CloseButton";
 import { NameBirthday } from "./ScanPii";
 
-export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
-  const config = useContext(ConfigContext)!;
-
+export const IdEntry: Component<{
+  data: IdData;
+  remove(): void;
+  cartManager: CartManager;
+}> = (props) => {
   const expirationDate = () => new Date(props.data.expiry);
   const expired = () => new Date() > expirationDate();
 
@@ -22,22 +28,27 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
     };
   };
 
-  const regUrl = createMemo(() => {
-    let url = new URL(config.urls.onsite, window.location.href);
-    url.searchParams.set("firstName", props.data.first);
-    url.searchParams.set("lastName", props.data.last);
-    url.searchParams.set("dob", props.data.dob);
+  const attendeeDetails = () => {
+    const details: AttendeeDetails = {
+      firstName: props.data.first,
+      lastName: props.data.last,
+      dob: props.data.dob,
+    };
+
     if (props.data.address) {
       const address = props.data.address;
-      url.searchParams.set("address1", address.address);
-      if (address.address2) url.searchParams.set("address2", address.address2);
-      url.searchParams.set("city", address.city);
-      url.searchParams.set("state", address.state);
-      url.searchParams.set("postalCode", address.ZIP.substring(0, 5));
+      details.address1 = address.address;
+      if (address.address2) details.address2 = address.address2;
+      details.city = address.city;
+      details.state = address.state;
+      details.postalCode = address.ZIP.substring(0, 5);
     }
 
-    return url.toString();
-  });
+    return details;
+  };
+
+  const regUrl = () =>
+    props.cartManager.getOnsiteUrl(attendeeDetails()).toString();
 
   createShortcut(
     ["Control", "M"],
@@ -90,7 +101,7 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
           birthday={props.data.dob}
         />
 
-        <div>
+        <div class="buttons">
           <a
             href={regUrl()}
             class="button is-link"
@@ -102,6 +113,17 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
             </span>
             <span>Create Attendee</span>
           </a>
+
+          <DisplayRegistrationButton
+            details={attendeeDetails}
+            cartManager={props.cartManager}
+            class="button is-secondary"
+          >
+            <span class="icon">
+              <i class="fas fa-clipboard-user"></i>
+            </span>
+            <span>Prompt Registration</span>
+          </DisplayRegistrationButton>
         </div>
       </div>
     </article>

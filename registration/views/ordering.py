@@ -3,9 +3,11 @@ import logging
 import time
 from json import JSONDecodeError
 
+from django.core.signing import TimestampSigner
 from django.http import JsonResponse
 from idempotency_key.decorators import idempotency_key
 
+from registration import mqtt
 import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
@@ -368,6 +370,8 @@ def checkout(request):
                 ),
             )
 
+        notify_terminal(request, order)
+
         return common.success()
     else:
         return common.abort(400, message)
@@ -396,3 +400,22 @@ def cancel_order(request):
     # Clear session values
     common.clear_session(request)
     return common.success()
+
+
+def notify_terminal(request, order):
+    try:
+        associated_terminal = request.COOKIES.get("terminal-token")
+        if associated_terminal:
+            signer = TimestampSigner()
+            data_obj = signer.unsign_object(associated_terminal, max_age=60 * 30)
+            # We only need one badge ID as onsite will automatically add all
+            # badges attached to the order.
+            order_item = OrderItem.objects.filter(order_id=order.id).first()
+            if order_item:
+                mqtt.send_mqtt_message(
+                    mqtt.get_topic("web/registration/completed", name=data_obj["terminal"]),
+                    {"badgeId": order_item.badge_id},
+                )
+    except Exception as ex:
+        logger.warning(f"Could not use terminal-token: {ex}")
+        pass

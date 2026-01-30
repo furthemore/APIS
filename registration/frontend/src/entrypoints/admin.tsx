@@ -84,6 +84,7 @@ export interface ApisUrls {
   onsite_print_badges: string;
   onsite_print_clear: string;
   onsite_print_receipts: string;
+  onsite_regtoken: string;
   onsite_remove_from_cart: string;
   onsite: string;
   open_drawer: string;
@@ -184,7 +185,7 @@ function start() {
     return (
       <ConfigContext.Provider value={APIS_CONFIG}>
         <UserSettingsContext.Provider value={userSettings}>
-          <Navbar setReadyForNext={setReadyForNext} />
+          <Navbar setReadyForNext={setReadyForNext} cartManager={cartManager} />
 
           <For each={APIS_CONFIG.errors}>
             {(error) => (
