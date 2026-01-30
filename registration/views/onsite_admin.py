@@ -335,7 +335,7 @@ def enable_payment(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=200
+            {"success": False, "reason": "Cart not initialized"}, status=200
         )
 
     badges = []
@@ -418,7 +418,7 @@ def assign_badge_number(request):
     errors = get_messages_list(request)
     if errors:
         return JsonResponse(
-            {"success": False, "errors": errors, "message": "\n".join(errors)},
+            {"success": False, "errors": errors, "reason": "\n".join(errors)},
             status=400,
         )
     return JsonResponse({"success": True})

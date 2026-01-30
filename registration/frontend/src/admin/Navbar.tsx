@@ -11,7 +11,8 @@ import {
   useContext,
 } from "solid-js";
 
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
+import { ApisConfig } from "../entrypoints/admin";
+import { FallibleRequest, api } from "./api";
 import { ConfigContext } from "./providers/config-provider";
 import {
   UserSettingKey,
@@ -88,28 +89,17 @@ function makeStatusRequestHelper(url: string) {
     status: "open" | "close" | "ready" | "gay" | "blue-light",
   ) {
     let endpoint = new URL(url, window.location.href);
-    endpoint.searchParams.set("status", status);
 
-    const resp = await fetch(endpoint, {
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    const data = await resp.json();
-
-    return data;
+    return await api
+      .post(endpoint, {
+        searchParams: { status: status },
+      })
+      .json();
   };
 }
 
 async function makeSimpleRequest(url: string) {
-  const resp = await fetch(url, {
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
-
-  return data;
+  return await api.get(url).json();
 }
 
 async function amountRequest(url: string, message: string) {
@@ -127,19 +117,16 @@ async function amountRequest(url: string, message: string) {
   let formData = new FormData();
   formData.set("amount", amount.toString());
 
-  const resp = await fetch(url, {
-    method: "POST",
-    body: formData,
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
+  const data: FallibleRequest<void> = await api
+    .post(url, {
+      body: formData,
+    })
+    .json();
 
   if (data["success"]) {
     alert("Success!");
   } else {
-    alert(`Error: ${data.message}`);
+    alert(`Error: ${data.reason}`);
   }
 }
 

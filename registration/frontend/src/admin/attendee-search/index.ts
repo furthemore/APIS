@@ -1,4 +1,5 @@
-import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
+import { ApisUrls } from "../../entrypoints/admin";
+import { api } from "../api";
 import { AttendeeSearch } from "./components/AttendeeSearch";
 
 export { AttendeeSearch };
@@ -27,15 +28,11 @@ export async function getSearchResults(
     return [];
   }
 
-  let url = new URL(urls.onsite_admin_search, window.location.href);
-  url.searchParams.set("search", query);
+  const data = await api
+    .get(urls.onsite_admin_search, {
+      searchParams: { search: query },
+    })
+    .json<{ results: BadgeResult[] }>();
 
-  const resp = await fetch(url, {
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
-
-  return data["results"];
+  return data.results;
 }
