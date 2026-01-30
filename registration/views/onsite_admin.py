@@ -118,9 +118,10 @@ def onsite_admin(request):
         selected_terminal = {
             "id": terminal.id,
             "features": {
-                "square_terminal": terminal.square_terminal_id is not None,
                 "card": terminal.payment_type is not None,
                 "cashdrawer": terminal.cashdrawer,
+                "prompt": terminal.payment_type == Firebase.MQTT_REGISTER_APP,
+                "square_terminal": terminal.square_terminal_id is not None,
             },
         }
 

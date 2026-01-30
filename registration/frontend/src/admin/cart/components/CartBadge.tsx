@@ -1,7 +1,14 @@
 import { ContextMenu } from "@kobalte/core/context-menu";
-import { Component, Show, createResource, createSignal } from "solid-js";
+import {
+  Component,
+  Show,
+  createResource,
+  createSignal,
+  useContext,
+} from "solid-js";
 
 import { AttendeeDetails } from "../../components/DisplayRegistration";
+import { ConfigContext } from "../../providers/config-provider";
 import { Badge, CartManager } from "../cart-manager";
 import { cleanMoneyAmount } from "./CartEntries";
 
@@ -57,6 +64,8 @@ const createAttendee = async (
 export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
   props,
 ) => {
+  const config = useContext(ConfigContext)!;
+
   const [clearPrintBadgeId, setClearPrintBadgeId] = createSignal<number>();
   createResource(clearPrintBadgeId, async (id) => {
     const resp = await props.manager.clearBadgePrinted(id);
@@ -145,7 +154,6 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                       >
                         New Basic
                       </ContextMenu.Item>
-
                       <ContextMenu.Item
                         as="a"
                         class="dropdown-item"
@@ -154,21 +162,22 @@ export const CartBadge: Component<{ manager: CartManager; badge: Badge }> = (
                         New Clone
                       </ContextMenu.Item>
 
-                      <ContextMenu.Item
-                        as="a"
-                        class="dropdown-item"
-                        onClick={() => create(true, true)}
-                      >
-                        Prompt Basic
-                      </ContextMenu.Item>
-
-                      <ContextMenu.Item
-                        as="a"
-                        class="dropdown-item"
-                        onClick={() => create(false, true)}
-                      >
-                        Prompt Clone
-                      </ContextMenu.Item>
+                      <Show when={config.terminals.selected?.features.prompt}>
+                        <ContextMenu.Item
+                          as="a"
+                          class="dropdown-item"
+                          onClick={() => create(true, true)}
+                        >
+                          Prompt Basic
+                        </ContextMenu.Item>
+                        <ContextMenu.Item
+                          as="a"
+                          class="dropdown-item"
+                          onClick={() => create(false, true)}
+                        >
+                          Prompt Clone
+                        </ContextMenu.Item>
+                      </Show>
                     </div>
                   </div>
                 </ContextMenu.Content>

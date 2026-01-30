@@ -114,6 +114,7 @@ export interface ApisSelectedTerminal {
 export interface ApisTerminalFeatures {
   card: boolean;
   cashdrawer: boolean;
+  prompt: boolean;
   square_terminal: boolean;
 }
 
