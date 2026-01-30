@@ -7,44 +7,44 @@ requires-python = ">=3.13"
 dependencies = [
     "beautifulsoup4>=4.12.3",
     "configobj>=5.0.9",
-    "django~=6.0",
+    "django~=6.0.1",
     "django-admin-env-notice~=1.0.1",
-    "django-allauth[mfa]>=65.13.1",
+    "django-allauth[mfa]>=65.14.0",
     "django-extensions~=4.1",
     "django-idempotency-key~=1.3.0",
-    "django-import-export~=4.3.14",
+    "django-import-export~=4.4.0",
     "django-maintenance-mode~=0.22.0",
     "django-mathfilters~=1.0.0",
     "django-nested-admin>=4.1.1",
     "django-nested-inline~=0.4.6",
     "django-prometheus~=2.4.1",
     "django-redis~=6.0.0",
-    "django-widget-tweaks~=1.5.0",
+    "django-widget-tweaks~=1.5.1",
     "freezegun>=1.4.0",
     "gotenberg-client~=0.7.0",
     "influxdb~=5.3.1",
-    "influxdb-client~=1.49.0",
+    "influxdb-client~=1.50.0",
     "markuppy>=1.14",
     "paho-mqtt~=2.1.0",
-    "pillow>=5.3",
+    "pillow>=12.1.0",
     "psycopg2-binary>=2.9.9",
     "pygments~=2.19.2",
-    "pyjwt~=2.10.1",
+    "pyjwt~=2.11.0",
     "pytz~=2025.2",
-    "qrcode~=8.2",
+    "qrcode~=8.2.0",
     "respx>=0.22.0",
-    "sentry-sdk>=2.21.0",
-    "soupsieve>=2.6",
+    "sentry-sdk>=2.51.0",
+    "soupsieve>=2.8.3",
     "squareup==22.0.0.20220921",
 ]
 
 [tool.uv.sources]
-django-prometheus = { git = "https://github.com/ulgens/django-prometheus", rev = "901bd2c240881c7d7aa8dcb3abccacbbfc7853cf" }
+django-prometheus = { git = "https://github.com/django-commons/django-prometheus", rev = "ea2d559476675a688f82cc37fac22b796ec7bcba" }
 
 [dependency-groups]
 dev = [
     "coveralls>=4.0.2",
-    "django-debug-toolbar~=6.1.0",
-    "ruff>=0.9.6",
-    "werkzeug>=3.1.4",
+    "django-debug-toolbar~=6.2.0",
+    "ruff>=0.14.14",
+    "werkzeug>=3.1.5",
 ]

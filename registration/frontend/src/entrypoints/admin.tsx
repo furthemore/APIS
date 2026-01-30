@@ -1,14 +1,14 @@
+import { Toast } from "@kobalte/core/toast";
 import * as Sentry from "@sentry/solid";
 import { createSignal } from "solid-js";
 import { ErrorBoundary, For, render } from "solid-js/web";
 
 import { Navbar } from "../admin/Navbar";
 import { Onsite } from "../admin/Onsite";
-import { ConfigContext } from "../admin/providers/config-provider";
-
 import { CartManager } from "../admin/cart";
 import "../admin/index.scss";
 import MqttClient from "../admin/mqtt";
+import { ConfigContext } from "../admin/providers/config-provider";
 import {
   UserSettingsContext,
   UserSettingsManager,
@@ -56,7 +56,7 @@ export interface ApisMqttConfig {
 export interface ApisMqttAuth {
   user: string;
   token: string;
-  base_topic: string;
+  root_topic: string;
   print_topic?: string;
 }
 
@@ -110,10 +110,9 @@ export interface ApisSelectedTerminal {
 }
 
 export interface ApisTerminalFeatures {
-  print_via_mqtt: boolean;
-  square_terminal: boolean;
-  payment_type?: "mqtt-app" | "square-terminal";
+  card: boolean;
   cashdrawer: boolean;
+  square_terminal: boolean;
 }
 
 export interface ApisTerminal {
@@ -149,7 +148,7 @@ export const SentryErrorBoundary =
   Sentry.withSentryErrorBoundary(ErrorBoundary);
 
 export const CSRF_TOKEN = document.querySelector<HTMLMetaElement>(
-  "meta[name='csrf_token']"
+  "meta[name='csrf_token']",
 )!.content;
 
 function start() {
@@ -209,6 +208,10 @@ function start() {
               setReadyForNext={setReadyForNext}
             />
           </div>
+
+          <Toast.Region>
+            <Toast.List as="div" class="toast-container" />
+          </Toast.Region>
         </UserSettingsContext.Provider>
       </ConfigContext.Provider>
     );

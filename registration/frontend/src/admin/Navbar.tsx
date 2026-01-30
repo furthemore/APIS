@@ -1,17 +1,18 @@
 import { Dialog } from "@kobalte/core/dialog";
-import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
+import { KbdKey, createShortcut } from "@solid-primitives/keyboard";
 import { Big } from "big.js";
 import {
   Component,
-  createEffect,
-  createSignal,
   For,
   Setter,
   Show,
+  createEffect,
+  createSignal,
   useContext,
 } from "solid-js";
 
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
+import { ApisConfig } from "../entrypoints/admin";
+import { FallibleRequest, api } from "./api";
 import { ConfigContext } from "./providers/config-provider";
 import {
   UserSettingKey,
@@ -85,31 +86,20 @@ const ActionButton: Component<{
 
 function makeStatusRequestHelper(url: string) {
   return async function (
-    status: "open" | "close" | "ready" | "gay" | "blue-light"
+    status: "open" | "close" | "ready" | "gay" | "blue-light",
   ) {
     let endpoint = new URL(url, window.location.href);
-    endpoint.searchParams.set("status", status);
 
-    const resp = await fetch(endpoint, {
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    const data = await resp.json();
-
-    return data;
+    return await api
+      .post(endpoint, {
+        searchParams: { status: status },
+      })
+      .json();
   };
 }
 
 async function makeSimpleRequest(url: string) {
-  const resp = await fetch(url, {
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
-
-  return data;
+  return await api.get(url).json();
 }
 
 async function amountRequest(url: string, message: string) {
@@ -127,19 +117,16 @@ async function amountRequest(url: string, message: string) {
   let formData = new FormData();
   formData.set("amount", amount.toString());
 
-  const resp = await fetch(url, {
-    method: "POST",
-    body: formData,
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
+  const data: FallibleRequest<void> = await api
+    .post(url, {
+      body: formData,
+    })
+    .json();
 
   if (data["success"]) {
     alert("Success!");
   } else {
-    alert(`Error: ${data.message}`);
+    alert(`Error: ${data.reason}`);
   }
 }
 
@@ -148,7 +135,7 @@ const Actions: Component<{
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
   const statusRequestHelper = makeStatusRequestHelper(
-    props.config.urls.set_terminal_status
+    props.config.urls.set_terminal_status,
   );
 
   return (
@@ -206,7 +193,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.open_drawer,
-                "Enter initial amount in drawer"
+                "Enter initial amount in drawer",
               )
             }
           />
@@ -217,7 +204,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.cash_deposit,
-                "Enter amount added to drawer"
+                "Enter amount added to drawer",
               )
             }
           />
@@ -228,7 +215,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.safe_drop,
-                "Enter amount dropped into safe"
+                "Enter amount dropped into safe",
               )
             }
           />
@@ -239,7 +226,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.cash_pickup,
-                "Enter amount picked up from drawer"
+                "Enter amount picked up from drawer",
               )
             }
           />
@@ -250,7 +237,7 @@ const Actions: Component<{
             action={() =>
               amountRequest(
                 props.config.urls.close_drawer,
-                "Enter final amount in drawer"
+                "Enter final amount in drawer",
               )
             }
           />
@@ -323,7 +310,7 @@ const ToggleSetting: Component<{
         ev.preventDefault();
         props.userSettings.store(
           props.key,
-          !props.userSettings.userSettings()[props.key]
+          !props.userSettings.userSettings()[props.key],
         );
       }}
     >
@@ -355,7 +342,7 @@ export const Navbar: Component<{
 
   createEffect(() => {
     const availableIds = config.terminals.available.map(
-      (terminal) => terminal.id
+      (terminal) => terminal.id,
     );
     if (
       availableIds.length > 0 &&
@@ -444,7 +431,7 @@ export const Navbar: Component<{
                 userSettings={userSettings}
               />
 
-              <Show when={config.terminals.selected?.features?.print_via_mqtt}>
+              <Show when={!!config.mqtt.auth.print_topic}>
                 <ToggleSetting
                   name="Auto Print After Payment"
                   key="print_after_payment"

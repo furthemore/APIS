@@ -1,11 +1,11 @@
-import { createShortcut, KbdKey } from "@solid-primitives/keyboard";
+import { KbdKey, createShortcut } from "@solid-primitives/keyboard";
 import {
   Component,
+  JSX,
+  Setter,
   createEffect,
   createResource,
   createSignal,
-  JSX,
-  Setter,
 } from "solid-js";
 
 export type ActionButtonProps = {
@@ -46,7 +46,7 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
       },
       {
         preventDefault: true,
-      }
+      },
     );
   }
 

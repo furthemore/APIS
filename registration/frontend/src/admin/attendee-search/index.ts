@@ -1,4 +1,5 @@
-import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
+import { ApisUrls } from "../../entrypoints/admin";
+import { api } from "../api";
 import { AttendeeSearch } from "./components/AttendeeSearch";
 
 export { AttendeeSearch };
@@ -20,22 +21,18 @@ export interface Attendee {
 
 export async function getSearchResults(
   urls: ApisUrls,
-  query: string
+  query: string,
 ): Promise<BadgeResult[]> {
   // Clear results if we search for an empty string.
   if (query.trim().length === 0) {
     return [];
   }
 
-  let url = new URL(urls.onsite_admin_search, window.location.href);
-  url.searchParams.set("search", query);
+  const data = await api
+    .get(urls.onsite_admin_search, {
+      searchParams: { search: query },
+    })
+    .json<{ results: BadgeResult[] }>();
 
-  const resp = await fetch(url, {
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
-
-  return data["results"];
+  return data.results;
 }

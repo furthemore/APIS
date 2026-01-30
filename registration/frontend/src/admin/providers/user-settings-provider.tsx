@@ -1,4 +1,4 @@
-import { Accessor, createContext, createSignal, Setter } from "solid-js";
+import { Accessor, Setter, createContext, createSignal } from "solid-js";
 
 const STORAGE_KEY = "user-settings";
 

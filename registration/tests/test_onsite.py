@@ -316,7 +316,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_send_mqtt_single.call_count, 2)
+        self.assertEqual(mock_send_mqtt_single.call_count, 1)
 
     @patch("registration.mqtt.send_mqtt_message")
     def test_onsite_set_invalid_terminal_status(self, mock_send_mqtt_message):

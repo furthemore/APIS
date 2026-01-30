@@ -163,7 +163,6 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
             badge.save()
 
         if terminal := data_obj.get("terminal", None):
-            topic = f"{mqtt.get_topic('admin', terminal)}/refresh"
-            mqtt.send_mqtt_message(topic, None)
+            mqtt.send_mqtt_message(mqtt.get_topic("web/refresh", name=terminal), None)
 
         return http_resp

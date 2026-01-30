@@ -1,6 +1,7 @@
-import { Accessor, createSignal, Setter } from "solid-js";
+import { Accessor, Setter, createSignal } from "solid-js";
 
-import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
+import { ApisUrls } from "../../entrypoints/admin";
+import { FallibleRequest, api } from "../api";
 import MqttClient from "../mqtt";
 
 const LOCK_NAME = "onsite-cart-update";
@@ -52,23 +53,18 @@ export class CartManager {
 
   private async makeRequest<T>(
     input: string | URL,
-    init?: RequestInit
+    init?: RequestInit,
   ): Promise<FallibleRequest<T>> {
     const perform = async () => {
-      console.debug("Making request", input);
-      const resp = await fetch(input, {
-        ...init,
-        headers: { "x-csrftoken": CSRF_TOKEN, ...init?.headers },
-      });
-      const data = await resp.json();
-      console.debug("Got response data", input, data);
+      const data = await api(input, init).json<FallibleRequest<T>>();
+      console.debug("Got response data", data);
       return data;
     };
+
     if ("locks" in navigator && navigator.locks) {
-      console.debug("Aquiring cart update lock for request", input);
       return await navigator.locks.request(LOCK_NAME, perform);
     } else {
-      console.warn("locks unavailable, session data might get out of sync!");
+      console.warn("Locks unavailable, session data might get out of sync!");
       return await perform();
     }
   }
@@ -94,7 +90,7 @@ export class CartManager {
 
   public async refreshCart() {
     const data = await this.makeRequest<CartResponse>(
-      this.urls.onsite_admin_cart
+      this.urls.onsite_admin_cart,
     );
 
     if (!data.success) {
@@ -126,11 +122,11 @@ export class CartManager {
   public async applyCashPayment(
     reference: string,
     total: string,
-    tendered: string
+    tendered: string,
   ): Promise<FallibleRequest<void>> {
     let url = new URL(
       this.urls.complete_cash_transaction,
-      window.location.href
+      window.location.href,
     );
     url.searchParams.set("reference", reference);
     url.searchParams.set("total", total);
@@ -144,7 +140,7 @@ export class CartManager {
   }
 
   public async enableCardPayment(
-    fallback: boolean
+    fallback: boolean,
   ): Promise<FallibleRequest<void>> {
     let url = new URL(this.urls.enable_payment, window.location.href);
     if (fallback) url.searchParams.set("fallback", "true");
@@ -156,7 +152,7 @@ export class CartManager {
     ids: number[],
     clearCart: boolean = true,
     mqttPrint: boolean = false,
-    beforeClearingCart?: () => void
+    beforeClearingCart?: () => void,
   ): Promise<FallibleRequest<BadgePrintResponse>> {
     const assignData = await this.makeRequest(this.urls.assign_badge_number, {
       method: "POST",
@@ -165,7 +161,7 @@ export class CartManager {
           return {
             id,
           };
-        })
+        }),
       ),
     });
 
@@ -181,12 +177,7 @@ export class CartManager {
     if (printData.success && mqttPrint) {
       const url = new URL(printData.file, window.location.href);
 
-      this.mqtt.publishPrintMessage(
-        JSON.stringify({
-          action: "print",
-          url,
-        })
-      );
+      this.mqtt.publishPrintMessage(JSON.stringify({ url }));
 
       if (clearCart) {
         beforeClearingCart?.();
@@ -209,7 +200,7 @@ export class CartManager {
   public urlForBadge(id: number): string {
     let url = new URL(
       this.urls.registration_badge_change,
-      window.location.href
+      window.location.href,
     );
     url.pathname = url.pathname.replace("0", id.toString());
     return url.toString();
@@ -222,7 +213,7 @@ export class CartManager {
   }
 
   public async createAndApplyDiscount(
-    amount: string
+    amount: string,
   ): Promise<FallibleRequest<void>> {
     const formData = new FormData();
     formData.set("amount", amount);
@@ -240,7 +231,7 @@ export class CartManager {
 
     let url = new URL(this.urls.onsite_print_receipts, window.location.href);
     this.cartEntries()?.result?.forEach((badge) =>
-      url.searchParams.append("reference", badge.reference)
+      url.searchParams.append("reference", badge.reference),
     );
 
     return await this.makeRequest(url);
@@ -253,7 +244,7 @@ export class CartManager {
 
     let url = new URL(
       this.urls.onsite_admin_transfer_cart,
-      window.location.href
+      window.location.href,
     );
     url.searchParams.append("terminal_id", terminal_id.toString());
     this.cartEntries()?.result?.forEach((badge) => {
@@ -270,13 +261,6 @@ export class CartManager {
     return { success: true } as FallibleRequest<void>;
   }
 }
-
-export type FallibleRequest<T> =
-  | {
-      success: false;
-      reason?: string;
-    }
-  | ({ success: true } & T);
 
 export interface CartResponse {
   charityDonation: string;

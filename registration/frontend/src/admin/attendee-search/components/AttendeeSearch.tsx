@@ -2,12 +2,12 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import {
   Accessor,
   Component,
-  createEffect,
-  createResource,
-  createSignal,
   For,
   Setter,
   Show,
+  createEffect,
+  createResource,
+  createSignal,
   untrack,
   useContext,
 } from "solid-js";
@@ -65,7 +65,7 @@ export const AttendeeSearch: Component<{
 
   const [results, { refetch }] = createResource(
     props.searchQuery,
-    async (query) => await getSearchResults(config.urls, query)
+    async (query) => await getSearchResults(config.urls, query),
   );
 
   let searchInputRef!: HTMLInputElement;
@@ -102,7 +102,7 @@ export const AttendeeSearch: Component<{
 
       const firstResultHasExact = hasAnyExactMatch(
         cleanedSearchQuery,
-        entries[0]
+        entries[0],
       );
       const anyOtherResultHasExact =
         firstResultHasExact &&
@@ -144,7 +144,7 @@ export const AttendeeSearch: Component<{
         }
       } else {
         const next = entries.find(
-          (badge) => !props.cartManager.alreadyInCart(badge.id)
+          (badge) => !props.cartManager.alreadyInCart(badge.id),
         );
         if (next) {
           props.cartManager.addCartId(next.id);
@@ -169,7 +169,7 @@ export const AttendeeSearch: Component<{
     },
     {
       preventDefault: true,
-    }
+    },
   );
 
   const noResults = (

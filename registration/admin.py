@@ -69,7 +69,7 @@ admin.site.register(User, UserProfileAdmin)
 
 @admin.register(Firebase)
 class FirebaseAdmin(admin.ModelAdmin):
-    list_display = ("name", "cashdrawer", "print_via_mqtt", "background_color", "webview")
+    list_display = ("name", "cashdrawer", "print_via_mqtt", "print_via_payment", "background_color", "webview")
     form = FirebaseForm
 
     def render_change_form(self, request, context, *args, **kwargs):
@@ -87,19 +87,15 @@ class FirebaseAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save()
 
-        data = {
-            "updateConfig": {
-                "config": self.get_provisioning(obj),
-            }
-        }
-
-        registration.views.onsite_admin.send_mqtt_message_to_terminal(obj, data)
+        registration.views.onsite_admin.send_mqtt_message_to_terminal(
+            obj, "payment/update/config", self.get_provisioning(obj)
+        )
 
     @staticmethod
     def get_provisioning(firebase):
         current_site = Site.objects.get_current()
         endpoint = "https://{0}".format(current_site.domain)
-        token = mqtt.get_client_token(firebase)
+        token = mqtt.get_payment_token(firebase)
 
         return {
             "terminalName": firebase.name,
@@ -111,7 +107,7 @@ class FirebaseAdmin(admin.ModelAdmin):
             "mqttPort": 443,
             "mqttUsername": token["user"],
             "mqttPassword": token["token"],
-            "mqttTopic": f'{mqtt.get_topic("terminal", firebase.name)}/action',
+            "mqttPrefix": token["root_topic"],
             "squareApplicationId": settings.SQUARE_APPLICATION_ID,
             "squareLocationId": settings.REGISTER_SQUARE_LOCATION,
         }
@@ -126,11 +122,16 @@ class FirebaseAdmin(admin.ModelAdmin):
     def provision_view(self, request, pk):
         obj = Firebase.objects.get(id=pk)
         provisioning = json.dumps(self.get_provisioning(obj))
-        token = mqtt.get_client_token(obj)
+
+        receipt_token = mqtt.get_receipt_token(obj)
+        station_token = mqtt.get_station_token(obj)
+        state_token = mqtt.get_state_token(obj)
 
         context = {
             "qr_svg": self.get_qrcode(provisioning).decode("utf-8"),
-            "token": token,
+            "receipt_token": receipt_token,
+            "station_token": station_token,
+            "state_token": state_token,
         }
 
         return render(request, "admin/firebase_qr.html", context)

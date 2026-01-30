@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 TWOPLACES = Decimal(10) ** -2
 
 
-def get_active_terminal(request):
+def get_active_terminal(request) -> Optional[Firebase]:
     term_id = request.session.get("terminal")
     if term_id:
         try:
@@ -110,20 +110,18 @@ def onsite_admin(request):
             errors.append({"type": "danger", "text": "Invalid terminal specified"})
 
     terminal = get_active_terminal(request)
-    mqtt_auth = None
-    if terminal:
-        mqtt_auth = mqtt.get_onsite_admin_token(terminal)
 
+    mqtt_auth = None
     selected_terminal = None
     if terminal:
+        mqtt_auth = mqtt.get_onsite_admin_token(terminal)
         selected_terminal = {
             "id": terminal.id,
             "features": {
-                "print_via_mqtt": terminal.print_via_mqtt is not None,
                 "square_terminal": terminal.square_terminal_id is not None,
-                "payment_type": terminal.payment_type,
+                "card": terminal.payment_type is not None,
                 "cashdrawer": terminal.cashdrawer,
-            }
+            },
         }
 
     context = {
@@ -270,19 +268,16 @@ def onsite_admin_search(request):
 def update_terminal_status(request, status: str) -> JsonResponse:
     active = get_terminal_from_request(request)
     if not active:
-        return JsonResponse({"success": False, "reason": "No terminal associated with request"}, status=400)
+        return JsonResponse(
+            {"success": False, "reason": "No terminal associated with request"},
+            status=400,
+        )
 
-    stateCommand = status
-    if stateCommand == "close":
-        stateCommand = "closed"
-    mqtt.send_mqtt_message(f"{mqtt.get_topic('admin', active.name)}/terminal/state", stateCommand)
-
-    if status not in ("close", "open", "ready"):
-        return JsonResponse({"success": True})
-
-    return send_mqtt_message_to_terminal(active, {
-        status: {},
-    })
+    return send_mqtt_message_to_terminal(
+        active,
+        "payment/state",
+        status,
+    )
 
 
 @staff_member_required
@@ -313,7 +308,9 @@ def get_terminal_from_request(request) -> Optional[Firebase]:
     return active
 
 
-def send_mqtt_message_to_terminal(request: Union[HttpRequest, Firebase], data: dict) -> JsonResponse:
+def send_mqtt_message_to_terminal(
+    request: Union[HttpRequest, Firebase], topic: str, data={}
+) -> JsonResponse:
     if isinstance(request, Firebase):
         active = request
     else:
@@ -321,8 +318,7 @@ def send_mqtt_message_to_terminal(request: Union[HttpRequest, Firebase], data: d
         if not active:
             return JsonResponse({"sucess": False, "reason": "No terminal associated with request"}, status=400)
 
-    name = active.name
-    topic = f'{mqtt.get_topic("terminal", name)}/action'
+    topic = mqtt.get_topic(topic, name=str(active.name))
 
     try:
         mqtt.send_mqtt_message(topic, data)
@@ -339,7 +335,7 @@ def enable_payment(request):
     if cart is None:
         request.session["cart"] = []
         return JsonResponse(
-            {"success": False, "message": "Cart not initialized"}, status=200
+            {"success": False, "reason": "Cart not initialized"}, status=200
         )
 
     badges = []
@@ -392,14 +388,17 @@ def enable_payment(request):
             "reason": ", ".join([error["detail"] for error in resp.errors]) if resp.errors else None,
         })
     elif terminal.payment_type == Firebase.MQTT_REGISTER_APP:
-        return send_mqtt_message_to_terminal(terminal, {
-            "processPayment": {
+        return send_mqtt_message_to_terminal(
+            terminal,
+            "payment/process",
+            {
+                "paymentAttemptId": payments.get_idempotency_key(request),
                 "orderId": order_id,
                 "total": int(data["total"] * 100),
                 "reference": data["reference"],
                 "note": render_to_string("registration/customer-note.txt", data),
-            }
-        })
+            },
+        )
     else:
         return JsonResponse({
             "success": False,
@@ -419,7 +418,7 @@ def assign_badge_number(request):
     errors = get_messages_list(request)
     if errors:
         return JsonResponse(
-            {"success": False, "errors": errors, "message": "\n".join(errors)},
+            {"success": False, "errors": errors, "reason": "\n".join(errors)},
             status=400,
         )
     return JsonResponse({"success": True})
@@ -467,10 +466,7 @@ def onsite_print_badges(request):
 
 
 def admin_push_cart_refresh(request):
-    terminal = get_active_terminal(request)
-    if terminal:
-        topic = f"{mqtt.get_topic('admin', terminal.name)}/refresh"
-        mqtt.send_mqtt_message(topic, None)
+    send_mqtt_message_to_terminal(request, "web/refresh")
 
 
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
@@ -602,8 +598,7 @@ def drawer_status(request):
 @permission_required("order.cash_admin")
 def no_sale(request):
     position = get_active_terminal(request)
-    topic = f"{mqtt.get_topic('receipts', position.name)}/no_sale"
-    mqtt.send_mqtt_message(topic)
+    mqtt.send_mqtt_message(mqtt.get_topic("receipt/nosale", name=str(position.name)))
 
     return JsonResponse({"success": True})
 
@@ -624,9 +619,9 @@ def print_audit_receipt(request, audit_type, cash_ledger, cashdraw=True):
         "cashdraw": cashdraw,
     }
 
-    topic = f"{mqtt.get_topic('receipts', position.name)}/audit_slip"
-
-    mqtt.send_mqtt_message(topic, payload)
+    mqtt.send_mqtt_message(
+        mqtt.get_topic("receipt/auditslip", name=str(position.name)), payload
+    )
 
 
 def cash_audit_action(request, action):
@@ -760,11 +755,10 @@ def complete_cash_transaction(request):
 
     payload = cash_receipt_payload(order, tendered, total)
 
-    term = request.session.get("terminal", None)
-    active = Firebase.objects.get(id=term)
-    topic = f"{mqtt.get_topic('receipts', active.name)}/print_cash"
-
-    mqtt.send_mqtt_message(topic, payload)
+    terminal = get_active_terminal(request)
+    mqtt.send_mqtt_message(
+        mqtt.get_topic("receipt/print/cash", name=str(terminal.name)), payload
+    )
 
     return JsonResponse({"success": True})
 
@@ -994,9 +988,9 @@ def onsite_admin_cart(request):
     data = build_result(cart)
 
     terminal_data = {
-        "updateCart": {
-            "cart": {
-                "badges": list(map(lambda badge: {
+        "badges": list(
+            map(
+                lambda badge: {
                     "id": badge["id"],
                     "firstName": badge["firstName"],
                     "lastName": badge["lastName"],
@@ -1006,17 +1000,18 @@ def onsite_admin_cart(request):
                         "price": str(badge["level_subtotal"]),
                     },
                     "discountedPrice": str(badge["level_total"]),
-                }, data["result"])),
-                "charityDonation": str(data["charityDonation"]),
-                "organizationDonation": str(data["orgDonation"]),
-                "totalDiscount": str(data["total_discount"]),
-                "total": str(data["total"]),
-                "paid": str(data["paid"]),
-            }
-        }
+                },
+                data["result"],
+            )
+        ),
+        "charityDonation": str(data["charityDonation"]),
+        "organizationDonation": str(data["orgDonation"]),
+        "totalDiscount": str(data["total_discount"]),
+        "total": str(data["total"]),
+        "paid": str(data["paid"]),
     }
 
-    send_mqtt_message_to_terminal(request, terminal_data)
+    send_mqtt_message_to_terminal(request, "payment/cart/update", terminal_data)
 
     return JsonResponse(data)
 
@@ -1085,7 +1080,7 @@ def onsite_remove_from_cart(request):
 @staff_member_required
 def onsite_admin_clear_cart(request):
     request.session["cart"] = []
-    send_mqtt_message_to_terminal(request, {"clearCart": {}})
+    send_mqtt_message_to_terminal(request, "payment/cart/clear")
     return JsonResponse({"success": True, "cart": []})
 
 
@@ -1096,10 +1091,13 @@ def onsite_admin_transfer_cart(request):
 
     firebase = Firebase.objects.get(id=terminal_id)
 
-    topic = f'{mqtt.get_topic("admin", firebase.name)}/transfer'
-    mqtt.send_mqtt_message(topic, {
-        "badgeIds": [int(badge_id) for badge_id in badge_ids],
-    })
+    topic = mqtt.get_topic("web/transfer", name=str(firebase.name))
+    mqtt.send_mqtt_message(
+        topic,
+        {
+            "badgeIds": [int(badge_id) for badge_id in badge_ids],
+        },
+    )
 
     return JsonResponse({"success": True})
 
@@ -1202,13 +1200,17 @@ def terminal_square_token(request):
 
     url = f"{base_url}/oauth2/authorize?client_id={settings.SQUARE_APPLICATION_ID}&state={state}&scope={'+'.join(scopes)}"
 
-    topic = f"{mqtt.get_topic('admin', terminal.name)}/authorize_terminal"
-    mqtt.send_mqtt_message(topic, payload={
-        "url": url,
-        "state": state,
-    })
+    send_mqtt_message_to_terminal(
+        terminal,
+        "web/authorize/square",
+        {
+            "url": url,
+            "state": state,
+        },
+    )
 
     return JsonResponse(True, safe=False)
+
 
 def oauth_square(request):
     url_state = request.GET.get("state")
@@ -1227,12 +1229,14 @@ def oauth_square(request):
     })
 
     if result.is_success():
-        send_mqtt_message_to_terminal(request, {
-            "updateToken": {
+        send_mqtt_message_to_terminal(
+            request,
+            "payment/update/token",
+            {
                 "accessToken": result.body["access_token"],
-                "refreshToken": result.body["refresh_token"]
-            }
-        })
+                "refreshToken": result.body["refresh_token"],
+            },
+        )
         resp = HttpResponseRedirect(reverse("registration:onsite_admin"))
     else:
         print(result.errors)
@@ -1261,7 +1265,7 @@ def print_receipts(request):
                 return JsonResponse({"success": False, "reason": "Cash order was missing note data"})
 
             payload = cash_receipt_payload(order, note_data["tendered"], order.total)
-            topic = f"{mqtt.get_topic('receipts', terminal.name)}/print_cash"
+            topic = mqtt.get_topic("receipt/print/cash", name=str(terminal.name))
             mqtt.send_mqtt_message(topic, payload)
 
         elif order.billingType == Order.CREDIT:
