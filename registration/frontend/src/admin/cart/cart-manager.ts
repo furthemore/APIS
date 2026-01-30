@@ -1,6 +1,7 @@
 import { Accessor, Setter, createSignal } from "solid-js";
 
-import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
+import { ApisUrls } from "../../entrypoints/admin";
+import { FallibleRequest, api } from "../api";
 import MqttClient from "../mqtt";
 
 const LOCK_NAME = "onsite-cart-update";
@@ -55,20 +56,15 @@ export class CartManager {
     init?: RequestInit,
   ): Promise<FallibleRequest<T>> {
     const perform = async () => {
-      console.debug("Making request", input);
-      const resp = await fetch(input, {
-        ...init,
-        headers: { "x-csrftoken": CSRF_TOKEN, ...init?.headers },
-      });
-      const data = await resp.json();
-      console.debug("Got response data", input, data);
+      const data = await api(input, init).json<FallibleRequest<T>>();
+      console.debug("Got response data", data);
       return data;
     };
+
     if ("locks" in navigator && navigator.locks) {
-      console.debug("Aquiring cart update lock for request", input);
       return await navigator.locks.request(LOCK_NAME, perform);
     } else {
-      console.warn("locks unavailable, session data might get out of sync!");
+      console.warn("Locks unavailable, session data might get out of sync!");
       return await perform();
     }
   }
@@ -265,13 +261,6 @@ export class CartManager {
     return { success: true } as FallibleRequest<void>;
   }
 }
-
-export type FallibleRequest<T> =
-  | {
-      success: false;
-      reason?: string;
-    }
-  | ({ success: true } & T);
 
 export interface CartResponse {
   charityDonation: string;

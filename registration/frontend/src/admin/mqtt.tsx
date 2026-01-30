@@ -94,7 +94,6 @@ export default class MqttClient {
 
     this.client.on("message", (topic, message) => {
       let data = message.toString();
-      console.debug("MQTT message", topic, data);
 
       let strippedTopic: MqttTopic;
       if (topic.startsWith(webPrefix)) {
@@ -108,6 +107,8 @@ export default class MqttClient {
       try {
         payload = JSON.parse(data);
       } catch (err) {}
+
+      console.debug("MQTT message", topic, payload || data);
 
       switch (strippedTopic) {
         case "authorize/square":
