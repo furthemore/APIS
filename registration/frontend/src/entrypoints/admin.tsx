@@ -56,7 +56,7 @@ export interface ApisMqttConfig {
 export interface ApisMqttAuth {
   user: string;
   token: string;
-  base_topic: string;
+  root_topic: string;
   print_topic?: string;
 }
 
@@ -110,11 +110,9 @@ export interface ApisSelectedTerminal {
 }
 
 export interface ApisTerminalFeatures {
-  print_via_mqtt: "station" | "payment" | false;
-  mqtt_print_topic: string | undefined;
-  square_terminal: boolean;
-  payment_type?: "mqtt-app" | "square-terminal";
+  card: boolean;
   cashdrawer: boolean;
+  square_terminal: boolean;
 }
 
 export interface ApisTerminal {

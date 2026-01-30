@@ -444,7 +444,7 @@ export const Navbar: Component<{
                 userSettings={userSettings}
               />
 
-              <Show when={config.terminals.selected?.features?.print_via_mqtt}>
+              <Show when={!!config.mqtt.auth.print_topic}>
                 <ToggleSetting
                   name="Auto Print After Payment"
                   key="print_after_payment"

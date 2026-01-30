@@ -69,16 +69,7 @@ export const ScanPanel: Component<{
   createEffect(() => {
     const emitter = props.emitter;
 
-    emitter.on("open", (payload: object | null) => {
-      if (payload && "url" in payload) {
-        const url = payload["url"] as string;
-        setStore("url", url);
-      } else {
-        console.error("Open command missing URL");
-      }
-    });
-
-    emitter.on("scan/id", (payload: object | null) => {
+    emitter.on("notify/scan/id", (payload: object | null) => {
       if (payload) {
         setStore("id", payload);
       } else {
@@ -86,11 +77,20 @@ export const ScanPanel: Component<{
       }
     });
 
-    emitter.on("scan/shc", (payload: object | null) => {
+    emitter.on("notify/scan/shc", (payload: object | null) => {
       if (payload) {
         setStore("shc", payload);
       } else {
         console.error("Missing SHC scan payload");
+      }
+    });
+
+    emitter.on("notify/scan/url", (payload: object | null) => {
+      if (payload && "url" in payload) {
+        const url = payload["url"] as string;
+        setStore("url", url);
+      } else {
+        console.error("Open command missing URL");
       }
     });
   });
