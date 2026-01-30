@@ -37,11 +37,11 @@ def get_topic(*args: str, name: str) -> str:
 
 
 def get_payment_token(firebase: Firebase) -> dict:
-    sub = get_topic("payment", "#", name=str(firebase.name))
+    sub = get_topic("payment/#", name=str(firebase.name))
 
     pub = [
-        get_topic("web", "notify", "alert", name=str(firebase.name)),
-        get_topic("web", "notify", "payment", name=str(firebase.name)),
+        get_topic("web/notify/alert", name=str(firebase.name)),
+        get_topic("web/notify/payment", name=str(firebase.name)),
     ]
 
     user = format_topic(str(firebase.name))
@@ -55,11 +55,11 @@ def get_payment_token(firebase: Firebase) -> dict:
 
 
 def get_onsite_admin_token(firebase: Firebase) -> dict:
-    sub = get_topic("web", "#", name=str(firebase.name))
+    sub = get_topic("web/#", name=str(firebase.name))
 
     pub = [
-        get_topic("payment", "#", name=str(firebase.name)),
-        get_topic("station", "#", name=str(firebase.name)),
+        get_topic("payment/#", name=str(firebase.name)),
+        get_topic("station/#", name=str(firebase.name)),
     ]
 
     print_firebase = firebase
@@ -72,7 +72,7 @@ def get_onsite_admin_token(firebase: Firebase) -> dict:
 
     print_topic = get_topic(print_device, "print", name=str(print_firebase.name))
 
-    if print_device != "station" or print_firebase.id != firebase.id:
+    if print_firebase.id != firebase.id:
         pub.append(print_topic)
 
     user = format_topic(str(firebase.name))
@@ -87,8 +87,8 @@ def get_onsite_admin_token(firebase: Firebase) -> dict:
 
 
 def get_receipt_token(firebase: Firebase) -> dict:
-    sub = get_topic("receipt", "#", name=str(firebase.name))
-    pub = get_topic("web", "notify", "alert", name=str(firebase.name))
+    sub = get_topic("receipt/#", name=str(firebase.name))
+    pub = get_topic("web/notify/alert", name=str(firebase.name))
 
     user = format_topic(str(firebase.name))
     token = get_token(user, subs=[sub], publ=[pub], exp=60 * 60 * 24 * 7)
@@ -100,8 +100,8 @@ def get_receipt_token(firebase: Firebase) -> dict:
 
 
 def get_station_token(firebase: Firebase) -> dict:
-    sub = get_topic("station", "#", name=str(firebase.name))
-    pub = [get_topic("web", "notify", "#", name=str(firebase.name))]
+    sub = get_topic("station/#", name=str(firebase.name))
+    pub = [get_topic("web/notify/#", name=str(firebase.name))]
 
     user = format_topic(str(firebase.name))
     token = get_token(user, subs=[sub], publ=pub, exp=60 * 60 * 24 * 7)
@@ -114,7 +114,7 @@ def get_station_token(firebase: Firebase) -> dict:
 
 
 def get_state_token(firebase: Firebase) -> dict:
-    sub = get_topic("payment", "state", name=str(firebase.name))
+    sub = get_topic("payment/state", name=str(firebase.name))
 
     user = format_topic(str(firebase.name))
     token = get_token(user, subs=[sub], publ=[])
@@ -149,28 +149,39 @@ def format_topic(topic: str, allow_wildcard: bool = False) -> str:
     Removes characters that shouldn't be in an MQTT topic field, namely:
 
     - Can't start with $ (reserved for system topics)
-    - Can't contain # or + (wildcards)
-    - Can't contain / (separator)
+    - Can't contain # or + (wildcards) unless specifically permitted
     - All-lowercase, remove spaces (recommended style)
     """
+
+    if "/" in topic:
+        return "/".join(
+            [
+                format_topic(segment, allow_wildcard=allow_wildcard)
+                for segment in topic.split("/")
+            ]
+        )
 
     if allow_wildcard and topic in ("+", "#"):
         return topic
 
     topic = FORMAT_TOPIC_SYS_RE.sub("", topic)
     topic = FORMAT_TOPIC_WILDCARD_RE.sub("", topic)
+
+    if len(topic) == 0:
+        raise ValueError("Each topic segment must have value")
+
     return topic.lower()
 
 
 def send_mqtt_message(topic: str, payload: dict = {}, retain: bool = False):
     payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
-
-    logger.info(f"Sending MQTT message: {topic} ({payload_json})")
+    logger.debug(f"Sending MQTT message: {topic} ({payload_json})")
 
     auth = {
-        "username": "apis_server",
-        "password": get_token("apis_server", publ=[topic], exp=30),
+        "username": "apis-server",
+        "password": get_token("apis-server", publ=[topic], exp=30),
     }
+
     tls = settings.MQTT_BROKER.get("tls")
 
     mqtt_publish.single(

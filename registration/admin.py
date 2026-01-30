@@ -107,7 +107,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         obj.save()
 
         registration.views.onsite_admin.send_mqtt_message_to_terminal(
-            obj, ["payment", "update", "config"], self.get_provisioning(obj)
+            obj, "payment/update/config", self.get_provisioning(obj)
         )
 
     @staticmethod
