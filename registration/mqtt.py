@@ -62,18 +62,18 @@ def get_onsite_admin_token(firebase: Firebase) -> dict:
         get_topic("station/#", name=str(firebase.name)),
     ]
 
-    print_firebase = firebase
-    if firebase.print_via_mqtt and firebase.print_via_mqtt.id != firebase.id:
+    print_topic = None
+    if firebase.print_via_mqtt:
         print_firebase = firebase.print_via_mqtt
 
-    print_device = "station"
-    if firebase.print_via_payment:
-        print_device = "payment"
+        print_device = "station"
+        if firebase.print_via_payment:
+            print_device = "payment"
 
-    print_topic = get_topic(print_device, "print", name=str(print_firebase.name))
+        print_topic = get_topic(print_device, "print", name=str(print_firebase.name))
 
-    if print_firebase.id != firebase.id:
-        pub.append(print_topic)
+        if print_firebase.id != firebase.id:
+            pub.append(print_topic)
 
     user = format_topic(str(firebase.name))
     token = get_token(user, subs=[sub], publ=pub, exp=60 * 60 * 24)
