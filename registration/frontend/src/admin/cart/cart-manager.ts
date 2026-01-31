@@ -2,6 +2,7 @@ import { Accessor, Setter, createSignal } from "solid-js";
 
 import { ApisUrls } from "../../entrypoints/admin";
 import { FallibleRequest, api } from "../api";
+import { AttendeeDetails } from "../components/DisplayRegistration";
 import MqttClient from "../mqtt";
 
 const LOCK_NAME = "onsite-cart-update";
@@ -29,11 +30,27 @@ export class CartManager {
 
     this.mqtt.emitter.on("refresh", this.refreshCart.bind(this));
     this.mqtt.emitter.on("transfer", this.addPendingTransfer.bind(this));
+    this.mqtt.emitter.on(
+      "registration/completed",
+      this.completedRegistration.bind(this),
+    );
   }
 
   close() {
     this.mqtt.emitter.off("refresh", this.refreshCart.bind(this));
     this.mqtt.emitter.off("transfer", this.addPendingTransfer.bind(this));
+    this.mqtt.emitter.off(
+      "registration/completed",
+      this.completedRegistration.bind(this),
+    );
+  }
+
+  private completedRegistration(payload: object | null) {
+    const badgeId =
+      payload && "badgeId" in payload && (payload["badgeId"] as number);
+    if (badgeId) {
+      this.addCartId(badgeId);
+    }
   }
 
   private addPendingTransfer(payload: object | null) {
@@ -259,6 +276,48 @@ export class CartManager {
     await this.clearCart();
 
     return { success: true } as FallibleRequest<void>;
+  }
+
+  public getOnsiteUrl(details: AttendeeDetails): URL {
+    const regUrl = new URL(this.urls.onsite, window.location.href);
+    Object.entries(details).forEach(([name, value]) => {
+      regUrl.searchParams.set(name, value);
+    });
+    return regUrl;
+  }
+
+  public async displayRegistration(
+    details: AttendeeDetails,
+  ): Promise<FallibleRequest<void>> {
+    let url = new URL(this.urls.onsite_regtoken, window.location.href);
+    const resp = await api.post(url).json<FallibleRequest<{ token: String }>>();
+    if (!resp.success) {
+      return resp;
+    }
+
+    const regUrl = this.getOnsiteUrl(details);
+
+    this.mqtt.publishMessage(
+      "payment/registration/display",
+      JSON.stringify({
+        url: regUrl.toString(),
+        token: resp.token,
+      }),
+    );
+  }
+
+  public cancelRegistration() {
+    this.mqtt.publishMessage("payment/registration/cancel", JSON.stringify({}));
+  }
+
+  public async fetchAttendeeDetails(
+    badgeId: number,
+  ): Promise<FallibleRequest<{ attendee: AttendeeDetails }>> {
+    return await api
+      .get(this.urls.onsite_attendee_details, {
+        searchParams: { id: badgeId },
+      })
+      .json();
   }
 }
 

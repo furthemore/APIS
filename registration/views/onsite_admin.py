@@ -118,9 +118,10 @@ def onsite_admin(request):
         selected_terminal = {
             "id": terminal.id,
             "features": {
-                "square_terminal": terminal.square_terminal_id is not None,
                 "card": terminal.payment_type is not None,
                 "cashdrawer": terminal.cashdrawer,
+                "prompt": terminal.payment_type == Firebase.MQTT_REGISTER_APP,
+                "square_terminal": terminal.square_terminal_id is not None,
             },
         }
 
@@ -159,10 +160,12 @@ def onsite_admin(request):
                 "onsite_admin_search": reverse("registration:onsite_admin_search"),
                 "onsite_admin_transfer_cart": reverse("registration:onsite_admin_transfer_cart"),
                 "onsite_admin": reverse("registration:onsite_admin"),
+                "onsite_attendee_details": reverse("registration:onsite_attendee_details"),
                 "onsite_create_discount": reverse("registration:onsite_create_discount"),
                 "onsite_print_badges": reverse("registration:onsite_print_badges"),
                 "onsite_print_clear": reverse("registration:onsite_print_clear"),
                 "onsite_print_receipts": reverse("registration:onsite_print_receipts"),
+                "onsite_regtoken": reverse("registration:onsite_regtoken"),
                 "onsite_remove_from_cart": reverse("registration:onsite_remove_from_cart"),
                 "onsite": reverse("registration:onsite"),
                 "open_drawer": reverse("registration:open_drawer"),
@@ -1178,6 +1181,58 @@ def onsite_print_clear(request):
     badge.save()
 
     return JsonResponse({"success": True})
+
+
+@staff_member_required
+def regtoken(request):
+    terminal = get_active_terminal(request)
+    if not terminal:
+        return JsonResponse(
+            {"success": False, "reason": "No terminal attached to session"}, status=400
+        )
+
+    signer = TimestampSigner()
+    data = signer.sign_object({
+        "terminal": terminal.name,
+    })
+
+    return JsonResponse({"success": True, "token": data})
+
+
+@staff_member_required
+def attendee_details(request):
+    id = request.GET.get("id", None)
+    if id is None or id == "":
+        return JsonResponse(
+            {"success": False, "reason": "Need ID parameter"}, status=400
+        )
+
+    try:
+        id = int(id)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "ID parameter must be integer"}, status=400
+        )
+
+    attendee = Badge.objects.get(id=id).attendee
+
+    return JsonResponse({
+        "success": True,
+        "attendee": {
+            "firstName": attendee.firstName,
+            "lastName": attendee.lastName,
+            "preferredName": attendee.preferredName,
+            "email": attendee.email,
+            "phone": attendee.phone,
+            "address1": attendee.address1,
+            "address2": attendee.address2,
+            "city": attendee.city,
+            "state": attendee.state,
+            "country": attendee.country,
+            "postalCode": attendee.postalCode,
+            "dob": attendee.birthdate,
+        }
+    })
 
 
 @csrf_exempt

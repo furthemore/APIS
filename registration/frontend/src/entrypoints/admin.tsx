@@ -80,10 +80,12 @@ export interface ApisUrls {
   onsite_admin_search: string;
   onsite_admin_transfer_cart: string;
   onsite_admin: string;
+  onsite_attendee_details: string;
   onsite_create_discount: string;
   onsite_print_badges: string;
   onsite_print_clear: string;
   onsite_print_receipts: string;
+  onsite_regtoken: string;
   onsite_remove_from_cart: string;
   onsite: string;
   open_drawer: string;
@@ -112,6 +114,7 @@ export interface ApisSelectedTerminal {
 export interface ApisTerminalFeatures {
   card: boolean;
   cashdrawer: boolean;
+  prompt: boolean;
   square_terminal: boolean;
 }
 
@@ -184,7 +187,7 @@ function start() {
     return (
       <ConfigContext.Provider value={APIS_CONFIG}>
         <UserSettingsContext.Provider value={userSettings}>
-          <Navbar setReadyForNext={setReadyForNext} />
+          <Navbar setReadyForNext={setReadyForNext} cartManager={cartManager} />
 
           <For each={APIS_CONFIG.errors}>
             {(error) => (

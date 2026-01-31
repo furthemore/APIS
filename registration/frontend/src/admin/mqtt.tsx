@@ -15,6 +15,7 @@ export type MqttTopic =
   | "notify/scan/url"
   | "presence"
   | "refresh"
+  | "registration/completed"
   | "transfer";
 
 export type MqttEmitter = Emitter<Record<MqttTopic, object | null>>;
@@ -24,6 +25,8 @@ const KNOWN_MESSAGES: Record<string, [string, string]> = {
   payment_cancelled: ["Payment cancelled", "is-warning"],
   payment_failed: ["Payment failed", "is-danger"],
   payment_completed: ["Payment completed", "is-success"],
+  registration_opened: ["Registration page opened", "is-info"],
+  registration_completed: ["Registration completed", "is-success"],
 };
 
 const getDeviceId = (): string => {
@@ -55,7 +58,7 @@ export default class MqttClient {
 
     if (!this.config.auth) return;
 
-    const wildcardTopic = this.getPrefixedTopic("#");
+    const wildcardTopic = this.getPrefixedTopic("web/#");
 
     this.client = mqtt.connect(config.broker, {
       username: config.auth.user,
@@ -69,9 +72,11 @@ export default class MqttClient {
       },
     });
 
-    this.client.on("connect", () => {
+    this.client.on("connect", (packet) => {
       this.setErrorMessage(undefined);
-      console.debug(`Subscribing to ${wildcardTopic}`);
+      console.debug(
+        `Connected to MQTT, sessionPresent - ${packet.sessionPresent}, subscribing to ${wildcardTopic}`,
+      );
       this.client?.subscribe(wildcardTopic, (err) => {
         if (err) {
           console.error(`MQTT subscription failed: ${err}`);
@@ -106,7 +111,7 @@ export default class MqttClient {
       let payload = null;
       try {
         payload = JSON.parse(data);
-      } catch (err) {}
+      } catch (_err) {}
 
       console.debug("MQTT message", topic, payload || data);
 
@@ -116,6 +121,7 @@ export default class MqttClient {
             document.cookie = `square_oauth_state=${payload["state"]}; path=/`;
             window.open(payload["url"], "square_oauth");
           }
+          break;
         case "notify/alert":
           if (payload?.["text"]) {
             alert(payload["text"]);

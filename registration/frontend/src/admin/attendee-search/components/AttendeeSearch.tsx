@@ -15,6 +15,7 @@ import {
 import { BadgeResult, getSearchResults } from "..";
 import { SentryErrorBoundary } from "../../../entrypoints/admin";
 import { CartManager } from "../../cart";
+import { DisplayRegistrationButton } from "../../components/DisplayRegistration";
 import { ConfigContext } from "../../providers/config-provider";
 import { BadgeTableLoader } from "./BadgeTableLoader";
 import { BadgeTableRow } from "./BadgeTableRow";
@@ -187,17 +188,29 @@ export const AttendeeSearch: Component<{
               <div class="column is-align-self-center">Attendee Search</div>
 
               <div class="column is-narrow">
-                <a
-                  href={config.urls.onsite}
-                  target="register"
-                  title="Control+N"
-                  class="button is-link is-small"
-                >
-                  <span class="icon">
-                    <i class="fas fa-plus"></i>
-                  </span>
-                  <span>New</span>
-                </a>
+                <div class="buttons">
+                  <a
+                    href={config.urls.onsite}
+                    target="register"
+                    title="Control+N"
+                    class="button is-link is-small"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-plus"></i>
+                    </span>
+                    <span>New</span>
+                  </a>
+
+                  <DisplayRegistrationButton
+                    cartManager={props.cartManager}
+                    class="button is-secondary is-small"
+                  >
+                    <span class="icon">
+                      <i class="fas fa-clipboard-user"></i>
+                    </span>
+                    <span>Prompt</span>
+                  </DisplayRegistrationButton>
+                </div>
               </div>
             </div>
           </div>

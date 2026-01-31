@@ -13,6 +13,7 @@ import {
 
 import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
 import { FallibleRequest, api } from "./api";
+import { CartManager } from "./cart";
 import { ConfigContext } from "./providers/config-provider";
 import {
   UserSettingKey,
@@ -133,6 +134,7 @@ async function amountRequest(url: string, message: string) {
 const Actions: Component<{
   config: ApisConfig;
   setReadyForNext: Setter<boolean>;
+  cartManager: CartManager;
 }> = (props) => {
   const statusRequestHelper = makeStatusRequestHelper(
     props.config.urls.set_terminal_status,
@@ -161,6 +163,14 @@ const Actions: Component<{
         action={() => {
           statusRequestHelper("ready");
           props.setReadyForNext(true);
+        }}
+      />
+
+      <ActionButton
+        name="Cancel Registration"
+        icon="fas fa-user-slash"
+        action={() => {
+          props.cartManager.cancelRegistration();
         }}
       />
 
@@ -329,6 +339,7 @@ const ToggleSetting: Component<{
 
 export const Navbar: Component<{
   setReadyForNext: Setter<boolean>;
+  cartManager: CartManager;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
   const userSettings = useContext(UserSettingsContext)!;
@@ -404,7 +415,11 @@ export const Navbar: Component<{
               <i class="fas fa-cog"></i>
             </a>
 
-            <Actions config={config} setReadyForNext={props.setReadyForNext} />
+            <Actions
+              config={config}
+              setReadyForNext={props.setReadyForNext}
+              cartManager={props.cartManager}
+            />
           </div>
 
           <div class="navbar-item has-dropdown is-hoverable">

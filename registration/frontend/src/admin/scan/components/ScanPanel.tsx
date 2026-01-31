@@ -3,6 +3,7 @@ import { Accessor, Component, Show, createEffect, createMemo } from "solid-js";
 import { createStore } from "solid-js/store";
 
 import { IdData, ShcData } from "..";
+import { CartManager } from "../../cart";
 import { MqttEmitter } from "../../mqtt";
 import { IdEntry } from "./IdEntry";
 import { ShcEntry } from "./ShcEntry";
@@ -18,6 +19,7 @@ export const ScanPanel: Component<{
   gotScannedName(name: string, birthday?: string): void;
   readyForNext: Accessor<boolean>;
   emitter: MqttEmitter;
+  cartManager: CartManager;
 }> = (props) => {
   const [store, setStore] = createStore<ScanStore>({
     id: undefined,
@@ -125,6 +127,7 @@ export const ScanPanel: Component<{
         <Show when={store.id}>
           <div class="panel-block">
             <IdEntry
+              cartManager={props.cartManager}
               data={store.id!}
               remove={() => setStore("id", undefined)}
             />
