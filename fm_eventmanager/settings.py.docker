@@ -104,8 +104,8 @@ if eval_bool(os.getenv("APIS_ADMIN_EMAIL_HANDLER", "False")):
     ADMINS = [(os.getenv("APIS_ADMIN_NAME", os.getenv("APIS_ADMIN_EMAIL")), os.getenv("APIS_ADMIN_EMAIL")),]
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "no-reply@example.com")
 
-ALLOWED_HOSTS = [os.getenv("APIS_HOST", "*")]
-CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "*").split(",") 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -187,7 +187,7 @@ DATABASES = {
         'USER': os.getenv('DATABASE_USER', 'apis'),
         'PASSWORD': os.getenv('DATABASE_PASS', 'secret'),
         'HOST': os.getenv('DATABASE_HOST'),
-        'PORT': os.getenv('DATABASE_PORT', ''),
+        'PORT': os.getenv('DATABASE_PORT', '5432'),
     }
 }
 

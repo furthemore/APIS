@@ -53,11 +53,6 @@ jobs:
         uses: astral-sh/setup-uv@v7
       - name: Install Dependencies
         run: |
-          sudo apt-get -y install xfonts-75dpi xfonts-base python3-psycopg2
-          wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
-          sudo dpkg -i wkhtmltox_0.12.6-1.focal_amd64.deb
-          sudo apt-get -y -f install
-          python -m pip install coveralls
           uv sync
       - name: Run Tests
         run: |
@@ -70,6 +65,6 @@ jobs:
           EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
           EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
       - name: Submit coverage
-        run: coveralls --service=github
+        run: uv run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
