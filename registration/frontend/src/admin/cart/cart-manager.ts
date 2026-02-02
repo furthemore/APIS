@@ -1,8 +1,8 @@
-import { Accessor, Setter, createSignal } from "solid-js";
+import { type Accessor, type Setter, createSignal } from "solid-js";
 
-import { ApisUrls } from "../../entrypoints/admin";
-import { FallibleRequest, api } from "../api";
-import { AttendeeDetails } from "../components/DisplayRegistration";
+import { type ApisUrls } from "..";
+import { type FallibleRequest, api } from "../api";
+import { type AttendeeDetails } from "../components/DisplayRegistration";
 import MqttClient from "../mqtt";
 
 const LOCK_NAME = "onsite-cart-update";

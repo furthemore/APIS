@@ -1,6 +1,6 @@
-import { Component, Show, createEffect, createSignal } from "solid-js";
+import { type Component, Show, createEffect, createSignal } from "solid-js";
 
-import { BadgeResult } from "..";
+import { type BadgeResult } from "..";
 import { CartManager } from "../../cart";
 
 export const BadgeTableRow: Component<{

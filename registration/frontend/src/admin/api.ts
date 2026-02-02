@@ -1,6 +1,6 @@
 import ky from "ky";
 
-import { CSRF_TOKEN } from "../entrypoints/admin";
+import { CSRF_TOKEN } from "../admin";
 
 const MUTATING_METHODS = new Set(["put", "delete", "post", "patch", "connect"]);
 

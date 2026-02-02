@@ -1,15 +1,15 @@
 import { ContextMenu } from "@kobalte/core/context-menu";
 import {
-  Component,
+  type Component,
   Show,
   createResource,
   createSignal,
   useContext,
 } from "solid-js";
 
-import { AttendeeDetails } from "../../components/DisplayRegistration";
+import { type AttendeeDetails } from "../../components/DisplayRegistration";
 import { ConfigContext } from "../../providers/config-provider";
-import { Badge, CartManager } from "../cart-manager";
+import { type Badge, CartManager } from "../cart-manager";
 import { cleanMoneyAmount } from "./CartEntries";
 
 type AttendeeDetailField = keyof AttendeeDetails;

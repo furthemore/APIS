@@ -1,4 +1,4 @@
-import { Component } from "solid-js";
+import { type Component } from "solid-js";
 
 export const CloseButton: Component<{ close(): any }> = (props) => {
   return (

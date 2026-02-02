@@ -1,4 +1,4 @@
-import { ApisUrls } from "../../entrypoints/admin";
+import { type ApisUrls } from "..";
 import { api } from "../api";
 import { AttendeeSearch } from "./components/AttendeeSearch";
 

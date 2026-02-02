@@ -1,9 +1,9 @@
 import { Toast, toaster } from "@kobalte/core/toast";
-import mitt, { Emitter } from "mitt";
+import mitt, { type Emitter } from "mitt";
 import mqtt from "mqtt";
-import { Accessor, Setter, createSignal } from "solid-js";
+import { type Accessor, type Setter, createSignal } from "solid-js";
 
-import { ApisMqttConfig } from "../entrypoints/admin";
+import type { ApisMqttConfig } from ".";
 
 export type MqttTopic =
   | "authorize/square"

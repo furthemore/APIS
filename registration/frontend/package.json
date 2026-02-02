@@ -1,4 +1,11 @@
 {
+  "name": "apis-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build"
+  },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@kobalte/core": "^0.13.11",
@@ -7,9 +14,6 @@
     "big.js": "^7.0.1",
     "bulma": "^1.0.4",
     "date-fns": "^4.1.0",
-    "esbuild": "^0.27.3",
-    "esbuild-plugin-solid": "^0.6.0",
-    "esbuild-sass-plugin": "^3.6.0",
     "ky": "^1.14.3",
     "mitt": "^3.0.1",
     "mqtt": "^5.15.0",
@@ -18,7 +22,11 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/big.js": "^6.2.2",
+    "baseline-browser-mapping": "^2.9.19",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "sass-embedded": "^1.97.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vite-plugin-solid": "^2.11.10"
   }
 }

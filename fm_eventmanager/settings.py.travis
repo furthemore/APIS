@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'allauth.mfa',
     'registration',
     'debug_toolbar',
+    'django_vite',
 ]
 
 MIDDLEWARE = [
@@ -257,5 +258,7 @@ ENVIRONMENT_TEXT_COLOR = "#00FF00"
 ENVIRONMENT_FLOAT = True
 
 GOTENBERG_HOST = "http://localhost:3000"
+
+DJANGO_VITE_STATIC_URL_PREFIX = "bundler"
 
 VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

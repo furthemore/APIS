@@ -42,6 +42,7 @@ dependencies = [
     { name = "django-nested-inline" },
     { name = "django-prometheus" },
     { name = "django-redis" },
+    { name = "django-vite" },
     { name = "django-widget-tweaks" },
     { name = "freezegun" },
     { name = "gotenberg-client" },
@@ -89,6 +90,7 @@ requires-dist = [
     { name = "django-nested-inline", specifier = "~=0.4.6" },
     { name = "django-prometheus", git = "https://github.com/django-commons/django-prometheus?rev=ea2d559476675a688f82cc37fac22b796ec7bcba" },
     { name = "django-redis", specifier = "~=6.0.0" },
+    { name = "django-vite", specifier = ">=3.1.0" },
     { name = "django-widget-tweaks", specifier = "~=1.5.1" },
     { name = "freezegun", specifier = ">=1.4.0" },
     { name = "gotenberg-client", specifier = "~=0.13.1" },
@@ -574,6 +576,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/73/9a/5c652bbc8694489782c415d7d6fa0782219e401aba25f4d1df2b95c3a34c/django_types-0.23.0.tar.gz", hash = "sha256:f97fb746166fb15a5f40e470a1fd7a58226349aac9e0a9cb8ae81deb14d94fd0", size = 208369, upload-time = "2026-02-04T00:36:23.33Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/73/de/471afcd92022642544f7866dd5620bc85f04e4312d5e29d7f2960f31f010/django_types-0.23.0-py3-none-any.whl", hash = "sha256:0727b13ae810c4b1f14eeac9872834ac928c99dc76584ea7c23afc4461e049dd", size = 379397, upload-time = "2026-02-04T00:36:21.783Z" },
+]
+
+[[package]]
+name = "django-vite"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/23/fe/4be07f538bbf9bf8bf73b045552ec2a1b4fba67e3176abb30490b643368e/django_vite-3.1.0.tar.gz", hash = "sha256:8b4ffe4a9fa81ff568bfb195e74dde8694aaf13fd4b656ae60bf59cce08b85e8", size = 25434, upload-time = "2025-02-23T15:32:07.914Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/30/59/7df4b1077fa41b43b4e542696d75138dbb86a65f44248c607b3e0f1014ce/django_vite-3.1.0-py3-none-any.whl", hash = "sha256:4e46572bd6b1ce70784be129205dc2ffcbc7a3c19fea50bebfb72b327bbde5fc", size = 23579, upload-time = "2025-02-23T15:32:06.603Z" },
 ]
 
 [[package]]

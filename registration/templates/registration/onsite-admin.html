@@ -1,4 +1,4 @@
-{% load static settings %}
+{% load static settings django_vite %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,13 +9,13 @@
   <meta name="csrf_token" content="{{ csrf_token }}">
 
   <title>APIS Register</title>
-
-  <link rel="stylesheet" href="{% static 'admin.css' %}" />
   <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
 
   <script>
     const APIS_CONFIG = {{ settings|safe }};
   </script>
+
+  {% vite_asset "src/entrypoints/admin.tsx" %}
 
   {% block head %}{% endblock %}
 </head>
@@ -23,8 +23,6 @@
 <body>
 
   <div id="onsite"></div>
-
-  <script src="{% static 'admin.js' %}"></script>
 
 </body>
 
