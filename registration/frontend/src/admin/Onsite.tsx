@@ -41,6 +41,7 @@ export const Onsite: Component<{
         />
 
         <ScanPanel
+          cartManager={props.cartManager}
           gotScannedName={(name, birthday) => {
             const query =
               birthday && userSettings.userSettings().search_birthday

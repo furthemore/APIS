@@ -11,7 +11,9 @@ import {
   useContext,
 } from "solid-js";
 
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
+import { ApisConfig } from "../entrypoints/admin";
+import { FallibleRequest, api } from "./api";
+import { CartManager } from "./cart";
 import { ConfigContext } from "./providers/config-provider";
 import {
   UserSettingKey,
@@ -88,28 +90,17 @@ function makeStatusRequestHelper(url: string) {
     status: "open" | "close" | "ready" | "gay" | "blue-light",
   ) {
     let endpoint = new URL(url, window.location.href);
-    endpoint.searchParams.set("status", status);
 
-    const resp = await fetch(endpoint, {
-      headers: {
-        "x-csrftoken": CSRF_TOKEN,
-      },
-    });
-    const data = await resp.json();
-
-    return data;
+    return await api
+      .post(endpoint, {
+        searchParams: { status: status },
+      })
+      .json();
   };
 }
 
 async function makeSimpleRequest(url: string) {
-  const resp = await fetch(url, {
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
-
-  return data;
+  return await api.get(url).json();
 }
 
 async function amountRequest(url: string, message: string) {
@@ -127,25 +118,23 @@ async function amountRequest(url: string, message: string) {
   let formData = new FormData();
   formData.set("amount", amount.toString());
 
-  const resp = await fetch(url, {
-    method: "POST",
-    body: formData,
-    headers: {
-      "x-csrftoken": CSRF_TOKEN,
-    },
-  });
-  const data = await resp.json();
+  const data: FallibleRequest<void> = await api
+    .post(url, {
+      body: formData,
+    })
+    .json();
 
   if (data["success"]) {
     alert("Success!");
   } else {
-    alert(`Error: ${data.message}`);
+    alert(`Error: ${data.reason}`);
   }
 }
 
 const Actions: Component<{
   config: ApisConfig;
   setReadyForNext: Setter<boolean>;
+  cartManager: CartManager;
 }> = (props) => {
   const statusRequestHelper = makeStatusRequestHelper(
     props.config.urls.set_terminal_status,
@@ -174,6 +163,14 @@ const Actions: Component<{
         action={() => {
           statusRequestHelper("ready");
           props.setReadyForNext(true);
+        }}
+      />
+
+      <ActionButton
+        name="Cancel Registration"
+        icon="fas fa-user-slash"
+        action={() => {
+          props.cartManager.cancelRegistration();
         }}
       />
 
@@ -342,6 +339,7 @@ const ToggleSetting: Component<{
 
 export const Navbar: Component<{
   setReadyForNext: Setter<boolean>;
+  cartManager: CartManager;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
   const userSettings = useContext(UserSettingsContext)!;
@@ -417,7 +415,11 @@ export const Navbar: Component<{
               <i class="fas fa-cog"></i>
             </a>
 
-            <Actions config={config} setReadyForNext={props.setReadyForNext} />
+            <Actions
+              config={config}
+              setReadyForNext={props.setReadyForNext}
+              cartManager={props.cartManager}
+            />
           </div>
 
           <div class="navbar-item has-dropdown is-hoverable">

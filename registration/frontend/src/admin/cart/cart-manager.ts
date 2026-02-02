@@ -1,6 +1,8 @@
 import { Accessor, Setter, createSignal } from "solid-js";
 
-import { ApisUrls, CSRF_TOKEN } from "../../entrypoints/admin";
+import { ApisUrls } from "../../entrypoints/admin";
+import { FallibleRequest, api } from "../api";
+import { AttendeeDetails } from "../components/DisplayRegistration";
 import MqttClient from "../mqtt";
 
 const LOCK_NAME = "onsite-cart-update";
@@ -28,11 +30,27 @@ export class CartManager {
 
     this.mqtt.emitter.on("refresh", this.refreshCart.bind(this));
     this.mqtt.emitter.on("transfer", this.addPendingTransfer.bind(this));
+    this.mqtt.emitter.on(
+      "registration/completed",
+      this.completedRegistration.bind(this),
+    );
   }
 
   close() {
     this.mqtt.emitter.off("refresh", this.refreshCart.bind(this));
     this.mqtt.emitter.off("transfer", this.addPendingTransfer.bind(this));
+    this.mqtt.emitter.off(
+      "registration/completed",
+      this.completedRegistration.bind(this),
+    );
+  }
+
+  private completedRegistration(payload: object | null) {
+    const badgeId =
+      payload && "badgeId" in payload && (payload["badgeId"] as number);
+    if (badgeId) {
+      this.addCartId(badgeId);
+    }
   }
 
   private addPendingTransfer(payload: object | null) {
@@ -55,20 +73,15 @@ export class CartManager {
     init?: RequestInit,
   ): Promise<FallibleRequest<T>> {
     const perform = async () => {
-      console.debug("Making request", input);
-      const resp = await fetch(input, {
-        ...init,
-        headers: { "x-csrftoken": CSRF_TOKEN, ...init?.headers },
-      });
-      const data = await resp.json();
-      console.debug("Got response data", input, data);
+      const data = await api(input, init).json<FallibleRequest<T>>();
+      console.debug("Got response data", data);
       return data;
     };
+
     if ("locks" in navigator && navigator.locks) {
-      console.debug("Aquiring cart update lock for request", input);
       return await navigator.locks.request(LOCK_NAME, perform);
     } else {
-      console.warn("locks unavailable, session data might get out of sync!");
+      console.warn("Locks unavailable, session data might get out of sync!");
       return await perform();
     }
   }
@@ -264,14 +277,49 @@ export class CartManager {
 
     return { success: true } as FallibleRequest<void>;
   }
-}
 
-export type FallibleRequest<T> =
-  | {
-      success: false;
-      reason?: string;
+  public getOnsiteUrl(details: AttendeeDetails): URL {
+    const regUrl = new URL(this.urls.onsite, window.location.href);
+    Object.entries(details).forEach(([name, value]) => {
+      regUrl.searchParams.set(name, value);
+    });
+    return regUrl;
+  }
+
+  public async displayRegistration(
+    details: AttendeeDetails,
+  ): Promise<FallibleRequest<void>> {
+    let url = new URL(this.urls.onsite_regtoken, window.location.href);
+    const resp = await api.post(url).json<FallibleRequest<{ token: String }>>();
+    if (!resp.success) {
+      return resp;
     }
-  | ({ success: true } & T);
+
+    const regUrl = this.getOnsiteUrl(details);
+
+    this.mqtt.publishMessage(
+      "payment/registration/display",
+      JSON.stringify({
+        url: regUrl.toString(),
+        token: resp.token,
+      }),
+    );
+  }
+
+  public cancelRegistration() {
+    this.mqtt.publishMessage("payment/registration/cancel", JSON.stringify({}));
+  }
+
+  public async fetchAttendeeDetails(
+    badgeId: number,
+  ): Promise<FallibleRequest<{ attendee: AttendeeDetails }>> {
+    return await api
+      .get(this.urls.onsite_attendee_details, {
+        searchParams: { id: badgeId },
+      })
+      .json();
+  }
+}
 
 export interface CartResponse {
   charityDonation: string;
