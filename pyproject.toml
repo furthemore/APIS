@@ -22,7 +22,7 @@ dependencies = [
     "django-widget-tweaks~=1.5.1",
     "freezegun>=1.4.0",
     "gotenberg-client~=0.7.0",
-    "gunicorn>=24.1.1",
+    "gunicorn>=25.0.1",
     "influxdb~=5.3.1",
     "influxdb-client~=1.50.0",
     "markuppy>=1.14",
@@ -48,6 +48,7 @@ django-prometheus = { git = "https://github.com/django-commons/django-prometheus
 dev = [
     "coveralls>=4.0.2",
     "django-debug-toolbar~=6.2.0",
+    "django-types>=0.22.0",
     "ruff>=0.14.14",
     "werkzeug>=3.1.5",
 ]
