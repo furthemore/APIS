@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
 ARG SENTRY_RELEASE=local
 ENV SENTRY_RELEASE=${SENTRY_RELEASE}
-
+ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 80 81
 
 RUN useradd --shell /bin/bash --create-home --home /app --uid 1000 apis
@@ -45,6 +45,6 @@ COPY --from=assets --chown=apis /app/registration/static/ /app/registration/stat
 RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
     uv sync --frozen
 
-RUN DJANGO_SECRET_KEY=collectstatic uv run ./manage.py collectstatic --noinput
+RUN DJANGO_SECRET_KEY=collectstatic ./manage.py collectstatic --noinput
 
 CMD ["/app/start.sh"]
