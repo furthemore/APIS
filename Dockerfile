@@ -18,7 +18,7 @@ ENV SENTRY_RELEASE=${SENTRY_RELEASE}
 
 EXPOSE 80 81
 
-RUN useradd -m -s /bin/bash -d /app apis
+RUN useradd --shell /bin/bash --create-home --home /app --uid 1000 apis
 
 WORKDIR /app
 
@@ -31,20 +31,20 @@ RUN mkdir -p /var/lib/nginx /app/log/nginx && \
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN --mount=type=cache,target=/app/.cache/uv \
+USER apis
+
+RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project
 
-COPY . /app/
-COPY ./fm_eventmanager/settings.py.docker /app/fm_eventmanager/settings.py
-COPY --from=assets /app/registration/static/ /app/registration/static/
+COPY --chown=apis . /app/
+COPY --chown=apis ./fm_eventmanager/settings.py.docker /app/fm_eventmanager/settings.py
+COPY --from=assets --chown=apis /app/registration/static/ /app/registration/static/
 
-RUN --mount=type=cache,target=/app/.cache/uv \
+RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
     uv sync --frozen
 
 RUN DJANGO_SECRET_KEY=collectstatic uv run ./manage.py collectstatic --noinput
-
-USER apis
 
 CMD ["/app/start.sh"]
