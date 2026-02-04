@@ -25,7 +25,7 @@ form_type = "attendee"
 def onsite(request):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
-    today = tz.localize(datetime.now())
+    today = datetime.now(tz=tz)
     context = {"event": event, "form_type": form_type}
 
     if event.websiteUrl:
@@ -71,9 +71,9 @@ def onsite_cart(request):
             evt = event.eventStart
             tz = timezone.get_current_timezone()
             try:
-                birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+                birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
             except ValueError:
-                birthdate = tz.localize(datetime.strptime("2000-01-01", "%Y-%m-%d"))
+                birthdate = datetime.strptime("2000-01-01", "%Y-%m-%d").replace(tzinfo=tz)
 
             age_at_event = (
                 evt.year

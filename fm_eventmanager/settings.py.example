@@ -26,6 +26,7 @@ DEBUG = True
 
 ADMINS = [('Super Adminton', 'admin@example.com'),]
 SERVER_EMAIL = "no-reply@example.com"
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 ALLOWED_HOSTS = ['locahost', '127.0.0.1', 'apis.example.com']
 
@@ -42,17 +43,20 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
+    'django.contrib.humanize',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'widget_tweaks',
     'mathfilters',
     'nested_inline',
     'import_export',
     'django_extensions',
-    'django_u2f',
     'maintenance_mode',
+    'allauth',
+    'allauth.account',
+    'allauth.mfa',
     'registration',
     'debug_toolbar',
 ]
@@ -66,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'idempotency_key.middleware.ExemptIdempotencyKeyMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
 ]
@@ -92,8 +97,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'fm_eventmanager.wsgi.application'
 
 
 # Database
@@ -147,12 +150,21 @@ USE_TZ = True
 
 SITE_ID = 1
 
-MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
-MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
-# Login handling for 2-Factor authentication
-LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
-LOGIN_URL = 'u2f:login'
+ACCOUNT_ADAPTER = "fm_eventmanager.adapters.account.RegistrationAccountAdapter"
+
+MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
+
+LOGIN_REDIRECT_URL = "admin:index"
+
+MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
+MAINTENANCE_MODE_IGNORE_URLS = ("^/accounts/",)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
@@ -207,3 +219,5 @@ ENVIRONMENT_NAME = "Production Server"
 ENVIRONMENT_COLOR = "#FF0000"
 ENVIRONMENT_TEXT_COLOR = "#00FF00"
 ENVIRONMENT_FLOAT = True
+
+VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

@@ -41,7 +41,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE=self.SHA256_SIGNATURE,
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 200)
@@ -59,7 +59,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE="iGNztY3PcgdIv2MD86jZ7oOpcSk5FnyLdPnmn2MRx64=",
+            headers={"x-square-hmacsha256-signature": "iGNztY3PcgdIv2MD86jZ7oOpcSk5FnyLdPnmn2MRx64="}
         )
 
         self.assertTrue(response.status_code, 403)
@@ -78,7 +78,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             '{"foo',
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE=self.SHA256_SIGNATURE,
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 400)
@@ -98,7 +98,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             '{"foo":"bar"}',
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE=self.SHA256_SIGNATURE,
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 400)
@@ -119,7 +119,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE=self.SHA256_SIGNATURE,
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 409)
@@ -261,7 +261,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE=self.SHA256_SIGNATURE,
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 200)
@@ -295,7 +295,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            HTTP_X_SQUARE_HMACSHA256_SIGNATURE=self.SHA256_SIGNATURE,
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 200)

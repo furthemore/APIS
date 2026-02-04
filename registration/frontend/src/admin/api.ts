@@ -32,7 +32,7 @@ export const api = ky.extend({
       (request, _options, response) => {
         console.debug(`Got ${response.status} response from ${request.url}`);
 
-        if (response.redirected && response.url.includes("/admin/login")) {
+        if (response.redirected && response.url.includes("/accounts/login")) {
           const url = new URL(response.url);
           url.searchParams.set(
             "next",

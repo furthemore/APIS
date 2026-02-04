@@ -12,7 +12,7 @@ PT = pytz.timezone("US/Pacific")
 
 class Migration(migrations.Migration):
 
-    DEFAULT_ORDER_MODIFIED_DATE = PT.localize(datetime.now())
+    DEFAULT_ORDER_MODIFIED_DATE = datetime.now(tz=PT)
 
     dependencies = [
         ("registration", "0003_auto_20160727_0114"),

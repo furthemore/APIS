@@ -8,7 +8,6 @@ define HELP
 
 Commands:
 	make docker-login               : Login to Github container repository
-	make build-base-docker-image    : Build the base docker image
 	make build-docker-image         : Make a local docker build of APIS
 	make push-docker-image          : Push latest image to Github container repository
         make tag-stage                  : Tag image for deployment to stage server
@@ -29,17 +28,6 @@ docker-login:
 	@[ "${GITHUB_CR_PAT}" ] || ( echo ">> GITHUB_CR_PAT is not set, check out envrc.example"; exit 1 )
 	@echo $(GITHUB_CR_PAT) | docker login ghcr.io -u $(GITHUB_USER) --password-stdin
 
-
-build-base-docker-image:
-        # Build the base docker image for all external dependancies
-	docker build \
-		--file DockerfileBase \
-		--tag $(IMAGE):apis-base-$(shell git rev-parse --short HEAD) \
-		.
-
-	-docker push $(IMAGE):apis-base-$(shell git rev-parse --short HEAD)
-	sed -i 's/apis-base-.*$$/apis-base-$(shell git rev-parse --short HEAD)/' Dockerfile
-
 build-docker-image:
 	# tag the current latest as previous, and replace it
 	-docker tag $(IMAGE):latest $(IMAGE):previous
@@ -47,6 +35,8 @@ build-docker-image:
 	# build and tag new container
 	docker build \
 		--file Dockerfile \
+		--cache-from $(IMAGE):latest \
+		--cache-from $(IMAGE):production \
 		--build-arg SENTRY_RELEASE=$(TAG) \
 		--tag $(IMAGE):$(TAG) \
 		.
@@ -69,11 +59,8 @@ dev:
 	-docker-compose up -d
 	docker-compose exec app /bin/bash -c 'DJANGO_DEBUG=1 python /app/manage.py runserver_plus 0.0.0.0:8000'
 
-
 dev-setup:
-	python3 -m venv venv
-	source venv/bin/activate
-	pip install -r requirements.txt
+	uv sync
 	cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
 
 	@echo "ACTION REQUIRED: Review fm_eventmanager/settings.py"

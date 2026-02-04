@@ -103,8 +103,10 @@ LOGLEVEL = os.getenv('DJANGO_LOGLEVEL', 'info').upper()
 if eval_bool(os.getenv("APIS_ADMIN_EMAIL_HANDLER", "False")):
     ADMINS = [(os.getenv("APIS_ADMIN_NAME", os.getenv("APIS_ADMIN_EMAIL")), os.getenv("APIS_ADMIN_EMAIL")),]
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "no-reply@example.com")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "*").split(",") 
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -115,16 +117,19 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
+    'django.contrib.humanize',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'widget_tweaks',
     'mathfilters',
     'import_export',
     'django_extensions',
-    'django_u2f',
     'maintenance_mode',
+    'allauth',
+    'allauth.account',
+    'allauth.mfa',
     'registration',
     'nested_inline',
     'debug_toolbar',
@@ -141,6 +146,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'idempotency_key.middleware.ExemptIdempotencyKeyMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
     'django_prometheus.middleware.PrometheusAfterMiddleware',
@@ -169,8 +175,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'fm_eventmanager.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -182,7 +186,7 @@ DATABASES = {
         'USER': os.getenv('DATABASE_USER', 'apis'),
         'PASSWORD': os.getenv('DATABASE_PASS', 'secret'),
         'HOST': os.getenv('DATABASE_HOST'),
-        'PORT': os.getenv('DATABASE_PORT', ''),
+        'PORT': os.getenv('DATABASE_PORT', '5432'),
     }
 }
 
@@ -246,6 +250,19 @@ USE_L10N = True
 USE_TZ = True
 
 SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+ACCOUNT_ADAPTER = "fm_eventmanager.adapters.account.RegistrationAccountAdapter"
+
+MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
+MFA_PASSKEY_LOGIN_ENABLED = True
+MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
+
+LOGIN_REDIRECT_URL = "admin:index"
 
 IDEMPOTENCY_KEY = {
     # Specify the key encoder class to be used for idempotency keys.
@@ -320,10 +337,7 @@ IDEMPOTENCY_KEY = {
 
 MAINTENANCE_MODE_STATE_FILE_PATH = "/app/fm_eventmanager/maintenance_mode_state.txt"
 MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
-MAINTENANCE_MODE_IGNORE_URLS = ("^/u2f/",)
-
-LOGIN_REDIRECT_URL = 'u2f:two-factor-settings'
-LOGIN_URL = 'u2f:login'
+MAINTENANCE_MODE_IGNORE_URLS = ("^/accounts/",)
 
 if DEBUG:
     # Adds docker NAT routers and any internal upstream proxies as internal IPs to enable the debug toolbar
@@ -407,3 +421,5 @@ ENVIRONMENT_FLOAT = os.getenv('ENVIRONMENT_FLOAT', False)
 
 PRINT_RENDERER = os.getenv('PRINT_RENDERER', 'wkhtmltopdf')
 GOTENBERG_HOST = os.getenv('GOTENBERG_HOST', None)
+
+VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

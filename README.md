@@ -7,21 +7,20 @@ Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 Stack:
   + Ubuntu 20.04 (LTS)
   + Postgres
-  + Python 3.8 - 3.10
-  + Django 3.2
+  + Python 3.13
+  + Django 6.0
   + Bootstrap 3
   + jQuery 1.12
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
-    and in-person with an [Android app][android] as a customer-facing
+    and in-person with an [iPad app][ipad] as a customer-facing
     display, with cash drawer and receipt printer integration.
   + Manage staff registration and department heirarchies.
   + Handle dealer applications, registration, and payments.
   + Create limited-use discounts.
   + Handle on-site registration on your own kiosks, or via a public URL.
-  + Populate attendee information by scanning their ID with a simple
-    [browser worker](https://github.com/rechner/py-aamva).
+  + Populate attendee information by scanning their ID.
   + Print badges on the fly with a custom template on any compatible card
     or label printer, with Unicode-supported fonts (Emoji!)
   + Protect admin and volunteer logins with TOTP 2-Factor or FIDO U2F.
@@ -73,16 +72,11 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     # https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04 or
     # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository.
 
-    # Build base docker image:
-    make build-base-docker-image
-
-    # Edit Dockerfile and replace the first line with output from last command. (The console will remind you.)
-
     # Give yourself permission to run Docker commands
     sudo usermod -aG docker ${USER}
     # Log out and back in to make it take effect
 
-    # Build final image
+    # Build image
     make build-docker-image
 
     # Run in Docker
@@ -91,9 +85,6 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     # Create Superuser
     docker compose exec app /app/manage.py createsuperuser
     # Respond to prompts as needed
-
-    # OPTIONAL: If you intend to run APIS in production, configure your webserver to act as a reverse proxy.
-    # Example docs: https://www.digitalocean.com/community/tutorials/how-to-use-apache-as-a-reverse-proxy-with-mod_proxy-on-ubuntu-16-04
 
     # Run the development server
     make dev
@@ -104,9 +95,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
-    python3 -v venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    uv sync
 
     # Create a development database server
     python manage.py make_db
@@ -128,7 +117,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     python manage.py runserver_plus --cert localhost.crt
 
 [square]: https://square.com/
-[android]: https://github.com/furthemore/APIS-register
+[ios]: https://github.com/furthemore/APIS-Register-Swift
 
 ## Development
 

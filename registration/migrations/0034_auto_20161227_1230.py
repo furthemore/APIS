@@ -12,7 +12,7 @@ PT = pytz.timezone("US/Pacific")
 
 class Migration(migrations.Migration):
 
-    DEFAULT_DATETIME = PT.localize(datetime.datetime.now())
+    DEFAULT_DATETIME = datetime.datetime.now(tz=PT)
 
     dependencies = [
         ("registration", "0033_discount_used"),
