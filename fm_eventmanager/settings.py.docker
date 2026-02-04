@@ -103,6 +103,7 @@ LOGLEVEL = os.getenv('DJANGO_LOGLEVEL', 'info').upper()
 if eval_bool(os.getenv("APIS_ADMIN_EMAIL_HANDLER", "False")):
     ADMINS = [(os.getenv("APIS_ADMIN_NAME", os.getenv("APIS_ADMIN_EMAIL")), os.getenv("APIS_ADMIN_EMAIL")),]
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", "no-reply@example.com")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "*").split(",") 

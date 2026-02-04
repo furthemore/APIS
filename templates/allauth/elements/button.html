@@ -11,7 +11,7 @@ class="{% block class %}
     {% if "link" in attrs.tags %}btn-link
     {% else %}
       {% if "minor" in attrs.tags %}btn-sm{% endif %}
-      btn-{% if "danger" in attrs.tags %}danger{% elif "secondary" in attrs.tags %}secondary{% elif "warning" in attrs.tags %}warning{% else %}primary{% endif %}
+      btn-{% if "danger" in attrs.tags %}danger{% elif "secondary" in attrs.tags %}default{% elif "warning" in attrs.tags %}warning{% else %}primary{% endif %}
     {% endif %}{% endblock %}">
 
 {% slot %}

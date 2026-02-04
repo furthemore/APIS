@@ -20,6 +20,20 @@
             </div>
         {% endif %}
     </div>
+{% elif attrs.type == "textarea" %}
+    <div class="form-group">
+        <label for="{{ attrs.id }}">
+            {% slot label %}
+            {% endslot %}
+        </label>
+        <textarea {% if attrs.required %}required{% endif %}
+                  {% if attrs.rows %}rows="{{ attrs.rows }}"{% endif %}
+                  class="form-control"
+                  name="{{ attrs.name }}"
+                  {% if attrs.readonly %}readonly{% endif %}
+                  id="{{ attrs.id }}"
+                  {% if attrs.disabled %}disabled{% endif %}>{% slot value %}{% endslot %}</textarea>
+    </div>
 {% elif attrs.type == "hidden" %}
     <input {% if attrs.required %}required{% endif %}
            name="{{ attrs.name }}"

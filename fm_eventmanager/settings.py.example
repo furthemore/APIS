@@ -26,6 +26,7 @@ DEBUG = True
 
 ADMINS = [('Super Adminton', 'admin@example.com'),]
 SERVER_EMAIL = "no-reply@example.com"
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 ALLOWED_HOSTS = ['locahost', '127.0.0.1', 'apis.example.com']
 
