@@ -29,7 +29,7 @@ RUN apt-get update && \
 RUN mkdir -p /var/lib/nginx /app/log/nginx && \
     chown -R apis /var/lib/nginx /app/log/nginx
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.9.29 /uv /uvx /bin/
 
 USER apis
 

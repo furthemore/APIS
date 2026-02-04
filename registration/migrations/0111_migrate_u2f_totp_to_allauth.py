@@ -7,7 +7,9 @@ from django.db import migrations, connection
 
 def convert_u2f_totp_entries(_apps, _schema_editor):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'django_u2f_totpdevice'")
+        cursor.execute(
+            "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'django_u2f_totpdevice'"
+        )
         if cursor.fetchone() is None:
             return
 
@@ -32,6 +34,7 @@ def convert_u2f_totp_entries(_apps, _schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("registration", "0110_print_via_payment"),
+        ("mfa", "0003_authenticator_type_uniq"),
     ]
 
     operations = [
