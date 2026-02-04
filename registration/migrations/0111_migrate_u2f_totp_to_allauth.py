@@ -7,6 +7,10 @@ from django.db import migrations, connection
 
 def convert_u2f_totp_entries(_apps, _schema_editor):
     with connection.cursor() as cursor:
+        cursor.execute("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'django_u2f_totpdevice'")
+        if cursor.fetchone() is None:
+            return
+
         entries = []
         cursor.execute(
             "SELECT DISTINCT ON (user_id) created_at, last_used_at, user_id, key FROM django_u2f_totpdevice ORDER BY user_id, last_used_at DESC"
