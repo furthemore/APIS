@@ -668,6 +668,8 @@ class TestStaffAdmin(AdminTestCase):
         )
         self.badge.save()
         self.staff = Staff(attendee=self.attendee, event=self.event)
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user.save()
 
     def test_checkin_staff(self):
         self.assertFalse(self.staff.checkedIn)
@@ -693,7 +695,7 @@ class TestStaffAdmin(AdminTestCase):
 
     def test_copy_to_event_form(self):
         request = HttpRequest()
-        request.user = User.objects.create_superuser("admin", "admin@host", "admin")
+        request.user = self.admin_user
         staff = Staff.objects.all()
         response = self.staff_admin.copy_to_event(request, staff)
         self.assertEqual(response.status_code, 200)
