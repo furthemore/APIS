@@ -333,7 +333,7 @@ def refund_card_payment(order, amount, reason=None, request=None):
     return True, message
 
 
-def process_webhook_refund_update(notification) -> bool:
+def process_webhook_refund_update(notification: PaymentWebhookNotification) -> bool:
     # Find matching order based on refund ID:
     refund_id = notification.body["data"]["id"]
     try:
@@ -373,8 +373,8 @@ def process_webhook_payment_updated(notification: PaymentWebhookNotification) ->
         return False
 
     # Store order update in api data
-    payment = notification.body["data"]["object"]["payment"]
-    order.apiData["payment"] = payment
+    payment = Payment.model_validate(notification.body["data"]["object"]["payment"])
+    order.apiData["payment"] = payment.model_dump()
     update_order_payment_data(order, 0, payment)
     order.save()
     return True
