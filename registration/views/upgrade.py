@@ -16,7 +16,6 @@ from registration.models import *
 from . import common
 from .common import (
     clear_session,
-    get_client_ip,
     get_registration_email,
     getOptionsDict,
     handler,

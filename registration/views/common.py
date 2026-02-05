@@ -14,26 +14,18 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
-from idempotency_key.decorators import idempotency_key
 
-import registration.emails
 from registration.models import (
     Cart,
     Department,
     Discount,
     Event,
-    Order,
     OrderItem,
     PriceLevel,
-    PriceLevelOption,
     ShirtSizes,
     Staff,
     get_token,
 )
-from registration.payments import charge_payment
-from registration.views import ordering
-from registration.views.cart import saveCart
-from registration.views.ordering import add_attendee_to_assistant
 
 logger = logging.getLogger("django.request")
 

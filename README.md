@@ -5,12 +5,12 @@
 Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 
 Stack:
-  + Ubuntu 20.04 (LTS)
-  + Postgres
-  + Python 3.13
+  + Ubuntu 22.04 (LTS)
+  + Python 3.14
   + Django 6.0
-  + Bootstrap 3
-  + jQuery 1.12
+  + PostgreSQL 16.10
+  + Bootstrap 3/jQuery 1.12
+  + SolidJS
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
@@ -117,7 +117,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     python manage.py runserver_plus --cert localhost.crt
 
 [square]: https://square.com/
-[ios]: https://github.com/furthemore/APIS-Register-Swift
+[ipad]: https://github.com/furthemore/APIS-Register-Swift
 
 ## Development
 

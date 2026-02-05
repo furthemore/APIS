@@ -10,7 +10,7 @@ from django.shortcuts import render
 from django.template import Context, Template
 from gotenberg_client import GotenbergClient
 from gotenberg_client.options import (
-    MarginType,
+    Measurement,
     PageMarginsType,
     PageOrientation,
     PageSize,
@@ -114,14 +114,17 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
             with client.chromium.html_to_pdf() as route:
                 response = (
                     route.size(
-                        PageSize(badge_template.paperWidth, badge_template.paperHeight)
+                        PageSize(
+                            Measurement(badge_template.paperWidth),
+                            Measurement(badge_template.paperHeight),
+                        )
                     )
                     .margins(
                         PageMarginsType(
-                            MarginType(badge_template.marginTop),
-                            MarginType(badge_template.marginBottom),
-                            MarginType(badge_template.marginLeft),
-                            MarginType(badge_template.marginRight),
+                            Measurement(badge_template.marginTop),
+                            Measurement(badge_template.marginBottom),
+                            Measurement(badge_template.marginLeft),
+                            Measurement(badge_template.marginRight),
                         )
                     )
                     .orient(
@@ -133,7 +136,7 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
                     )
                     .scale(badge_template.scale)
                     .string_resource(rendered, "index.html")
-                    .render_expr("window.badgeReady === true")
+                    .render_expression("window.badgeReady === true")
                     .run()
                 )
                 pdfs.append(response.content)
@@ -155,7 +158,7 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
                 finalPdf = response.content
 
         http_resp = HttpResponse()
-        http_resp.headers["content-type"] = "application/pdf"
+        http_resp["content-type"] = "application/pdf"
         http_resp.write(finalPdf)
 
         for badge in queryset:
@@ -163,6 +166,6 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
             badge.save()
 
         if terminal := data_obj.get("terminal", None):
-            mqtt.send_mqtt_message(mqtt.get_topic("web/refresh", name=terminal), None)
+            mqtt.send_mqtt_message(mqtt.get_topic("web/refresh", name=terminal))
 
         return http_resp

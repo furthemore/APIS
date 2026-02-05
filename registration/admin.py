@@ -1719,12 +1719,12 @@ class SquareDeviceAdmin(admin.ModelAdmin):
         keep_ids = set()
         for device in current_devices:
             SquareDevice.objects.update_or_create(
-                device_id=device["id"], defaults={
-                    "name": device["attributes"]["name"],
-                    "device_type": device["attributes"]["type"],
+                device_id=device.id, defaults={
+                    "name": device.attributes.name,
+                    "device_type": device.attributes.type,
                 },
             )
-            keep_ids.add(device["id"])
+            keep_ids.add(device.id)
 
         for existing in existing_devices:
             if existing.device_id not in keep_ids:

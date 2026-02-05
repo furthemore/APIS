@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from square.utilities.webhooks_helper import is_valid_webhook_event_signature
+from square.utils.webhooks_helper import verify_signature
 
 from registration import payments
 from registration.models import PaymentWebhookNotification
@@ -20,16 +20,16 @@ def square_webhook(request):
     square_signature = request.headers.get("X-Square-HMACSHA256-Signature")
     notification_url = request.build_absolute_uri()
 
-    signature_valid = is_valid_webhook_event_signature(
-        request.body.decode("utf-8"),
-        square_signature,
-        settings.SQUARE_WEBHOOK_SIGNATURE_KEY,
-        notification_url,
+    signature_valid = verify_signature(
+        request_body=request.body.decode("utf-8"),
+        signature_header=square_signature,
+        signature_key=settings.SQUARE_WEBHOOK_SIGNATURE_KEY,
+        notification_url=notification_url,
     )
 
     if not signature_valid:
         logger.warning("Invalid signature in Square request")
-        common.abort(403, "Forbidden: invalid signature")
+        return common.abort(403, "Forbidden: invalid signature")
 
     try:
         request_body = json.loads(request.body)
@@ -56,7 +56,7 @@ def square_webhook(request):
     )
     try:
         notification.save()
-    except PaymentWebhookNotification.IntegrityError as e:
+    except IntegrityError as e:
         logger.error("Conflict: event_id already exists:")
         logger.error(e)
         return common.abort(409, str(e))
