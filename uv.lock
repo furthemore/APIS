@@ -106,7 +106,7 @@ requires-dist = [
     { name = "respx", specifier = ">=0.22.0" },
     { name = "sentry-sdk", specifier = ">=2.51.0" },
     { name = "soupsieve", specifier = ">=2.8.3" },
-    { name = "squareup", specifier = "==44.0.0.20260122" },
+    { name = "squareup", specifier = "==44.0.1.20260122" },
     { name = "uvicorn", specifier = ">=0.40.0" },
     { name = "uvicorn-worker", specifier = ">=0.4.0" },
 ]
@@ -1242,7 +1242,7 @@ wheels = [
 
 [[package]]
 name = "squareup"
-version = "44.0.0.20260122"
+version = "44.0.1.20260122"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -1250,9 +1250,9 @@ dependencies = [
     { name = "pydantic-core" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/ae/d3e3656dd5e05e178f3af595f4adaeb509174c3e4338d5addaeafd86adf1/squareup-44.0.0.20260122.tar.gz", hash = "sha256:46e334ba4bfff692b898023ca497d9cc7317a60ec4e533bd8819af1ae6a73e01", size = 789434, upload-time = "2026-01-22T18:50:09.429Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/ca/b2c5ec29cb0ae1740f5cf295b6fd906340fa57e4e855e703b2629494898d/squareup-44.0.1.20260122.tar.gz", hash = "sha256:7c05c86ec4f50550f5f14f326131c56c758bd2ae4f146f00e25dc48acdc51212", size = 790845, upload-time = "2026-02-11T00:07:05.4Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/cb/d86f51e33ef6a3740bf2c0265ea9550d29c690337b582908f69c01f94648/squareup-44.0.0.20260122-py3-none-any.whl", hash = "sha256:461a66e29243d721c5acd0a52a9e73677b47e5b28ef4076a3c63cf6fcddc5b53", size = 2242126, upload-time = "2026-01-22T18:50:07.439Z" },
+    { url = "https://files.pythonhosted.org/packages/73/89/25f7530b7e51e49ccffb0d732899d81ea50ce5bb7c31830128293d24c0f7/squareup-44.0.1.20260122-py3-none-any.whl", hash = "sha256:002f6094731f87b5b9a1fcb2f56dc03c671b4b6eb07da3dd7a1699760a792e37", size = 2242574, upload-time = "2026-02-11T00:07:03.403Z" },
 ]
 
 [[package]]
