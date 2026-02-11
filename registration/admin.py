@@ -6,18 +6,18 @@ from datetime import date
 from io import BytesIO
 
 import qrcode
+from allauth.account.decorators import secure_admin_login
 from django import forms
-from django.urls import re_path
 from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.signing import TimestampSigner
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, QuerySet
 from django.forms import NumberInput, widgets
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.urls import path, reverse
+from django.urls import path, re_path, reverse
 from django.utils.html import format_html, urlencode
 from django.utils.safestring import mark_safe
 from import_export import fields, resources
@@ -27,14 +27,13 @@ from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers.data import JsonLexer
 from qrcode.image.svg import SvgPathFillImage
-from allauth.account.decorators import secure_admin_login
 
 import registration.emails
 import registration.views.onsite_admin
-import registration.views.printing
 from registration import mqtt, payments
 from registration.forms import FirebaseForm
 from registration.models import *
+from registration.views import webhooks
 
 from . import printing
 
@@ -1625,6 +1624,13 @@ def json_highlight_format_value(value):
     return mark_safe(style + response)
 
 
+@admin.action(description="Process unprocessed actions")
+def process_unprocessed_notifications(_modeladmin, _request, queryset: "QuerySet[PaymentWebhookNotification]"):
+    for notification in queryset.filter(processed=False).all():
+        logger.info(f"Manually processing webhook notification with event_id = {notification.event_id}")
+        webhooks.process_webhook(notification)
+
+
 @admin.register(PaymentWebhookNotification)
 class PaymentWebhookAdmin(admin.ModelAdmin):
     list_display = ("event_id", "event_type", "timestamp", "integration", "processed")
@@ -1632,6 +1638,7 @@ class PaymentWebhookAdmin(admin.ModelAdmin):
     search_fields = ["event_id"]
     readonly_fields = ("processed", "body_highlighted", "headers_highlighted")
     exclude = ("body", "headers")
+    actions = [process_unprocessed_notifications]
 
     @admin.display(
         description="Headers"
@@ -1719,12 +1726,12 @@ class SquareDeviceAdmin(admin.ModelAdmin):
         keep_ids = set()
         for device in current_devices:
             SquareDevice.objects.update_or_create(
-                device_id=device["id"], defaults={
-                    "name": device["attributes"]["name"],
-                    "device_type": device["attributes"]["type"],
+                device_id=device.id, defaults={
+                    "name": device.attributes.name,
+                    "device_type": device.attributes.type,
                 },
             )
-            keep_ids.add(device["id"])
+            keep_ids.add(device.id)
 
         for existing in existing_devices:
             if existing.device_id not in keep_ids:

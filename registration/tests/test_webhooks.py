@@ -27,7 +27,7 @@ class TestSquareRefundWebhooks(TestCase):
     "location_id":"MESD3N22DWR0F","order_id":"gzamDxDtniM1nKbkDYZHYH0xbEOZY",
     "payment_id":"HH2sTvwhwFGq0Ivi4uBRvFJt55ZZY","reason":" [rechner]","status":"COMPLETED",
     "updated_at":"2022-12-29T06:30:29.404Z","version":6}}}}"""
-    SHA256_SIGNATURE = "iGNztY3PcgdIv2MD97jZ7oOpcSk5FnyLdPnmn2MRx64="
+    SHA256_SIGNATURE = "AEDUhfAiMMyx7zq4daCXb4WPyCNdW/DEx68UwNsyrDo="
     SIGNATURE_KEY = "bj-4rZKxCc8_1CZtghoatg"
     NOTIFICATION_URL = "https://webhook.site/5477eda8-952e-4844-91db-8b10cf228833"
 
@@ -59,26 +59,26 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": "iGNztY3PcgdIv2MD86jZ7oOpcSk5FnyLdPnmn2MRx64="}
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
         )
 
         self.assertTrue(response.status_code, 403)
 
     @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
-    @patch("square.utilities.webhooks_helper.is_valid_webhook_event_signature")
+    @patch("square.utils.webhooks_helper.verify_signature")
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_square_webhook_invalid_json(
-        self, mock_build_absolute_uri, mock_is_valid_webhook_event_signature
+        self, mock_build_absolute_uri, mock_verify_signature
     ):
         mock_build_absolute_uri.return_value = self.NOTIFICATION_URL
-        mock_is_valid_webhook_event_signature.return_value = True
+        mock_verify_signature.return_value = True
 
         response = self.client.post(
             reverse("registration:square_webhook"),
             '{"foo',
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": "J8FS8Z6adAbeYmo0MXzUv92Gu6Mr+AiCfqdFHih8jKo="}
         )
 
         self.assertTrue(response.status_code, 400)
@@ -86,19 +86,19 @@ class TestSquareRefundWebhooks(TestCase):
 
     @tag("square")
     @override_settings(SQUARE_WEBHOOK_SIGNATURE_KEY=SIGNATURE_KEY)
-    @patch("square.utilities.webhooks_helper.is_valid_webhook_event_signature")
+    @patch("square.utils.webhooks_helper.verify_signature")
     @patch("django.http.request.HttpRequest.build_absolute_uri")
     def test_square_webhook_missing_event_id(
-        self, mock_build_absolute_uri, mock_is_valid_webhook_event_signature
+        self, mock_build_absolute_uri, mock_verify_signature
     ):
         mock_build_absolute_uri.return_value = self.NOTIFICATION_URL
-        mock_is_valid_webhook_event_signature.return_value = True
+        mock_verify_signature.return_value = True
 
         response = self.client.post(
             reverse("registration:square_webhook"),
             '{"foo":"bar"}',
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": "iQ2pFa3wzzKi48XdexDtLGeHxItD/Kf7tlmzrcS6a/s="}
         )
 
         self.assertTrue(response.status_code, 400)
@@ -223,7 +223,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
       }
     }"""
     )
-    SHA256_SIGNATURE = "thkLhRk6xWbmuN0N0alo56Dcl1U="
+    SHA256_SIGNATURE = "e5AxWLsfMMNoNCrZPwdyJzZdJvPX5UKmmQ1+NfR/BDo="
     SIGNATURE_KEY = "Op83IrwJoz1do9FKFYE71g"
     NOTIFICATION_URL = "https://webhook.site/4834cace-d117-4214-af36-5e8df062133d"
 

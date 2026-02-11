@@ -377,7 +377,7 @@ def enable_payment(request):
     order_id = payments.create_square_order(str(terminal.name), data)
 
     if (terminal.payment_type == Firebase.SQUARE_TERMINAL or request.GET.get("fallback", None) == "true") and terminal.square_terminal_id:
-        resp = payments.prompt_terminal_payment(
+        api_response = payments.prompt_terminal_payment(
             request,
             str(terminal.square_terminal_id),
             int(data["total"] * 100),
@@ -386,10 +386,15 @@ def enable_payment(request):
             order_id
         )
 
-        return JsonResponse({
-            "success": resp.is_success(),
-            "reason": ", ".join([error["detail"] for error in resp.errors]) if resp.errors else None,
-        })
+        if api_response.checkout:
+            return JsonResponse({
+                "success": True,
+            })
+        else:
+            return JsonResponse({
+                "success": False,
+                "reason": ", ".join([str(error.detail) for error in api_response.errors or []]),
+            })
     elif terminal.payment_type == Firebase.MQTT_REGISTER_APP:
         return send_mqtt_message_to_terminal(
             terminal,

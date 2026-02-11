@@ -116,8 +116,8 @@ class TestRegistrationPrinting(TestCase):
 
         return data
 
+    @override_settings(PRINT_RENDERER="wkhtmltopdf")
     def test_print_wkhtmltopdf(self):
-        settings.PRINT_RENDERER = "wkhtmltopdf"
         with patch("subprocess.check_call", return_value=0) as patched:
             data = self._badge_generates_pdf()
         self.assertEqual(patched.call_count, 1)
@@ -129,8 +129,8 @@ class TestRegistrationPrinting(TestCase):
         # wkhtmltopdf responses return a direct path to the file
         self.assertIn("?file=", data["file"])
 
+    @override_settings(PRINT_RENDERER="gotenberg")
     def test_print_gotenberg(self):
-        settings.PRINT_RENDERER = "gotenberg"
         with patch_gotenberg(hasattr(settings, "GOTENBERG_HOST")):
             data = self._badge_generates_pdf()
         # gotenberg responses return a signed data parameter with badge IDs

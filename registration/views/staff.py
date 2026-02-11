@@ -9,18 +9,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
-import registration.emails
 from registration.models import *
 
-from .common import (
-    abort,
-    clear_session,
-    get_client_ip,
-    handler,
-    logger,
-    success,
-)
-from .ordering import do_checkout, doZeroCheckout, get_total
+from .common import abort, handler, logger
+from .ordering import get_total
 
 logger = logging.getLogger(__name__)
 form_type = "staff"

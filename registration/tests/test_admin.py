@@ -1,4 +1,3 @@
-import json
 import time
 import uuid
 from unittest.mock import patch
@@ -8,8 +7,11 @@ from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
 from django.core import mail
 from django.http import HttpRequest
-from django.test import Client, TestCase, tag
+from django.test import TestCase, tag
 from django.urls import reverse
+from square.requests.address import AddressParams
+from square.requests.money import MoneyParams
+from square.core.api_error import ApiError
 
 from registration import admin, payments
 from registration.admin import OrderAdmin
@@ -213,13 +215,13 @@ class TestOrderAdmin(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Access denied")
-        self.assertNotContains(response, "Square data")
+        self.assertNotContains(response, "Square Data")
 
         response = self.client.get(
             reverse("admin:registration_order_change", args=(self.square_order.id,))
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Square data")
+        self.assertContains(response, "Square Data")
 
     def test_refund_view_post_access_denied(self):
         self.client.logout()
@@ -349,26 +351,24 @@ class TestOrderAdmin(TestCase):
             reference="SQUARE_ORDER_2",
             lastFour="1111",
         )
-        body = {
-            "idempotency_key": str(uuid.uuid4()),
-            "source_id": nonce,
-            "autocomplete": autocomplete,
-            "amount_money": {
-                "amount": 10000,
-                "currency": settings.SQUARE_CURRENCY,
-            },
-            "reference_id": order.reference,
-            "billing_address": {
-                "postal_code": "94042",
-            },
-            "location_id": settings.SQUARE_LOCATION_ID,
-        }
-        square_response = payments.payments_api.create_payment(body)
-        order.apiData = square_response.body
+        try:
+            square_response = payments.client.payments.create(
+                idempotency_key=str(uuid.uuid4()),
+                source_id=nonce,
+                autocomplete=autocomplete,
+                amount_money=MoneyParams(amount=10000, currency=settings.SQUARE_CURRENCY),
+                reference_id=order.reference,
+                billing_address=AddressParams(postal_code="94042"),
+                location_id=settings.SQUARE_LOCATION_ID,
+            )
+            time.sleep(2)
+            order.apiData = square_response.model_dump()
+        except ApiError as e:
+            square_response = e
+            order.apiData = e.body
         order.save()
         if nonce == "cnon:card-nonce-ok":
-            self.assertTrue(square_response.is_success())
-        time.sleep(2)
+            self.assertEqual(square_response.errors, None)
         return order
 
     @tag("square")
@@ -525,7 +525,7 @@ class TestOrderAdmin(TestCase):
         self.assertContains(
             response, "Refreshed order information from Square successfully"
         )
-        self.assertContains(response, "Square data")
+        self.assertContains(response, "Square Data")
         self.assertContains(response, "$100")
         self.assertContains(response, "-$100")
         self.assertContains(response, "full refund test [admin]")
