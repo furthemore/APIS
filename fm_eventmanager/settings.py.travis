@@ -207,7 +207,7 @@ INTERNAL_IPS = ['127.0.0.1']
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/root/projects/furthemore/static/'
+STATIC_ROOT = os.path.join(os.getenv('GITHUB_WORKSPACE', '/root/projects/furthemore/'),  'static', '')
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
