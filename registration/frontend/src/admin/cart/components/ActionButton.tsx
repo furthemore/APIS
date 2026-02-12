@@ -1,8 +1,8 @@
-import { KbdKey, createShortcut } from "@solid-primitives/keyboard";
+import { type KbdKey, createShortcut } from "@solid-primitives/keyboard";
 import {
-  Component,
-  JSX,
-  Setter,
+  type Component,
+  type JSX,
+  type Setter,
   createEffect,
   createResource,
   createSignal,

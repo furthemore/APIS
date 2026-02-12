@@ -1,6 +1,6 @@
-import { Component, For, Match, Show, Switch } from "solid-js";
+import { type Component, For, Match, Show, Switch } from "solid-js";
 
-import { ShcData, ShcMatch } from "..";
+import { type ShcData, type ShcMatch } from "..";
 import { CloseButton } from "./CloseButton";
 import { NameBirthday } from "./ScanPii";
 

@@ -1,6 +1,6 @@
 import { Big } from "big.js";
 import {
-  Component,
+  type Component,
   For,
   Match,
   Show,
@@ -9,9 +9,13 @@ import {
   useContext,
 } from "solid-js";
 
-import { ApisConfig } from "../../../entrypoints/admin";
+import { type ApisConfig } from "../..";
 import { ConfigContext } from "../../providers/config-provider";
-import { AttendeeOption, CartManager, CartResponse } from "../cart-manager";
+import {
+  type AttendeeOption,
+  CartManager,
+  type CartResponse,
+} from "../cart-manager";
 import { CartBadge } from "./CartBadge";
 
 export const CartEntries: Component<{

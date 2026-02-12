@@ -1,7 +1,7 @@
 import {
-  Accessor,
-  Component,
-  Setter,
+  type Accessor,
+  type Component,
+  type Setter,
   createEffect,
   createSignal,
   useContext,

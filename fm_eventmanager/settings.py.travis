@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'allauth.mfa',
     'registration',
     'debug_toolbar',
+    'django_vite',
 ]
 
 MIDDLEWARE = [
@@ -206,7 +207,7 @@ INTERNAL_IPS = ['127.0.0.1']
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/root/projects/furthemore/static/'
+STATIC_ROOT = os.path.join(os.getenv('GITHUB_WORKSPACE', '/root/projects/furthemore/'),  'static', '')
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -257,5 +258,7 @@ ENVIRONMENT_TEXT_COLOR = "#00FF00"
 ENVIRONMENT_FLOAT = True
 
 GOTENBERG_HOST = "http://localhost:3000"
+
+DJANGO_VITE_STATIC_URL_PREFIX = "bundler"
 
 VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

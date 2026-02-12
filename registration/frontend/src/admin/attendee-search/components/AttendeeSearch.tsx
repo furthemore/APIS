@@ -1,9 +1,9 @@
 import { createShortcut } from "@solid-primitives/keyboard";
 import {
-  Accessor,
-  Component,
+  type Accessor,
+  type Component,
   For,
-  Setter,
+  type Setter,
   Show,
   createEffect,
   createResource,
@@ -12,8 +12,8 @@ import {
   useContext,
 } from "solid-js";
 
-import { BadgeResult, getSearchResults } from "..";
-import { SentryErrorBoundary } from "../../../entrypoints/admin";
+import { type BadgeResult, getSearchResults } from "..";
+import { SentryErrorBoundary } from "../..";
 import { CartManager } from "../../cart";
 import { DisplayRegistrationButton } from "../../components/DisplayRegistration";
 import { ConfigContext } from "../../providers/config-provider";

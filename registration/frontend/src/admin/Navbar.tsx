@@ -1,22 +1,22 @@
 import { Dialog } from "@kobalte/core/dialog";
-import { KbdKey, createShortcut } from "@solid-primitives/keyboard";
+import { type KbdKey, createShortcut } from "@solid-primitives/keyboard";
 import { Big } from "big.js";
 import {
-  Component,
+  type Component,
   For,
-  Setter,
+  type Setter,
   Show,
   createEffect,
   createSignal,
   useContext,
 } from "solid-js";
 
-import { ApisConfig, CSRF_TOKEN } from "../entrypoints/admin";
-import { FallibleRequest, api } from "./api";
+import { type ApisConfig, CSRF_TOKEN } from ".";
+import { type FallibleRequest, api } from "./api";
 import { CartManager } from "./cart";
 import { ConfigContext } from "./providers/config-provider";
 import {
-  UserSettingKey,
+  type UserSettingKey,
   UserSettingsContext,
   UserSettingsManager,
 } from "./providers/user-settings-provider";

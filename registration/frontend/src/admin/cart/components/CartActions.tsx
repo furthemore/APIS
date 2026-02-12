@@ -1,8 +1,8 @@
 import { Big } from "big.js";
 import {
-  Accessor,
-  Component,
-  Setter,
+  type Accessor,
+  type Component,
+  type Setter,
   Show,
   createEffect,
   createMemo,
@@ -10,10 +10,10 @@ import {
   useContext,
 } from "solid-js";
 
-import { SentryErrorBoundary } from "../../../entrypoints/admin";
+import { SentryErrorBoundary } from "../..";
 import { ConfigContext } from "../../providers/config-provider";
 import { UserSettingsContext } from "../../providers/user-settings-provider";
-import { Badge, CartManager, CartResponse } from "../cart-manager";
+import { type Badge, CartManager, type CartResponse } from "../cart-manager";
 import { ActionButton } from "./ActionButton";
 import { CartActionsError } from "./CartActionsError";
 

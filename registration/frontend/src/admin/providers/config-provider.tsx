@@ -1,5 +1,5 @@
 import { createContext } from "solid-js";
 
-import { ApisConfig } from "../../entrypoints/admin";
+import { type ApisConfig } from "..";
 
 export const ConfigContext = createContext<ApisConfig>();

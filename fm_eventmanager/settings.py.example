@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'allauth.mfa',
     'registration',
     'debug_toolbar',
+    'django_vite',
 ]
 
 MIDDLEWARE = [
@@ -219,5 +220,8 @@ ENVIRONMENT_NAME = "Production Server"
 ENVIRONMENT_COLOR = "#FF0000"
 ENVIRONMENT_TEXT_COLOR = "#00FF00"
 ENVIRONMENT_FLOAT = True
+
+DJANGO_VITE_DEV_MODE = DEBUG
+DJANGO_VITE_STATIC_URL_PREFIX = "bundler"
 
 VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]

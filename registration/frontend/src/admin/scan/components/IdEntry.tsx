@@ -1,11 +1,11 @@
 import { createShortcut } from "@solid-primitives/keyboard";
 import { differenceInYears } from "date-fns/differenceInYears";
-import { Component, Show } from "solid-js";
+import { type Component, Show } from "solid-js";
 
-import { IdData } from "..";
+import { type IdData } from "..";
 import { CartManager } from "../../cart";
 import {
-  AttendeeDetails,
+  type AttendeeDetails,
   DisplayRegistrationButton,
 } from "../../components/DisplayRegistration";
 import { CloseButton } from "./CloseButton";

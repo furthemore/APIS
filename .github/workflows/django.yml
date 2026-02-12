@@ -54,9 +54,15 @@ jobs:
       - name: Install Dependencies
         run: |
           uv sync
+      - name: Build frontend
+        run: |
+          cd registration/frontend
+          npm install
+          npm run build
       - name: Run Tests
         run: |
           cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+          uv run python ./manage.py collectstatic --noinput
           uv run coverage run ./manage.py test registration
         env:
           SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}

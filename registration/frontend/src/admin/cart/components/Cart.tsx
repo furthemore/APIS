@@ -1,5 +1,5 @@
 import { createShortcut } from "@solid-primitives/keyboard";
-import { Component, createResource, createSignal } from "solid-js";
+import { type Component, createResource, createSignal } from "solid-js";
 import { Show } from "solid-js/web";
 
 import { CartManager } from "../cart-manager";
