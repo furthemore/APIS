@@ -1281,27 +1281,23 @@ def oauth_square(request):
 
     code = request.GET.get("code")
 
-    result = payments.client.o_auth.obtain_token({
-        "client_id": settings.SQUARE_APPLICATION_ID,
-        "client_secret": settings.SQUARE_APPLICATION_SECRET,
-        "code": code,
-        "grant_type": "authorization_code"
-    })
+    token = payments.client.o_auth.obtain_token(
+        client_id=settings.SQUARE_APPLICATION_ID,
+        client_secret=settings.SQUARE_APPLICATION_SECRET,
+        grant_type="authorization_code",
+        code=code,
+    )
 
-    if result.is_success():
-        send_mqtt_message_to_terminal(
-            request,
-            "payment/update/token",
-            {
-                "accessToken": result.body["access_token"],
-                "refreshToken": result.body["refresh_token"],
-            },
-        )
-        resp = HttpResponseRedirect(reverse("registration:onsite_admin"))
-    else:
-        print(result.errors)
-        resp = JsonResponse({"success": False, "reason": "Could not fetch tokens"})
+    send_mqtt_message_to_terminal(
+        request,
+        "payment/update/token",
+        {
+            "accessToken": token.access_token,
+            "refreshToken": token.refresh_token,
+        },
+    )
 
+    resp = HttpResponseRedirect(reverse("registration:onsite_admin"))
     resp.delete_cookie("square_oauth_state")
     return resp
 
