@@ -1025,21 +1025,15 @@ class Cashdrawer(models.Model):
 
 
 class ReservedBadgeNumbers(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    badgeNumber = models.IntegerField()
-    priceLevel = models.ForeignKey(
-        PriceLevel, null=True, blank=True, on_delete=models.SET_NULL
-    )
+    badgeNumber = models.IntegerField(unique=True)
     notes = models.TextField(blank=True)
 
     def __str__(self):
-        return "<Reserved Badge Number({0}, event={1})>".format(
-            self.event, self.badgeNumber
-        )
+        return f"<Reserved Badge Number({self.badgeNumber})>"
 
     class Meta:
         db_table = "registration_reserved_badge_numbers"
-        verbose_name_plural = "Reserved Badge Numbers"
+        verbose_name_plural = "Reserved badge numbers"
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent

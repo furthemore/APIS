@@ -905,43 +905,49 @@ def resend_confirmation_email(modeladmin, request, queryset):
     description="Assign badge number"
 )
 @transaction.atomic
-def assign_badge_numbers(modeladmin, request, queryset):
+def assign_badge_numbers(modeladmin, request, queryset: "QuerySet[Badge]"):
     first_badge = queryset[0]
     event = first_badge.event or Event.objects.get(default=True)
-    badges = Badge.objects.filter(event=event)
+
     highest = Badge.objects.filter(event=event, badgeNumber__isnull=False).aggregate(
-        Max("badgeNumber")
-    )["badgeNumber__max"]
+        max=Max("badgeNumber")
+    )["max"]
+
     if highest is None:
         highest = 0
 
+    reserved_numbers = ReservedBadgeNumbers.objects.filter(badgeNumber__gt=highest).values("badgeNumber")
+    reserved_numbers = set([num["badgeNumber"] for num in reserved_numbers])
+
     for badge in queryset.order_by("registeredDate"):
-        # skip assigning to badges not in current event
-        if badge not in badges:
+        # Skip assigning to badges not in current event
+        if badge.event_id != event.id:
             messages.warning(
                 request,
-                f"skipped assinging {badge} a number beacuse it is outside of current event",
+                f"skipped assigning {badge} a number because it is outside of current event",
             )
             continue
 
         # Skip badges which have already been assigned
         if badge.badgeNumber is not None:
             continue
+
         # Skip badges that are not assigned a registration level
         level = badge.effectiveLevel()
         if level is None or level == Badge.UNPAID:
             messages.warning(
                 request,
-                f"skipped assinging {badge} a number beacuse it's registration level is {level}",
+                f"skipped assigning {badge} a number because registration level is {level}",
             )
             continue
 
         highest += 1
 
+        while highest in reserved_numbers:
+            highest += 1
+
         badge.badgeNumber = highest
         badge.save()
-
-
 
 
 @admin.action(
@@ -1738,3 +1744,8 @@ class SquareDeviceAdmin(admin.ModelAdmin):
                 existing.delete()
 
         return HttpResponseRedirect("../")
+
+
+@admin.register(ReservedBadgeNumbers)
+class ReservedBadgeNumbersAdmin(admin.ModelAdmin):
+    list_display = ("badgeNumber",)
