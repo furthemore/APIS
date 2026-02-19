@@ -22,7 +22,7 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/big.js": "^6.2.2",
-    "baseline-browser-mapping": "^2.9.19",
+    "baseline-browser-mapping": "^2.10.0",
     "prettier": "^3.8.1",
     "sass-embedded": "^1.97.3",
     "typescript": "^5.9.3",
