@@ -917,7 +917,7 @@ def assign_badge_numbers(modeladmin, request, queryset: "QuerySet[Badge]"):
         highest = 0
 
     reserved_numbers = ReservedBadgeNumbers.objects.filter(badgeNumber__gt=highest).values("badgeNumber")
-    reserved_numbers = set([num["badgeNumber"] for num in reserved_numbers])
+    reserved_numbers = {num["badgeNumber"] for num in reserved_numbers}
 
     for badge in queryset.order_by("registeredDate"):
         # Skip assigning to badges not in current event
