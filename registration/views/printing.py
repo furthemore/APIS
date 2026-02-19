@@ -17,7 +17,7 @@ from gotenberg_client.options import (
 )
 
 from registration import mqtt
-from registration.models import Badge, Dealer, Staff
+from registration.models import Badge, Dealer, Firebase, Staff, PrintHistory
 
 logger = logging.getLogger(__name__)
 
@@ -157,15 +157,20 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
                 response = req.run()
                 finalPdf = response.content
 
-        http_resp = HttpResponse()
-        http_resp["content-type"] = "application/pdf"
-        http_resp.write(finalPdf)
+    http_resp = HttpResponse()
+    http_resp["content-type"] = "application/pdf"
+    http_resp.write(finalPdf)
 
-        for badge in queryset:
-            badge.printed = True
-            badge.save()
+    terminal = None
+    if terminal_name := data_obj.get("terminal", None):
+        terminal = Firebase.objects.get(name=terminal_name)
 
-        if terminal := data_obj.get("terminal", None):
-            mqtt.send_mqtt_message(mqtt.get_topic("web/refresh", name=terminal))
+    for badge in queryset:
+        badge.printed = True
+        badge.save()
+        PrintHistory.objects.create(badge=badge, firebase=terminal, source=data_obj["source"])
 
-        return http_resp
+    if terminal:
+        mqtt.send_mqtt_message(mqtt.get_topic("web/refresh", name=terminal.name))
+
+    return http_resp

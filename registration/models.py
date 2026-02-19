@@ -488,7 +488,6 @@ class Badge(models.Model):
     badgeName = models.CharField(max_length=200, blank=True)
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
-    printCount = models.IntegerField(default=0)
     signature_svg = models.TextField(null=True, blank=True)
     signature_bitmap = models.TextField(null=True, blank=True)
 
@@ -1034,6 +1033,26 @@ class ReservedBadgeNumbers(models.Model):
     class Meta:
         db_table = "registration_reserved_badge_numbers"
         verbose_name_plural = "Reserved badge numbers"
+
+
+class PrintHistory(models.Model):
+    ONSITE = "onsite"
+    ADMIN = "admin"
+    SOURCE_CHOICES = (
+        (ONSITE, "Onsite"),
+        (ADMIN, "Admin"),
+    )
+
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    firebase = models.ForeignKey(
+        Firebase, on_delete=models.SET_NULL, null=True, verbose_name="Terminal"
+    )
+    source = models.CharField(choices=SOURCE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "registration_print_history"
+        verbose_name_plural = "Print history"
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent
