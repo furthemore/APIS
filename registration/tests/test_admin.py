@@ -1,6 +1,7 @@
 import time
 import uuid
-from unittest.mock import patch
+from typing import List
+from unittest.mock import Mock, patch
 
 from bs4 import BeautifulSoup
 from django.contrib.admin import AdminSite
@@ -9,9 +10,9 @@ from django.core import mail
 from django.http import HttpRequest
 from django.test import TestCase, tag
 from django.urls import reverse
+from square.core.api_error import ApiError
 from square.requests.address import AddressParams
 from square.requests.money import MoneyParams
-from square.core.api_error import ApiError
 
 from registration import admin, payments
 from registration.admin import OrderAdmin
@@ -853,3 +854,56 @@ class TestTempToken(TestCase):
         # Make sure the URL is correct in the HTML email
         expected_html_link = f"<a href='{expected_url}'>{expected_url}</a>"
         self.assertIn(expected_html_link, html_text)
+
+
+class TestAssignBadgeNumbers(OrdersTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.event = Event(**DEFAULT_EVENT_ARGS)
+        self.event.save()
+
+    @patch("django.contrib.messages.warning")
+    def test_assignment_works(self, mock_messages_warning: Mock):
+        badges: List[Badge] = []
+
+        args = DEFAULT_EVENT_ARGS.copy()
+        args["default"] = False
+        other_event = Event(**args)
+        other_event.save()
+
+        badge = Badge(event=self.event)
+        badge.save()
+        badges.append(badge)
+
+        order = Order(total="90.00", reference="FOOBAR")
+        order.save()
+
+        badge = Badge(event=other_event)
+        badge.save()
+        badges.append(badge)
+
+        order_item = OrderItem(order=order, badge=badge, priceLevel=self.price_90)
+        order_item.save()
+
+        for _ in range(5):
+            order = Order(total="90.00", reference="FOOBAR")
+            order.save()
+
+            badge = Badge(event=self.event)
+            badge.save()
+            badges.append(badge)
+
+            order_item = OrderItem(order=order, badge=badge, priceLevel=self.price_90)
+            order_item.save()
+
+        for num in [3, 4]:
+            ReservedBadgeNumbers(badgeNumber=num).save()
+
+        admin.assign_badge_numbers(None, None, Badge.objects.all())
+        self.assertEqual(mock_messages_warning.call_count, 2)
+
+        EXPECTED = [None, None, 1, 2, 5, 6, 7]
+        for idx, badge in enumerate(badges):
+            badge.refresh_from_db()
+            self.assertEqual(badge.badgeNumber, EXPECTED[idx])
