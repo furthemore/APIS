@@ -33,6 +33,7 @@ from registration.models import (
     Firebase,
     Order,
     OrderItem,
+    PrintHistory,
     ShirtSizes,
     Staff,
     get_token,
@@ -440,20 +441,20 @@ def get_messages_list(request):
 @staff_member_required
 def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
+    terminal = get_active_terminal(request)
 
     if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
-        terminal = get_active_terminal(request)
-
         signer = TimestampSigner()
         data = signer.sign_object({
             "badge_ids": [int(badge_id) for badge_id in badge_list],
             "terminal": terminal.name if terminal else None,
+            "source": PrintHistory.ONSITE,
         })
 
         pdf_path = reverse("registration:pdf") + f"?data={data}"
     else:
         queryset = Badge.objects.filter(id__in=badge_list)
-        pdf_name = admin.generate_badge_labels(queryset, request)
+        pdf_name = admin.generate_badge_labels(queryset, request, PrintHistory.ONSITE, terminal)
 
         pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
 

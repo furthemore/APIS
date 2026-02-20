@@ -976,11 +976,12 @@ def print_badges(modeladmin, request, queryset):
         signer = TimestampSigner()
         data = signer.sign_object({
             "badge_ids": [badge.id for badge in queryset],
+            "source": PrintHistory.ADMIN,
         })
 
         pdf_path = reverse("registration:pdf") + f"?data={data}"
     else:
-        pdf_name = generate_badge_labels(queryset, request)
+        pdf_name = generate_badge_labels(queryset, request, PrintHistory.ADMIN, None)
         pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
 
 
@@ -990,7 +991,7 @@ def print_badges(modeladmin, request, queryset):
     return response
 
 
-def generate_badge_labels(queryset, request):
+def generate_badge_labels(queryset, request, source, terminal):
     con = printing.Main(local=True)
     tags = []
     for badge in queryset:
@@ -1027,6 +1028,7 @@ def generate_badge_labels(queryset, request):
 
         badge.printed = True
         badge.save()
+        PrintHistory.objects.create(badge=badge, firebase=terminal, source=source)
 
     if len(tags) == 0:
         messages.warning(request, "None of the selected badges can be printed.")
@@ -1749,3 +1751,17 @@ class SquareDeviceAdmin(admin.ModelAdmin):
 @admin.register(ReservedBadgeNumbers)
 class ReservedBadgeNumbersAdmin(admin.ModelAdmin):
     list_display = ("badgeNumber",)
+
+
+@admin.register(PrintHistory)
+class PrintHistoryAdmin(admin.ModelAdmin):
+    list_display = ("badge", "source", "firebase", "created_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
