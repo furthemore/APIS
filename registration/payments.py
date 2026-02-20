@@ -98,7 +98,7 @@ def charge_payment(order: Order, cc_data: dict, request=None):
             )
     except ApiError as e:
         logger.debug(e.errors)
-        logger.error("---- Transaction Failed ----")
+        logger.debug("---- Transaction Failed ----")
         order.status = Order.FAILED
         order.apiData = e.body
         order.save()
@@ -301,7 +301,7 @@ def refund_card_payment(order, amount, reason=None, request=None):
         logger.error("Error in square refund: {0}".format(errors))
         return False, errors
 
-    stored_refunds = api_data.get("refunds") or []
+    stored_refunds = api_data.get("refunds", [])
 
     status = api_response.refund.status
     stored_refunds.append(api_response.refund.model_dump())
@@ -347,7 +347,7 @@ def process_webhook_refund_update(notification: PaymentWebhookNotification) -> b
     webhook_refund = notification.body["data"]["object"]["refund"]
 
     output = []
-    refunds_list = order.apiData["refunds"]
+    refunds_list = order.apiData.get("refunds", [])
     for refund in refunds_list:
         if refund["id"] == refund_id:
             output.append(webhook_refund)
@@ -401,7 +401,9 @@ def process_webhook_refund_created(notification: PaymentWebhookNotification) -> 
 
     # Store refund in api data
 
-    order.apiData["refunds"].append(webhook_refund)
+    refunds = order.apiData.get("refunds", [])
+    refunds.append(webhook_refund)
+    order.apiData["refunds"] = refunds
 
     status = webhook_refund["status"]
     if status == "COMPLETED":
