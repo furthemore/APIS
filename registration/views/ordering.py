@@ -7,7 +7,7 @@ from django.core.signing import TimestampSigner
 from django.http import JsonResponse
 from idempotency_key.decorators import idempotency_key
 
-from registration import mqtt
+from registration import mqtt, tasks
 import registration.emails
 from registration.models import *
 from registration.payments import charge_payment
@@ -289,19 +289,7 @@ def checkout(request):
         if existing_order_item:
             add_attendee_to_assistant(request, existing_order_item.badge.attendee)
         common.clear_session(request)
-        try:
-            registration.emails.send_registration_email(order, order.billingEmail)
-        except Exception as e:
-            logger.error("Error sending RegistrationEmail - zero sum.")
-            logger.exception(e)
-            registration_email = common.get_registration_email(event)
-            return common.abort(
-                400,
-                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
-                "receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                    registration_email
-                ),
-            )
+        tasks.send_registration_email_task.delay(order.id, order.billingEmail)
         return common.success()
 
     porg = Decimal(post_data.get("orgDonation") or "0.00")
@@ -354,21 +342,7 @@ def checkout(request):
         cart_items = Cart.objects.filter(id__in=session_items)
         cart_items.delete()
         common.clear_session(request)
-        try:
-            registration.emails.send_registration_email(order, order.billingEmail)
-        except Exception as e:
-            event = Event.objects.get(default=True)
-            registration_email = common.get_registration_email(event)
-
-            logger.error("Error sending RegistrationEmail.")
-            logger.exception(e)
-            return common.abort(
-                500,
-                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
-                "receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                    registration_email
-                ),
-            )
+        tasks.send_registration_email_task.delay(order.id, order.billingEmail)
 
         notify_terminal(request, order)
 

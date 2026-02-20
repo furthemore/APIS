@@ -30,7 +30,7 @@ from qrcode.image.svg import SvgPathFillImage
 
 import registration.emails
 import registration.views.onsite_admin
-from registration import mqtt, payments
+from registration import mqtt, payments, tasks
 from registration.forms import FirebaseForm
 from registration.models import *
 from registration.views import webhooks
@@ -154,7 +154,7 @@ def send_staff_token_email(modeladmin, request, queryset):
         return
 
     for token in queryset:
-        registration.emails.send_new_staff_email(token)
+        tasks.send_new_staff_email_task.delay(token.id)
         token.sent = True
         token.save()
     if queryset.count() > 1:
@@ -179,7 +179,7 @@ class TempTokenAdmin(admin.ModelAdmin):
     description="Send approval email and payment instructions"
 )
 def send_approval_email(modeladmin, request, queryset):
-    registration.emails.send_dealer_approval_email(queryset)
+    tasks.send_dealer_approval_email_task.delay(list(queryset.values_list("id", flat=True)))
     queryset.update(emailed=True)
     if queryset.count() > 1:
         messages.success(request, "Successfully emailed %d dealers" % queryset.count())
@@ -212,7 +212,7 @@ def send_payment_email(modeladmin, request, queryset):
         badge = dealer.getBadge()
         oi = OrderItem.objects.filter(badge=badge).first()
         if oi and oi.order:
-            registration.emails.send_dealer_payment_email(dealer, oi.order)
+            tasks.send_dealer_payment_email_task.delay(dealer.id, oi.order.id)
     if queryset.count() > 1:
         messages.success(request, "Successfully emailed %d dealers" % queryset.count())
     else:
@@ -226,7 +226,7 @@ def send_payment_email(modeladmin, request, queryset):
 )
 def send_assistant_form_email(modeladmin, request, queryset):
     for dealer in queryset:
-        registration.emails.send_dealer_assistant_form_email(dealer)
+        tasks.send_dealer_assistant_form_email_task.delay(dealer.id)
     if queryset.count() > 1:
         messages.success(request, "Successfully emailed %d dealers" % queryset.count())
     else:
@@ -282,7 +282,7 @@ class DealerAsstResource(resources.ModelResource):
 )
 def send_assistant_registration_email(modeladmin, request, queryset):
     for assistant in queryset:
-        registration.emails.send_dealer_assistant_registration_invite(assistant)
+        tasks.send_dealer_assistant_registration_invite_task.delay(assistant.id)
     if queryset.count() > 1:
         messages.success(
             request,
@@ -624,7 +624,7 @@ def checkin_staff(modeladmin, request, queryset):
 )
 def send_staff_registration_email(modeladmin, request, queryset):
     for staff in queryset:
-        registration.emails.send_staff_promotion_email(staff)
+        tasks.send_staff_promotion_email_task.delay(staff.id)
 
 
 
@@ -871,7 +871,7 @@ def make_staff(modeladmin, request, queryset):
 )
 def send_upgrade_form_email(modeladmin, request, queryset):
     for badge in queryset:
-        registration.emails.send_upgrade_instructions(badge)
+        tasks.send_upgrade_instructions_task.delay(badge.id)
     if queryset.count() > 1:
         messages.success(
             request, "Successfully sent emails to %d attendees" % queryset.count()
@@ -888,9 +888,7 @@ def send_upgrade_form_email(modeladmin, request, queryset):
 def resend_confirmation_email(modeladmin, request, queryset):
     for badge in queryset:
         order = badge.getOrder()
-        registration.emails.send_registration_email(
-            order, badge.attendee.email, send_vip=False
-        )
+        tasks.send_registration_email_task.delay(order.id, badge.attendee.email, False)
     if queryset.count() > 1:
         messages.success(
             request, "Successfully sent emails to %d attendees" % queryset.count()
@@ -1328,7 +1326,7 @@ class OrderItemAdmin(ImportExportModelAdmin):
 )
 def send_registration_email(modeladmin, request, queryset):
     for order in queryset:
-        registration.emails.send_registration_email(order, order.billingEmail)
+        tasks.send_registration_email_task.delay(order.id, order.billingEmail)
 
 
 

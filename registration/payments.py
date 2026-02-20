@@ -28,7 +28,7 @@ from square.types.device import Device
 from square.types.error import Error
 from square.types.payment import Payment
 
-from . import emails
+from . import emails, tasks
 from .models import *
 
 SQUARE_REQUESTS = Histogram(
@@ -477,7 +477,7 @@ def process_webhook_dispute_created_or_updated(
             ban.save()
 
             # Send an email about it
-            emails.send_chargeback_notice_email(order)
+            tasks.send_chargeback_notice_email_task.delay(order.id)
 
     return True
 
