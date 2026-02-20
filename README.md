@@ -122,7 +122,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
 ### Production use
 For production use you will also need an MQTT broker for some features like taking on-site payments with the iPad application.
-Please see [this documentation](conf/README.md) for notes about configuring a broker.
+Please see [this documentation](docs/conf/MQTT.md) for notes about configuring a broker.
 
 ## Development
 
