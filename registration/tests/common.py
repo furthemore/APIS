@@ -345,7 +345,7 @@ class OrdersTestCase(TestCase):
                 "email": "apis@mailinator.net",
                 "source_id": "cnon:card-nonce-ok",
                 "postal": "13271",
-                "state": "",
+                "state": None,
             },
             "onsite": False,
             "orgDonation": "10",
