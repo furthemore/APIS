@@ -28,7 +28,7 @@ $(document).ready(function (e) {
     });
 
     $('#byear, #bmonth, #bday').change(function () {
-        const bday = $('#byear').val() + "-" + $('#bmonth').val() + "-" + $('#bday').val();
+        const bday = $('#byear').val() + "-" + $('#bmonth').val() + "-" + $('#bday').val().padStart(2, "0");
         $('#birthDate').val(bday);
     });
 

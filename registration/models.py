@@ -7,6 +7,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 
 # Lookup and supporting tables.
@@ -798,15 +799,17 @@ class Order(models.Model):
         max_digits=8,
         decimal_places=2,
         null=True,
-        default=0,
+        default=Decimal(0),
         verbose_name="Organization Donation",
+        validators=[MinValueValidator(0)],
     )
     charityDonation = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         null=True,
-        default=0,
+        default=Decimal(0),
         verbose_name="Charity Donation",
+        validators=[MinValueValidator(0)],
     )
     notes = models.TextField(blank=True)
     billingName = models.CharField(max_length=200, blank=True, verbose_name="Name")
