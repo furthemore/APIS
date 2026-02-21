@@ -669,6 +669,7 @@ class TestStaffAdmin(AdminTestCase):
         )
         self.badge.save()
         self.staff = Staff(attendee=self.attendee, event=self.event)
+        self.staff.save()
         self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
         self.admin_user.save()
 
