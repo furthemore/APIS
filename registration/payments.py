@@ -1,10 +1,11 @@
 import logging
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional, TypeAlias
 
 from django.conf import settings
 from django.db.utils import NotSupportedError
+from django.http import HttpRequest
 from prometheus_client import Histogram
 from square import Square
 from square.core.api_error import ApiError
@@ -44,8 +45,32 @@ if settings.SQUARE_ENVIRONMENT == "sandbox":
 
 client = Square(token=settings.SQUARE_ACCESS_TOKEN, environment=environment)
 
+BillingData: TypeAlias = dict[
+    Literal[
+        "source_id",
+        "cc_firstname",
+        "cc_lastname",
+        "email",
+        "address1",
+        "address2",
+        "city",
+        "state",
+        "postal",
+        "country",
+        "verificationToken",
+    ],
+    str,
+]
 
-def get_idempotency_key(request=None):
+
+def get_idempotency_key(request: Optional[HttpRequest] = None) -> str:
+    """
+    Gets the idempotency key from a request, generating one if none exists.
+
+    :param request: The request sent by the client.
+    :type request: :class:`django.http.HttpRequest`, optional
+    :return: A UUID as a string used as an idempotency key.
+    """
     if request:
         header_key = request.META.get("IDEMPOTENCY_KEY")
         if header_key:
@@ -53,11 +78,24 @@ def get_idempotency_key(request=None):
     return str(uuid.uuid4())
 
 
-def charge_payment(order: Order, cc_data: dict, request=None):
+def charge_payment(
+    order: Order, cc_data: BillingData, request: Optional[HttpRequest] = None
+) -> tuple[bool, dict]:
     """
-    Returns two variabies:
-        success - general success flag
-        message - type of failure.
+    Submits payment data on an order to the payment processor.
+
+     Makes the following Square API calls:
+
+    * `square.api.payments_api.PaymentsApi.create_payment`
+
+    :param order: The APIS Order making the charge.
+    :type order: :class:`registration.models.Order`
+    :param cc_data: Billing data needed to make the charge.
+    :type cc_data: :class:`registration.payments.BillingData`
+    :param request: HTTP request from the client
+    :type request: :class:`django.http.HttpRequest`, optional
+    :return: A tuple of the success status, and a dictionary to be sent as a
+        JSON response.
     """
 
     idempotency_key = get_idempotency_key(request)
@@ -131,14 +169,34 @@ def charge_payment(order: Order, cc_data: dict, request=None):
         return False, {"errors": [e.model_dump() for e in api_response.errors or []]}
 
 
-def format_errors(errors: List[Error]):
+def format_errors(errors: List[Error]) -> str:
+    """
+    Formats a list of Square API errors to lines of text.
+
+    :param errors: A list of Square API errors.
+    :return: Lines of text in the format of: ``<category> - <code>: <details>``
+    """
     error_string = ""
     for error in errors:
         error_string += f"{error.category} - {error.code}: {error.detail}\n"
     return error_string
 
 
-def refresh_payment(order, store_api_data=None):
+def refresh_payment(order: Order, store_api_data=None) -> tuple[bool, str | None]:
+    """
+    Queries the payment gateway to update payment information on an order.
+
+    Makes the following Square API calls:
+
+    * `square.api.payments_api.PaymentsApi.get_payment`
+    * `square.api.refunds_api.RefundsApi.get_payment_refund`
+
+    :param order: The :class:`Order` to update.
+    :param store_api_data: Optional data. If not supplied, this function will
+        pull from the ``apiData`` property of the ``order``.
+    :return: A tuple of a boolean success status, and a string error of the
+        success status is ``False``.
+    """
     # Function raises ValueError if there's a problem decoding the stored data
     if store_api_data:
         api_data = store_api_data
@@ -226,6 +284,22 @@ def refresh_payment(order, store_api_data=None):
 
 
 def update_order_payment_data(order: Order, order_total: int, payment: Payment) -> int:
+    """
+    Updates payment data in an APIS Order object based on info returned from
+    the Square API.
+
+    Based on given payment data, attempts to set the last 4 digits of the card
+    used for payment and the status of the order (``"COMPLETED"``, ``"FAILED"``,
+    or ``"CAPTURED"``), and returns the amount that was charged. Does not save
+    the Order.
+
+    :param order: The Order to be updated.
+    :param order_total: The total amount charged.
+    :param payment: Payment data returned from Square.
+    :return: The total charge amount that should be logged. If the order failed,
+             it will be the same as the ``order_total`` param. Otherwise, it
+             will be the amount inside of the ``payment`` data.
+    """
     try:
         order.lastFour = payment.card_details.card.last4
     except KeyError:
@@ -246,7 +320,22 @@ def update_order_payment_data(order: Order, order_total: int, payment: Payment) 
     return order_total
 
 
-def refund_payment(order, amount, reason=None, request=None):
+def refund_payment(
+    order: Order,
+    amount: float,
+    reason: Optional[str] = None,
+    request: Optional[HttpRequest] = None,
+) -> tuple[bool, str | None]:
+    """
+    Determines whether an order can be refunded, and processes the refund id so.
+
+    :param order: The order that the payment refund should belong to.
+    :param amount: The amount being refunded.
+    :param reason: The reason for the refund.
+    :param request: Unused.
+    :return: A Tuple of a `bool` and a `str`, indicating success status and a
+             message in the case of an error.
+    """
     if order.status == Order.FAILED:
         return False, "Failed orders cannot be refunded."
     if order.billingType == Order.CREDIT:
@@ -262,7 +351,18 @@ def refund_payment(order, amount, reason=None, request=None):
     return False, "Not sure how to refund order type {0}!".format(order.billingType)
 
 
-def refund_cash_payment(order, amount, reason=None):
+def refund_cash_payment(
+    order: Order, amount: float, reason: Optional[str] = None
+) -> tuple[bool, None]:
+    """
+    Deducts the ``amount`` from the ``order``'s total and logs a `Cashdrawer`
+    transaction in the APIS database.
+
+    :param order: The Order being refunded.
+    :param amount: The amount of cash being refunded.
+    :param reason: An optional reason for the refund.
+    :return: A tuple of a boolean and nothing - this always succeeds.
+    """
     # Change order status
     order.status = Order.REFUNDED
     order.notes += "\nRefund issued {0}: {1}".format(timezone.now(), reason)
@@ -277,7 +377,24 @@ def refund_cash_payment(order, amount, reason=None):
     return True, None
 
 
-def refund_card_payment(order, amount, reason=None, request=None):
+def refund_card_payment(
+    order: Order,
+    amount: float,
+    reason: Optional[str] = None,
+    request: Optional[HttpRequest] = None,
+) -> tuple[bool, str]:
+    """Process a refund for a card-based payment.
+
+    Makes the following Square API calls:
+
+    * `square.api.refunds_api.RefundsApi.refund_payment`
+
+    :param order: _description_
+    :param amount: _description_
+    :param reason: Optional reason to log for the refund.
+    :param request: Original HTTP request from Django. Unused.
+    :return: A tuple of a boolean success status and an accompanying message.
+    """
     api_data = order.apiData
     payment_id = api_data["payment"]["id"]
     converted_amount = int(amount * 100)
@@ -498,6 +615,14 @@ def process_webhook_dispute_created_or_updated(
 
 
 def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
+    """Creates an order in Square.
+
+    :param terminal_name: The name of the terminal device from which the order
+        originated.
+    :param data: Order data.
+    :type data: dict
+    :return: The created order's ID.
+    """
     discounts = []
     line_items = []
 
@@ -608,6 +733,13 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
 def print_payment_receipt(
     request, square_device: SquareDevice, payment_id: str
 ) -> bool:
+    """Tells a terminal to print a reciept for a given payment.
+
+    :param request: Original HTTP request from Django
+    :param square_device: The SquareDevice to send the print request to.
+    :param payment_id: Payment ID to print a reciept for.
+    :return: A boolean value indicating the success of the print request.
+    """
     try:
         with SQUARE_REQUESTS.labels(endpoint="create_terminal_action").time():
             api_response = client.terminal.actions.create(
@@ -633,6 +765,16 @@ def print_payment_receipt(
 
 
 def get_terminals() -> List[Device]:
+    """
+    Gets the list of terminals defined in the payment processor.
+
+    Makes the following Square API calls:
+
+    * `square.api.devices_api.DevicesApi.list_devices`
+
+    :raises Exception: The API fails to get the device list.
+    :return: A List of parsed JSON dictionaries describing the terminals.
+    """
     api_response = client.devices.list()
 
     terminals = []
@@ -642,13 +784,28 @@ def get_terminals() -> List[Device]:
 
 
 def prompt_terminal_payment(
-    request,
+    request: HttpRequest,
     device_id: str,
     total: int,
     reference: str,
     note: str,
     order_id: Optional[str],
 ) -> CreateTerminalCheckoutResponse:
+    """Sends a checkout request to a payment terminal.
+
+    Makes the following Square API calls:
+
+    * `square.api.terminal_api.TerminalApi.create_terminal_checkout`
+
+    :param request: Original HTTP request from Django
+    :param device_id: The Square device ID of the terminal to send the checkout
+        request to.
+    :param total: The total of the transaction being checked out, in cents.
+    :param reference: Reference ID
+    :param note: A note to attach to the checkout request.
+    :param order_id: The ID of the order being checked out.
+    :return: The ApiResponse produced by the payment processor.
+    """
     if order_id:
         checkout_note = None
     else:
