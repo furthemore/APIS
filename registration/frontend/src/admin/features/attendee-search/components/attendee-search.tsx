@@ -4,7 +4,7 @@ import {
   faPlus,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
-import { createShortcut } from "@solid-primitives/keyboard";
+import { createHotkey } from "@tanstack/solid-hotkeys";
 import { useQuery } from "@tanstack/solid-query";
 import Fa from "solid-fa";
 import {
@@ -100,7 +100,7 @@ export const AttendeeSearch: Component<{
     ),
   );
 
-  createShortcut(["Alt", "."], () => {
+  createHotkey("Alt+.", () => {
     const entries = attendees.data;
 
     if (entries) {
@@ -126,7 +126,7 @@ export const AttendeeSearch: Component<{
     }
   });
 
-  createShortcut(["Alt", "E"], () => {
+  createHotkey("Alt+E", () => {
     const entries = attendees.data;
     const selected = selectedAttendee();
 
@@ -135,15 +135,9 @@ export const AttendeeSearch: Component<{
     }
   });
 
-  createShortcut(
-    ["Control", "E"],
-    () => {
-      globalThis.open("/registration/onsite", "register");
-    },
-    {
-      preventDefault: true,
-    },
-  );
+  createHotkey("Control+E", () => {
+    globalThis.open("/registration/onsite", "register");
+  });
 
   const attendeeCount = () =>
     (attendees.isFetched && attendees.data?.length) || 0;
@@ -195,6 +189,7 @@ export const AttendeeSearch: Component<{
             <SearchInput
               value={searchFieldValue()}
               attendeeCount={attendeeCount()}
+              selectedAttendee={selectedAttendee()}
               setSearchFieldValue={setSearchFieldValue}
               setSearchQuery={props.setSearchQuery}
               setSelectedAttendee={setSelectedAttendee}

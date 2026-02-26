@@ -1,3 +1,5 @@
+import { TanStackDevtools } from "@tanstack/solid-devtools";
+import { hotkeysDevtoolsPlugin } from "@tanstack/solid-hotkeys-devtools";
 import type { QueryClient } from "@tanstack/solid-query";
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
 import { Outlet, createRootRouteWithContext } from "@tanstack/solid-router";
@@ -10,6 +12,7 @@ const RootLayout: Component = () => {
       <Outlet />
       <SolidQueryDevtools />
       <TanStackRouterDevtools />
+      <TanStackDevtools plugins={[hotkeysDevtoolsPlugin()]} />
     </>
   );
 };

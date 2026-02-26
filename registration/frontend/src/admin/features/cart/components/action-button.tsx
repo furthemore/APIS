@@ -1,4 +1,8 @@
-import { type KbdKey, createShortcut } from "@solid-primitives/keyboard";
+import {
+  type Hotkey,
+  createHotkey,
+  formatForDisplay,
+} from "@tanstack/solid-hotkeys";
 import {
   type Component,
   type JSX,
@@ -14,7 +18,7 @@ export type ActionButtonProps = {
   class: string;
   disabled: boolean;
   setLoading: Setter<boolean>;
-  keyboardShortcut?: KbdKey[];
+  keyboardShortcut?: Hotkey;
   action: (holdingShift: boolean) => Promise<unknown> | undefined;
   children: JSX.Element;
 };
@@ -30,7 +34,9 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
   });
 
   const title = () =>
-    props.keyboardShortcut ? props.keyboardShortcut.join("+") : undefined;
+    props.keyboardShortcut
+      ? formatForDisplay(props.keyboardShortcut)
+      : undefined;
 
   createEffect(() => {
     props.setLoading(result.loading);
@@ -38,7 +44,7 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
 
   createEffect(() => {
     if (props.keyboardShortcut) {
-      createShortcut(
+      createHotkey(
         props.keyboardShortcut,
         (ev) => {
           if (props.disabled) return;

@@ -5,7 +5,7 @@ import {
   faIdCard,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
-import { createShortcut } from "@solid-primitives/keyboard";
+import { createHotkey } from "@tanstack/solid-hotkeys";
 import { differenceInYears } from "date-fns/differenceInYears";
 import { type Component, Show } from "solid-js";
 
@@ -46,15 +46,9 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
 
   const regUrl = () => urlForOnsiteDetails(attendeeDetails()).toString();
 
-  createShortcut(
-    ["Control", "M"],
-    () => {
-      globalThis.open(regUrl(), "register");
-    },
-    {
-      preventDefault: true,
-    },
-  );
+  createHotkey("Mod+M", () => {
+    globalThis.open(regUrl(), "register");
+  });
 
   return (
     <div class={`card border-${color()}`}>

@@ -1,4 +1,4 @@
-import { createShortcut } from "@solid-primitives/keyboard";
+import { createHotkey } from "@tanstack/solid-hotkeys";
 import { type Component, type Setter, createEffect } from "solid-js";
 
 export const SearchInput: Component<{
@@ -15,7 +15,7 @@ export const SearchInput: Component<{
     searchInputRef.value = props.value;
   });
 
-  createShortcut(["Alt", "F"], () => {
+  createHotkey("Alt+F", () => {
     props.setSearchQuery("");
     searchInputRef.focus();
   });
@@ -28,34 +28,43 @@ export const SearchInput: Component<{
     }
   };
 
-  const onKeyDown = (ev: KeyboardEvent) => {
-    const key = ev.key;
-
-    if (key === "Enter") {
-      ev.preventDefault();
+  createHotkey(
+    "Enter",
+    () => {
       props.setSearchQuery(searchInputRef.value);
-      return;
-    }
+    },
+    () => ({
+      target: searchInputRef,
+    }),
+  );
 
-    if (key !== "ArrowDown" && key !== "ArrowUp") return;
-    ev.preventDefault();
+  createHotkey(
+    "ArrowUp",
+    () => {
+      const currentlySelected = props.selectedAttendee || 0;
 
-    const currentlySelected = props.selectedAttendee || 0;
-    const entryCount = props.attendeeCount;
+      if (currentlySelected > 0) {
+        props.setSelectedAttendee(currentlySelected - 1);
+      }
+    },
+    () => ({
+      target: searchInputRef,
+    }),
+  );
 
-    switch (ev.key) {
-      case "ArrowDown":
-        if (currentlySelected + 2 <= entryCount) {
-          props.setSelectedAttendee(currentlySelected + 1);
-        }
-        break;
-      case "ArrowUp":
-        if (currentlySelected > 0) {
-          props.setSelectedAttendee(currentlySelected - 1);
-        }
-        break;
-    }
-  };
+  createHotkey(
+    "ArrowDown",
+    () => {
+      const currentlySelected = props.selectedAttendee || 0;
+
+      if (currentlySelected + 2 <= props.attendeeCount) {
+        props.setSelectedAttendee(currentlySelected + 1);
+      }
+    },
+    () => ({
+      target: searchInputRef,
+    }),
+  );
 
   return (
     <input
@@ -67,7 +76,6 @@ export const SearchInput: Component<{
       autocomplete="off"
       ref={searchInputRef}
       onInput={onInput}
-      onKeyDown={onKeyDown}
     />
   );
 };

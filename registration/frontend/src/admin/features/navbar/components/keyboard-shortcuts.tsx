@@ -1,4 +1,5 @@
 import { Dialog } from "@kobalte/core/dialog";
+import { formatForDisplay } from "@tanstack/solid-hotkeys";
 import { type Component, For } from "solid-js";
 
 import { Modal, type ModalSignal } from "@components/modal";
@@ -34,7 +35,9 @@ export const KeyboardShortcuts: Component<{ signal: ModalSignal }> = (
                     {(entry) => (
                       <tr>
                         <th>
-                          <code>{entry.shortcut}</code>
+                          <kbd class="kbd">
+                            {formatForDisplay(entry.shortcut)}
+                          </kbd>
                         </th>
                         <td>{entry.description}</td>
                       </tr>

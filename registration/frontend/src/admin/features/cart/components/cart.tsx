@@ -6,7 +6,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
-import { createShortcut } from "@solid-primitives/keyboard";
+import { createHotkey } from "@tanstack/solid-hotkeys";
 import { useQuery } from "@tanstack/solid-query";
 import Fa from "solid-fa";
 import {
@@ -69,17 +69,17 @@ export const Cart: Component<{
   const canTransfer = () =>
     !anythingLoading() && (cart.data?.result.length || 0) > 0;
 
-  createShortcut(["Alt", "R"], () => {
+  createHotkey("Alt+R", () => {
     if (anythingLoading()) return;
     cart.refetch();
   });
 
-  createShortcut(["Alt", "A"], () => {
+  createHotkey("Alt+A", () => {
     if (anythingLoading()) return;
     clearCart.mutate();
   });
 
-  createShortcut(["Alt", "\\"], () => {
+  createHotkey("Alt+\\", () => {
     if (anythingLoading()) return;
 
     const lastBadge = cart.data?.result?.at(-1);

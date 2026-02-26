@@ -1,30 +1,17 @@
 import { type IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
-import type { KbdKey } from "@solid-primitives/keyboard";
-import { type Component, For, createMemo } from "solid-js";
+import { type Hotkey, formatForDisplay } from "@tanstack/solid-hotkeys";
+import { type Component } from "solid-js";
 
 import { IconAndLabel } from "@components/icon-and-label";
-
-const KEY_NAMES: Record<KbdKey, string> = {
-  Control: "Ctrl",
-  Alt: "Alt",
-  Meta: "Meta",
-  Shift: "Shift",
-};
 
 export const ActionButton: Component<{
   name: string;
   icon: IconDefinition;
   action: () => unknown;
-  keyboardShortcut?: KbdKey[];
+  keyboardShortcut?: Hotkey;
   spin?: boolean;
 }> = (props) => {
-  const renamedKeys = createMemo(() => {
-    return props.keyboardShortcut?.map((key) => {
-      return KEY_NAMES[key] || key;
-    });
-  });
-
   return (
     <DropdownMenu.Item as="li">
       <button
@@ -37,16 +24,7 @@ export const ActionButton: Component<{
         </IconAndLabel>
 
         {props.keyboardShortcut && (
-          <span>
-            <For each={renamedKeys()}>
-              {(key, index) => (
-                <>
-                  {index() > 0 && " + "}
-                  <kbd class="kbd">{key}</kbd>
-                </>
-              )}
-            </For>
-          </span>
+          <kbd class="kbd">{formatForDisplay(props.keyboardShortcut)}</kbd>
         )}
       </button>
     </DropdownMenu.Item>

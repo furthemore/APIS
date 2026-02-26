@@ -1,5 +1,5 @@
 import { faBarcode, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { createShortcut } from "@solid-primitives/keyboard";
+import { createHotkey } from "@tanstack/solid-hotkeys";
 import {
   type Component,
   Show,
@@ -48,9 +48,9 @@ export const Scan: Component<{
 
   let panel!: HTMLDivElement;
 
-  createShortcut(["Alt", "S"], clear);
+  createHotkey("Alt+S", clear);
 
-  createShortcut(["Alt", "D"], () => {
+  createHotkey("Alt+D", () => {
     panel.scrollIntoView(false);
   });
 

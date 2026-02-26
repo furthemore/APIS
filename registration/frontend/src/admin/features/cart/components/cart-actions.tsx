@@ -145,7 +145,7 @@ export const CartActions: Component<{
           class="btn-primary"
           disabled={loading() || !terminalHandlesCash() || !canApplyPayment()}
           setLoading={setLoading}
-          keyboardShortcut={["Alt", "M"]}
+          keyboardShortcut={"Alt+M"}
           action={() => {
             if (props.entries) {
               return attemptCashPayment(
@@ -163,7 +163,7 @@ export const CartActions: Component<{
           class="btn-primary"
           disabled={loading() || !supportsCard() || !canApplyPayment()}
           setLoading={setLoading}
-          keyboardShortcut={["Alt", "C"]}
+          keyboardShortcut={"Alt+C"}
           action={(holdingShift) => enableCardPayment.mutateAsync(holdingShift)}
         >
           <IconAndLabel children="Card" icon={faCreditCard} fw />
@@ -184,7 +184,7 @@ export const CartActions: Component<{
           class="btn-info"
           disabled={loading() || !hasPrintableBadges()}
           setLoading={setLoading}
-          keyboardShortcut={["Control", "P"]}
+          keyboardShortcut={"Mod+P"}
           action={(holdingShift) => {
             const badgeIds = printableBadgeIds();
             const printViaMqtt =

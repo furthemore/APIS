@@ -16,12 +16,13 @@ import {
   faWindowClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
-import { type KbdKey, createShortcut } from "@solid-primitives/keyboard";
+import { type Hotkey, createHotkey } from "@tanstack/solid-hotkeys";
 import Fa from "solid-fa";
 import {
   type Component,
   type Setter,
   Show,
+  createEffect,
   createSignal,
   useContext,
 } from "solid-js";
@@ -44,7 +45,7 @@ type Action = {
   name: string;
   icon: IconDefinition;
   spin?: boolean;
-  keyboardShortcut?: KbdKey[];
+  keyboardShortcut?: Hotkey;
   action: () => void;
 };
 
@@ -75,21 +76,21 @@ export const Actions: Component<{
     {
       name: "Open Position",
       icon: faCheck,
-      keyboardShortcut: ["Alt", "O"],
+      keyboardShortcut: "Alt+O",
       action: () =>
         mutateThenToast(setTerminalStatus, "open", "Marked terminal as open"),
     },
     {
       name: "Close Position",
       icon: faWindowClose,
-      keyboardShortcut: ["Alt", "L"],
+      keyboardShortcut: "Alt+L",
       action: () =>
         mutateThenToast(setTerminalStatus, "close", "Mark terminal as closed"),
     },
     {
       name: "Next Customer",
       icon: faForward,
-      keyboardShortcut: ["Alt", "N"],
+      keyboardShortcut: "Alt+N",
       action: () =>
         mutateThenToast(
           setTerminalStatus,
@@ -101,13 +102,13 @@ export const Actions: Component<{
     {
       name: "Party Mode",
       icon: faRainbow,
-      keyboardShortcut: ["Alt", "K"],
+      keyboardShortcut: "Alt+K",
       action: () => mutateThenToast(setTerminalStatus, "gay", "🌈🏳️‍🌈🏳️‍⚧️"),
     },
     {
       name: "Blue Light Special",
       icon: faK,
-      keyboardShortcut: ["Alt", "B"],
+      keyboardShortcut: "Alt+B",
       action: () => mutateThenToast(setTerminalStatus, "blue-light", "🟦"),
     },
   ];
@@ -171,10 +172,12 @@ export const Actions: Component<{
     },
   ];
 
-  for (const action of standardActions) {
-    if (!action.keyboardShortcut) continue;
-    createShortcut(action.keyboardShortcut, () => action.action());
-  }
+  createEffect(() => {
+    for (const action of standardActions) {
+      if (!action.keyboardShortcut) continue;
+      createHotkey(action.keyboardShortcut, () => action.action());
+    }
+  });
 
   return (
     <>
