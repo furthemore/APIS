@@ -45,6 +45,6 @@ COPY --from=assets --chown=apis /app/registration/static/ /app/registration/stat
 RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
     uv sync --frozen
 
-RUN DJANGO_SECRET_KEY=collectstatic ./manage.py collectstatic --noinput --ignore "bundler/*"
+RUN DJANGO_SECRET_KEY=collectstatic ./manage.py collectstatic --noinput
 
 CMD ["/app/start.sh"]
