@@ -354,8 +354,6 @@ if DEBUG:
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/apis/static/'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-
 STATICFILES_DIRS = (("bundler", "/app/apis/static/bundler"),)
 STATICFILES_STORAGE = 'fm_eventmanager.file_storage.SelectiveManifestStaticFilesStorage'
 

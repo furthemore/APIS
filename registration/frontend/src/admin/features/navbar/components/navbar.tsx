@@ -1,11 +1,9 @@
 import {
-  faBell,
   faKeyboard,
   faSignOutAlt,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
-import { createPermission } from "@solid-primitives/permission";
 import { Link } from "@tanstack/solid-router";
 import Fa from "solid-fa";
 import {
@@ -37,9 +35,6 @@ export const Navbar: Component<{
     config()?.terminals.available.find(
       (terminal) => terminal.id === config()?.terminals.selected?.id,
     )?.name || "No Terminal Selected";
-
-  const notificationPermission = createPermission({ name: "notifications" });
-  const canPromptForNotification = () => notificationPermission() === "prompt";
 
   return (
     <nav class="navbar navbar-expand-sm bg-body-tertiary">
@@ -153,21 +148,6 @@ export const Navbar: Component<{
                         />
                       </button>
                     </DropdownMenu.Item>
-
-                    <Show when={canPromptForNotification()}>
-                      <DropdownMenu.Item as="li">
-                        <button
-                          class="dropdown-item"
-                          onClick={() => Notification.requestPermission()}
-                        >
-                          <IconAndLabel
-                            children="Allow Notifications"
-                            icon={faBell}
-                            fw
-                          />
-                        </button>
-                      </DropdownMenu.Item>
-                    </Show>
 
                     <DropdownMenu.Item>
                       <DropdownMenu.Separator class="dropdown-divider" />
