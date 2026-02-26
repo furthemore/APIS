@@ -65,6 +65,7 @@ export const CartEntries: Component<{
               {(badge) => (
                 <div
                   class="col"
+                  role="none"
                   onMouseEnter={[setHoveredOrderId, badge.orderId]}
                   onMouseLeave={[setHoveredOrderId, undefined]}
                 >
@@ -90,6 +91,12 @@ export const CartEntries: Component<{
 
               <div class="card-body py-0">
                 <table class="table-sm table">
+                  <thead class="visually-hidden">
+                    <tr>
+                      <th>Type</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     <tr>
                       <td>Subtotal:</td>

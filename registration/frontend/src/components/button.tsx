@@ -21,9 +21,7 @@ export const Button: Component<ButtonProps> = (props) => {
       <span class="content">{customProps.children}</span>
       <span class="spinner">
         <span class="spinner-border spinner-border-sm" aria-hidden="true" />
-        <span class="visually-hidden" role="status">
-          Loading...
-        </span>
+        <span class="visually-hidden">Loading...</span>
       </span>
     </KobalteButton>
   );

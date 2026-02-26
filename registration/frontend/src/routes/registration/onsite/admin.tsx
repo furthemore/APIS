@@ -89,8 +89,7 @@ const OnsiteAdmin: Component = () => {
 const ContextLoading: Component = () => {
   return (
     <div class="alert alert-warning my-3">
-      <span>Loading</span>{" "}
-      <div class="spinner-border spinner-border-sm" role="status" />
+      <span>Loading</span> <div class="spinner-border spinner-border-sm" />
     </div>
   );
 };
@@ -104,8 +103,7 @@ const MqttConnecting: Component<{ mqtt?: MqttClient }> = (props) => {
     <Show when={!props.mqtt?.isConnected()}>
       <div class={`alert my-3 ${errorClasses()}`}>
         <h4 class="alert-heading d-flex align-items-center column-gap-2">
-          <span>Connecting to MQTT</span>{" "}
-          <div class="spinner-border" role="status" />
+          <span>Connecting to MQTT</span> <div class="spinner-border" />
         </h4>
 
         <p>
