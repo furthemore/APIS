@@ -1,6 +1,5 @@
 import type { UseMutationResult } from "@tanstack/solid-query";
 import { Big } from "big.js";
-import isEqual from "lodash/isEqual";
 
 import type {
   BadgeCart,
@@ -77,31 +76,6 @@ export const createAutoPrintCheck = (): ((
     }
 
     return true;
-  };
-};
-
-export const createAutoClearCheck = (): ((
-  currentBadges: BadgeCart[],
-) => boolean) => {
-  let previousBadges: BadgeCart[] = [];
-
-  return function (nextBadges: BadgeCart[]): boolean {
-    const currentBadges = previousBadges;
-    previousBadges = nextBadges;
-
-    if (nextBadges.length === 0 || currentBadges.length !== nextBadges.length) {
-      return false;
-    }
-
-    const hasSameBadges = isEqual(
-      getBadgeIds(currentBadges),
-      getBadgeIds(nextBadges),
-    );
-
-    const currentHadUnprinted = currentBadges.some((badge) => !badge.printed);
-    const nextAllPrinted = nextBadges.every((badge) => badge.printed);
-
-    return hasSameBadges && currentHadUnprinted && nextAllPrinted;
   };
 };
 

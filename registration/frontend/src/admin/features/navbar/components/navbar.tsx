@@ -127,11 +127,6 @@ export const Navbar: Component<{
                       />
                     </Show>
 
-                    <ToggleSetting
-                      name="Clear Cart After Print"
-                      key="clearCartAfterPrint"
-                    />
-
                     <DropdownMenu.Item>
                       <DropdownMenu.Separator class="dropdown-divider" />
                     </DropdownMenu.Item>

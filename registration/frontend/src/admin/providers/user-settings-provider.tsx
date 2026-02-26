@@ -8,7 +8,6 @@ import {
 const STORAGE_KEY = "user-settings";
 
 export type UserSettingKey =
-  | "clearCartAfterPrint"
   | "containerFluid"
   | "multipleBadgeColumns"
   | "showSearchStatus"
@@ -18,7 +17,6 @@ export type UserSettingKey =
 export type UserSettings = Record<UserSettingKey, boolean | undefined>;
 
 const USER_DEFAULTS: UserSettings = {
-  clearCartAfterPrint: false,
   containerFluid: false,
   multipleBadgeColumns: true,
   showSearchStatus: false,

@@ -1,3 +1,4 @@
+import { devtools as tanstackDevtools } from "@tanstack/devtools-vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import devtools from "solid-devtools/vite";
 import { defineConfig } from "vite";
@@ -8,6 +9,7 @@ export default defineConfig({
   base: "/static/bundler/",
   plugins: [
     tsconfigPaths(),
+    tanstackDevtools(),
     devtools({
       autoname: true,
     }),

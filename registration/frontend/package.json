@@ -24,7 +24,6 @@
     "bootswatch": "^5.3.8",
     "date-fns": "^4.1.0",
     "ky": "^1.14.0",
-    "lodash": "^4.17.23",
     "mitt": "^3.0.1",
     "mqtt": "^5.14.1",
     "solid-fa": "^0.2.0",
@@ -32,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@tanstack/devtools-vite": "^0.5.1",
     "@tanstack/eslint-plugin-query": "^5.91.4",
     "@tanstack/router-plugin": "^1.163.2",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",

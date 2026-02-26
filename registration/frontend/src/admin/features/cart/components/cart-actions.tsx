@@ -30,7 +30,6 @@ import { IconAndLabel } from "@components/icon-and-label";
 import {
   attemptCashPayment,
   createAndApplyDiscountHelper,
-  createAutoClearCheck,
   createAutoPrintCheck,
   printBadgesHelper,
 } from "../utils";
@@ -102,15 +101,6 @@ export const CartActions: Component<{
 
     if (autoPrintCheck(printableBadgeIds(), props.entries?.result || [])) {
       printBadgesHelper(printableBadgeIds(), printBadges, mqtt());
-    }
-  });
-
-  const autoClearCheck = createAutoClearCheck();
-  createEffect(() => {
-    if (!userSettings().settings().clearCartAfterPrint) return;
-
-    if (autoClearCheck(props.entries?.result || [])) {
-      props.setReadyForNext(true);
     }
   });
 
