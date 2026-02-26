@@ -116,13 +116,11 @@ export const CartActions: Component<{
 
   const hasSquareTerminal = () =>
     config()?.terminals.selected?.features.squareTerminal;
-  const canUseCash = () =>
+  const terminalHandlesCash = () =>
     config()?.permissions.cash &&
     config()?.terminals.selected?.features.cashdrawer;
 
-  const canTenderCash = () =>
-    config()?.permissions.cash && !hasHold() && allNeedPayment();
-  const canUseCard = () => !hasHold() && allNeedPayment();
+  const canApplyPayment = () => !hasHold() && allNeedPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
   const supportsCard = () => config()?.terminals?.selected?.features.card;
 
@@ -135,7 +133,7 @@ export const CartActions: Component<{
         <ActionButton
           class="btn-outline-warning"
           disabled={
-            loading() || !config()?.permissions.discount || !canUseCard()
+            loading() || !config()?.permissions.discount || !canApplyPayment()
           }
           setLoading={setLoading}
           action={() => createAndApplyDiscountHelper(createAndApplyDiscount)}
@@ -145,7 +143,7 @@ export const CartActions: Component<{
 
         <ActionButton
           class="btn-primary"
-          disabled={loading() || !canUseCash() || !canTenderCash()}
+          disabled={loading() || !terminalHandlesCash() || !canApplyPayment()}
           setLoading={setLoading}
           keyboardShortcut={["Alt", "M"]}
           action={() => {
@@ -163,7 +161,7 @@ export const CartActions: Component<{
 
         <ActionButton
           class="btn-primary"
-          disabled={loading() || !supportsCard() || !canUseCard()}
+          disabled={loading() || !supportsCard() || !canApplyPayment()}
           setLoading={setLoading}
           keyboardShortcut={["Alt", "C"]}
           action={(holdingShift) => enableCardPayment.mutateAsync(holdingShift)}

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/solid-query";
 import { type Component, Suspense, createEffect } from "solid-js";
 
 import { cashStatusOptions } from "@admin/api";
-import { cleanMoneyAmount } from "@admin/components/cart/utils";
+import { cleanMoneyAmount } from "@admin/features/cart/utils";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
 import { Modal, type ModalSignal } from "@components/modal";

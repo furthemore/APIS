@@ -8,9 +8,8 @@ import {
 } from "solid-js";
 
 import { type AttendeeDetails, useGetToken } from "@admin/api";
+import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
-
-import { ConfigContext } from "../providers/config-provider";
 
 export const DisplayRegistrationButton: Component<
   {

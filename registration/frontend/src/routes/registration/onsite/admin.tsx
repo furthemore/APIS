@@ -17,9 +17,9 @@ import {
   contextQueryOptions,
   terminalQueryOptions,
 } from "@admin/api";
-import { Navbar } from "@admin/components/navbar";
-import { Onsite } from "@admin/components/onsite";
-import { TerminalSelection } from "@admin/components/terminal-selection";
+import { Navbar } from "@admin/features/navbar";
+import { Onsite } from "@admin/features/onsite";
+import { TerminalSelection } from "@admin/features/terminal-selection";
 import MqttClient from "@admin/mqtt";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";

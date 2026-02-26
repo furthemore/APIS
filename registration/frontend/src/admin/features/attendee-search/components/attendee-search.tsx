@@ -16,7 +16,7 @@ import {
 } from "solid-js";
 
 import { searchAttendeesOptions, useAddBadgeToCart } from "@admin/api";
-import { DisplayRegistrationButton } from "@admin/components/display-registration";
+import { DisplayRegistrationButton } from "@admin/features/display-registration";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
 

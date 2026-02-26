@@ -10,7 +10,7 @@ import { differenceInYears } from "date-fns/differenceInYears";
 import { type Component, Show } from "solid-js";
 
 import { type AttendeeDetails, urlForOnsiteDetails } from "@admin/api";
-import { DisplayRegistrationButton } from "@admin/components/display-registration";
+import { DisplayRegistrationButton } from "@admin/features/display-registration";
 import { CloseButton } from "@components/close-button";
 import { IconAndLabel } from "@components/icon-and-label";
 
