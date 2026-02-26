@@ -7,6 +7,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator
 
 
 # Lookup and supporting tables.
@@ -148,7 +149,7 @@ class PriceLevel(models.Model):
 
     def get_level_active_status(self):
         tz = timezone.get_current_timezone()
-        today = tz.localize(datetime.now())
+        today = datetime.now(tz=tz)
         if self.startDate <= today <= self.endDate:
             return True
         return False
@@ -488,7 +489,6 @@ class Badge(models.Model):
     badgeName = models.CharField(max_length=200, blank=True)
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
-    printCount = models.IntegerField(default=0)
     signature_svg = models.TextField(null=True, blank=True)
     signature_bitmap = models.TextField(null=True, blank=True)
 
@@ -799,15 +799,17 @@ class Order(models.Model):
         max_digits=8,
         decimal_places=2,
         null=True,
-        default=0,
+        default=Decimal(0),
         verbose_name="Organization Donation",
+        validators=[MinValueValidator(0)],
     )
     charityDonation = models.DecimalField(
         max_digits=8,
         decimal_places=2,
         null=True,
-        default=0,
+        default=Decimal(0),
         verbose_name="Charity Donation",
+        validators=[MinValueValidator(0)],
     )
     notes = models.TextField(blank=True)
     billingName = models.CharField(max_length=200, blank=True, verbose_name="Name")
@@ -957,7 +959,11 @@ class Firebase(models.Model):
         verbose_name="Print via MQTT",
         help_text="Which terminal to use for printing via MQTT, if it should be used at this terminal."
     )
-    printer_url = models.CharField(max_length=500, null=True, blank=True)
+    print_via_payment = models.BooleanField(
+        default=False,
+        verbose_name="Print via payment",
+        help_text="When MQTT printing is enabled, print via payment device instead of station."
+    )
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
     webview = models.CharField(
@@ -1021,21 +1027,35 @@ class Cashdrawer(models.Model):
 
 
 class ReservedBadgeNumbers(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    badgeNumber = models.IntegerField()
-    priceLevel = models.ForeignKey(
-        PriceLevel, null=True, blank=True, on_delete=models.SET_NULL
-    )
+    badgeNumber = models.IntegerField(unique=True)
     notes = models.TextField(blank=True)
 
     def __str__(self):
-        return "<Reserved Badge Number({0}, event={1})>".format(
-            self.event, self.badgeNumber
-        )
+        return f"<Reserved Badge Number({self.badgeNumber})>"
 
     class Meta:
         db_table = "registration_reserved_badge_numbers"
-        verbose_name_plural = "Reserved Badge Numbers"
+        verbose_name_plural = "Reserved badge numbers"
+
+
+class PrintHistory(models.Model):
+    ONSITE = "onsite"
+    ADMIN = "admin"
+    SOURCE_CHOICES = (
+        (ONSITE, "Onsite"),
+        (ADMIN, "Admin"),
+    )
+
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    firebase = models.ForeignKey(
+        Firebase, on_delete=models.SET_NULL, null=True, verbose_name="Terminal"
+    )
+    source = models.CharField(choices=SOURCE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "registration_print_history"
+        verbose_name_plural = "Print history"
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent

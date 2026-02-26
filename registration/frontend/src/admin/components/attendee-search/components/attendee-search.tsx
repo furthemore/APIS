@@ -1,4 +1,5 @@
 import {
+  faClipboardUser,
   faPeopleLine,
   faPlus,
   faSearch,
@@ -15,6 +16,7 @@ import {
 } from "solid-js";
 
 import { searchAttendeesOptions, useAddBadgeToCart } from "@admin/api";
+import { DisplayRegistrationButton } from "@admin/components/display-registration";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
 
@@ -166,6 +168,10 @@ export const AttendeeSearch: Component<{
           </div>
 
           <div class="col-auto">
+            <DisplayRegistrationButton class="btn btn-secondary btn-sm me-1">
+              <IconAndLabel children="Prompt" icon={faClipboardUser} />
+            </DisplayRegistrationButton>
+
             <a
               href="/registration/onsite"
               target="register"

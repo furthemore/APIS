@@ -9,18 +9,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
-import registration.emails
 from registration.models import *
 
-from .common import (
-    abort,
-    clear_session,
-    get_client_ip,
-    handler,
-    logger,
-    success,
-)
-from .ordering import do_checkout, doZeroCheckout, get_total
+from .common import abort, handler, logger
+from .ordering import get_total
 
 logger = logging.getLogger(__name__)
 form_type = "staff"
@@ -30,7 +22,7 @@ def new_staff(request, guid):
     event = Event.objects.get(default=True)
     invite = TempToken.objects.get(token=guid)
     tz = timezone.get_current_timezone()
-    today = tz.localize(datetime.now())
+    today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
         return render(request, "registration/staff/staff-new.html", context)
@@ -110,7 +102,7 @@ def add_new_staff(request):
         event = Event.objects.get(default=True)
 
     tz = timezone.get_current_timezone()
-    birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
 
     attendee = Attendee(
         firstName=pda["firstName"],
@@ -165,7 +157,7 @@ def add_new_staff(request):
 def staff_index(request, guid):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
-    today = tz.localize(datetime.now())
+    today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd:
         return render(request, "registration/staff/staff-locate.html", context)
@@ -259,7 +251,7 @@ def add_staff(request):
         return JsonResponse({"success": False, "message": "Attendee not found"})
 
     tz = timezone.get_current_timezone()
-    birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
 
     attendee.preferredName = pda.get("preferredName", "")
     attendee.firstName = pda["firstName"]

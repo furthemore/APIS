@@ -56,31 +56,31 @@ const OnsiteAdmin: Component = () => {
   return (
     <ConfigContext.Provider value={() => context.data}>
       <UserSettingsContext.Provider value={userSettings}>
-        <Navbar setReadyForNext={setReadyForNext} />
+        <MqttContext.Provider value={mqtt}>
+          <Navbar setReadyForNext={setReadyForNext} />
 
-        <Container>
-          <Switch fallback={<ContextLoading />}>
-            <Match when={search().terminal === undefined}>
-              <TerminalSelection />
-            </Match>
-            <Match when={context.isEnabled && context.isFetched}>
-              <MqttConnecting mqtt={mqtt()} />
+          <Container>
+            <Switch fallback={<ContextLoading />}>
+              <Match when={search().terminal === undefined}>
+                <TerminalSelection />
+              </Match>
+              <Match when={context.isEnabled && context.isFetched}>
+                <MqttConnecting mqtt={mqtt()} />
 
-              <MqttContext.Provider value={mqtt}>
                 <Onsite
                   readyForNext={readyForNext()}
                   setReadyForNext={setReadyForNext}
                 />
-              </MqttContext.Provider>
-            </Match>
-          </Switch>
-        </Container>
+              </Match>
+            </Switch>
+          </Container>
 
-        <Portal>
-          <Toast.Region>
-            <Toast.List as="div" class="toast-container end-0 bottom-0 p-3" />
-          </Toast.Region>
-        </Portal>
+          <Portal>
+            <Toast.Region>
+              <Toast.List as="div" class="toast-container end-0 bottom-0 p-3" />
+            </Toast.Region>
+          </Portal>
+        </MqttContext.Provider>
       </UserSettingsContext.Provider>
     </ConfigContext.Provider>
   );

@@ -162,7 +162,6 @@ export const printBadgesHelper = async (
 
         mqtt.publishPrintMessage(
           JSON.stringify({
-            action: "print",
             url,
           }),
         );

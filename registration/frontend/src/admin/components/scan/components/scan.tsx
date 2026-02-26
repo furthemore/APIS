@@ -105,14 +105,14 @@ export const Scan: Component<{
   createEffect(() => {
     const m = mqtt();
 
-    m?.emitter.on("open", setUrl);
-    m?.emitter.on("scan/id", setId);
-    m?.emitter.on("scan/shc", setShc);
+    m?.emitter.on("notify/scan/url", setUrl);
+    m?.emitter.on("notify/scan/id", setId);
+    m?.emitter.on("notify/scan/shc", setShc);
 
     onCleanup(() => {
-      m?.emitter.off("open", setUrl);
-      m?.emitter.off("scan/id", setId);
-      m?.emitter.off("scan/shc", setShc);
+      m?.emitter.off("notify/scan/url", setUrl);
+      m?.emitter.off("notify/scan/id", setId);
+      m?.emitter.off("notify/scan/shc", setShc);
     });
   });
 

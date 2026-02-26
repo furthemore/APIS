@@ -184,6 +184,8 @@
     </div>
   </script>
 
+  <script src="{% static 'js/date-entry.js' %}"></script>
+
   <script type="text/javascript">
       let levelTemplateData = [];
       let minorLevelTemplateData = [];
@@ -228,6 +230,7 @@
       }
 
       $("body").ready(function () {
+          updatePriceLevels();
           $("#bday, #bmonth, #byear").on("input", function() {
             updatePriceLevels();
           });
@@ -309,7 +312,6 @@
               }
 
               let level_data = levelTemplateData;
-              debugger;
 
               if (age < 0) {
                   alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
@@ -521,8 +523,6 @@
           $("#register").one('click', register_click);
       });
   </script>
-
-  <script src="{% static 'js/date-entry.js' %}"></script>
 
 
 {% endblock %}

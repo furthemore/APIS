@@ -35,6 +35,8 @@ build-docker-image:
 	# build and tag new container
 	docker build \
 		--file Dockerfile \
+		--cache-from $(IMAGE):latest \
+		--cache-from $(IMAGE):production \
 		--build-arg SENTRY_RELEASE=$(TAG) \
 		--tag $(IMAGE):$(TAG) \
 		.
@@ -58,9 +60,7 @@ dev:
 	docker-compose exec app /bin/bash -c 'DJANGO_DEBUG=1 python /app/manage.py runserver_plus 0.0.0.0:8000'
 
 dev-setup:
-	python3 -m venv venv
-	source venv/bin/activate
-	pip install -r requirements.txt
+	uv sync
 	cp fm_eventmanager/settings.py.devel fm_eventmanager/settings.py
 
 	@echo "ACTION REQUIRED: Review fm_eventmanager/settings.py"

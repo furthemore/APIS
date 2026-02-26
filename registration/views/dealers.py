@@ -57,7 +57,7 @@ def dealer_asst(request, guid):
     context = {
         "token": guid,
         "event": event,
-        "next": reverse("registration:find_asst_dealer"), 
+        "next": reverse("registration:find_asst_dealer"),
         "form_type": form_type
     }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
@@ -73,7 +73,7 @@ def new_dealer(request):
     event = Event.objects.get(default=True)
     venue = event.venue
     tz = timezone.get_current_timezone()
-    today = tz.localize(datetime.now())
+    today = datetime.now(tz=tz)
     context = {"event": event, "venue": venue, "form_type": form_type}
     if event.dealerRegStart <= today <= event.dealerRegEnd:
         return render(request, "registration/dealer/dealer-form.html", context)
@@ -527,7 +527,7 @@ def addNewDealer(request):
 
     tz = timezone.get_current_timezone()
     try:
-        birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+        birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
     except ValueError as e:
         logger.warning(f"Unable to parse birthdate: {pda['birthdate']} - {e}")
         return common.abort(400, f"Unable to parse birthdate: {pda['birthdate']}")

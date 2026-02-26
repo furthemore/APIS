@@ -1,15 +1,18 @@
-import json
 import time
 import uuid
-from unittest.mock import patch
+from typing import List
+from unittest.mock import Mock, patch
 
 from bs4 import BeautifulSoup
 from django.contrib.admin import AdminSite
 from django.contrib.auth.models import User
 from django.core import mail
 from django.http import HttpRequest
-from django.test import Client, TestCase, tag
+from django.test import TestCase, tag
 from django.urls import reverse
+from square.core.api_error import ApiError
+from square.requests.address import AddressParams
+from square.requests.money import MoneyParams
 
 from registration import admin, payments
 from registration.admin import OrderAdmin
@@ -213,13 +216,13 @@ class TestOrderAdmin(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Access denied")
-        self.assertNotContains(response, "Square data")
+        self.assertNotContains(response, "Square Data")
 
         response = self.client.get(
             reverse("admin:registration_order_change", args=(self.square_order.id,))
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Square data")
+        self.assertContains(response, "Square Data")
 
     def test_refund_view_post_access_denied(self):
         self.client.logout()
@@ -349,26 +352,24 @@ class TestOrderAdmin(TestCase):
             reference="SQUARE_ORDER_2",
             lastFour="1111",
         )
-        body = {
-            "idempotency_key": str(uuid.uuid4()),
-            "source_id": nonce,
-            "autocomplete": autocomplete,
-            "amount_money": {
-                "amount": 10000,
-                "currency": settings.SQUARE_CURRENCY,
-            },
-            "reference_id": order.reference,
-            "billing_address": {
-                "postal_code": "94042",
-            },
-            "location_id": settings.SQUARE_LOCATION_ID,
-        }
-        square_response = payments.payments_api.create_payment(body)
-        order.apiData = square_response.body
+        try:
+            square_response = payments.client.payments.create(
+                idempotency_key=str(uuid.uuid4()),
+                source_id=nonce,
+                autocomplete=autocomplete,
+                amount_money=MoneyParams(amount=10000, currency=settings.SQUARE_CURRENCY),
+                reference_id=order.reference,
+                billing_address=AddressParams(postal_code="94042"),
+                location_id=settings.SQUARE_LOCATION_ID,
+            )
+            time.sleep(2)
+            order.apiData = square_response.model_dump()
+        except ApiError as e:
+            square_response = e
+            order.apiData = e.body
         order.save()
         if nonce == "cnon:card-nonce-ok":
-            self.assertTrue(square_response.is_success())
-        time.sleep(2)
+            self.assertEqual(square_response.errors, None)
         return order
 
     @tag("square")
@@ -525,7 +526,7 @@ class TestOrderAdmin(TestCase):
         self.assertContains(
             response, "Refreshed order information from Square successfully"
         )
-        self.assertContains(response, "Square data")
+        self.assertContains(response, "Square Data")
         self.assertContains(response, "$100")
         self.assertContains(response, "-$100")
         self.assertContains(response, "full refund test [admin]")
@@ -551,33 +552,6 @@ class TestCashDrawerAdmin(TestCase):
         self.assertEqual(cash_drawer.tendered, 0)
         self.assertEqual(cash_drawer.user, self.admin_user)
         cash_drawer.delete()
-
-
-class TestTwoFactorAdmin(TestCase):
-    def setUp(self):
-        self.user_profile_admin = admin.UserProfileAdmin(
-            model=User, admin_site=AdminSite()
-        )
-        self.user_1 = User.objects.create_user("john", "lennon@thebeatles.com", "john")
-        self.user_2 = User.objects.create_superuser("admin", "admin@host", "admin")
-        self.user_1.staff_member = True
-        self.user_1.save()
-        self.user_2.save()
-
-    def test_two_factor_disabled(self):
-        self.assertFalse(self.user_profile_admin.two_factor_enabled(self.user_1))
-
-    def test_two_factor_enabled(self):
-        self.user_2.u2f_keys.create(
-            key_handle="bbavVvfXPz2w8S3IwIS0LkE1SkC3MQuXSYjAYHVPFqUJIRQTIEyM3D34Lv2G4a_PuAZkZIQ6XV3ocwp47cPYjg",
-            public_key="BFp3EHDcpm5HxA4XYuCKlnNPZ3tphVzRvXsX2_J33REPU0bgFgWsUoyZHz6RGxdA84VgxDNI4lvUudr7JGmFdDk",
-            app_id="http://localhost:8000",
-        )
-        self.assertTrue(self.user_profile_admin.two_factor_enabled(self.user_2))
-
-    def test_disable_two_factor(self):
-        query_set = [self.user_1, self.user_2]
-        admin.disable_two_factor(None, None, query_set)
 
 
 class TestOrderItemAdmin(OrdersTestCase):
@@ -695,6 +669,8 @@ class TestStaffAdmin(AdminTestCase):
         )
         self.badge.save()
         self.staff = Staff(attendee=self.attendee, event=self.event)
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user.save()
 
     def test_checkin_staff(self):
         self.assertFalse(self.staff.checkedIn)
@@ -720,6 +696,7 @@ class TestStaffAdmin(AdminTestCase):
 
     def test_copy_to_event_form(self):
         request = HttpRequest()
+        request.user = self.admin_user
         staff = Staff.objects.all()
         response = self.staff_admin.copy_to_event(request, staff)
         self.assertEqual(response.status_code, 200)
@@ -816,7 +793,7 @@ class TestTempToken(TestCase):
         self.assertIsNone(form)
 
         # Get the response message
-        content = soup.find("div", attrs={"class": "content"})
+        content = soup.find("main", attrs={"class": "content"})
         message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
         # Standardize quotes
         message = message.replace('“', '"').replace('”', '"')
@@ -850,7 +827,7 @@ class TestTempToken(TestCase):
 
         soup = BeautifulSoup(response.content, "html.parser")
         # Get the response message
-        content = soup.find("div", attrs={"class": "content"})
+        content = soup.find("main", attrs={"class": "content"})
         message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
         expected_message = f"Successfully sent email to {test_email_address}"
         self.assertEqual(message, expected_message)
@@ -877,3 +854,56 @@ class TestTempToken(TestCase):
         # Make sure the URL is correct in the HTML email
         expected_html_link = f"<a href='{expected_url}'>{expected_url}</a>"
         self.assertIn(expected_html_link, html_text)
+
+
+class TestAssignBadgeNumbers(OrdersTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.event = Event(**DEFAULT_EVENT_ARGS)
+        self.event.save()
+
+    @patch("django.contrib.messages.warning")
+    def test_assignment_works(self, mock_messages_warning: Mock):
+        badges: List[Badge] = []
+
+        args = DEFAULT_EVENT_ARGS.copy()
+        args["default"] = False
+        other_event = Event(**args)
+        other_event.save()
+
+        badge = Badge(event=self.event)
+        badge.save()
+        badges.append(badge)
+
+        order = Order(total="90.00", reference="FOOBAR")
+        order.save()
+
+        badge = Badge(event=other_event)
+        badge.save()
+        badges.append(badge)
+
+        order_item = OrderItem(order=order, badge=badge, priceLevel=self.price_90)
+        order_item.save()
+
+        for _ in range(5):
+            order = Order(total="90.00", reference="FOOBAR")
+            order.save()
+
+            badge = Badge(event=self.event)
+            badge.save()
+            badges.append(badge)
+
+            order_item = OrderItem(order=order, badge=badge, priceLevel=self.price_90)
+            order_item.save()
+
+        for num in [3, 4]:
+            ReservedBadgeNumbers(badgeNumber=num).save()
+
+        admin.assign_badge_numbers(None, None, Badge.objects.all())
+        self.assertEqual(mock_messages_warning.call_count, 2)
+
+        EXPECTED = [None, None, 1, 2, 5, 6, 7]
+        for idx, badge in enumerate(badges):
+            badge.refresh_from_db()
+            self.assertEqual(badge.badgeNumber, EXPECTED[idx])

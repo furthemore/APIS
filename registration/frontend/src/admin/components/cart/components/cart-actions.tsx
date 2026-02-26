@@ -95,7 +95,7 @@ export const CartActions: Component<{
   const autoPrintCheck = createAutoPrintCheck();
   createEffect(() => {
     if (
-      !config()?.terminals.selected?.features.printViaMqtt ||
+      !config()?.mqtt?.auth.print_topic ||
       !userSettings().settings().printAfterPayment
     )
       return;
@@ -119,12 +119,12 @@ export const CartActions: Component<{
   const canUseCash = () =>
     config()?.permissions.cash &&
     config()?.terminals.selected?.features.cashdrawer;
-  const paymentType = () => config()?.terminals.selected?.features.paymentType;
 
   const canTenderCash = () =>
     config()?.permissions.cash && !hasHold() && allNeedPayment();
   const canUseCard = () => !hasHold() && allNeedPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
+  const supportsCard = () => config()?.terminals?.selected?.features.card;
 
   const badgeReferences = () =>
     props.entries?.result?.map((badge) => badge.reference) || [];
@@ -163,7 +163,7 @@ export const CartActions: Component<{
 
         <ActionButton
           class="btn-primary"
-          disabled={loading() || !paymentType() || !canUseCard()}
+          disabled={loading() || !supportsCard() || !canUseCard()}
           setLoading={setLoading}
           keyboardShortcut={["Alt", "C"]}
           action={(holdingShift) => enableCardPayment.mutateAsync(holdingShift)}
@@ -190,8 +190,7 @@ export const CartActions: Component<{
           action={(holdingShift) => {
             const badgeIds = printableBadgeIds();
             const printViaMqtt =
-              config()?.terminals.selected?.features.printViaMqtt &&
-              !holdingShift;
+              config()?.mqtt?.auth.print_topic && !holdingShift;
 
             return printBadgesHelper(
               badgeIds,

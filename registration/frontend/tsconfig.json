@@ -9,17 +9,17 @@
     "moduleDetection": "force",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "esnext",
-    "useDefineForClassFields": true,
-    "verbatimModuleSyntax": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
       "@components/*": ["./src/components/*"],
       "@admin/*": ["./src/admin/*"]
     },
-    "types": ["vite/client"]
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "types": ["vite/client"],
+    "useDefineForClassFields": true,
+    "verbatimModuleSyntax": true
   }
 }

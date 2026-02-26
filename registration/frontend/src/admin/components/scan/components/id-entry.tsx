@@ -1,13 +1,16 @@
 import {
   faCakeCandles,
   faCalendarXmark,
+  faClipboardUser,
   faIdCard,
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { createShortcut } from "@solid-primitives/keyboard";
 import { differenceInYears } from "date-fns/differenceInYears";
-import { type Component, Show, createMemo } from "solid-js";
+import { type Component, Show } from "solid-js";
 
+import { type AttendeeDetails, urlForOnsiteDetails } from "@admin/api";
+import { DisplayRegistrationButton } from "@admin/components/display-registration";
 import { CloseButton } from "@components/close-button";
 import { IconAndLabel } from "@components/icon-and-label";
 
@@ -22,21 +25,26 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
 
   const color = () => (expired() || underAge() ? "warning" : "success");
 
-  const regUrl = createMemo(() => {
-    const url = new URL("/registration/onsite", window.location.href);
-    url.searchParams.set("firstName", props.data.first);
-    url.searchParams.set("lastName", props.data.last);
-    url.searchParams.set("dob", props.data.dob);
+  const attendeeDetails = () => {
+    const details: AttendeeDetails = {
+      firstName: props.data.first,
+      lastName: props.data.last,
+      dob: props.data.dob,
+    };
+
     if (props.data.address) {
       const address = props.data.address;
-      url.searchParams.set("address1", address.address);
-      if (address.address2) url.searchParams.set("address2", address.address2);
-      url.searchParams.set("city", address.city);
-      url.searchParams.set("state", address.state);
-      url.searchParams.set("postalCode", address.ZIP.substring(0, 5));
+      details.address1 = address.address;
+      if (address.address2) details.address2 = address.address2;
+      details.city = address.city;
+      details.state = address.state;
+      details.postalCode = address.ZIP.substring(0, 5);
     }
-    return url.toString();
-  });
+
+    return details;
+  };
+
+  const regUrl = () => urlForOnsiteDetails(attendeeDetails()).toString();
 
   createShortcut(
     ["Control", "M"],
@@ -89,13 +97,23 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
         </div>
 
         <div>
+          <DisplayRegistrationButton
+            details={attendeeDetails}
+            class="btn btn-secondary me-1"
+          >
+            <IconAndLabel
+              children="Prompt Registration"
+              icon={faClipboardUser}
+            />
+          </DisplayRegistrationButton>
+
           <a
             href={regUrl()}
-            class="btn btn-secondary"
+            class="btn btn-info"
             target="register"
             title="Control+M"
           >
-            <IconAndLabel children="Create Attendee" icon={faPlus} fw />
+            <IconAndLabel children="New Attendee" icon={faPlus} fw />
           </a>
         </div>
       </div>

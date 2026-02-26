@@ -14,7 +14,6 @@ class OnsiteBaseTestCase(TestCase):
     def setUp(self):
         # Create some users
         self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
-        self.admin_user.save()
         self.normal_user = User.objects.create_user(
             "john", "lennon@thebeatles.com", "john"
         )
@@ -22,14 +21,12 @@ class OnsiteBaseTestCase(TestCase):
         self.normal_user.save()
 
         # Create some test terminals to push notifications to
-        self.terminal = Firebase(token="test", name="Terminal 1")
-        self.terminal.save()
+        self.terminal = Firebase.objects.create(token="test", name="Terminal 1")
 
         # At least one event always mandatory
-        self.event = Event(**DEFAULT_EVENT_ARGS)
-        self.event.save()
+        self.event = Event.objects.create(**DEFAULT_EVENT_ARGS)
 
-        self.price_45 = PriceLevel(
+        self.price_45 = PriceLevel.objects.create(
             name="Attendee",
             description="Some test description here",
             basePrice=45.00,
@@ -37,8 +34,7 @@ class OnsiteBaseTestCase(TestCase):
             endDate=now + ten_days,
             public=True,
         )
-        self.price_45.save()
-        self.price_90 = PriceLevel(
+        self.price_90 = PriceLevel.objects.create(
             name="Sponsor",
             description="Woot!",
             basePrice=90.00,
@@ -46,27 +42,25 @@ class OnsiteBaseTestCase(TestCase):
             endDate=now + ten_days,
             public=True,
         )
-        self.price_90.save()
 
-        self.option_conbook = PriceLevelOption(
+        self.option_conbook = PriceLevelOption.objects.create(
             optionName="Conbook", optionPrice=0.00, optionExtraType="bool"
         )
-        self.option_conbook.save()
-        self.option_shirt = PriceLevelOption(
+        self.option_shirt = PriceLevelOption.objects.create(
             optionName="Shirt Size", optionPrice=20.00, optionExtraType="ShirtSizes"
         )
-        self.option_shirt.save()
-        self.option_100_int = PriceLevelOption(
+        self.option_100_int = PriceLevelOption.objects.create(
             optionName="Something Pricy", optionPrice=100.00, optionExtraType="int"
         )
-        self.option_100_int.save()
 
-        self.shirt1 = ShirtSizes(name="Test_Large")
-        self.shirt1.save()
+        self.price_45.priceLevelOptions.set([self.option_conbook, self.option_shirt, self.option_100_int])
+        self.price_90.priceLevelOptions.set([self.option_conbook, self.option_shirt, self.option_100_int])
+
+        self.shirt1 = ShirtSizes.objects.create(name="Test_Large")
+
+        self.boogeyman_hold = HoldType.objects.create(name="Boogeyman")
 
         self.client = Client()
-        self.boogeyman_hold = HoldType(name="Boogeyman")
-        self.boogeyman_hold.save()
 
     def add_to_cart(self, level, options):
         form_data = {
@@ -113,7 +107,7 @@ class OnsiteBaseTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(post_data),
             content_type="application/json",
-            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+            headers={"idempotency-key": str(uuid.uuid4())}
         )
 
         return response
@@ -195,15 +189,14 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         response = self.client.get(reverse("registration:onsite_admin"), follow=True)
         self.assertRedirects(
             response,
-            "/admin/login/?next={0}".format(reverse("registration:onsite_admin")),
+            "/accounts/login/?next={0}".format(reverse("registration:onsite_admin")),
         )
 
     def test_onsite_admin_required(self):
         self.client.logout()
         self.assertTrue(self.client.login(username="john", password="john"))
         response = self.client.get(reverse("registration:onsite_admin"), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "are not authorized to access this page")
+        self.assertContains(response, "403 Forbidden", status_code=403)
         self.client.logout()
 
     @patch("registration.mqtt.send_mqtt_message")
@@ -317,7 +310,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(mock_send_mqtt_single.call_count, 2)
+        self.assertEqual(mock_send_mqtt_single.call_count, 1)
 
     @patch("registration.mqtt.send_mqtt_message")
     def test_onsite_set_invalid_terminal_status(self, mock_send_mqtt_message):
@@ -476,7 +469,7 @@ class TestOnsiteAdmin(OnsiteBaseTestCase):
             "paymentId": "JUNK",
         }
         response = self.client.post(
-            reverse("registration:complete_square_transaction"), json.dumps(args), content_type="application/json", HTTP_AUTHORIZATION=f"Bearer {self.terminal.token}"
+            reverse("registration:complete_square_transaction"), json.dumps(args), content_type="application/json", headers={"authorization": f"Bearer {self.terminal.token}"}
         )
         self.assertEqual(response.status_code, 200)
         message = response.json()

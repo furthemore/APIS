@@ -11,6 +11,7 @@ import {
   faPlus,
   faRainbow,
   faStoreAltSlash,
+  faUserSlash,
   faVault,
   faWindowClose,
 } from "@fortawesome/free-solid-svg-icons";
@@ -32,6 +33,7 @@ import {
   useSetTerminalStatus,
 } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
+import { MqttContext } from "@admin/providers/mqtt-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
 import { amountRequest, mutateThenToast } from "../utils";
@@ -50,6 +52,7 @@ export const Actions: Component<{
   setReadyForNext: Setter<boolean>;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
+  const mqtt = useContext(MqttContext)!;
 
   const [showCashStatus, setShowCashStatus] = createSignal(false);
 
@@ -104,7 +107,7 @@ export const Actions: Component<{
     {
       name: "Blue Light Special",
       icon: faK,
-      keyboardShortcut: ["Alt", "K"],
+      keyboardShortcut: ["Alt", "B"],
       action: () => mutateThenToast(setTerminalStatus, "blue-light", "🟦"),
     },
   ];
@@ -187,6 +190,23 @@ export const Actions: Component<{
             <For each={standardActions}>
               {(action) => <ActionButton {...action} />}
             </For>
+
+            <Show when={config()?.terminals?.selected?.features.prompt}>
+              <DropdownMenu.Item as="li">
+                <button
+                  class="dropdown-item"
+                  onClick={() => {
+                    mqtt()?.cancelRegistration();
+                  }}
+                >
+                  <IconAndLabel
+                    children="Cancel Registration"
+                    icon={faUserSlash}
+                    fw
+                  />
+                </button>
+              </DropdownMenu.Item>
+            </Show>
 
             <Show when={showCashActions()}>
               <>

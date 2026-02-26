@@ -14,7 +14,9 @@ import {
   For,
   type Setter,
   Show,
+  createEffect,
   createMemo,
+  onCleanup,
   useContext,
 } from "solid-js";
 
@@ -114,6 +116,24 @@ export const Cart: Component<{
       },
     );
   };
+
+  const addCompletedBadgeToCart = (payload: object | null) => {
+    const badgeId =
+      payload && "badgeId" in payload && (payload["badgeId"] as number);
+    if (badgeId) {
+      addBadgeToCart.mutate(badgeId);
+    }
+  };
+
+  createEffect(() => {
+    const m = mqtt();
+
+    m?.emitter.on("registration/completed", addCompletedBadgeToCart);
+
+    onCleanup(() => {
+      m?.emitter.off("registration/completed", addCompletedBadgeToCart);
+    });
+  });
 
   return (
     <div class="card">

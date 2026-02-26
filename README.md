@@ -5,12 +5,12 @@
 Data Model snapshot (7 December 2020): https://i.imgur.com/A4fPDf5.png
 
 Stack:
-  + Ubuntu 20.04 (LTS)
-  + Postgres
-  + Python 3.8 - 3.10
-  + Django 3.2
-  + Bootstrap 3
-  + jQuery 1.12
+  + Ubuntu 22.04 (LTS)
+  + Python 3.14
+  + Django 6.0
+  + PostgreSQL 16.10
+  + Bootstrap 3/jQuery 1.12
+  + SolidJS
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
@@ -20,8 +20,7 @@ Stack:
   + Handle dealer applications, registration, and payments.
   + Create limited-use discounts.
   + Handle on-site registration on your own kiosks, or via a public URL.
-  + Populate attendee information by scanning their ID with a simple
-    [browser worker](https://github.com/rechner/py-aamva).
+  + Populate attendee information by scanning their ID.
   + Print badges on the fly with a custom template on any compatible card
     or label printer, with Unicode-supported fonts (Emoji!)
   + Protect admin and volunteer logins with TOTP 2-Factor or FIDO U2F.
@@ -87,9 +86,6 @@ The following was tested on a fresh installation of Ubuntu 20.04.
     docker compose exec app /app/manage.py createsuperuser
     # Respond to prompts as needed
 
-    # OPTIONAL: If you intend to run APIS in production, configure your webserver to act as a reverse proxy.
-    # Example docs: https://www.digitalocean.com/community/tutorials/how-to-use-apache-as-a-reverse-proxy-with-mod_proxy-on-ubuntu-16-04
-
     # Run the development server
     make dev
 
@@ -99,9 +95,7 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
     git clone https://github.com/furthemore/APIS.git
     cd APIS
-    python3 -v venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    uv sync
 
     # Create a development database server
     python manage.py make_db

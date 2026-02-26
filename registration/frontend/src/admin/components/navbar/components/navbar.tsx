@@ -17,6 +17,7 @@ import {
   useContext,
 } from "solid-js";
 
+import { CSRF_TOKEN } from "@admin/index";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { Container } from "@components/container";
 import { IconAndLabel } from "@components/icon-and-label";
@@ -49,7 +50,7 @@ export const Navbar: Component<{
 
         <div class="navbar-collapse collapse flex-grow-0">
           <ul class="navbar-nav">
-            <Show when={config}>
+            <Show when={config()}>
               <li class="nav-item dropdown">
                 <DropdownMenu>
                   <DropdownMenu.Trigger
@@ -124,9 +125,7 @@ export const Navbar: Component<{
                       key="searchBirthday"
                     />
 
-                    <Show
-                      when={config()?.terminals.selected?.features.printViaMqtt}
-                    >
+                    <Show when={config()?.mqtt?.auth?.print_topic}>
                       <ToggleSetting
                         name="Auto Print After Payment"
                         key="printAfterPayment"
@@ -175,16 +174,21 @@ export const Navbar: Component<{
                     </DropdownMenu.Item>
 
                     <DropdownMenu.Item as="li">
-                      <a
-                        href="/registration/logout"
-                        class="dropdown-item text-danger d-flex align-items-center column-gap-2"
-                      >
-                        <IconAndLabel
-                          children="Sign Out"
-                          icon={faSignOutAlt}
-                          fw
+                      <form method="post" action="/accounts/logout/">
+                        <input
+                          type="hidden"
+                          name="csrfmiddlewaretoken"
+                          value={CSRF_TOKEN}
                         />
-                      </a>
+
+                        <button class="dropdown-item text-danger d-flex align-items-center column-gap-2">
+                          <IconAndLabel
+                            children="Sign Out"
+                            icon={faSignOutAlt}
+                            fw
+                          />
+                        </button>
+                      </form>
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Portal>

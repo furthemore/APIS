@@ -13,7 +13,7 @@ const redirectOnLoginResponse: AfterResponseHook = (
   _options,
   response,
 ) => {
-  if (response.redirected && response.url.includes("/admin/login")) {
+  if (response.redirected && response.url.includes("/accounts/login")) {
     const url = new URL(response.url);
     url.searchParams.set(
       "next",
@@ -64,7 +64,7 @@ export type OnsiteAdminContext = {
     auth: {
       user: string;
       token: string;
-      base_topic: string;
+      root_topic: string;
       print_topic?: string;
     };
   };
@@ -94,10 +94,10 @@ export type IdAndName = {
 export type SelectedTerminal = {
   id: number;
   features: {
-    printViaMqtt: boolean;
-    squareTerminal: boolean;
-    paymentType?: PaymentType;
+    card: boolean;
     cashdrawer: boolean;
+    prompt: boolean;
+    squareTerminal: boolean;
   };
 };
 
@@ -200,8 +200,31 @@ export type TerminalStatus = "open" | "close" | "ready" | "gay" | "blue-light";
 
 export type CashAction = "open" | "deposit" | "safedrop" | "pickup" | "close";
 
+export type AttendeeDetails = {
+  firstName?: string;
+  lastName?: string;
+  preferredName?: string;
+  email?: string;
+  phone?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  dob?: string;
+};
+
 export const urlForBadge = (id: number): URL =>
   new URL(`/admin/registration/badge/${id}/change/`, window.location.href);
+
+export const urlForOnsiteDetails = (details: AttendeeDetails): URL => {
+  const regUrl = new URL("/registration/onsite", window.location.href);
+  Object.entries(details).forEach(([name, value]) => {
+    regUrl.searchParams.set(name, value);
+  });
+  return regUrl;
+};
 
 const invalidateCart = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries({
@@ -713,3 +736,40 @@ export const updateResultsFromCart = (
     },
   );
 };
+
+const attendeeDetails = (
+  badgeId: number,
+  init?: RequestInit,
+): Promise<FallibleRequest<{ attendee: AttendeeDetails }>> => {
+  return adminApi
+    .get("registration/onsite/admin/attendee", {
+      ...init,
+      searchParams: { id: badgeId },
+    })
+    .json();
+};
+
+export const attendeeDetailsOptions = (badgeId: number) =>
+  queryOptions({
+    queryKey: [...KEY_PREFIX, "attendee", badgeId],
+    queryFn: async ({ signal }) => {
+      return checkFallibleResponse(await attendeeDetails(badgeId, { signal }));
+    },
+    staleTime: 1000 * 10,
+    refetchOnWindowFocus: false,
+    throwOnError: true,
+  });
+
+const getToken = (): Promise<FallibleRequest<{ token: string }>> => {
+  return adminApi.post("registration/onsite/admin/regtoken").json();
+};
+
+export const useGetToken = () =>
+  useMutation(() => {
+    return {
+      mutationKey: [...KEY_PREFIX, "token"],
+      mutationFn: async () => {
+        return checkFallibleResponse(await getToken());
+      },
+    };
+  });

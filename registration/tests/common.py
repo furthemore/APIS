@@ -345,7 +345,7 @@ class OrdersTestCase(TestCase):
                 "email": "apis@mailinator.net",
                 "source_id": "cnon:card-nonce-ok",
                 "postal": "13271",
-                "state": "",
+                "state": None,
             },
             "onsite": False,
             "orgDonation": "10",
@@ -387,7 +387,7 @@ class OrdersTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(postData),
             content_type="application/json",
-            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+            headers={"idempotency-key": str(uuid.uuid4())}
         )
         return response
 
@@ -417,7 +417,7 @@ class OrdersTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(postData),
             content_type="application/json",
-            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+            headers={"idempotency-key": str(uuid.uuid4())}
         )
 
         return response

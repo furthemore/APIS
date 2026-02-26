@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.shortcuts import render
 
+from registration.forms import AttendeeForm, BadgeForm
 from registration.models import *
 
 from . import common, ordering
@@ -64,7 +65,9 @@ def get_cart(request):
             evt = event.eventStart
             tz = timezone.get_current_timezone()
             try:
-                birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+                birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(
+                    tzinfo=tz
+                )
             except ValueError:
                 logger.warning(
                     f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')"
@@ -124,74 +127,51 @@ def get_cart(request):
 
 
 def saveCart(cart):
-    postData = json.loads(cart.formData)
-    pda = postData["attendee"]
-    pdp = postData["priceLevel"]
-    evt = postData["event"]
-
-    tz = timezone.get_current_timezone()
-    birthdate = tz.localize(datetime.strptime(pda["birthdate"], "%Y-%m-%d"))
+    post_data = json.loads(cart.formData)
+    pda = post_data["attendee"]
+    pdp = post_data["priceLevel"]
+    evt = post_data["event"]
 
     event = Event.objects.get(name=evt)
 
-    attendee = Attendee(
-        preferredName=pda.get("preferredName", ""),
-        firstName=pda["firstName"],
-        lastName=pda["lastName"],
-        phone=pda["phone"],
-        email=pda["email"],
-        birthdate=birthdate,
-        emailsOk=bool(pda["emailsOk"]),
-        volunteerContact=len(pda["volDepts"]) > 0,
-        volunteerDepts=pda["volDepts"],
-        surveyOk=bool(pda["surveyOk"]),
-        aslRequest=bool(pda["asl"]),
+    form = AttendeeForm.from_pda(pda, event)
+    attendee: Attendee = form.save()
+
+    badge = Badge.objects.create(
+        badgeName=pda["badgeName"],
+        event=event,
+        attendee=attendee,
+        signature_svg=pda.get("signature_svg"),
+        signature_bitmap=pda.get("signature_bitmap"),
     )
 
-    if event.collectAddress:
-        try:
-            attendee.address1 = pda["address1"]
-            attendee.address2 = pda["address2"]
-            attendee.city = pda["city"]
-            attendee.state = pda["state"]
-            attendee.country = pda["country"]
-            attendee.postalCode = pda["postal"]
-        except KeyError:
-            logging.error(
-                "Supposed to be collecting addresses, but wasn't provided by form!"
-            )
-    attendee.save()
-
-    badge = Badge(badgeName=pda["badgeName"], event=event, attendee=attendee, signature_svg=pda.get("signature_svg"), signature_bitmap=pda.get("signature_bitmap"))
-    badge.save()
-
-    priceLevel = PriceLevel.objects.get(id=int(pdp["id"]))
+    price_level = PriceLevel.objects.get(id=int(pdp["id"]))
+    price_level_options = {plo.id: plo for plo in price_level.priceLevelOptions.all()}
 
     via = "WEB"
-    if postData["attendee"].get("onsite", False):
+    if post_data["attendee"].get("onsite", False):
         via = "ONSITE"
 
-    orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy=via)
-    orderItem.save()
+    order_item = OrderItem.objects.create(
+        badge=badge, priceLevel=price_level, enteredBy=via
+    )
 
     for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        if plOption.optionExtraType == "int" and option["value"] == "":
-            attendeeOption = AttendeeOptions(
-                option=plOption, orderItem=orderItem, optionValue="0"
+        pl_option = price_level_options[int(option["id"])]
+        if pl_option.optionExtraType == "int" and option["value"] == "":
+            AttendeeOptions.objects.create(
+                option=pl_option, orderItem=order_item, optionValue="0"
             )
-            attendeeOption.save()
         else:
             if option["value"] != "":
-                attendeeOption = AttendeeOptions(
-                    option=plOption, orderItem=orderItem, optionValue=option["value"]
+                AttendeeOptions.objects.create(
+                    option=pl_option, orderItem=order_item, optionValue=option["value"]
                 )
-                attendeeOption.save()
 
     cart.transferedDate = timezone.now()
     cart.save()
 
-    return orderItem
+    return order_item
 
 
 def add_to_cart(request):
@@ -199,30 +179,31 @@ def add_to_cart(request):
     Create attendee from request post.
     """
     try:
-        postData = json.loads(request.body)
-    except ValueError as e:
+        post_data = json.loads(request.body)
+    except ValueError:
         return common.abort(400, "Unable to decode JSON body")
 
     event = Event.objects.get(default=True)
 
-    try:
-        pda = postData["attendee"]
-        pda["firstName"]
-        pda["lastName"]
-        pda["email"]
-    except KeyError:
-        return common.abort(400, "Required parameters not found in POST body")
+    pda = post_data["attendee"]
 
-    try:
-        datetime.strptime(pda["birthdate"], "%Y-%m-%d")
-    except ValueError:
-        return common.abort(
-            400,
-            f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')",
-        )
+    attendee_form = AttendeeForm.from_pda(pda, event)
+    if not attendee_form.is_valid():
+        return common.abort(400, attendee_form.errors.as_text())
 
-    banCheck = check_ban_list(pda["firstName"], pda["lastName"], pda["email"])
-    if banCheck:
+    badge_form = BadgeForm(
+        data={
+            "badgeName": pda.get("badgeName"),
+            "signature_svg": pda.get("signature_svg"),
+            "signature_bitmap": pda.get("signature_bitmap"),
+        }
+    )
+    if not badge_form.is_valid():
+        return common.abort(400, badge_form.errors.as_text())
+
+    pda = attendee_form.cleaned_data
+
+    if check_ban_list(pda["firstName"], pda["lastName"], pda["email"]):
         logger.error(f"***ban list registration attempt: {pda['email']}***")
         registrationEmail = common.get_registration_email()
         return common.abort(
@@ -231,17 +212,17 @@ def add_to_cart(request):
             f"further information or assistance, please contact Registration at {registrationEmail}",
         )
 
-    cart = Cart(
+    cart = Cart.objects.create(
         form=Cart.ATTENDEE,
         formData=request.body.decode("utf-8"),
         formHeaders=common.get_request_meta(request),
     )
-    cart.save()
 
     # add attendee to session order
-    cartItems = request.session.get("cart_items", [])
-    cartItems.append(cart.id)
-    request.session["cart_items"] = cartItems
+    cart_items = request.session.get("cart_items", [])
+    cart_items.append(cart.id)
+    request.session["cart_items"] = cart_items
+
     return common.success()
 
 
