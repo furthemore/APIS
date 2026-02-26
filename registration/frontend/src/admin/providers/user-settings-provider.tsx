@@ -28,10 +28,10 @@ const USER_DEFAULTS: UserSettings = {
 
 export class UserSettingsManager {
   public settings: Accessor<UserSettings>;
-  private setSettings: Setter<UserSettings>;
+  private readonly setSettings: Setter<UserSettings>;
 
   constructor() {
-    const settingsData = window.localStorage.getItem(STORAGE_KEY);
+    const settingsData = globalThis.localStorage.getItem(STORAGE_KEY);
     let userSettings: UserSettings;
 
     if (settingsData) {
@@ -51,7 +51,7 @@ export class UserSettingsManager {
 
   private saveSettings() {
     const data = JSON.stringify(this.settings());
-    window.localStorage.setItem(STORAGE_KEY, data);
+    globalThis.localStorage.setItem(STORAGE_KEY, data);
   }
 
   store(setting: UserSettingKey, value: boolean) {

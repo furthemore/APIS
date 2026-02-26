@@ -1,6 +1,4 @@
-import { Scan } from "./components/scan";
-
-export { Scan };
+export { Scan } from "./components/scan";
 
 export interface IdData {
   documentType: string;

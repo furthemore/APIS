@@ -131,14 +131,14 @@ export const AttendeeSearch: Component<{
     const selected = selectedAttendee();
 
     if (selected && entries?.[selected]) {
-      window.open(entries[selected].editUrl, "edit");
+      globalThis.open(entries[selected].editUrl, "edit");
     }
   });
 
   createShortcut(
     ["Control", "E"],
     () => {
-      window.open("/registration/onsite", "register");
+      globalThis.open("/registration/onsite", "register");
     },
     {
       preventDefault: true,

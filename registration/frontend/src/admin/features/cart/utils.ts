@@ -157,8 +157,8 @@ export const printBadgesHelper = async (
 ) => {
   await printBadges.mutateAsync(badgeIds, {
     onSuccess: async (data) => {
-      if (mqtt !== undefined) {
-        const url = new URL(data.file, window.location.href);
+      if (mqtt) {
+        const url = new URL(data.file, globalThis.location.href);
 
         mqtt.publishPrintMessage(
           JSON.stringify({
@@ -166,7 +166,7 @@ export const printBadgesHelper = async (
           }),
         );
       } else {
-        window.open(data.url, "badge");
+        globalThis.open(data.url, "badge");
       }
     },
   });
@@ -179,7 +179,7 @@ export const getShirtSizeName = (
   if (!optionValue) return;
 
   const sizeName = config?.shirtSizes.find(
-    (entry) => entry.id === parseInt(optionValue, 10),
+    (entry) => entry.id === Number.parseInt(optionValue, 10),
   )?.name;
 
   return sizeName || optionValue;

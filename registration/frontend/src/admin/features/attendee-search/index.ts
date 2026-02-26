@@ -1,3 +1,1 @@
-import { AttendeeSearch } from "./components/attendee-search";
-
-export { AttendeeSearch };
+export { AttendeeSearch } from "./components/attendee-search";

@@ -336,16 +336,6 @@ urlpatterns = [
     re_path(r"^pdf/?$", registration.views.printing.servePDF, name="pdf"),
     re_path(r"^print/?$", registration.views.printing.printNametag, name="print"),
     re_path(
-        r"^firebase/register/?",
-        registration.views.onsite_admin.firebase_register,
-        name="firebase_register",
-    ),
-    re_path(
-        r"^firebase/lookup/?",
-        registration.views.onsite_admin.firebase_lookup,
-        name="firebase_lookup",
-    ),
-    re_path(
         r"webhook/square/v2",
         registration.views.webhooks.square_webhook,
         name="square_webhook",

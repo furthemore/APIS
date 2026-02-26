@@ -94,8 +94,8 @@ export const Cart: Component<{
 
     await clearCart.mutateAsync(undefined, {
       onSuccess: async () => {
-        for (let i = 0; i < transfer.length; i += 1) {
-          await addBadgeToCart.mutateAsync(transfer[i]);
+        for (const entry of transfer) {
+          await addBadgeToCart.mutateAsync(entry);
         }
       },
     });

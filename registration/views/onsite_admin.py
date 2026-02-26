@@ -23,6 +23,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST, require_safe
 
 from registration import admin, mqtt, payments
 from registration.models import (
@@ -65,16 +66,18 @@ def get_active_terminal(request) -> Optional[Firebase]:
     return None
 
 
+@require_safe
 @staff_member_required
 def onsite_admin(request):
     # Modify a dummy session variable to keep it alive
     request.session["heartbeat"] = time.time()
 
-    terminal = get_terminal_from_request(request)
+    get_terminal_from_request(request)
 
     return render(request, "registration/onsite-admin.html")
 
 
+@require_safe
 @staff_member_required
 def onsite_admin_terminals(request):
     terminals = list(Firebase.objects.order_by("name").all())
@@ -99,6 +102,7 @@ def onsite_admin_terminals(request):
     return JsonResponse({"terminals": data})
 
 
+@require_safe
 @staff_member_required
 def onsite_admin_context(request):
     terminals = list(Firebase.objects.order_by("name").all())
@@ -176,6 +180,7 @@ class SearchFields:
         return SearchFields(query=query, birthday=birthday)
 
 
+@require_safe
 @staff_member_required
 def onsite_admin_search(request):
     event = Event.objects.get(default=True)
@@ -185,7 +190,7 @@ def onsite_admin_search(request):
 
     data = []
 
-    def collectBadges(badges):
+    def collect_badges(badges):
         for badge in badges:
             data.append(
                 {
@@ -210,12 +215,14 @@ def onsite_admin_search(request):
 
     if fields.badge_ids:
         badges = Badge.objects.filter(event=event, badgeNumber__in=fields.badge_ids)
-        collectBadges(badges)
+        collect_badges(badges)
 
-    fullName = Func(
+    full_name = Func(
         F("attendee__firstName"), Value(" "), F("attendee__lastName"), function="CONCAT"
     )
-    greaterSimilarity = Func("name_similarity", "badge_similarity", function="GREATEST")
+    greater_similarity = Func(
+        "name_similarity", "badge_similarity", function="GREATEST"
+    )
 
     filters = (
         Q(name_similarity__gte=0.4)
@@ -228,16 +235,16 @@ def onsite_admin_search(request):
 
     results = (
         Badge.objects.annotate(
-            name_similarity=TrigramSimilarity(fullName, fields.query),
+            name_similarity=TrigramSimilarity(full_name, fields.query),
             badge_similarity=TrigramSimilarity("badgeName", fields.query),
         )
         .filter(Q(event=event) & filters)
-        .order_by(greaterSimilarity)
+        .order_by(greater_similarity)
         .reverse()
         .prefetch_related("attendee")[:50]
     )
 
-    collectBadges(results)
+    collect_badges(results)
 
     return JsonResponse({"success": True, "results": data})
 
@@ -257,9 +264,10 @@ def update_terminal_status(request, status: str) -> JsonResponse:
     )
 
 
+@require_POST
 @staff_member_required
 def set_terminal_status(request):
-    status = request.GET.get("status", "close")
+    status = request.POST.get("status", "close")
     return update_terminal_status(request, status)
 
 
@@ -311,6 +319,7 @@ def send_mqtt_message_to_terminal(
     return JsonResponse({"success": True})
 
 
+@require_POST
 @staff_member_required
 def enable_payment(request):
     cart = request.session.get("cart", None)
@@ -406,6 +415,7 @@ def enable_payment(request):
         )
 
 
+@require_POST
 @staff_member_required
 def assign_badge_number(request):
     request_badges = json.loads(request.body)
@@ -429,6 +439,7 @@ def get_messages_list(request):
     return [message.message for message in storage]
 
 
+@require_POST
 @staff_member_required
 def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
@@ -584,6 +595,7 @@ def combine_orders(orders):
         first_order.save()
 
 
+@require_safe
 @staff_member_required
 @permission_required("order.cash_admin")
 def drawer_status(request):
@@ -600,6 +612,7 @@ def drawer_status(request):
     return JsonResponse({"success": True, "total": drawer_total, "status": status})
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash_admin")
 def no_sale(request):
@@ -647,30 +660,35 @@ def cash_audit_action(request, action):
     return JsonResponse({"success": True})
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash_admin")
 def open_drawer(request):
     return cash_audit_action(request, Cashdrawer.OPEN)
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash_admin")
 def cash_deposit(request):
     return cash_audit_action(request, Cashdrawer.DEPOSIT)
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash_admin")
 def safe_drop(request):
     return cash_audit_action(request, Cashdrawer.DROP)
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash_admin")
 def cash_pickup(request):
     return cash_audit_action(request, Cashdrawer.PICKUP)
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash_admin")
 def close_drawer(request):
@@ -718,6 +736,7 @@ def cash_receipt_payload(order: Order, tendered: str, total: str) -> dict:
     return payload
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.cash")
 def complete_cash_transaction(request):
@@ -767,73 +786,6 @@ def complete_cash_transaction(request):
     )
 
     return JsonResponse({"success": True})
-
-
-@csrf_exempt
-def firebase_register(request):
-    key = request.GET.get("key", "")
-    if key != settings.REGISTER_KEY:
-        return JsonResponse(
-            {"success": False, "reason": "Incorrect API key"}, status=401
-        )
-
-    token = request.GET.get("token", None)
-    name = request.GET.get("name", None)
-    if token is None or name is None:
-        return JsonResponse(
-            {"success": False, "reason": "Must specify token and name parameter"},
-            status=400,
-        )
-
-    # Upsert if a new token with an existing name tries to register
-    try:
-        old_terminal = Firebase.objects.get(name=name)
-        old_terminal.token = token
-        old_terminal.save()
-        return JsonResponse({"success": True, "updated": True})
-    except Firebase.DoesNotExist:
-        pass
-    except Exception as e:
-        return JsonResponse(
-            {
-                "success": False,
-                "reason": "Failed while attempting to update existing name entry",
-            },
-            status=500,
-        )
-
-    try:
-        terminal = Firebase(token=token, name=name)
-        terminal.save()
-    except Exception as e:
-        logger.exception(e)
-        logger.error("Error while saving Firebase token to database")
-        return JsonResponse(
-            {"success": False, "reason": "Error while saving to database"}, status=500
-        )
-
-    return JsonResponse({"success": True, "updated": False})
-
-
-@csrf_exempt
-def firebase_lookup(request):
-    # Returns the common name stored for a given firebase token
-    # (So client can notify server if either changes)
-    token = request.GET.get("token", None)
-    if token is None:
-        return JsonResponse(
-            {"success": False, "reason": "Must specify token parameter"}, status=400
-        )
-
-    try:
-        terminal = Firebase.objects.get(token=token)
-        return JsonResponse(
-            {"success": True, "name": terminal.name, "closed": terminal.closed}
-        )
-    except Firebase.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "reason": "No such token registered"}, status=404
-        )
 
 
 def get_discount_dict(discount):
@@ -991,6 +943,7 @@ def build_result(cart):
     return data
 
 
+@require_safe
 @staff_member_required
 def onsite_admin_cart(request):
     # Returns dataset to render onsite cart preview
@@ -1028,6 +981,7 @@ def onsite_admin_cart(request):
     return JsonResponse(data)
 
 
+@require_POST
 @staff_member_required
 def onsite_add_to_cart(request):
     id = request.GET.get("id", None)
@@ -1063,6 +1017,7 @@ def onsite_add_id_to_cart(request, id):
     return JsonResponse({"success": True, "cart": cart})
 
 
+@require_POST
 @staff_member_required
 def onsite_remove_from_cart(request):
     id = request.GET.get("id", None)
@@ -1091,6 +1046,7 @@ def onsite_remove_from_cart(request):
     return JsonResponse({"success": True, "cart": cart})
 
 
+@require_POST
 @staff_member_required
 def onsite_admin_clear_cart(request):
     request.session["cart"] = []
@@ -1098,6 +1054,7 @@ def onsite_admin_clear_cart(request):
     return JsonResponse({"success": True, "cart": []})
 
 
+@require_POST
 @staff_member_required
 def onsite_admin_transfer_cart(request):
     terminal_id = request.GET.get("terminal_id")
@@ -1121,6 +1078,7 @@ def get_b32_uuid():
     return uid[:26]
 
 
+@require_POST
 @staff_member_required
 @permission_required("order.discount")
 def create_discount(request):
@@ -1174,6 +1132,7 @@ def create_discount(request):
     return JsonResponse({"success": True})
 
 
+@require_POST
 @staff_member_required
 def onsite_print_clear(request):
     id = request.GET.get("id", None)
@@ -1196,6 +1155,7 @@ def onsite_print_clear(request):
     return JsonResponse({"success": True})
 
 
+@require_POST
 @staff_member_required
 def regtoken(request):
     terminal = get_active_terminal(request)
@@ -1214,6 +1174,7 @@ def regtoken(request):
     return JsonResponse({"success": True, "token": data})
 
 
+@require_safe
 @staff_member_required
 def attendee_details(request):
     id = request.GET.get("id", None)
@@ -1284,6 +1245,8 @@ def terminal_square_token(request):
     return JsonResponse(True, safe=False)
 
 
+@require_safe
+@staff_member_required
 def oauth_square(request):
     url_state = request.GET.get("state")
     cookie_state = request.COOKIES.get("square_oauth_state")
@@ -1317,6 +1280,7 @@ def oauth_square(request):
     return resp
 
 
+@require_POST
 def print_receipts(request):
     terminal = get_active_terminal(request)
     if not terminal:

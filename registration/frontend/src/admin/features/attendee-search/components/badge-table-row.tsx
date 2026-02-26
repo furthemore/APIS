@@ -46,7 +46,7 @@ export const BadgeTableRow: Component<{
 
   const hasSearchedId = () => {
     const query = cleanedSearchQuery();
-    return query && parseInt(query, 10) === props.badge.badgeNumber;
+    return query && Number.parseInt(query, 10) === props.badge.badgeNumber;
   };
 
   const hasIdenticalBadgeName = () =>

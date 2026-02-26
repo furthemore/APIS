@@ -58,12 +58,12 @@ export const CartActions: Component<{
   const hasHold = createMemo(
     () =>
       props.entries?.result?.some((entry) => !!entry.holdType) ||
-      isNaN(parseFloat(props?.entries?.total || "")),
+      Number.isNaN(Number.parseFloat(props?.entries?.total || "")),
   );
 
   const allNeedPayment = createMemo(
     () =>
-      parseFloat(props.entries?.total || "") > 0 &&
+      Number.parseFloat(props.entries?.total || "") > 0 &&
       props.entries?.result.every(
         (entry) => !PRINTABLE_STATUS.has(entry.abandoned),
       ),

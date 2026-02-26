@@ -1,3 +1,1 @@
-import { Navbar } from "./components/navbar";
-
-export { Navbar };
+export { Navbar } from "./components/navbar";

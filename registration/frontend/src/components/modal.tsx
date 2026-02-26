@@ -26,7 +26,7 @@ export const Modal: Component<{
   const [showModal, setShowModal] = createSignal(false);
 
   createEffect(() => props.signal && setShowModal(props.signal[0]));
-  createEffect(() => props.signal && props.signal[1](showModal()));
+  createEffect(() => props.signal?.[1](showModal()));
 
   const { isVisible, isMounted } = createPresence(showModal, {
     transitionDuration: () =>

@@ -37,10 +37,10 @@ const dec2hex = (dec: number) => {
 
 export default class MqttClient {
   public errorMessage: Accessor<string | undefined>;
-  private setErrorMessage: Setter<string | undefined>;
+  private readonly setErrorMessage: Setter<string | undefined>;
 
   public isConnected: Accessor<boolean>;
-  private setIsConnected: Setter<boolean>;
+  private readonly setIsConnected: Setter<boolean>;
 
   public emitter: Emitter<Record<MqttTopic, object | null>>;
 
@@ -175,8 +175,8 @@ export default class MqttClient {
       switch (strippedTopic) {
         case "authorize/square":
           if (payload?.["url"] && payload?.["state"]) {
-            document.cookie = `square_oauth_state=${payload["state"]}; path=/`;
-            window.open(payload["url"], "square_oauth");
+            document.cookie = `square_oauth_state=${payload["state"]}; path=/; secure; httpOnly`;
+            globalThis.open(payload["url"], "square_oauth");
           }
           break;
         case "notify/alert":
@@ -239,7 +239,7 @@ export default class MqttClient {
     if (clientId) return clientId;
 
     const vals = new Uint8Array(8);
-    window.crypto.getRandomValues(vals);
+    globalThis.crypto.getRandomValues(vals);
     clientId = Array.from(vals, dec2hex).join("");
     localStorage.setItem("client-id", clientId);
     return clientId;

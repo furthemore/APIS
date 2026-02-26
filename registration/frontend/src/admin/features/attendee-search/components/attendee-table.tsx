@@ -31,8 +31,6 @@ export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
   const attendeeIdSelector = createSelector(() => props.selectedAttendee);
 
   const attendeesWhenSearching = createMemo((previous: number) => {
-    props.searchQuery;
-
     const length =
       (props.attendees.isFetched && props.attendees.data?.length) || 0;
     return length > 0 ? length : previous;

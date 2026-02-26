@@ -115,53 +115,51 @@ export const Onsite: Component<{
   };
 
   return (
-    <>
-      <div class="row my-3">
-        <div class="col-md-5 col-xxl-4">
-          <SentryErrorBoundary
-            fallback={(err, reset) => (
-              <ErrorCard
-                title="Attendee Search Error"
-                err={err}
-                reset={() => {
-                  setSearchQuery("");
-                  reset();
-                }}
-              />
-            )}
-          >
-            <AttendeeSearch
-              idsInCart={idsInCart()}
-              searchQuery={searchQuery()}
-              setSearchQuery={setSearchQuery}
+    <div class="row my-3">
+      <div class="col-md-5 col-xxl-4">
+        <SentryErrorBoundary
+          fallback={(err, reset) => (
+            <ErrorCard
+              title="Attendee Search Error"
+              err={err}
+              reset={() => {
+                setSearchQuery("");
+                reset();
+              }}
             />
-          </SentryErrorBoundary>
+          )}
+        >
+          <AttendeeSearch
+            idsInCart={idsInCart()}
+            searchQuery={searchQuery()}
+            setSearchQuery={setSearchQuery}
+          />
+        </SentryErrorBoundary>
 
-          <SentryErrorBoundary
-            fallback={(err, reset) => (
-              <ErrorCard title="Scan Error" err={err} reset={reset} />
-            )}
-          >
-            <Scan
-              gotScannedName={gotScannedName}
-              readyForNext={props.readyForNext}
-            />
-          </SentryErrorBoundary>
-        </div>
-
-        <div class="col">
-          <SentryErrorBoundary
-            fallback={(err, reset) => (
-              <ErrorCard title="Cart Error" err={err} reset={reset} />
-            )}
-          >
-            <Cart
-              clearSearch={() => setSearchQuery("")}
-              setReadyForNext={props.setReadyForNext}
-            />
-          </SentryErrorBoundary>
-        </div>
+        <SentryErrorBoundary
+          fallback={(err, reset) => (
+            <ErrorCard title="Scan Error" err={err} reset={reset} />
+          )}
+        >
+          <Scan
+            gotScannedName={gotScannedName}
+            readyForNext={props.readyForNext}
+          />
+        </SentryErrorBoundary>
       </div>
-    </>
+
+      <div class="col">
+        <SentryErrorBoundary
+          fallback={(err, reset) => (
+            <ErrorCard title="Cart Error" err={err} reset={reset} />
+          )}
+        >
+          <Cart
+            clearSearch={() => setSearchQuery("")}
+            setReadyForNext={props.setReadyForNext}
+          />
+        </SentryErrorBoundary>
+      </div>
+    </div>
   );
 };

@@ -49,7 +49,7 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
   createShortcut(
     ["Control", "M"],
     () => {
-      window.open(regUrl(), "register");
+      globalThis.open(regUrl(), "register");
     },
     {
       preventDefault: true,

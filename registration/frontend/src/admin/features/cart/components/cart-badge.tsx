@@ -93,7 +93,7 @@ export const CartBadge: Component<{
     );
 
     const details = filterDetails(
-      { ...(attendeeDetails.attendee || {}) },
+      { ...attendeeDetails.attendee },
       type === "basic" ? BASIC_FIELDS : CLONE_FIELDS,
     );
 
@@ -102,7 +102,7 @@ export const CartBadge: Component<{
       await mqtt()?.displayRegistration(resp.token, details);
     } else {
       const url = urlForOnsiteDetails(details);
-      window.open(url, "register");
+      globalThis.open(url, "register");
     }
   };
 

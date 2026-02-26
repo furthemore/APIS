@@ -17,10 +17,10 @@ const redirectOnLoginResponse: AfterResponseHook = (
     const url = new URL(response.url);
     url.searchParams.set(
       "next",
-      window.location.pathname + window.location.search,
+      globalThis.location.pathname + globalThis.location.search,
     );
 
-    window.location.href = url.toString();
+    globalThis.location.href = url.toString();
   }
 };
 
@@ -216,10 +216,10 @@ export type AttendeeDetails = {
 };
 
 export const urlForBadge = (id: number): URL =>
-  new URL(`/admin/registration/badge/${id}/change/`, window.location.href);
+  new URL(`/admin/registration/badge/${id}/change/`, globalThis.location.href);
 
 export const urlForOnsiteDetails = (details: AttendeeDetails): URL => {
-  const regUrl = new URL("/registration/onsite", window.location.href);
+  const regUrl = new URL("/registration/onsite", globalThis.location.href);
   Object.entries(details).forEach(([name, value]) => {
     regUrl.searchParams.set(name, value);
   });
@@ -726,7 +726,7 @@ export const updateResultsFromCart = (
           const change = badgesWithChanges.find(
             (change) => change.id === badge.id,
           );
-          return change || badge;
+          return change ?? badge;
         });
 
         return {
