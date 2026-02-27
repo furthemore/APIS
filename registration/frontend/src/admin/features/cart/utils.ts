@@ -130,7 +130,7 @@ export const printBadgesHelper = async (
   mqtt?: MqttClient,
 ) => {
   await printBadges.mutateAsync(badgeIds, {
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       if (mqtt) {
         const url = new URL(data.file, globalThis.location.href);
 

@@ -92,11 +92,15 @@ export const Cart: Component<{
     const transfer = takeNextTransfer();
     if (!transfer) return;
 
+    const addAllToCart = async () => {
+      for (const entry of transfer) {
+        await addBadgeToCart.mutateAsync(entry);
+      }
+    };
+
     await clearCart.mutateAsync(undefined, {
-      onSuccess: async () => {
-        for (const entry of transfer) {
-          await addBadgeToCart.mutateAsync(entry);
-        }
+      onSuccess: () => {
+        addAllToCart();
       },
     });
   };
@@ -110,8 +114,8 @@ export const Cart: Component<{
         badgeIds: cart.data?.result?.map((badge) => badge.id) || [],
       },
       {
-        onSuccess: async () => {
-          await clearCart.mutateAsync();
+        onSuccess: () => {
+          clearCart.mutateAsync();
         },
       },
     );
