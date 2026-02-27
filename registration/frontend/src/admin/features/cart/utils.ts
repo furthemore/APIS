@@ -1,9 +1,18 @@
+import {
+  type UndoHistoryReturn,
+  createUndoHistory,
+} from "@solid-primitives/history";
+import { createWritableMemo } from "@solid-primitives/memo";
 import type { UseMutationResult } from "@tanstack/solid-query";
 import { Big } from "big.js";
+import isEqual from "lodash/isEqual";
+import { type Accessor, createEffect } from "solid-js";
 
 import type {
+  AddBadgeParams,
   BadgeCart,
   BadgePrintResponse,
+  CartResponse,
   CashPaymentOpts,
   OnsiteAdminContext,
 } from "@admin/api";
@@ -157,4 +166,28 @@ export const getShirtSizeName = (
   )?.name;
 
   return sizeName || optionValue;
+};
+
+export const useCartHistory = (
+  cart: Accessor<CartResponse | undefined>,
+  addBadgeToCart: UseMutationResult<unknown, unknown, AddBadgeParams, unknown>,
+): UndoHistoryReturn => {
+  const cartBadgeIds = () => cart()?.result.map((badge) => badge.id) || [];
+
+  const [historyCartBadgeIds, setHistoryCartBadgeIds] = createWritableMemo(
+    cartBadgeIds,
+    [],
+    { equals: isEqual },
+  );
+
+  createEffect(() => {
+    if (!isEqual(cartBadgeIds(), historyCartBadgeIds())) {
+      addBadgeToCart.mutate({ ids: historyCartBadgeIds(), assign: true });
+    }
+  });
+
+  return createUndoHistory(() => {
+    const badgeIds = historyCartBadgeIds();
+    return () => setHistoryCartBadgeIds(badgeIds);
+  });
 };

@@ -15,7 +15,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
 from django.contrib.postgres.search import TrigramSimilarity
 from django.core.signing import TimestampSigner
-from django.db.models import F, Func, Q, Sum, Value
+from django.db.models import Case, F, Func, Q, Sum, Value, When
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -74,7 +74,7 @@ def onsite_admin(request):
 
     get_terminal_from_request(request)
 
-    return render(request, "registration/onsite-admin.html")
+    return render(request, "registration/spa-host.html")
 
 
 @require_safe
@@ -267,7 +267,7 @@ def update_terminal_status(request, status: str) -> JsonResponse:
 @require_POST
 @staff_member_required
 def set_terminal_status(request):
-    status = request.POST.get("status", "close")
+    status = request.GET.get("status", "close")
     return update_terminal_status(request, status)
 
 
@@ -953,22 +953,20 @@ def onsite_admin_cart(request):
     data = build_result(cart)
 
     terminal_data = {
-        "badges": list(
-            map(
-                lambda badge: {
-                    "id": badge["id"],
-                    "firstName": badge["firstName"],
-                    "lastName": badge["lastName"],
-                    "badgeName": badge["badgeName"],
-                    "effectiveLevel": {
-                        "name": badge["effectiveLevel"]["name"],
-                        "price": str(badge["level_subtotal"]),
-                    },
-                    "discountedPrice": str(badge["level_total"]),
+        "badges": [
+            {
+                "id": badge["id"],
+                "firstName": badge["firstName"],
+                "lastName": badge["lastName"],
+                "badgeName": badge["badgeName"],
+                "effectiveLevel": {
+                    "name": badge["effectiveLevel"]["name"],
+                    "price": str(badge["level_subtotal"]),
                 },
-                data["result"],
-            )
-        ),
+                "discountedPrice": str(badge["level_total"]),
+            }
+            for badge in data["result"]
+        ],
         "charityDonation": str(data["charityDonation"]),
         "organizationDonation": str(data["orgDonation"]),
         "totalDiscount": str(data["total_discount"]),
@@ -984,33 +982,34 @@ def onsite_admin_cart(request):
 @require_POST
 @staff_member_required
 def onsite_add_to_cart(request):
-    id = request.GET.get("id", None)
-    return onsite_add_id_to_cart(request, id)
-
-
-def onsite_add_id_to_cart(request, id):
-    if id is None or id == "":
-        return JsonResponse(
-            {"success": False, "reason": "Need ID parameter"}, status=400
-        )
+    badge_ids = request.GET.getlist("id")
+    assign = request.GET.get("assign") == "yes"
 
     try:
-        badge = Badge.objects.get(id=id)
-    except ValueError:
-        return JsonResponse(
-            {"success": False, "reason": "ID parameter must be integer"}, status=400
-        )
+        badge_ids = [int(badge_id) for badge_id in badge_ids]
+    except ValueError as ex:
+        return JsonResponse({"success": False, "reason": str(ex)}, status=400)
 
-    cart = request.session.get("cart", [])
+    badges = badges = Badge.objects.filter(id__in=badge_ids)
 
-    order_item = OrderItem.objects.filter(badge=badge, order__isnull=False).first()
-    if order_item:
-        order_items = OrderItem.objects.filter(
-            order=order_item.order, badge__isnull=False
-        )
-        for order_item in order_items:
-            if order_item.badge_id not in cart:
-                cart.append(order_item.badge_id)
+    if len(badge_ids) > 1:
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(badge_ids)])
+        badges = badges.order_by(preserved)
+
+    if assign:
+        cart = []
+    else:
+        cart = request.session.get("cart", [])
+
+    for badge in badges:
+        order_item = OrderItem.objects.filter(badge=badge, order__isnull=False).first()
+        if order_item:
+            order_items = OrderItem.objects.filter(
+                order=order_item.order, badge__isnull=False
+            )
+            for order_item in order_items:
+                if order_item.badge_id not in cart:
+                    cart.append(order_item.badge_id)
 
     request.session["cart"] = cart
 
@@ -1020,15 +1019,10 @@ def onsite_add_id_to_cart(request, id):
 @require_POST
 @staff_member_required
 def onsite_remove_from_cart(request):
-    id = request.GET.get("id", None)
-    if id is None or id == "":
-        return JsonResponse(
-            {"success": False, "reason": "Need ID parameter"}, status=400
-        )
-
+    badge_id = request.GET.get("id", None)
     try:
-        id = int(id)
-    except ValueError:
+        badge_id = int(badge_id)
+    except (TypeError, ValueError):
         return JsonResponse(
             {"success": False, "reason": "ID parameter must be integer"}, status=400
         )
@@ -1038,7 +1032,7 @@ def onsite_remove_from_cart(request):
         return JsonResponse({"success": False, "reason": "Cart is empty"})
 
     try:
-        cart.remove(id)
+        cart.remove(badge_id)
         request.session["cart"] = cart
     except ValueError:
         return JsonResponse({"success": False, "cart": cart, "reason": "Not in cart"})

@@ -34,6 +34,7 @@ import { MqttContext } from "@admin/providers/mqtt-provider";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
 
+import { useCartHistory } from "../utils";
 import { CartActions } from "./cart-actions";
 import { CartEntries } from "./cart-entries";
 
@@ -59,6 +60,8 @@ export const Cart: Component<{
     ),
   );
 
+  const history = useCartHistory(() => cart.data, addBadgeToCart);
+
   const anythingLoading = () =>
     cart.isFetching ||
     clearCart.isPending ||
@@ -68,6 +71,8 @@ export const Cart: Component<{
 
   const canTransfer = () =>
     !anythingLoading() && (cart.data?.result.length || 0) > 0;
+
+  createHotkey("Mod+Z", () => history.undo(), { ignoreInputs: true });
 
   createHotkey("Alt+R", () => {
     if (anythingLoading()) return;
@@ -92,17 +97,7 @@ export const Cart: Component<{
     const transfer = takeNextTransfer();
     if (!transfer) return;
 
-    const addAllToCart = async () => {
-      for (const entry of transfer) {
-        await addBadgeToCart.mutateAsync(entry);
-      }
-    };
-
-    await clearCart.mutateAsync(undefined, {
-      onSuccess: () => {
-        addAllToCart();
-      },
-    });
+    await addBadgeToCart.mutateAsync({ ids: transfer, assign: true });
   };
 
   const performTransfer = (terminal: IdAndName) => {
@@ -206,7 +201,7 @@ export const Cart: Component<{
 
               <Button
                 class="btn btn-warning btn-sm"
-                disabled={anythingLoading()}
+                disabled={anythingLoading() || !cart.data?.result.length}
                 loading={clearCart.isPending}
                 title="Alt+A"
                 onClick={() => clearCart.mutate()}

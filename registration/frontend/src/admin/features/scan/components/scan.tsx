@@ -121,7 +121,7 @@ export const Scan: Component<{
       <div class="card-header">
         <div class="row align-items-center">
           <div class="col">
-            <h5 class="card-title mb-0">
+            <h5 class="card-heading mb-0">
               <IconAndLabel children="Scans" icon={faBarcode} fw />
             </h5>
           </div>

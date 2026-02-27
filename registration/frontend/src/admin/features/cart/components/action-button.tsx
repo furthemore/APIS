@@ -44,16 +44,10 @@ export const ActionButton: Component<ActionButtonProps> = (props) => {
 
   createEffect(() => {
     if (props.keyboardShortcut) {
-      createHotkey(
-        props.keyboardShortcut,
-        (ev) => {
-          if (props.disabled) return;
-          setTriggerEvent(ev || undefined);
-        },
-        {
-          preventDefault: true,
-        },
-      );
+      createHotkey(props.keyboardShortcut, (ev) => {
+        if (props.disabled) return;
+        setTriggerEvent(ev || undefined);
+      });
     }
   });
 

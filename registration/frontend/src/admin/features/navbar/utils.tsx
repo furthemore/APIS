@@ -9,7 +9,7 @@ export const KNOWN_SHORTCUTS: { shortcut: Hotkey; description: string }[] = [
   { shortcut: "Alt+O", description: "Open position" },
   { shortcut: "Alt+L", description: "Close position" },
   { shortcut: "Alt+N", description: "Ready for next" },
-  { shortcut: "Control+E", description: "Create new attendee" },
+  { shortcut: "Mod+E", description: "Create new attendee" },
   { shortcut: "Mod+M", description: "Create new attendee from scanned ID" },
   { shortcut: "Alt+F", description: "Clear results and focus search field" },
   {

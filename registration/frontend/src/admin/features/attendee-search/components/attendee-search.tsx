@@ -135,7 +135,7 @@ export const AttendeeSearch: Component<{
     }
   });
 
-  createHotkey("Control+E", () => {
+  createHotkey("Mod+E", () => {
     globalThis.open("/registration/onsite", "register");
   });
 
@@ -157,7 +157,7 @@ export const AttendeeSearch: Component<{
         <div class="row align-items-center">
           <div class="col">
             <h5 class="card-heading mb-0">
-              <IconAndLabel children="Attendee Search" icon={faPeopleLine} fw />
+              <IconAndLabel children="Attendees" icon={faPeopleLine} fw />
             </h5>
           </div>
 

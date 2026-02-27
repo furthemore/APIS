@@ -329,9 +329,29 @@ export const useClearCart = () =>
     };
   });
 
-const addBadgeToCart = (id: number): Promise<FallibleRequest<void>> => {
+export type AddBadgeParams = number | { ids: number[]; assign?: boolean };
+
+const addBadgeToCart = (
+  params: AddBadgeParams,
+): Promise<FallibleRequest<void>> => {
+  let ids;
+  let assign;
+  if (typeof params === "number") {
+    ids = [params];
+    assign = false;
+  } else {
+    ids = params.ids;
+    assign = params.assign || false;
+  }
+
+  const searchParams = new URLSearchParams();
+  if (assign) searchParams.set("assign", "yes");
+  for (const id of ids) {
+    searchParams.append("id", id.toString());
+  }
+
   return adminApi
-    .post("registration/onsite/admin/cart/add", { searchParams: { id } })
+    .post("registration/onsite/admin/cart/add", { searchParams })
     .json();
 };
 
@@ -340,8 +360,8 @@ export const useAddBadgeToCart = () =>
     return {
       throwOnError: true,
       mutationKey: [...KEY_PREFIX, "cart", "add"],
-      mutationFn: async (id: number) => {
-        return checkFallibleResponse(await addBadgeToCart(id));
+      mutationFn: async (params: AddBadgeParams) => {
+        return checkFallibleResponse(await addBadgeToCart(params));
       },
       onSuccess: async (_data, _variables, _result, context) => {
         await invalidateCart(context.client);

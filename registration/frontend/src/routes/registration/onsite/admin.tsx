@@ -1,4 +1,7 @@
 import { Toast } from "@kobalte/core/toast";
+import * as Sentry from "@sentry/solid";
+import { MultiProvider } from "@solid-primitives/context";
+import { HotkeysProvider } from "@tanstack/solid-hotkeys";
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, getRouteApi } from "@tanstack/solid-router";
 import {
@@ -6,6 +9,7 @@ import {
   Match,
   Show,
   Switch,
+  createEffect,
   createMemo,
   createSignal,
   onCleanup,
@@ -28,6 +32,8 @@ import {
   UserSettingsManager,
 } from "@admin/providers/user-settings-provider";
 import { Container } from "@components/container";
+
+import { setCurrentUser } from "../../../sentry";
 
 const OnsiteAdmin: Component = () => {
   const route = getRouteApi("/registration/onsite/admin");
@@ -53,36 +59,67 @@ const OnsiteAdmin: Component = () => {
     return m;
   });
 
+  createEffect(() => {
+    const config = context.data;
+    if (!config) return;
+
+    const terminalName = config.terminals.available.find(
+      (terminal) => terminal.id === config.terminals.selected?.id,
+    )?.name;
+
+    Sentry.setTag("terminal", terminalName);
+    Sentry.setUser({
+      id: config.user.id,
+      email: config.user.email,
+    });
+    setCurrentUser({
+      email: config.user.email,
+      name: terminalName,
+    });
+
+    onCleanup(() => {
+      Sentry.setTag("terminal", undefined);
+      Sentry.setUser(null);
+      setCurrentUser(undefined);
+    });
+  });
+
   return (
-    <ConfigContext.Provider value={() => context.data}>
-      <UserSettingsContext.Provider value={userSettings}>
-        <MqttContext.Provider value={mqtt}>
-          <Navbar setReadyForNext={setReadyForNext} />
+    <HotkeysProvider
+      defaultOptions={{ hotkey: { preventDefault: true, ignoreInputs: false } }}
+    >
+      <MultiProvider
+        values={[
+          [ConfigContext, () => context.data],
+          [UserSettingsContext, userSettings],
+          [MqttContext, mqtt],
+        ]}
+      >
+        <Navbar setReadyForNext={setReadyForNext} />
 
-          <Container>
-            <Switch fallback={<ContextLoading />}>
-              <Match when={search().terminal === undefined}>
-                <TerminalSelection />
-              </Match>
-              <Match when={context.isEnabled && context.isFetched}>
-                <MqttConnecting mqtt={mqtt()} />
+        <Container>
+          <Switch fallback={<ContextLoading />}>
+            <Match when={search().terminal === undefined}>
+              <TerminalSelection />
+            </Match>
+            <Match when={context.isEnabled && context.isFetched}>
+              <MqttConnecting mqtt={mqtt()} />
 
-                <Onsite
-                  readyForNext={readyForNext()}
-                  setReadyForNext={setReadyForNext}
-                />
-              </Match>
-            </Switch>
-          </Container>
+              <Onsite
+                readyForNext={readyForNext()}
+                setReadyForNext={setReadyForNext}
+              />
+            </Match>
+          </Switch>
+        </Container>
 
-          <Portal>
-            <Toast.Region>
-              <Toast.List as="div" class="toast-container end-0 bottom-0 p-3" />
-            </Toast.Region>
-          </Portal>
-        </MqttContext.Provider>
-      </UserSettingsContext.Provider>
-    </ConfigContext.Provider>
+        <Portal>
+          <Toast.Region>
+            <Toast.List as="div" class="toast-container end-0 bottom-0 p-3" />
+          </Toast.Region>
+        </Portal>
+      </MultiProvider>
+    </HotkeysProvider>
   );
 };
 
@@ -129,10 +166,31 @@ export const Route = createFileRoute("/registration/onsite/admin")({
   loaderDeps: ({ search: { terminal } }) => ({ terminal }),
   loader: ({ deps: { terminal }, context: { queryClient } }) => {
     if (terminal) {
-      queryClient.ensureQueryData(contextQueryOptions(terminal));
+      return queryClient.ensureQueryData(contextQueryOptions(terminal));
     } else {
-      queryClient.ensureQueryData(terminalQueryOptions());
+      return queryClient.ensureQueryData(terminalQueryOptions());
     }
+  },
+  head: ({ loaderData }) => {
+    const meta = [];
+
+    if (
+      loaderData &&
+      "selected" in loaderData.terminals &&
+      loaderData.terminals.selected
+    ) {
+      const selectedId = loaderData.terminals.selected.id;
+      const terminalName =
+        loaderData.terminals.available.find(
+          (terminal) => terminal.id == selectedId,
+        )?.name || "Unknown";
+
+      meta.push({ title: `${terminalName} · Onsite Registration Admin` });
+    } else {
+      meta.push({ title: "Onsite Registration Admin" });
+    }
+
+    return { meta };
   },
   component: OnsiteAdmin,
 });

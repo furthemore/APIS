@@ -7,6 +7,7 @@ import "vite/modulepreload-polyfill";
 import "./index.scss";
 import { queryClient } from "./queries";
 import { routeTree } from "./routeTree.gen";
+import { initSentry } from "./sentry";
 
 const router = createRouter({
   routeTree,
@@ -21,6 +22,8 @@ declare module "@tanstack/solid-router" {
     router: typeof router;
   }
 }
+
+initSentry();
 
 const rootElement = document.getElementById("root")!;
 render(
