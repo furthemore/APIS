@@ -987,8 +987,10 @@ def onsite_add_to_cart(request):
 
     try:
         badge_ids = [int(badge_id) for badge_id in badge_ids]
-    except ValueError as ex:
-        return JsonResponse({"success": False, "reason": str(ex)}, status=400)
+    except ValueError:
+        return JsonResponse(
+            {"success": False, "reason": "Unexpected badge ID value"}, status=400
+        )
 
     badges = badges = Badge.objects.filter(id__in=badge_ids)
 
