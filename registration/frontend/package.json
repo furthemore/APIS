@@ -9,7 +9,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@kobalte/core": "^0.13.11",
-    "@sentry/solid": "^10.39.0",
+    "@sentry/solid": "^10.40.0",
     "@solid-primitives/context": "^0.3.2",
     "@solid-primitives/date": "^2.1.6",
     "@solid-primitives/history": "^0.2.3",
