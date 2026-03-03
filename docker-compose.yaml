@@ -15,6 +15,20 @@ services:
       - postgres
       - redis
 
+  worker:
+    image: ghcr.io/furthemore/apis:latest
+    command: worker
+    build: .
+    restart: always
+    volumes:
+      - ./registration:/app/registration
+      - ./fm_eventmanager/settings.py.docker:/app/fm_eventmanager/settings.py
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     image: postgres:16
     restart: always
@@ -37,7 +51,7 @@ services:
     profiles: [monitoring]
     restart: unless-stopped
     image: danihodovic/celery-exporter
-    cmd: --broker-url=redis://redis/2
+    command: --broker-url=redis://redis/2
     ports:
       - 9808:9808
 
