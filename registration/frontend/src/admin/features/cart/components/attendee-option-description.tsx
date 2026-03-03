@@ -21,7 +21,7 @@ export const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = (
           }
         >
           {` - `}
-          <span class="has-text-weight-bold">
+          <span class="fw-semibold">
             <Switch>
               <Match when={props.item.optionExtraType === "ShirtSizes"}>
                 {getShirtSizeName(config(), props.item.optionValue)}
@@ -34,7 +34,7 @@ export const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = (
         </Show>
       </div>
       <Show when={props.item.optionExtraType === "string"}>
-        <div class="has-text-weight-bold">{props.item.optionValue}</div>
+        <div class="fw-semibold">{props.item.optionValue}</div>
       </Show>
     </td>
   );
