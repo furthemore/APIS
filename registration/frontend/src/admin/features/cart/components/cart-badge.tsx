@@ -203,7 +203,7 @@ export const CartBadge: Component<{
                   <td colSpan={3}>
                     <span>
                       {`Staff Shirt – `}
-                      <span class="has-text-weight-semibold">
+                      <span class="fw-semibold">
                         {props.badge.staff?.shirtSize || "None"}
                       </span>
                     </span>

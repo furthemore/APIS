@@ -122,7 +122,7 @@ export const CartEntries: Component<{
                         {cleanMoneyAmount(props.entries?.orgDonation)}
                       </td>
                     </tr>
-                    <tr class="has-text-weight-semibold">
+                    <tr class="fw-semibold">
                       <td>Total:</td>
                       <td class="text-end">
                         {cleanMoneyAmount(props.entries?.total)}

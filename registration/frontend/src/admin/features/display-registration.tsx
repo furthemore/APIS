@@ -10,6 +10,7 @@ import {
 import { type AttendeeDetails, useGetToken } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { Button } from "@components/button";
 
 export const DisplayRegistrationButton: Component<
   {
@@ -22,8 +23,6 @@ export const DisplayRegistrationButton: Component<
 
   const regToken = useGetToken();
 
-  const isLoading = () => regToken.isPending;
-
   const [customProps, buttonProps] = splitProps(props, ["children", "details"]);
 
   const display = async () => {
@@ -34,14 +33,14 @@ export const DisplayRegistrationButton: Component<
 
   return (
     <Show when={config()?.terminals.selected?.features.prompt}>
-      <button
+      <Button
         type="button"
+        loading={regToken.isPending}
         {...buttonProps}
-        classList={{ "is-loading": isLoading() }}
         onClick={() => display()}
       >
         {customProps.children}
-      </button>
+      </Button>
     </Show>
   );
 };

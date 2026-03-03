@@ -154,7 +154,7 @@ export const AttendeeSearch: Component<{
   return (
     <div class="card flush-table mb-3">
       <div class="card-header">
-        <div class="row align-items-center">
+        <div class="row align-items-center g-1">
           <div class="col">
             <h5 class="card-heading mb-0">
               <IconAndLabel children="Attendees" icon={faPeopleLine} fw />
@@ -162,10 +162,11 @@ export const AttendeeSearch: Component<{
           </div>
 
           <div class="col-auto">
-            <DisplayRegistrationButton class="btn btn-secondary btn-sm me-1">
+            <DisplayRegistrationButton class="btn btn-secondary btn-sm">
               <IconAndLabel children="Prompt" icon={faClipboardUser} />
             </DisplayRegistrationButton>
-
+          </div>
+          <div class="col-auto">
             <a
               href="/registration/onsite"
               target="register"

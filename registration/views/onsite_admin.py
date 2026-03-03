@@ -992,7 +992,7 @@ def onsite_add_to_cart(request):
             {"success": False, "reason": "Unexpected badge ID value"}, status=400
         )
 
-    badges = badges = Badge.objects.filter(id__in=badge_ids)
+    badges = Badge.objects.filter(id__in=badge_ids)
 
     if len(badge_ids) > 1:
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(badge_ids)])
