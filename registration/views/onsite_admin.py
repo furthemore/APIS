@@ -7,7 +7,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
-from typing import List, Optional, Union
+from typing import Iterable, List, Optional, Union
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
 from django.contrib.postgres.search import TrigramSimilarity
 from django.core.signing import TimestampSigner
+from django.db import transaction
 from django.db.models import Case, F, Func, Q, Sum, Value, When
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
@@ -27,6 +28,7 @@ from django.views.decorators.http import require_POST, require_safe
 
 from registration import admin, mqtt, payments
 from registration.models import (
+    AttendeeOptions,
     Badge,
     Cashdrawer,
     Discount,
@@ -805,16 +807,19 @@ def get_discount_dict(discount):
     return None
 
 
-def get_line_items(attendee_options):
+def get_line_items(attendee_options: Iterable[AttendeeOptions]):
     out = []
     for option in attendee_options:
         option_dict = {
+            "id": option.id,
             "item": option.option.optionName,
             "price": option.option.optionPrice,
             "quantity": 1,
             "total": option.option.optionPrice,
             "optionExtraType": option.option.optionExtraType,
             "optionValue": option.optionValue,
+            "requiresFulfillment": option.option.requires_fulfillment,
+            "fulfilledAt": option.fulfilled_at,
         }
 
         if option.option.optionExtraType == "int":
@@ -851,7 +856,7 @@ def build_result(cart):
         effectiveLevel = None
         for item in oi:
             level = item.priceLevel
-            attendee_options.append(get_line_items(item.getOptions()))
+            attendee_options.extend(get_line_items(item.getOptions()))
             level_subtotal += get_order_item_option_total(item.getOptions())
 
             if level:
@@ -1277,6 +1282,7 @@ def oauth_square(request):
 
 
 @require_POST
+@staff_member_required
 def print_receipts(request):
     terminal = get_active_terminal(request)
     if not terminal:
@@ -1321,5 +1327,45 @@ def print_receipts(request):
                         "reason": "Got error attempting to print receipt",
                     }
                 )
+
+    return JsonResponse({"success": True})
+
+
+@require_POST
+@staff_member_required
+def fulfill(request):
+    attendee_option_id = request.POST.get("id")
+
+    with transaction.atomic():
+        try:
+            attendee_option = (
+                AttendeeOptions.objects.select_for_update()
+                .filter(pk=attendee_option_id)
+                .first()
+            )
+        except AttendeeOptions.DoesNotExist:
+            return JsonResponse({"success": False, "reason": "Option ID is unknown"})
+
+        if attendee_option.fulfilled_at:
+            return JsonResponse(
+                {"success": False, "reason": "Option was already fulfilled"}
+            )
+
+        if not attendee_option.option.requires_fulfillment:
+            return JsonResponse(
+                {"success": False, "reason": "Option does not require fulfillment"}
+            )
+
+        if attendee_option.orderItem.badge.effectiveLevel() == Badge.UNPAID:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "reason": "Option cannot be fulfilled for unpaid order",
+                }
+            )
+
+        attendee_option.fulfilled_at = timezone.now()
+        attendee_option.fulfilled_by = request.user
+        attendee_option.save()
 
     return JsonResponse({"success": True})

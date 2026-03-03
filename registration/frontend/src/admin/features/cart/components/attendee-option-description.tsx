@@ -3,7 +3,7 @@ import { type Component, Match, Show, Switch, useContext } from "solid-js";
 import type { AttendeeOption } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
 
-import { cleanMoneyAmount, getShirtSizeName } from "../utils";
+import { getShirtSizeName } from "../utils";
 
 export const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = (
   props,
@@ -11,9 +11,9 @@ export const AttendeeOptionDescription: Component<{ item: AttendeeOption }> = (
   const config = useContext(ConfigContext)!;
 
   return (
-    <td>
+    <td class="badge-name">
       <div title={props.item.reason}>
-        {`${props.item.quantity} × ${props.item.item} (${cleanMoneyAmount(props.item.price)}/ea)`}
+        {`${props.item.quantity} × ${props.item.item}`}
         <Show
           when={
             props.item.optionExtraType === "ShirtSizes" ||

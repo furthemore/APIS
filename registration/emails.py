@@ -29,7 +29,7 @@ def send_registration_email(order, email, send_vip=True):
     order_dict = {}
     has_minors = False
     for oi in order_items:
-        ao = AttendeeOptions.objects.filter(orderItem=oi)
+        ao = AttendeeOptions.objects.filter(orderItem=oi, option__public=True)
         order_dict[oi] = ao
         if oi.badge.isMinor():
             has_minors = True
@@ -276,7 +276,7 @@ def send_dealer_assistant_registration_invite(assistant):
 
 def send_dealer_payment_email(dealer, order):
     orderItem = OrderItem.objects.filter(order=order).first()
-    options = AttendeeOptions.objects.filter(orderItem=orderItem)
+    options = AttendeeOptions.objects.filter(orderItem=orderItem, option__public=True)
     data = {
         "order": order,
         "dealer": dealer,

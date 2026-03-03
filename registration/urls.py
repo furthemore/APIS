@@ -292,6 +292,11 @@ urlpatterns = [
         registration.views.onsite_admin.attendee_details,
         name="onsite_attendee_details",
     ),
+    path(
+        "onsite/admin/fulfill",
+        registration.views.onsite_admin.fulfill,
+        name="onsite_fulfill",
+    ),
     re_path(r"^cart/?$", registration.views.cart.get_cart, name="cart"),
     re_path(r"^cart/add/?$", registration.views.cart.add_to_cart, name="add_to_cart"),
     re_path(
