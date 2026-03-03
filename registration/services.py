@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Iterator, List, Optional, Union
+from typing import Dict, Iterable, Iterator, List, Optional, Tuple, Union
 
 from registration.models import AttendeeOptions, OrderItem, PriceLevelOption
 
@@ -34,12 +34,22 @@ class CreateAttendeeOptions:
             value = self._default_option_value(price_level_option)
             entries.append((price_level_option, value))
 
-        attendee_options = [
-            AttendeeOptions(orderItem=self.order_item, option=option, optionValue=value)
-            for option, value in entries
-        ]
+        return self._create_entries(entries)
 
-        return AttendeeOptions.objects.bulk_create(attendee_options)
+    def add_missing_private_options(
+        self, current_options: List[AttendeeOptions]
+    ) -> List[AttendeeOptions]:
+        current_option_ids = {option.option_id for option in current_options}
+
+        entries = []
+        for option in self.private_options():
+            if option.id in current_option_ids:
+                continue
+
+            value = self._default_option_value(option)
+            entries.append((option, value))
+
+        return self._create_entries(entries)
 
     def get_option(
         self, option_id: Union[str, int], only_public: bool = True
@@ -52,6 +62,16 @@ class CreateAttendeeOptions:
         for price_level_option in self.price_level_options.values():
             if not price_level_option.public:
                 yield price_level_option
+
+    def _create_entries(
+        self, entries: Iterable[Tuple[AttendeeOptions, str]]
+    ) -> List[AttendeeOptions]:
+        attendee_options = (
+            AttendeeOptions(orderItem=self.order_item, option=option, optionValue=value)
+            for option, value in entries
+        )
+
+        return AttendeeOptions.objects.bulk_create(attendee_options)
 
     @staticmethod
     def _default_option_value(price_level_option: PriceLevelOption) -> str:

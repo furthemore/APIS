@@ -33,6 +33,7 @@ import registration.views.onsite_admin
 from registration import mqtt, payments
 from registration.forms import FirebaseForm
 from registration.models import *
+from registration.services import CreateAttendeeOptions
 from registration.views import webhooks
 
 from . import printing
@@ -1221,11 +1222,29 @@ class AttendeeAdmin(NestedModelAdmin):
 admin.site.register(AttendeeOptions)
 
 
+@admin.action(description="Attach missing private price level options")
+def attach_private_level_options(modeladmin, request, queryset: QuerySet[OrderItem]):
+    queryset = queryset.prefetch_related(
+        "priceLevel__priceLevelOptions", "attendeeoptions_set"
+    )
+
+    total = 0
+
+    for order_item in queryset.iterator(chunk_size=50):
+        options = list(order_item.attendeeoptions_set.all())
+        created = CreateAttendeeOptions(order_item).add_missing_private_options(options)
+        total += len(created)
+
+    messages.success(request, f"Successfully created {total} options")
+
+
 @admin.register(OrderItem)
 class OrderItemAdmin(ImportExportModelAdmin):
     raw_id_fields = ("order", "badge")
     readonly_fields = ("enteredBy",)
     list_select_related = ("badge", "order")
+    list_filter = ("badge__event",)
+    actions = [attach_private_level_options]
 
     def save_model(self, request, obj, form, change):
         obj.enteredBy = request.user.username
