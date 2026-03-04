@@ -12,8 +12,10 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   worker:
     image: ghcr.io/furthemore/apis:latest
@@ -26,8 +28,10 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
     image: postgres:16
@@ -36,10 +40,24 @@ services:
       - database.env
     volumes:
       - database-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
 
-  redis:
-    image: redis:6
-    restart: always
+redis:
+  image: redis:8
+  restart: always
+  command: redis-server --appendonly yes --save 60 1 --maxmemory 1gb
+  volumes:
+    - redis-data:/data
+  healthcheck:
+    test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+    interval: 1s
+    timeout: 3s
+    retries: 5
 
   gotenberg:
     profiles: [gotenberg]
@@ -93,4 +111,5 @@ services:
 
 volumes:
   database-data:
+  redis-data
   influxdb:
