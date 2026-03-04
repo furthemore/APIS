@@ -47,4 +47,4 @@ RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
 
 RUN DJANGO_SECRET_KEY=collectstatic ./manage.py collectstatic --noinput
 
-CMD ["/app/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
