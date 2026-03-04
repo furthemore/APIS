@@ -111,5 +111,5 @@ redis:
 
 volumes:
   database-data:
-  redis-data
+  redis-data:
   influxdb:
