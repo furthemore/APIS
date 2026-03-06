@@ -188,14 +188,13 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASS', 'secret'),
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': os.getenv('DATABASE_PORT', '5432'),
+        'OPTIONS': {
+            'pool': eval_bool(os.getenv('DJANGO_DATABASE_POOL', 'True'))
+        }
     }
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
-# Enable persistent database connections
-# https://docs.djangoproject.com/en/3.2/ref/databases/#persistent-database-connections
-CONN_MAX_AGE = os.getenv("DJANGO_CONN_MAX_AGE", 0)
 
 
 # Cache
