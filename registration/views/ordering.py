@@ -1,14 +1,13 @@
 import json
 import logging
-import time
 from json import JSONDecodeError
 
 from django.core.signing import TimestampSigner
 from django.http import JsonResponse
 from idempotency_key.decorators import idempotency_key
 
-from registration import mqtt
-import registration.emails
+from registration import mqtt, tasks
+from registration.forms import OrderForm
 from registration.models import *
 from registration.payments import charge_payment
 
@@ -30,34 +29,31 @@ def do_checkout(
     event = Event.objects.get(default=True)
     reference = common.get_unique_confirmation_token(Order)
 
-    order = Order(
-        total=Decimal(total),
-        reference=reference,
-        discount=discount,
-        orgDonation=donationOrg,
-        charityDonation=donationCharity,
+    form = OrderForm(
+        collect_billing_address=event.collectBillingAddress,
+        data={
+            "total": Decimal(total),
+            "reference": reference,
+            "discount": discount,
+            "orgDonation": donationOrg,
+            "charityDonation": donationCharity,
+            "billingName": " ".join(
+                [billingData.get(k) for k in ["cc_firstname", "cc_lastname"]]
+            ),
+            "billingAddress1": billingData.get("address1"),
+            "billingAddress2": billingData.get("address2"),
+            "billingCity": billingData.get("city"),
+            "billingState": billingData.get("state"),
+            "billingCountry": billingData.get("country"),
+            "billingEmail": billingData.get("email"),
+            "billingPostal": billingData.get("postal"),
+        },
     )
 
-    # Address collection is marked as required by event
-    if event.collectBillingAddress:
-        try:
-            order.billingName = "{0} {1}".format(
-                billingData["cc_firstname"], billingData["cc_lastname"]
-            )
-            order.billingAddress1 = billingData["address1"]
-            order.billingAddress2 = billingData["address2"]
-            order.billingCity = billingData["city"]
-            order.billingState = billingData["state"]
-            order.billingCountry = billingData["country"]
-            order.billingEmail = billingData["email"]
-            order.billingPostal = billingData["postal"]
-        except KeyError as e:
-            common.abort(
-                400,
-                "Address collection is required, but request is missing required field: {0}".format(
-                    e
-                ),
-            )
+    if not form.is_valid():
+        return False, {"errors": [{"code": f"{k} - {v}"} for k, v in form.errors]}, None
+
+    order: Order = form.save(commit=False)
 
     status, response = charge_payment(order, billingData, request)
 
@@ -77,7 +73,7 @@ def do_checkout(
         if discount:
             discount.used = discount.used + 1
             discount.save()
-        return True, "", order
+        return True, {"errors": []}, order
 
     return False, response, order
 
@@ -257,7 +253,9 @@ def checkout(request):
 
     # Safety valve (in case session times out before checkout is complete)
     if len(session_items) == 0 and len(order_items) == 0:
-        common.abort(400, "Session expired or no session is stored for this client")
+        return common.abort(
+            400, "Session expired or no session is stored for this client"
+        )
 
     try:
         post_data = json.loads(request.body)
@@ -289,19 +287,7 @@ def checkout(request):
         if existing_order_item:
             add_attendee_to_assistant(request, existing_order_item.badge.attendee)
         common.clear_session(request)
-        try:
-            registration.emails.send_registration_email(order, order.billingEmail)
-        except Exception as e:
-            logger.error("Error sending RegistrationEmail - zero sum.")
-            logger.exception(e)
-            registration_email = common.get_registration_email(event)
-            return common.abort(
-                400,
-                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
-                "receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                    registration_email
-                ),
-            )
+        tasks.send_registration_email_task.delay(order.id, order.billingEmail)
         return common.success()
 
     porg = Decimal(post_data.get("orgDonation") or "0.00")
@@ -354,21 +340,7 @@ def checkout(request):
         cart_items = Cart.objects.filter(id__in=session_items)
         cart_items.delete()
         common.clear_session(request)
-        try:
-            registration.emails.send_registration_email(order, order.billingEmail)
-        except Exception as e:
-            event = Event.objects.get(default=True)
-            registration_email = common.get_registration_email(event)
-
-            logger.error("Error sending RegistrationEmail.")
-            logger.exception(e)
-            return common.abort(
-                500,
-                "Your payment succeeded but we may have been unable to send you a confirmation email. If you do not "
-                "receive one within the next hour, please contact {0} to get your confirmation number.".format(
-                    registration_email
-                ),
-            )
+        tasks.send_registration_email_task.delay(order.id, order.billingEmail)
 
         notify_terminal(request, order)
 
@@ -413,7 +385,9 @@ def notify_terminal(request, order):
             order_item = OrderItem.objects.filter(order_id=order.id).first()
             if order_item:
                 mqtt.send_mqtt_message(
-                    mqtt.get_topic("web/registration/completed", name=data_obj["terminal"]),
+                    mqtt.get_topic(
+                        "web/registration/completed", name=data_obj["terminal"]
+                    ),
                     {"badgeId": order_item.badge_id},
                 )
     except Exception as ex:
