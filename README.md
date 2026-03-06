@@ -11,6 +11,7 @@ Stack:
   + PostgreSQL 16.10
   + Bootstrap 3/jQuery 1.12
   + SolidJS
+  + MQTT event passing
 
 ## Features
   + Take payments for pre-registration using [Square][square], both online
@@ -118,6 +119,10 @@ The following was tested on a fresh installation of Ubuntu 20.04.
 
 [square]: https://square.com/
 [ipad]: https://github.com/furthemore/APIS-Register-Swift
+
+### Production use
+For production use you will also need an MQTT broker for some features like taking on-site payments with the iPad application.
+Please see [this documentation](https://github.com/furthemore/APIS/wiki/MQTT-Configuration) for notes about configuring a broker.
 
 ## Development
 
