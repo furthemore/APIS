@@ -76,11 +76,7 @@
     <label for="country" class="col-sm-3 control-label">Country/ZIP <span style="color:red;">*</span></label>
     <div class="col-sm-6">
         <select autocomplete="country" class="form-control bfh-countries"
-                {% if event.venue %}
-                data-country="{{ attendee.country|default:event.venue.country }}"
-                {% else %}
-                data-country="{{ attendee.country }}"
-                {% endif %}
+                data-country="{% if attendee.country %}{{ attendee.country }}{% elif event.venue and event.venue.country %}{{ event.venue.country }}{% else %}US{% endif %}"
                 id="country" name="country" required></select>
     </div>
     <div class="col-sm-3">
@@ -146,7 +142,9 @@
         </div>
 
         <div class="col-sm-3">
-          <input type="number" name="bday" id="bday" class="form-control" placeholder="Day" value="{{attendee.birthdate|date:"d"}}" max="31" min="1" maxlength="2" required autocomplete="bday-day" />
+          <select name="bday" id="bday" class="form-control" required autocomplete="bday-day" disabled>
+            <option value="">Day</option>
+          </select>
         </div>
 
         <input type="hidden" name="birthDate" id="birthDate" value="{{attendee.birthdate|date:"Y-m-d"}}{{ attendee.dob }}">
