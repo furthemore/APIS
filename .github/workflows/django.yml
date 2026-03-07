@@ -61,7 +61,7 @@ jobs:
           npm run build
       - name: Run Tests
         run: |
-          cp fm_eventmanager/settings.py.travis fm_eventmanager/settings.py
+          cp fm_eventmanager/settings.py.ci fm_eventmanager/settings.py
           uv run python ./manage.py collectstatic --noinput
           uv run coverage run ./manage.py test registration
         env:

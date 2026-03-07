@@ -12,20 +12,104 @@ services:
     env_file:
       - .env
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    image: ghcr.io/furthemore/apis:latest
+    command: worker
+    build: .
+    restart: always
+    volumes:
+      - ./registration:/app/registration
+      - ./fm_eventmanager/settings.py.docker:/app/fm_eventmanager/settings.py
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
-    image: postgres
+    image: postgres:16
     restart: always
     env_file:
       - database.env
     volumes:
       - database-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
 
   redis:
-    image: redis
+    image: redis:8
     restart: always
+    command: redis-server --appendonly yes --save 60 1 --maxmemory 1gb
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  gotenberg:
+    profiles: [gotenberg]
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+
+  # Optional Celery Prometheus exporter for real-time metrics
+  celery-exporter:
+    profiles: [monitoring]
+    restart: unless-stopped
+    image: danihodovic/celery-exporter
+    command: --broker-url=redis://redis/2
+    ports:
+      - 9808:9808
+
+  influxdb:
+    profiles: [monitoring]
+    image: influxdb:1.12-alpine
+    volumes:
+      - influxdb:/var/lib/influxdb
+    restart: unless-stopped
+    healthcheck:
+      test: "curl -f http://localhost:8086/ping"
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    environment:
+      - "INFLUXDB_DB=apis"
+    ports:
+      - "8086:8086/udp"
+      - "8086:8086"
+
+  cadvisor:
+    profiles: [monitoring]
+    image: gcr.io/cadvisor/cadvisor
+    container_name: monitoring_cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+      - /dev/disk:/dev/disk
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/kmsg:/dev/kmsg:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - 8079:8080
 
 volumes:
   database-data:
+  redis-data:
+  influxdb:
