@@ -45,4 +45,4 @@ jobs:
         script: |
           cd /opt/docker
           docker-compose pull
-          docker-compose up -d
+          docker-compose up -d apis-${{ github.event.inputs.environment }} apis-${{ github.event.inputs.environment }}-worker
