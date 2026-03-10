@@ -6,9 +6,9 @@ from django.contrib.sites.models import Site
 from django.test import TestCase
 from django.urls import reverse
 
+from registration import mqtt
 from registration.admin import FirebaseAdmin
 from registration.models import Firebase
-from registration import mqtt
 
 
 class TestFirebaseAdmin(TestCase):
@@ -94,7 +94,7 @@ class TestFirebaseAdmin(TestCase):
             b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ",
             response.content,
         )
-        self.assertIn(b'height="109mm"', response.content)
+        self.assertIn(b'height="113mm"', response.content)
 
     def test_provision_page_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))

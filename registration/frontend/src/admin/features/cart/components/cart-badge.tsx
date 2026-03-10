@@ -307,7 +307,7 @@ export const CartBadge: Component<{
               <ContextMenu.Item
                 as="button"
                 class="dropdown-item"
-                onClick={() => createFromBadge("clone", false)}
+                onClick={() => createFromBadge("clone", true)}
               >
                 Prompt Child
               </ContextMenu.Item>
