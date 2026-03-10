@@ -160,7 +160,7 @@ export const Scan: Component<{
       </Show>
 
       <Show when={store.url}>
-        <div class="card-body">
+        <div class="card-body pb-0">
           <UrlEntry
             url={store.url!}
             remove={() => setStore("url", undefined)}

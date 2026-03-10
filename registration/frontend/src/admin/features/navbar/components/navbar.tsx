@@ -30,6 +30,7 @@ export const Navbar: Component<{
   const config = useContext(ConfigContext)!;
 
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = createSignal(false);
+  const [show, setShow] = createSignal(false);
 
   const selectedTerminalName = () =>
     config()?.terminals.available.find(
@@ -43,7 +44,18 @@ export const Navbar: Component<{
           APIS Onsite Admin
         </Link>
 
-        <div class="navbar-collapse collapse flex-grow-0">
+        <button
+          class="navbar-toggler"
+          type="button"
+          onClick={() => setShow((val) => !val)}
+        >
+          <span class="navbar-toggler-icon" />
+        </button>
+
+        <div
+          class="navbar-collapse collapse flex-grow-0"
+          classList={{ show: show() }}
+        >
           <ul class="navbar-nav">
             <Show when={config()}>
               <li class="nav-item dropdown">

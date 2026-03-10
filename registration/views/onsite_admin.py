@@ -148,6 +148,7 @@ def onsite_admin_context(request):
                 {"id": terminal.id, "name": terminal.name} for terminal in terminals
             ],
         },
+        "messages": get_messages_list(request),
     }
 
     return JsonResponse(context)
@@ -168,7 +169,6 @@ class SearchFields:
                 return SearchFields(badge_ids=badge_ids, query="")
             except ValueError:
                 query = query.replace(badge_nums.group(0), "")
-                pass
 
         birthday = re.search(r"birthday:([0-9-]{10}) ?", query)
         if birthday:

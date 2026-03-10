@@ -16,6 +16,7 @@ import {
   faWindowClose,
 } from "@fortawesome/free-solid-svg-icons";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
+import { createPresence } from "@solid-primitives/presence";
 import { type Hotkey, createHotkey } from "@tanstack/solid-hotkeys";
 import Fa from "solid-fa";
 import {
@@ -179,11 +180,16 @@ export const Actions: Component<{
     }
   });
 
+  const [showDropdown, setShowDropdown] = createSignal(false);
+  const { isMounted } = createPresence(showDropdown, {
+    transitionDuration: 25,
+  });
+
   return (
     <>
       <CashdrawerStatus signal={[showCashStatus, setShowCashStatus]} />
 
-      <DropdownMenu>
+      <DropdownMenu forceMount={isMounted()} onOpenChange={setShowDropdown}>
         <DropdownMenu.Trigger as="button" class="nav-link dropdown-toggle">
           <Fa icon={faCog} />
         </DropdownMenu.Trigger>

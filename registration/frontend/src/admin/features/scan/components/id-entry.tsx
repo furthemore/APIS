@@ -93,7 +93,7 @@ export const IdEntry: Component<{ data: IdData; remove(): void }> = (props) => {
         <div>
           <DisplayRegistrationButton
             details={attendeeDetails}
-            class="btn btn-secondary me-1"
+            class="btn btn-secondary me-1 mb-1"
           >
             <IconAndLabel
               children="Prompt Registration"
