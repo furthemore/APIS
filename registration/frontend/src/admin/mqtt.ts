@@ -107,7 +107,7 @@ export default class MqttClient {
       try {
         await this.client?.subscribeAsync(wildcardTopic);
         await this.client?.publishAsync(
-          this.getPrefixedTopic("presence"),
+          this.getPrefixedTopic("web/presence"),
           JSON.stringify(this.getClientId()),
         );
       } catch (err) {
@@ -175,7 +175,7 @@ export default class MqttClient {
       switch (strippedTopic) {
         case "authorize/square":
           if (payload?.["url"] && payload?.["state"]) {
-            document.cookie = `square_oauth_state=${payload["state"]}; path=/; secure; httpOnly`;
+            document.cookie = `square_oauth_state=${payload["state"]}; path=/; secure`;
             globalThis.open(payload["url"], "square_oauth");
           }
           break;
