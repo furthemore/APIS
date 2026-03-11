@@ -171,7 +171,8 @@ def send_staff_token_email(modeladmin, request, queryset):
 class StaffInviteAdmin(admin.ModelAdmin):
     actions = [send_staff_token_email]
     list_display = ["email", "token", "sent", "used"]
-    readonly_fields = ["token"]
+    readonly_fields = ["token", "used", "usedDate"]
+    fields = ["token", "email", "validUntil", "ignore_time_window", "used", "usedDate", "sent"]
 
 
 @admin.action(description="Send approval email and payment instructions")

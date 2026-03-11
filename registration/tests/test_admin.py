@@ -756,11 +756,8 @@ class TestStaffInvite(TestCase):
         logged_in = self.client.login(username="admin", password="admin")
         self.assertTrue(logged_in)
 
-        # Build out the create temp token form
-        token = get_registration_token()
+        # Build out the create staff invite form
         form_data = {
-            "token": token,
-            "initial-token": token,
             "email": test_email_address,
             "ignore_time_window": "on",
             "validUntil_0": "2025-01-27",
@@ -792,6 +789,8 @@ class TestStaffInvite(TestCase):
         # Make sure we weren't sent back to the create form
         form = soup.find("form", id="staffinvite_form")
         self.assertIsNone(form)
+
+        token = StaffInvite.objects.get(email=test_email_address).token
 
         # Get the response message
         content = soup.find("main", attrs={"class": "content"})
