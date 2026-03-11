@@ -24,7 +24,7 @@ from registration.models import (
     PriceLevel,
     ShirtSizes,
     Staff,
-    get_token,
+    get_random_token,
 )
 
 logger = logging.getLogger("django.request")
@@ -144,7 +144,7 @@ def success(status=200, reason=None):
 
 
 def get_confirmation_token():
-    return get_token(6)
+    return get_random_token(6)
 
 
 def get_unique_confirmation_token(model):

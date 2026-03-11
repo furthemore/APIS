@@ -13,7 +13,7 @@ from registration.models import (
     Event,
     Order,
     Staff,
-    TempToken,
+    StaffInvite,
 )
 from registration.templatetags import site as site_tags
 from registration.tests.common import DEFAULT_EVENT_ARGS
@@ -58,7 +58,7 @@ class EmailTestCase(TestCase):
             attendee=self.attendee, event=self.event, badgeName="DisStaff"
         )
         self.badge.save()
-        self.token = TempToken(email=self.attendee.email, validUntil="2048-12-12")
+        self.token = StaffInvite(email=self.attendee.email, validUntil="2048-12-12")
         self.order = Order(
             total=60, reference="HUGBUG", billingEmail=self.attendee.email
         )
@@ -84,7 +84,7 @@ class TestStaffEmails(EmailTestCase):
 
         # Make sure the correct endpoint was rendered
         expected_path = reverse("registration:new_staff", args=(self.token.token,))
-        expected_fixed_path = f"/registration/newstaff/{self.token.token}/"
+        expected_fixed_path = f"/registration/new-staff/{self.token.token}/"
         self.assertEqual(expected_path, expected_fixed_path)
 
         # Make sure the correct URL was rendered

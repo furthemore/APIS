@@ -145,7 +145,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:add_staff' %}",
+              "url": "{% url 'registration:add_returning_staff' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");

@@ -73,10 +73,10 @@ def send_staff_promotion_email_task(self, staff_id):
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def send_new_staff_email_task(self, token_id):
-    from registration.models import TempToken
+    from registration.models import StaffInvite
 
     try:
-        token = TempToken.objects.get(id=token_id)
+        token = StaffInvite.objects.get(id=token_id)
         emails.send_new_staff_email(token)
     except Exception as exc:
         logger.exception("Failed to send new staff email for token %s", token_id)

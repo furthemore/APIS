@@ -70,7 +70,7 @@
           $.ajax({
               "type": "POST",
               "dataType": "json",
-              "url": "{% url 'registration:find_staff' %}",
+              "url": "{% url 'registration:find_returning_staff' %}",
               "data": JSON.stringify(data),
               "beforeSend": function (xhr, settings) {
                   console.log("Before Send");
@@ -80,7 +80,7 @@
                   $("#errorModal").modal('show');
               },
               "success": function () {
-                  window.location = "{% url 'registration:info_staff' %}";
+                  window.location = "{% url 'registration:info_returning_staff' %}";
               }
           });
       }

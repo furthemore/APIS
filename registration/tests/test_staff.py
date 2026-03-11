@@ -20,34 +20,34 @@ ten_days = timedelta(days=10)
 class StaffTestCase(OrdersTestCase):
     def setUp(self):
         super().setUp()
-        self.token = TempToken.objects.create(
+        self.token = StaffInvite.objects.create(
             email="apis-staff-test@mailinator.com",
             validUntil=now + one_hour,
             ignore_time_window=False,
         )
-        self.token_used = TempToken.objects.create(
+        self.token_used = StaffInvite.objects.create(
             email="apis-staff-test@mailinator.com",
             validUntil=now + one_hour,
             used=True,
             ignore_time_window=False,
         )
-        self.token_expired = TempToken.objects.create(
+        self.token_expired = StaffInvite.objects.create(
             email="apis-staff-test@mailinator.com",
             validUntil=now - one_hour,
             ignore_time_window=False,
         )
-        self.token_override = TempToken.objects.create(
+        self.token_override = StaffInvite.objects.create(
             email="apis-staff-test@mailinator.com",
             validUntil=now + one_hour,
             ignore_time_window=True,
         )
-        self.token_used_override = TempToken.objects.create(
+        self.token_used_override = StaffInvite.objects.create(
             email="apis-staff-test@mailinator.com",
             validUntil=now + one_hour,
             used=True,
             ignore_time_window=True,
         )
-        self.token_expired_override = TempToken.objects.create(
+        self.token_expired_override = StaffInvite.objects.create(
             email="apis-staff-test@mailinator.com",
             validUntil=now - one_hour,
             ignore_time_window=True,
@@ -88,18 +88,18 @@ class StaffTestCase(OrdersTestCase):
         )
 
 
-class TestFindStaff(TestCase):
-    def test_find_staff_empty(self):
-        response = self.client.post(reverse("registration:find_staff"))
+class TestFindReturningStaff(TestCase):
+    def test_find_returning_staff_empty(self):
+        response = self.client.post(reverse("registration:find_returning_staff"))
         self.assertEqual(response.status_code, 400)
 
-    def test_find_staff_404(self):
+    def test_find_returning_staff_404(self):
         body = {
             "email": "foo",
             "token": "bar",
         }
         response = self.client.post(
-            reverse("registration:find_staff"),
+            reverse("registration:find_returning_staff"),
             json.dumps(body),
             content_type="application/json",
         )
@@ -282,45 +282,45 @@ class TestAddNewStaff(StaffTestCase):
         )
 
 
-class TestStaffIndex(StaffTestCase):
-    def test_staff_index(self):
-        response = self.client.get(reverse("registration:staff", args=("foo",)))
+class TestReturningStaff(StaffTestCase):
+    def test_returning_staff(self):
+        response = self.client.get(reverse("registration:returning_staff", args=("foo",)))
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"not yet open", response.content)
-        
+
     @freeze_time(timezone.now() - timedelta(days=20))
-    def test_staff_index_closed_upcoming(self):
-        response = self.client.get(reverse("registration:staff", args=("foo",)))
+    def test_returning_staff_closed_upcoming(self):
+        response = self.client.get(reverse("registration:returning_staff", args=("foo",)))
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"not yet open", response.content)
 
     @freeze_time(timezone.now() + timedelta(days=20))
-    def test_staff_index_closed_ended(self):
-        response = self.client.get(reverse("registration:staff", args=("foo",)))
+    def test_returning_staff_closed_ended(self):
+        response = self.client.get(reverse("registration:returning_staff", args=("foo",)))
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"has ended", response.content)
 
-    def test_staff_done(self):
-        response = self.client.get(reverse("registration:staff_done"))
+    def test_returning_staff_done(self):
+        response = self.client.get(reverse("registration:returning_staff_done"))
         self.assertEqual(response.status_code, 200)
 
 
-class TestInfoStaff(StaffTestCase):
-    def test_info_staff_blank(self):
-        result = self.client.get(reverse("registration:info_staff"))
+class TestInfoReturningStaff(StaffTestCase):
+    def test_info_returning_staff_blank(self):
+        result = self.client.get(reverse("registration:info_returning_staff"))
         self.assertEqual(result.status_code, 200)
 
-    def test_info_staff(self):
+    def test_info_returning_staff(self):
         session = self.client.session
         session["staff_id"] = self.staff.id
         session.save()
-        result = self.client.get(reverse("registration:info_staff"))
+        result = self.client.get(reverse("registration:info_returning_staff"))
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.context["staff"], self.staff)
         self.assertEqual(result.context["paid_total"], 0)
 
 
-class TestAddStaff(StaffTestCase):
+class TestAddReturningStaff(StaffTestCase):
     @tag("square")
     def test_staff(self):
         # Failed lookup
@@ -329,7 +329,7 @@ class TestAddStaff(StaffTestCase):
             "token": self.staff.registrationToken,
         }
         response = self.client.post(
-            reverse("registration:find_staff"),
+            reverse("registration:find_returning_staff"),
             json.dumps(postData),
             content_type="application/json",
         )
@@ -342,7 +342,7 @@ class TestAddStaff(StaffTestCase):
         # Regular staff reg
         postData = {"email": self.attendee.email, "token": self.staff.registrationToken}
         response = self.client.post(
-            reverse("registration:find_staff"),
+            reverse("registration:find_returning_staff"),
             json.dumps(postData),
             content_type="application/json",
         )
@@ -391,7 +391,7 @@ class TestAddStaff(StaffTestCase):
             "event": self.event.name,
         }
         response = self.client.post(
-            reverse("registration:add_staff"),
+            reverse("registration:add_returning_staff"),
             json.dumps(postData),
             content_type="application/json",
         )
@@ -428,7 +428,7 @@ class TestAddStaff(StaffTestCase):
             "token": self.staff2.registrationToken,
         }
         response = self.client.post(
-            reverse("registration:find_staff"),
+            reverse("registration:find_returning_staff"),
             json.dumps(postData),
             content_type="application/json",
         )
@@ -477,7 +477,7 @@ class TestAddStaff(StaffTestCase):
             "event": self.event.name,
         }
         response = self.client.post(
-            reverse("registration:add_staff"),
+            reverse("registration:add_returning_staff"),
             json.dumps(postData),
             content_type="application/json",
         )

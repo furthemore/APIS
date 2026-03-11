@@ -740,7 +740,7 @@ class TestStaffAdmin(AdminTestCase):
         self.assertEqual(Staff.objects.filter(event=self.new_event).count(), 0)
 
 
-class TestTempToken(TestCase):
+class TestStaffInvite(TestCase):
     def setUp(self):
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
@@ -749,7 +749,7 @@ class TestTempToken(TestCase):
         self.admin_user.save()
 
     @patch("registration.emails.send_email")
-    def test_temp_token_send_email(self, mock_send_email):
+    def test_staff_invite_send_email(self, mock_send_email):
         test_email_address = "test-admin@example.net"
 
         # Login to the admin section
@@ -757,7 +757,7 @@ class TestTempToken(TestCase):
         self.assertTrue(logged_in)
 
         # Build out the create temp token form
-        token = getRegistrationToken()
+        token = get_registration_token()
         form_data = {
             "token": token,
             "initial-token": token,
@@ -772,16 +772,16 @@ class TestTempToken(TestCase):
 
         # Get the CSRF token from the form so we can POST properly
         response = self.client.get(
-            reverse("admin:registration_temptoken_add")
+            reverse("admin:registration_staffinvite_add")
         )
         soup = BeautifulSoup(response.content, "html.parser")
-        form = soup.find("form", id="temptoken_form")
+        form = soup.find("form", id="staffinvite_form")
         csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
         form_data["csrfmiddlewaretoken"] = csrfmiddlewaretoken.attrs["value"]
 
         # Create the temp token
         response = self.client.post(
-            reverse("admin:registration_temptoken_add"),
+            reverse("admin:registration_staffinvite_add"),
             form_data,
             follow=True,
         )
@@ -790,7 +790,7 @@ class TestTempToken(TestCase):
         soup = BeautifulSoup(response.content, "html.parser")
 
         # Make sure we weren't sent back to the create form
-        form = soup.find("form", id="temptoken_form")
+        form = soup.find("form", id="staffinvite_form")
         self.assertIsNone(form)
 
         # Get the response message
@@ -798,7 +798,7 @@ class TestTempToken(TestCase):
         message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
         # Standardize quotes
         message = message.replace('“', '"').replace('”', '"')
-        expected_message = f'The temp token "{token}" was added successfully.'
+        expected_message = f'The staff invite "{token}" was added successfully.'
         self.assertEqual(message, expected_message)
 
         # Build out the send staff token email form
@@ -811,7 +811,7 @@ class TestTempToken(TestCase):
 
         # Get the CSRF token from the form so we can POST properly
         response = self.client.get(
-            reverse("admin:registration_temptoken_changelist")
+            reverse("admin:registration_staffinvite_changelist")
         )
         soup = BeautifulSoup(response.content, "html.parser")
         form = soup.find("form", id="changelist-form")
@@ -820,7 +820,7 @@ class TestTempToken(TestCase):
 
         # Send the email
         response = self.client.post(
-            reverse("admin:registration_temptoken_changelist"),
+            reverse("admin:registration_staffinvite_changelist"),
             form_data,
             follow=True,
         )
@@ -844,7 +844,7 @@ class TestTempToken(TestCase):
 
         # Make sure the correct endpoint was rendered
         expected_path = reverse("registration:new_staff", args=(token,))
-        expected_fixed_path = f"/registration/newstaff/{token}/"
+        expected_fixed_path = f"/registration/new-staff/{token}/"
         self.assertEqual(expected_path, expected_fixed_path)
 
         # Make sure the correct URL was rendered
