@@ -25,7 +25,7 @@ def new_staff(request, guid):
     today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
-        return render(request, "registration/staff/staff-new.html", context)
+        return render(request, "registration/staff/new-staff.html", context)
     elif event.staffRegStart >= today:
         context["message"] = "is not yet open. Please stay tuned to slack and email for updates!"
         return render(request, "registration/staff/staff-closed.html", context)
@@ -65,9 +65,9 @@ def info_new_staff(request):
         context["token"] = StaffInvite.objects.get(token=token_value)
     except ObjectDoesNotExist:
         return render(
-            request, "registration/staff/staff-new-payment.html", context, status=404
+            request, "registration/staff/new-staff-payment.html", context, status=404
         )
-    return render(request, "registration/staff/staff-new-payment.html", context)
+    return render(request, "registration/staff/new-staff-payment.html", context)
 
 
 def staff_from_post_data(pds, attendee, event, staff):
@@ -160,7 +160,7 @@ def returning_staff(request, guid):
     today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd:
-        return render(request, "registration/staff/staff-locate.html", context)
+        return render(request, "registration/staff/returning-staff.html", context)
     elif event.staffRegStart >= today:
         context["message"] = "is not yet open. Please stay tuned to slack and email for updates!"
         return render(request, "registration/staff/staff-closed.html", context)
@@ -202,7 +202,7 @@ def info_returning_staff(request):
 
     staff_id = request.session.get("staff_id")
     if staff_id is None:
-        return render(request, "registration/staff/staff-payment.html", context)
+        return render(request, "registration/staff/returning-staff-payment.html", context)
 
     staff = Staff.objects.get(id=staff_id)
     if staff:
@@ -225,7 +225,7 @@ def info_returning_staff(request):
             "paid_total": paid_total,
             "form_type": form_type,
         }
-    return render(request, "registration/staff/staff-payment.html", context)
+    return render(request, "registration/staff/returning-staff-payment.html", context)
 
 
 def add_returning_staff(request):
