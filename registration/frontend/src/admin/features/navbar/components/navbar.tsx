@@ -132,6 +132,11 @@ export const Navbar: Component<{
                       key="searchBirthday"
                     />
 
+                    <ToggleSetting
+                      name="Enable Local Scanner"
+                      key="usesLocalScanner"
+                    />
+
                     <Show when={config()?.mqtt?.auth?.print_topic}>
                       <ToggleSetting
                         name="Auto Print After Payment"

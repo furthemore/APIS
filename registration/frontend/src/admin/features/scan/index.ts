@@ -1,7 +1,7 @@
 export { Scan } from "./components/scan";
 
 export interface IdData {
-  documentType: string;
+  documentType: "AAMVA" | "MRTD";
   first: string;
   last: string;
   dob: string;
