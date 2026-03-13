@@ -1,12 +1,12 @@
 import base64
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal
 import json
 import logging
 import re
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 
-from django.conf import settings
 import jwt
+from django.conf import settings
 from paho.mqtt import publish as mqtt_publish
 
 from registration.models import Firebase
@@ -42,6 +42,7 @@ def get_payment_token(firebase: Firebase) -> dict:
     pub = [
         get_topic("web/notify/alert", name=str(firebase.name)),
         get_topic("web/notify/payment", name=str(firebase.name)),
+        get_topic("web/notify/scan/raw", name=str(firebase.name)),
     ]
 
     user = format_topic(str(firebase.name))
@@ -58,6 +59,7 @@ def get_onsite_admin_token(firebase: Firebase) -> dict:
     sub = get_topic("web/#", name=str(firebase.name))
 
     pub = [
+        get_topic("web/presence", name=str(firebase.name)),
         get_topic("payment/#", name=str(firebase.name)),
         get_topic("station/#", name=str(firebase.name)),
     ]

@@ -1,0 +1,29 @@
+{% load static settings django_vite %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf_token" content="{{ csrf_token }}">
+
+  <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
+
+  <meta name="sentry-dsn" content="{% settings_value 'SENTRY_FRONTEND_DSN' %}">
+  <meta name="sentry-environment" content="{% settings_value 'SENTRY_ENVIRONMENT' %}">
+  <meta name="sentry-release" content="{% settings_value 'SENTRY_RELEASE' %}">
+
+  {% vite_hmr_client %}
+  {% vite_asset "src/index.tsx" %}
+
+  {% block head %}{% endblock %}
+</head>
+
+<body>
+
+  <div id="root"></div>
+
+</body>
+
+</html>

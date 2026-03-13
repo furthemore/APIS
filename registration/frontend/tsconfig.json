@@ -4,13 +4,21 @@
     "erasableSyntaxOnly": true,
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
-    "lib": ["es2022", "dom"],
+    "lib": ["es2023", "dom"],
+    "module": "es2022",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
     "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@admin/*": ["./src/admin/*"]
+    },
     "skipLibCheck": true,
     "strict": true,
-    "target": "es2020",
+    "target": "esnext",
+    "types": ["vite/client"],
     "useDefineForClassFields": true,
     "verbatimModuleSyntax": true
   }

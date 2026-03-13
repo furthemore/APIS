@@ -1,5 +1,5 @@
-from django.urls import path
 from django.contrib.auth.views import LogoutView
+from django.urls import path
 
 import registration.views.attendee
 import registration.views.cart

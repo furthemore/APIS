@@ -39,7 +39,7 @@ services:
     env_file:
       - database.env
     volumes:
-      - database-data:/var/lib/postgresql/data
+      - database-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 30s
@@ -47,17 +47,17 @@ services:
       retries: 5
       start_period: 80s
 
-redis:
-  image: redis:8
-  restart: always
-  command: redis-server --appendonly yes --save 60 1 --maxmemory 1gb
-  volumes:
-    - redis-data:/data
-  healthcheck:
-    test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-    interval: 1s
-    timeout: 3s
-    retries: 5
+  redis:
+    image: redis:8
+    restart: always
+    command: redis-server --appendonly yes --save 60 1 --maxmemory 1gb
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
 
   gotenberg:
     profiles: [gotenberg]
