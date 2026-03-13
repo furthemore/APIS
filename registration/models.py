@@ -423,7 +423,7 @@ class StaffInvite(models.Model):
 
     class Meta:
         db_table = "registration_temp_token"
-        verbose_name = "staff invite"
+        verbose_name = "Staff invite"
 
     def __str__(self):
         return self.token
