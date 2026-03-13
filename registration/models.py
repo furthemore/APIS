@@ -400,10 +400,6 @@ def get_registration_token():
     return get_random_token(15)
 
 
-# Alias for historical migrations that reference the old name. I will be followed by
-# legacy code for all eternity.
-getRegistrationToken = get_registration_token
-
 
 def generate_discount_code():
     rng = random.SystemRandom()
