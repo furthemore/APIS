@@ -17,7 +17,7 @@ Stack:
   + Take payments for pre-registration using [Square][square], both online
     and in-person with an [iPad app][ipad] as a customer-facing
     display, with cash drawer and receipt printer integration.
-  + Manage staff registration and department heirarchies.
+  + Manage staff registration and department hierarchies.
   + Handle dealer applications, registration, and payments.
   + Create limited-use discounts.
   + Handle on-site registration on your own kiosks, or via a public URL.
@@ -128,6 +128,6 @@ Please see [this documentation](https://github.com/furthemore/APIS/wiki/MQTT-Con
 
 ### Using [pre-commit](https://pre-commit.com/)
 1. Install: `pip install pre-commit` or `brew install pre-commit`.
-2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to evey commit
+2. then run: `pre-commit install`, this will apply the hooks defined in `.pre-commit-config.yaml` to every commit
 
 ```

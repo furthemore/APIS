@@ -4,14 +4,14 @@ from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import urlparse
 
+import httpx
+import respx
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
-import httpx
-import respx
 
 from registration.models import (
     Attendee,
@@ -101,7 +101,7 @@ class TestRegistrationPrinting(TestCase):
     def _badge_generates_pdf(self) -> dict:
         self.assertTrue(self.client.login(username="admin", password="admin"))
 
-        response = self.client.get(
+        response = self.client.post(
             reverse("registration:onsite_print_badges") + f"?id={self.badge.pk}"
         )
         self.assertEqual(response.status_code, 200)

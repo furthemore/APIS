@@ -1,1 +1,4 @@
 .git/
+.venv/
+node_modules/
+bundler/
