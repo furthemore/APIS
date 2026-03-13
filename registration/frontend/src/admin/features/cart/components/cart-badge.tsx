@@ -2,7 +2,7 @@ import { faPaw, faPrint, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { ContextMenu } from "@kobalte/core/context-menu";
 import { useQueryClient } from "@tanstack/solid-query";
 import Fa from "solid-fa";
-import { type Component, Show, createMemo, useContext } from "solid-js";
+import { type Component, For, Show, createMemo, useContext } from "solid-js";
 
 import {
   type AttendeeDetails,
@@ -20,6 +20,8 @@ import { MqttContext } from "@admin/providers/mqtt-provider";
 import { Button } from "@components/button";
 
 import { cleanMoneyAmount } from "../utils";
+import { AttendeeOptionDescription } from "./attendee-option-description";
+import { FulfillmentButton } from "./fulfillment-button";
 
 const STATE_COLORS: Record<BadgeState, string> = {
   Abandoned: "text-bg-warning",
@@ -87,6 +89,11 @@ export const CartBadge: Component<{
     })?.[1];
   });
 
+  const hasUnfulfilled = () =>
+    props.badge.attendee_options.some(
+      (option) => option.requiresFulfillment && !option.fulfilledAt,
+    );
+
   const createFromBadge = async (type: FieldType, prompt: boolean) => {
     const attendeeDetails = await queryClient.ensureQueryData(
       attendeeDetailsOptions(props.badge.id),
@@ -105,6 +112,30 @@ export const CartBadge: Component<{
       globalThis.open(url, "register");
     }
   };
+
+  const attendeeOptions = createMemo(() => {
+    const opts = props.badge.attendee_options.slice();
+    if (props.badge.discount) {
+      let price;
+
+      if (props.badge.discount.percent_off > 0) {
+        price = `-${props.badge.discount.percent_off}%`;
+      } else {
+        price = `-$${props.badge.discount.amount_off}`;
+      }
+
+      opts.push({
+        id: -1,
+        quantity: 1,
+        price,
+        item: `Discount ${props.badge.discount.name}`,
+        total: `-${cleanMoneyAmount(props.badge.level_discount)}`,
+        reason: props.badge.discount.reason,
+        requiresFulfillment: false,
+      });
+    }
+    return opts;
+  });
 
   return (
     <ContextMenu preventScroll={false}>
@@ -154,6 +185,10 @@ export const CartBadge: Component<{
                 </button>
               </Show>
 
+              <Show when={hasUnfulfilled()}>
+                <span class="badge text-bg-warning">Unfulfilled</span>
+              </Show>
+
               <Show when={props.badge.age < 18} fallback={"18+"}>
                 <span class="text-danger text-uppercase">
                   Minor Form Required
@@ -173,7 +208,7 @@ export const CartBadge: Component<{
         </div>
 
         <div class="card-body py-0">
-          <table class="table-sm table">
+          <table class="table-sm table table-hover">
             <thead>
               <tr>
                 <th style={{ width: "60%" }}>Badge</th>
@@ -198,19 +233,45 @@ export const CartBadge: Component<{
                   {cleanMoneyAmount(props.badge.effectiveLevel?.price)}
                 </td>
               </tr>
-              <Show when={props.badge.staff}>
-                <tr>
-                  <td colSpan={3}>
-                    <span>
-                      {`Staff Shirt – `}
-                      <span class="fw-semibold">
-                        {props.badge.staff?.shirtSize || "None"}
-                      </span>
-                    </span>
-                  </td>
-                </tr>
-              </Show>
             </tbody>
+            <Show when={attendeeOptions() || props.badge.staff}>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Status</th>
+                  <th class="text-end" style={{ width: "20%" }}>
+                    Price
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody class="align-middle">
+                <For each={attendeeOptions()}>
+                  {(option) => (
+                    <tr>
+                      <AttendeeOptionDescription item={option} />
+                      <td>
+                        <FulfillmentButton option={option} />
+                      </td>
+                      <td class="text-end">{cleanMoneyAmount(option.price)}</td>
+                    </tr>
+                  )}
+                </For>
+
+                <Show when={props.badge.staff}>
+                  <tr>
+                    <td colSpan={3}>
+                      <span>
+                        {`Staff Shirt – `}
+                        <span class="fw-semibold">
+                          {props.badge.staff?.shirtSize || "None"}
+                        </span>
+                      </span>
+                    </td>
+                  </tr>
+                </Show>
+              </tbody>
+            </Show>
           </table>
         </div>
       </ContextMenu.Trigger>

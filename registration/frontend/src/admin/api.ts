@@ -157,6 +157,7 @@ export type Discount = {
 };
 
 export type AttendeeOption = {
+  id: number;
   quantity: number;
   item: string;
   price: string;
@@ -164,6 +165,8 @@ export type AttendeeOption = {
   reason?: string;
   optionExtraType?: "int" | "bool" | "string" | "ShirtSizes";
   optionValue?: string;
+  requiresFulfillment: boolean;
+  fulfilledAt?: string;
 };
 
 export type Staff = {
@@ -232,11 +235,21 @@ const invalidateCart = async (queryClient: QueryClient) => {
   });
 };
 
+export class APIError extends Error {
+  reason?: string;
+
+  constructor(reason?: string) {
+    super(`API error: ${reason || "unknown"}`);
+    this.name = this.constructor.name;
+    this.reason = reason;
+  }
+}
+
 const checkFallibleResponse = <T>(resp: FallibleRequest<T>): T => {
   if (resp.success) {
     return resp;
   } else {
-    throw new Error(`API error: ${resp.reason || "unknown"}`);
+    throw new APIError(resp.reason);
   }
 };
 
@@ -790,6 +803,28 @@ export const useGetToken = () =>
       mutationKey: [...KEY_PREFIX, "token"],
       mutationFn: async () => {
         return checkFallibleResponse(await getToken());
+      },
+    };
+  });
+
+const fulfillOption = (id: number): Promise<FallibleRequest<void>> => {
+  const formData = new FormData();
+  formData.set("id", id.toString());
+
+  return adminApi
+    .post("registration/onsite/admin/fulfill", { body: formData })
+    .json();
+};
+
+export const useFulfillOption = () =>
+  useMutation(() => {
+    return {
+      mutationKey: [...KEY_PREFIX, "fulfill"],
+      mutationFn: async (id: number) => {
+        return checkFallibleResponse(await fulfillOption(id));
+      },
+      onSuccess: async (_data, _variables, _result, context) => {
+        await invalidateCart(context.client);
       },
     };
   });

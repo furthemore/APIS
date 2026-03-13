@@ -228,26 +228,26 @@ class OrdersTestCase(TestCase):
         self.shirt1 = ShirtSizes(name="Test_Large")
         self.shirt1.save()
 
-        # TODO: shirt option type
-        self.option_conbook = PriceLevelOption(
+        self.option_conbook = PriceLevelOption.objects.create(
             optionName="Conbook", optionPrice=0.00, optionExtraType="bool"
         )
-        self.option_shirt = PriceLevelOption(
+        self.option_shirt = PriceLevelOption.objects.create(
             optionName="Shirt Size", optionPrice=0.00, optionExtraType="ShirtSizes"
         )
-        self.option_100_int = PriceLevelOption(
+        self.option_100_int = PriceLevelOption.objects.create(
             optionName="Something Pricy", optionPrice=100.00, optionExtraType="int"
         )
-
-        self.option_conbook.save()
-        self.option_shirt.save()
-        self.option_100_int.save()
+        self.option_pin = PriceLevelOption.objects.create(
+            optionName="Pin", optionPrice=0, optionExtraType="bool", public=False
+        )
 
         self.price_45.priceLevelOptions.add(self.option_conbook)
         self.price_45.priceLevelOptions.add(self.option_shirt)
         self.price_90.priceLevelOptions.add(self.option_conbook)
+        self.price_90.priceLevelOptions.add(self.option_pin)
         self.price_150.priceLevelOptions.add(self.option_conbook)
         self.price_150.priceLevelOptions.add(self.option_100_int)
+        self.price_150.priceLevelOptions.add(self.option_shirt)
 
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.staffDiscount = self.staffdiscount
@@ -387,7 +387,7 @@ class OrdersTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(postData),
             content_type="application/json",
-            headers={"idempotency-key": str(uuid.uuid4())}
+            headers={"idempotency-key": str(uuid.uuid4())},
         )
         return response
 
@@ -417,7 +417,7 @@ class OrdersTestCase(TestCase):
             reverse("registration:checkout"),
             json.dumps(postData),
             content_type="application/json",
-            headers={"idempotency-key": str(uuid.uuid4())}
+            headers={"idempotency-key": str(uuid.uuid4())},
         )
 
         return response

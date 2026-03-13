@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from registration.models import *
+from registration.services import CreateAttendeeOptions
 
 from .common import abort, handler, logger
 from .ordering import get_total
@@ -24,10 +25,15 @@ def new_staff(request, guid):
     tz = timezone.get_current_timezone()
     today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
-    if event.staffRegStart <= today <= event.staffRegEnd or invite.ignore_time_window is True:
+    if (
+        event.staffRegStart <= today <= event.staffRegEnd
+        or invite.ignore_time_window is True
+    ):
         return render(request, "registration/staff/staff-new.html", context)
     elif event.staffRegStart >= today:
-        context["message"] = "is not yet open. Please stay tuned to slack and email for updates!"
+        context["message"] = (
+            "is not yet open. Please stay tuned to slack and email for updates!"
+        )
         return render(request, "registration/staff/staff-closed.html", context)
     elif event.staffRegEnd <= today:
         context["message"] = "has ended."
@@ -128,15 +134,11 @@ def add_new_staff(request):
 
     price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
-    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
-    order_item.save()
+    order_item = OrderItem.objects.create(
+        badge=badge, priceLevel=price_level, enteredBy="WEB"
+    )
 
-    for option in pdp["options"]:
-        pl_option = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendee_option = AttendeeOptions(
-            option=pl_option, orderItem=order_item, optionValue=option["value"]
-        )
-        attendee_option.save()
+    CreateAttendeeOptions(order_item).save_options(pdp["options"])
 
     order_items = request.session.get("order_items", [])
     order_items.append(order_item.id)
@@ -162,7 +164,9 @@ def staff_index(request, guid):
     if event.staffRegStart <= today <= event.staffRegEnd:
         return render(request, "registration/staff/staff-locate.html", context)
     elif event.staffRegStart >= today:
-        context["message"] = "is not yet open. Please stay tuned to slack and email for updates!"
+        context["message"] = (
+            "is not yet open. Please stay tuned to slack and email for updates!"
+        )
         return render(request, "registration/staff/staff-closed.html", context)
     elif event.staffRegEnd <= today:
         context["message"] = "has ended."
@@ -304,15 +308,11 @@ def add_staff(request):
 
     price_level = PriceLevel.objects.get(id=int(pdp["id"]))
 
-    order_item = OrderItem(badge=badge, priceLevel=price_level, enteredBy="WEB")
-    order_item.save()
+    order_item = OrderItem.objects.create(
+        badge=badge, priceLevel=price_level, enteredBy="WEB"
+    )
 
-    for option in pdp["options"]:
-        pl_option = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendee_option = AttendeeOptions(
-            option=pl_option, orderItem=order_item, optionValue=option["value"]
-        )
-        attendee_option.save()
+    CreateAttendeeOptions(order_item).save_options(pdp["options"])
 
     order_items = request.session.get("order_items", [])
     order_items.append(order_item.id)
