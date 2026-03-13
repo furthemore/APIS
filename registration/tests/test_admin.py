@@ -23,10 +23,10 @@ from registration.tests.common import *
 
 class TestOrderAdmin(TestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
         self.admin_user.save()
         self.normal_user = User.objects.create_user(
-            "john", "lennon@thebeatles.com", "john"
+            "john", "lennon@thebeatles.com", "john"  # NOSONAR
         )
         self.normal_user.staff_member = True
         self.normal_user.save()
@@ -534,7 +534,7 @@ class TestOrderAdmin(TestCase):
 
 class TestCashDrawerAdmin(TestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
         self.admin_user.save()
 
     def test_save_model(self):
@@ -557,7 +557,7 @@ class TestCashDrawerAdmin(TestCase):
 class TestOrderItemAdmin(OrdersTestCase):
     def setUp(self):
         super().setUp()
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
         self.admin_user.save()
         self.order = Order(total="90.00", reference="FOOBAR")
         self.order.save()
@@ -670,7 +670,7 @@ class TestStaffAdmin(AdminTestCase):
         self.badge.save()
         self.staff = Staff(attendee=self.attendee, event=self.event)
         self.staff.save()
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
         self.admin_user.save()
 
     def test_checkin_staff(self):
@@ -745,7 +745,7 @@ class TestStaffInvite(TestCase):
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
 
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")
+        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
         self.admin_user.save()
 
     @patch("registration.emails.send_email")
