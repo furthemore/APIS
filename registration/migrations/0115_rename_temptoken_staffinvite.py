@@ -4,7 +4,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("registration", "0113_remove_badge_printcount_printhistory"),
+        ("registration", "0114_remove_attendeeoptions_optionvalue2_and_more"),
     ]
 
     operations = [
