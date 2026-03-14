@@ -15,6 +15,7 @@ from django.urls import reverse
 
 import registration.emails
 from registration.models import *
+from registration.services import CreateAttendeeOptions
 
 from . import common
 from .common import clear_session, handler, logger
@@ -22,6 +23,7 @@ from .ordering import do_checkout, doZeroCheckout, get_discount_total
 
 logger = logging.getLogger(__name__)
 form_type = "marketplace"
+
 
 def dealers(request, guid):
     event = Event.objects.get(default=True)
@@ -47,7 +49,7 @@ def find_dealer_to_add_assistant(request, guid):
         "token": guid,
         "event": event,
         "next": reverse("registration:find_dealer_to_add_assistant_post"),
-        "form_type": form_type
+        "form_type": form_type,
     }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
@@ -58,7 +60,7 @@ def dealer_asst(request, guid):
         "token": guid,
         "event": event,
         "next": reverse("registration:find_asst_dealer"),
-        "form_type": form_type
+        "form_type": form_type,
     }
     return render(request, "registration/dealer/dealerasst-locate.html", context)
 
@@ -424,12 +426,7 @@ def add_dealer(request):
     orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
-    for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendeeOption = AttendeeOptions(
-            option=plOption, orderItem=orderItem, optionValue=option["value"]
-        )
-        attendeeOption.save()
+    CreateAttendeeOptions(orderItem).save_options(pdp["options"])
 
     orderItems = request.session.get("order_items", [])
     orderItems.append(orderItem.id)

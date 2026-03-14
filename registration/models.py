@@ -1,12 +1,13 @@
 import random
-from decimal import Decimal
-from datetime import datetime
+import string
 import uuid
+from datetime import datetime
+from decimal import Decimal
 
 from django.conf import settings
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
-from django.core.validators import MinValueValidator
 
 # Uppercase letters and digits, excluding visually ambiguous characters: 0/O, 1/I, 5/S, 8/B, 2/Z
 VISUALLY_UNAMBIGUOUS_CHARS = "ACDEFGHJKLMNPQRTUVWXY3467"
@@ -85,15 +86,20 @@ class PriceLevelOption(models.Model):
     optionExtraType = models.CharField(
         max_length=100,
         blank=True,
-        choices=[("int", "Quantity"), ("bool", "Yes/No"), ("ShirtSizes", "Shirt Size"), ("string", "String")],
+        choices=[
+            ("int", "Quantity"),
+            ("bool", "Yes/No"),
+            ("ShirtSizes", "Shirt Size"),
+            ("string", "String"),
+        ],
     )
-    optionExtraType2 = models.CharField(max_length=100, blank=True)
-    optionExtraType3 = models.CharField(max_length=100, blank=True)
     optionImage = models.ImageField(upload_to=content_file_name, blank=True, null=True)
     required = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     rank = models.IntegerField(default=0)
     description = models.TextField(blank=True)
+    public = models.BooleanField(default=True)
+    requires_fulfillment = models.BooleanField(default=True)
 
     class Meta:
         db_table = "registration_price_level_option"
@@ -135,11 +141,14 @@ class PriceLevel(models.Model):
     emailVIPEmails = models.CharField(max_length=400, blank=True, default="")
     isMinor = models.BooleanField(default=False)
     min_age = models.IntegerField(default=0)
-    max_age = models.IntegerField(blank=True, null=True,
-                                  help_text="Leave blank for no limit")
+    max_age = models.IntegerField(
+        blank=True, null=True, help_text="Leave blank for no limit"
+    )
     accompanied = models.BooleanField(default=False)
     available_to_attendee = models.BooleanField(default=False, verbose_name="Attendee")
-    available_to_marketplace = models.BooleanField(default=False, verbose_name="Marketplace")
+    available_to_marketplace = models.BooleanField(
+        default=False, verbose_name="Marketplace"
+    )
     available_to_staff = models.BooleanField(default=False, verbose_name="Staff")
 
     class Meta:
@@ -154,6 +163,7 @@ class PriceLevel(models.Model):
         if self.startDate <= today <= self.endDate:
             return True
         return False
+
     get_level_active_status.boolean = True
     get_level_active_status.short_description = "Active"
 
@@ -190,11 +200,17 @@ class BadgeTemplate(models.Model):
     name = models.CharField(max_length=100)
     template = models.TextField()
     paperWidth = models.CharField(max_length=10, null=True, verbose_name="Paper Width")
-    paperHeight = models.CharField(max_length=10, null=True, verbose_name="Paper Height")
-    marginTop = models.CharField(max_length=10, null=True, verbose_name = "Margin Top")
-    marginBottom = models.CharField(max_length=10, null=True, verbose_name = "Margin Bottom")
+    paperHeight = models.CharField(
+        max_length=10, null=True, verbose_name="Paper Height"
+    )
+    marginTop = models.CharField(max_length=10, null=True, verbose_name="Margin Top")
+    marginBottom = models.CharField(
+        max_length=10, null=True, verbose_name="Margin Bottom"
+    )
     marginLeft = models.CharField(max_length=10, null=True, verbose_name="Margin Left")
-    marginRight = models.CharField(max_length=10, null=True, verbose_name = "Margin Right")
+    marginRight = models.CharField(
+        max_length=10, null=True, verbose_name="Margin Right"
+    )
     landscape = models.BooleanField(default=True)
     scale = models.FloatField(default=1.0)
 
@@ -912,8 +928,10 @@ class AttendeeOptions(models.Model):
     option = models.ForeignKey(PriceLevelOption, on_delete=models.CASCADE)
     orderItem = models.ForeignKey(OrderItem, on_delete=models.CASCADE)
     optionValue = models.CharField(max_length=200)
-    optionValue2 = models.CharField(max_length=200, blank=True)
-    optionValue3 = models.CharField(max_length=200, blank=True)
+    fulfilled_at = models.DateTimeField(null=True, blank=True)
+    fulfilled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     class Meta:
         db_table = "registration_attendee_options"
@@ -967,12 +985,12 @@ class Firebase(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         verbose_name="Print via MQTT",
-        help_text="Which terminal to use for printing via MQTT, if it should be used at this terminal."
+        help_text="Which terminal to use for printing via MQTT, if it should be used at this terminal.",
     )
     print_via_payment = models.BooleanField(
         default=False,
         verbose_name="Print via payment",
-        help_text="When MQTT printing is enabled, print via payment device instead of station."
+        help_text="When MQTT printing is enabled, print via payment device instead of station.",
     )
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")
@@ -981,16 +999,18 @@ class Firebase(models.Model):
         null=True,
         blank=True,
         default=settings.REGISTER_DEFAULT_WEBVIEW,
-        verbose_name="Web view URL"
+        verbose_name="Web view URL",
     )
     square_terminal_id = models.ForeignKey(
         SquareDevice,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name="Square Terminal"
+        verbose_name="Square Terminal",
     )
-    payment_type = models.CharField(max_length=20, choices=PAYMENT_CHOICES, null=True, blank=True)
+    payment_type = models.CharField(
+        max_length=20, choices=PAYMENT_CHOICES, null=True, blank=True
+    )
 
     def __str__(self):
         return str(self.name)

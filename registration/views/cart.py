@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from registration.forms import AttendeeForm, BadgeForm
 from registration.models import *
+from registration.services import CreateAttendeeOptions
 
 from . import common, ordering
 from .attendee import check_ban_list
@@ -146,7 +147,6 @@ def saveCart(cart):
     )
 
     price_level = PriceLevel.objects.get(id=int(pdp["id"]))
-    price_level_options = {plo.id: plo for plo in price_level.priceLevelOptions.all()}
 
     via = "WEB"
     if post_data["attendee"].get("onsite", False):
@@ -156,17 +156,7 @@ def saveCart(cart):
         badge=badge, priceLevel=price_level, enteredBy=via
     )
 
-    for option in pdp["options"]:
-        pl_option = price_level_options[int(option["id"])]
-        if pl_option.optionExtraType == "int" and option["value"] == "":
-            AttendeeOptions.objects.create(
-                option=pl_option, orderItem=order_item, optionValue="0"
-            )
-        else:
-            if option["value"] != "":
-                AttendeeOptions.objects.create(
-                    option=pl_option, orderItem=order_item, optionValue=option["value"]
-                )
+    CreateAttendeeOptions(order_item).save_options(pdp["options"])
 
     cart.transferedDate = timezone.now()
     cart.save()

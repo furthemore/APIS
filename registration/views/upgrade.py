@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, render
 
 import registration.emails
 from registration.models import *
+from registration.services import CreateAttendeeOptions
 
 from . import common
 from .common import (
@@ -114,12 +115,7 @@ def add_upgrade(request):
     orderItem = OrderItem(badge=badge, priceLevel=priceLevel, enteredBy="WEB")
     orderItem.save()
 
-    for option in pdp["options"]:
-        plOption = PriceLevelOption.objects.get(id=int(option["id"]))
-        attendeeOption = AttendeeOptions(
-            option=plOption, orderItem=orderItem, optionValue=option["value"]
-        )
-        attendeeOption.save()
+    CreateAttendeeOptions(orderItem).save_options(pdp["options"])
 
     orderItems = request.session.get("order_items", [])
     orderItems.append(orderItem.id)
