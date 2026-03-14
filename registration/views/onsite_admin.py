@@ -885,6 +885,7 @@ def build_result(cart):
 
             staff_data = {
                 "shirtSize": staff.shirtsize.name if staff.shirtsize else None,
+                "beforeDeadline": order.createdDate <= badge.event.staffRegEnd,
             }
 
         item = {

@@ -17,7 +17,7 @@ from gotenberg_client.options import (
 )
 
 from registration import mqtt
-from registration.models import Badge, Dealer, Firebase, Staff, PrintHistory
+from registration.models import Badge, Dealer, Firebase, PrintHistory, Staff
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +90,15 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
             )
 
         level = str(level)
-        if Staff.objects.filter(attendee=badge.attendee, event=badge.event).exists():
+        if staff := Staff.objects.filter(
+            attendee=badge.attendee, event=badge.event
+        ).first():
             level = "Staff"
+
+            if not staff.checkedIn and data_obj["source"] == PrintHistory.ONSITE:
+                staff.checkedIn = True
+                staff.save()
+
         elif Dealer.objects.filter(attendee=badge.attendee, event=badge.event).exists():
             level = "Dealer"
 
@@ -107,7 +114,7 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
         pdfs = []
 
         for badge_template_id, badges in badge_groups.items():
-            (badge_template, template) = badge_templates[badge_template_id]
+            badge_template, template = badge_templates[badge_template_id]
             context = Context({"badges": badges})
             rendered = str(template.render(context))
 
@@ -168,7 +175,9 @@ def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
     for badge in queryset:
         badge.printed = True
         badge.save()
-        PrintHistory.objects.create(badge=badge, firebase=terminal, source=data_obj["source"])
+        PrintHistory.objects.create(
+            badge=badge, firebase=terminal, source=data_obj["source"]
+        )
 
     if terminal:
         mqtt.send_mqtt_message(mqtt.get_topic("web/refresh", name=terminal.name))

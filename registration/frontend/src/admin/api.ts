@@ -171,6 +171,7 @@ export type AttendeeOption = {
 
 export type Staff = {
   shirtSize: string;
+  beforeDeadline: boolean;
 };
 
 export type BadgePrintResponse = {

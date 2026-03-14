@@ -176,7 +176,9 @@ class TempTokenAdmin(admin.ModelAdmin):
 
 @admin.action(description="Send approval email and payment instructions")
 def send_approval_email(modeladmin, request, queryset):
-    tasks.send_dealer_approval_email_task.delay(list(queryset.values_list("id", flat=True)))
+    tasks.send_dealer_approval_email_task.delay(
+        list(queryset.values_list("id", flat=True))
+    )
     queryset.update(emailed=True)
     if queryset.count() > 1:
         messages.success(request, "Successfully emailed %d dealers" % queryset.count())
@@ -938,6 +940,12 @@ def generate_badge_labels(queryset, request, source, terminal):
             printed_badge_level = "Dealer"
         elif badge_type == "Staff":
             printed_badge_level = "Staff"
+
+            if source == PrintHistory.ONSITE:
+                staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
+                if not staff.checkedIn:
+                    staff.checkedIn = True
+                    staff.save()
 
         tags.append(
             {

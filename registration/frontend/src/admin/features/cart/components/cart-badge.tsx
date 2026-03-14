@@ -1,4 +1,9 @@
-import { faPaw, faPrint, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPaw,
+  faPrint,
+  faTrash,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { ContextMenu } from "@kobalte/core/context-menu";
 import { useQueryClient } from "@tanstack/solid-query";
 import Fa from "solid-fa";
@@ -263,7 +268,22 @@ export const CartBadge: Component<{
                     <td colSpan={3}>
                       <span>
                         {`Staff Shirt – `}
-                        <span class="fw-semibold">
+                        <span
+                          class="fw-semibold"
+                          classList={{
+                            "text-danger": !props.badge.staff?.beforeDeadline,
+                          }}
+                          title={
+                            props.badge.staff?.beforeDeadline
+                              ? undefined
+                              : "Registered after deadline"
+                          }
+                        >
+                          <Show when={!props.badge.staff?.beforeDeadline}>
+                            <span>
+                              <Fa icon={faTriangleExclamation} fw />
+                            </span>
+                          </Show>
                           {props.badge.staff?.shirtSize || "None"}
                         </span>
                       </span>
