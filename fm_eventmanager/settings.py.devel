@@ -228,6 +228,10 @@ SQUARE_LOCATION_ID = 'xxxxxxxxx...'
 SQUARE_CURRENCY = 'USD'
 SQUARE_ENVIRONMENT = 'sandbox'  # Or "production"
 SQUARE_WEBHOOK_SIGNATURE_KEY = 'xj-...'
+PAYPAL_CLIENT_ID = ''
+PAYPAL_CLIENT_SECRET = ''
+PAYPAL_CURRENCY = 'USD'
+PAYPAL_ENVIRONMENT = 'sandbox'  # Or "production"
 
 # Sandbox values - DO NOT check in production credentials
 EMAIL_HOST = 'smtp.mailgun.org'

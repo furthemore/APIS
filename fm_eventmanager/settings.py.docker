@@ -395,6 +395,10 @@ SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID')
 SQUARE_CURRENCY = os.getenv('SQUARE_CURRENCY', 'USD')
 SQUARE_ENVIRONMENT = os.getenv('SQUARE_ENVIRONMENT', 'production')  # Or "sandbox"
 SQUARE_WEBHOOK_SIGNATURE_KEY = os.getenv('SQUARE_WEBHOOK_SIGNATURE_KEY', 'unset')
+PAYPAL_CLIENT_ID = os.environ['PAYPAL_CLIENT_ID']
+PAYPAL_CLIENT_SECRET = os.environ['PAYPAL_CLIENT_SECRET']
+PAYPAL_CURRENCY = os.getenv('PAYPAL_CURRENCY', 'USD')
+PAYPAL_ENVIRONMENT = 'production'  # Or "sandbox"
 
 # Sandbox values - DO NOT check in production credentials
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')

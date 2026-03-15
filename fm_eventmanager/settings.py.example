@@ -188,6 +188,10 @@ SQUARE_LOCATION_ID = 'xxxxxxxxx...'
 SQUARE_CURRENCY = 'USD'
 SQUARE_ENVIRONMENT = 'production'  # Or "sandbox"
 SQUARE_WEBHOOK_SIGNATURE_KEY = 'xxx...'
+PAYPAL_CLIENT_ID = ''
+PAYPAL_CLIENT_SECRET = ''
+PAYPAL_CURRENCY = ''
+PAYPAL_ENVIRONMENT = 'production'  # Or "sandbox"
 
 
 EMAIL_HOST = 'smtp.mailgun.org'
