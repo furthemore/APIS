@@ -21,7 +21,7 @@ form_type = "staff"
 
 def new_staff(request, guid):
     event = Event.objects.get(default=True)
-    invite = TempToken.objects.get(token=guid)
+    invite = StaffInvite.objects.get(token=guid)
     tz = timezone.get_current_timezone()
     today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
@@ -29,7 +29,7 @@ def new_staff(request, guid):
         event.staffRegStart <= today <= event.staffRegEnd
         or invite.ignore_time_window is True
     ):
-        return render(request, "registration/staff/staff-new.html", context)
+        return render(request, "registration/staff/new-staff.html", context)
     elif event.staffRegStart >= today:
         context["message"] = (
             "is not yet open. Please stay tuned to slack and email for updates!"
@@ -47,7 +47,7 @@ def find_new_staff(request):
         email = post_data["email"]
         token = post_data["token"]
 
-        token = TempToken.objects.get(email__iexact=email, token=token)
+        token = StaffInvite.objects.get(email__iexact=email, token=token)
 
         if token.validUntil < timezone.now():
             return abort(400, "Invalid Token")
@@ -68,12 +68,12 @@ def info_new_staff(request):
     token_value = request.session.get("new_staff")
     context = {"staff": None, "event": event, "form_type": form_type}
     try:
-        context["token"] = TempToken.objects.get(token=token_value)
+        context["token"] = StaffInvite.objects.get(token=token_value)
     except ObjectDoesNotExist:
         return render(
-            request, "registration/staff/staff-new-payment.html", context, status=404
+            request, "registration/staff/new-staff-payment.html", context, status=404
         )
-    return render(request, "registration/staff/staff-new-payment.html", context)
+    return render(request, "registration/staff/new-staff-payment.html", context)
 
 
 def staff_from_post_data(pds, attendee, event, staff):
@@ -148,7 +148,7 @@ def add_new_staff(request):
     if discount:
         request.session["discount"] = discount.codeName
 
-    tokens = TempToken.objects.filter(email=attendee.email)
+    tokens = StaffInvite.objects.filter(email=attendee.email)
     for token in tokens:
         token.used = True
         token.save()
@@ -156,13 +156,13 @@ def add_new_staff(request):
     return JsonResponse({"success": True})
 
 
-def staff_index(request, guid):
+def returning_staff(request, guid):
     event = Event.objects.get(default=True)
     tz = timezone.get_current_timezone()
     today = datetime.now(tz=tz)
     context = {"token": guid, "event": event, "form_type": form_type}
     if event.staffRegStart <= today <= event.staffRegEnd:
-        return render(request, "registration/staff/staff-locate.html", context)
+        return render(request, "registration/staff/returning-staff.html", context)
     elif event.staffRegStart >= today:
         context["message"] = (
             "is not yet open. Please stay tuned to slack and email for updates!"
@@ -180,13 +180,13 @@ def staff_done(request):
 
 
 @require_POST
-def find_staff(request):
+def find_returning_staff(request):
     try:
         post_data = json.loads(request.body)
         email = post_data["email"]
         token = post_data["token"]
     except (json.JSONDecodeError, KeyError) as e:
-        logger.warning(f"Unable to find staff: bad request - {request.body}")
+        logger.warning(f"Unable to find returning staff: bad request - {request.body}")
         return abort(400, str(e))
 
     try:
@@ -200,13 +200,13 @@ def find_staff(request):
     return JsonResponse({"success": True, "message": "STAFF"})
 
 
-def info_staff(request):
+def info_returning_staff(request):
     event = Event.objects.get(default=True)
     context = {"staff": None, "event": event, "form_type": form_type}
 
     staff_id = request.session.get("staff_id")
     if staff_id is None:
-        return render(request, "registration/staff/staff-payment.html", context)
+        return render(request, "registration/staff/returning-staff-payment.html", context)
 
     staff = Staff.objects.get(id=staff_id)
     if staff:
@@ -229,14 +229,14 @@ def info_staff(request):
             "paid_total": paid_total,
             "form_type": form_type,
         }
-    return render(request, "registration/staff/staff-payment.html", context)
+    return render(request, "registration/staff/returning-staff-payment.html", context)
 
 
-def add_staff(request):
+def add_returning_staff(request):
     try:
         postData = json.loads(request.body)
     except ValueError as e:
-        logger.error("Unable to decode JSON for add_staff()")
+        logger.error("Unable to decode JSON for add_returning_staff()")
         return JsonResponse({"success": False})
 
     # create attendee from request post

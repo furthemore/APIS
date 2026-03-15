@@ -168,10 +168,12 @@ def send_staff_token_email(modeladmin, request, queryset):
         messages.success(request, "Successfully sent email to %s" % queryset[0].email)
 
 
-@admin.register(TempToken)
-class TempTokenAdmin(admin.ModelAdmin):
+@admin.register(StaffInvite)
+class StaffInviteAdmin(admin.ModelAdmin):
     actions = [send_staff_token_email]
     list_display = ["email", "token", "sent", "used"]
+    readonly_fields = ["token", "used", "usedDate"]
+    fields = ["token", "email", "validUntil", "ignore_time_window", "used", "usedDate", "sent"]
 
 
 @admin.action(description="Send approval email and payment instructions")
@@ -755,7 +757,7 @@ class StaffAdmin(ImportExportModelAdmin):
                     staff_copy.id = None
                     staff_copy.attendee = staff.attendee
                     staff_copy.event = event
-                    staff_copy.registrationToken = getRegistrationToken()
+                    staff_copy.registrationToken = get_registration_token()
                     staff_copy.shirtsize = None
                     staff_copy.checkedIn = False
                     staff_copy.save()

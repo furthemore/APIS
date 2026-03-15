@@ -18,21 +18,21 @@ class Migration(migrations.Migration):
             model_name="attendee",
             name="registrationToken",
             field=models.CharField(
-                default=registration.models.getRegistrationToken, max_length=200
+                default=registration.models.get_registration_token, max_length=200
             ),
         ),
         migrations.AlterField(
             model_name="dealer",
             name="registrationToken",
             field=models.CharField(
-                default=registration.models.getRegistrationToken, max_length=200
+                default=registration.models.get_registration_token, max_length=200
             ),
         ),
         migrations.AlterField(
             model_name="staff",
             name="registrationToken",
             field=models.CharField(
-                default=registration.models.getRegistrationToken, max_length=200
+                default=registration.models.get_registration_token, max_length=200
             ),
         ),
     ]

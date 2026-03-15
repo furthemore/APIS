@@ -39,7 +39,7 @@ from registration.models import (
     PrintHistory,
     ShirtSizes,
     Staff,
-    get_token,
+    get_random_token,
 )
 from registration.views.attendee import get_attendee_age
 from registration.views.common import logger
@@ -1231,7 +1231,7 @@ def terminal_square_token(request):
         base_url = "https://connect.squareupsandbox.com"
 
     scopes = ["MERCHANT_PROFILE_READ", "PAYMENTS_WRITE", "PAYMENTS_WRITE_IN_PERSON"]
-    state = get_token(64)
+    state = get_random_token(64)
 
     url = f"{base_url}/oauth2/authorize?client_id={settings.SQUARE_APPLICATION_ID}&state={state}&scope={'+'.join(scopes)}"
 

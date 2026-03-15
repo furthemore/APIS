@@ -9,6 +9,8 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+# Uppercase letters and digits, excluding visually ambiguous characters: 0/O, 1/I, 5/S, 8/B, 2/Z
+VISUALLY_UNAMBIGUOUS_CHARS = "ACDEFGHJKLMNPQRTUVWXY3467"
 
 # Lookup and supporting tables.
 class LookupTable(models.Model):
@@ -403,19 +405,27 @@ class Department(models.Model):
 # End lookup and supporting tables
 
 
-def get_token(length):
+def get_random_token(length):
     return "".join(
-        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
+        random.SystemRandom().choice(VISUALLY_UNAMBIGUOUS_CHARS)
         for _ in range(length)
     )
 
 
-def getRegistrationToken():
-    return get_token(15)
+def get_registration_token():
+    return get_random_token(15)
 
 
-class TempToken(models.Model):
-    token = models.CharField(max_length=200, default=getRegistrationToken)
+
+def generate_discount_code():
+    rng = random.SystemRandom()
+    half = "".join(rng.choice(VISUALLY_UNAMBIGUOUS_CHARS) for _ in range(5))
+    other_half = "".join(rng.choice(VISUALLY_UNAMBIGUOUS_CHARS) for _ in range(5))
+    return f"{half}-{other_half}"
+
+
+class StaffInvite(models.Model):
+    token = models.CharField(max_length=200, default=get_registration_token)
     email = models.CharField(max_length=200)
     ignore_time_window = models.BooleanField(
         default=False,
@@ -429,6 +439,7 @@ class TempToken(models.Model):
 
     class Meta:
         db_table = "registration_temp_token"
+        verbose_name = "staff invite"
 
     def __str__(self):
         return self.token
@@ -500,7 +511,7 @@ class Badge(models.Model):
     )
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     registeredDate = models.DateTimeField(null=True)
-    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    registrationToken = models.CharField(max_length=200, default=get_registration_token)
     badgeName = models.CharField(max_length=200, blank=True)
     badgeNumber = models.IntegerField(null=True, blank=True)
     printed = models.BooleanField(default=False)
@@ -591,7 +602,7 @@ class Staff(models.Model):
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.CASCADE
     )
-    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    registrationToken = models.CharField(max_length=200, default=get_registration_token)
     department = models.ForeignKey(
         Department, null=True, blank=True, on_delete=models.SET_NULL
     )
@@ -630,7 +641,7 @@ class Staff(models.Model):
         return badge
 
     def resetToken(self):
-        self.registrationToken = getRegistrationToken()
+        self.registrationToken = get_registration_token()
         self.save()
         return
 
@@ -639,7 +650,7 @@ class Dealer(models.Model):
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.SET_NULL
     )
-    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    registrationToken = models.CharField(max_length=200, default=get_registration_token)
     approved = models.BooleanField(default=False)
     tableNumber = models.IntegerField(null=True, blank=True)
     notes = models.TextField(blank=True)
@@ -697,7 +708,7 @@ class Dealer(models.Model):
         return badge
 
     def resetToken(self):
-        self.registrationToken = getRegistrationToken()
+        self.registrationToken = get_registration_token()
         self.save()
         return
 
@@ -707,7 +718,7 @@ class DealerAsst(models.Model):
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.CASCADE
     )
-    registrationToken = models.CharField(max_length=200, default=getRegistrationToken)
+    registrationToken = models.CharField(max_length=200, default=get_registration_token)
     name = models.CharField(max_length=400)
     email = models.CharField(max_length=200)
     license = models.CharField(max_length=50)
