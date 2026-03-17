@@ -438,7 +438,7 @@
 
           let signature = $("#jsign_signature");
           let nativeData = signature.jSignature("getData", "native");
-          if (nativeData.length < 2) {
+          if (nativeData.length < 1) {
             alert("You must sign to acknowledge your acceptance of the Code of Conduct.");
               $("#register").one('click', register_click);
               return;
