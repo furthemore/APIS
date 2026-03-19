@@ -228,7 +228,11 @@ def apply_discount(request):
         )
 
     request.session["discount"] = discount.codeName
-    return JsonResponse({"success": True})
+    return JsonResponse({
+        "success": True,
+        "amountOff": float(discount.amountOff or 0),
+        "percentOff": int(discount.percentOff or 0),
+    })
 
 
 def add_attendee_to_assistant(request, attendee):
