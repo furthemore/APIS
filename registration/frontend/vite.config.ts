@@ -3,6 +3,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import devtools from "solid-devtools/vite";
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
+import wasm from "vite-plugin-wasm";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
@@ -18,6 +19,7 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     solid(),
+    wasm(),
   ],
   build: {
     manifest: "manifest.json",

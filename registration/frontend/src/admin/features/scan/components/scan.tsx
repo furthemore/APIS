@@ -1,4 +1,5 @@
 import { faBarcode, faXmark } from "@fortawesome/free-solid-svg-icons";
+import type { Emitter } from "@solid-primitives/event-bus";
 import { createHotkey } from "@tanstack/solid-hotkeys";
 import {
   type Component,
@@ -10,6 +11,7 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 
+import type { BarcodeEmitter } from "@admin/features/onsite";
 import { MqttContext } from "@admin/providers/mqtt-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
@@ -26,6 +28,7 @@ type ScanStore = {
 
 export const Scan: Component<{
   gotScannedName(name: string, birthday?: string): void;
+  emitter: Emitter<BarcodeEmitter>;
   readyForNext: boolean;
 }> = (props) => {
   const mqtt = useContext(MqttContext)!;
@@ -102,17 +105,28 @@ export const Scan: Component<{
     }
   };
 
+  const forwardRawScan = (payload: object | null) => {
+    if (payload && typeof payload === "string") {
+      props.emitter.emit("rawScan", payload);
+    }
+  };
+
   createEffect(() => {
     const m = mqtt();
 
     m?.emitter.on("notify/scan/url", setUrl);
     m?.emitter.on("notify/scan/id", setId);
     m?.emitter.on("notify/scan/shc", setShc);
+    m?.emitter.on("notify/scan/raw", forwardRawScan);
+
+    props.emitter.on("url", (url) => setStore("url", url.toString()));
+    props.emitter.on("idCard", setId);
 
     onCleanup(() => {
       m?.emitter.off("notify/scan/url", setUrl);
       m?.emitter.off("notify/scan/id", setId);
       m?.emitter.off("notify/scan/shc", setShc);
+      m?.emitter.off("notify/scan/raw", forwardRawScan);
     });
   });
 
