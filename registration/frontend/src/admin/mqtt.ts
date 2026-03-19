@@ -22,6 +22,7 @@ export type MqttTopic =
   | "notify/info"
   | "notify/payment"
   | "notify/scan/id"
+  | "notify/scan/raw"
   | "notify/scan/shc"
   | "notify/scan/url"
   | "presence"

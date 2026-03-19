@@ -1,10 +1,14 @@
 import { toaster } from "@kobalte/core/toast";
+import { createEmitter } from "@solid-primitives/event-bus";
 import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import {
   type Component,
   type Setter,
+  Show,
+  Suspense,
   createEffect,
   createSignal,
+  lazy,
   onCleanup,
   useContext,
 } from "solid-js";
@@ -22,7 +26,15 @@ import { ErrorCard } from "@components/error-card";
 import { SentryErrorBoundary } from "../../common";
 import { AttendeeSearch } from "./attendee-search";
 import { Cart } from "./cart";
-import { Scan } from "./scan";
+import { type IdData, Scan } from "./scan";
+
+export type BarcodeEmitter = {
+  rawScan: string;
+  idCard: IdData;
+  url: URL;
+};
+
+const BarcodeScanner = lazy(() => import("./scanner"));
 
 const KNOWN_PAYMENT_MESSAGES: Record<string, [string, ActionToastType]> = {
   payment_opened: ["Payment screen opened", "success"],
@@ -76,6 +88,8 @@ export const Onsite: Component<{
   const clearCart = useClearCart();
 
   const refresh = () => cart.refetch();
+
+  const emitter = createEmitter<BarcodeEmitter>();
 
   createEffect(() => {
     if (props.readyForNext) {
@@ -143,8 +157,15 @@ export const Onsite: Component<{
         >
           <Scan
             gotScannedName={gotScannedName}
+            emitter={emitter}
             readyForNext={props.readyForNext}
           />
+
+          <Show when={userSettings().settings().usesLocalScanner}>
+            <Suspense>
+              <BarcodeScanner emitter={emitter} />
+            </Suspense>
+          </Show>
         </SentryErrorBoundary>
       </div>
 

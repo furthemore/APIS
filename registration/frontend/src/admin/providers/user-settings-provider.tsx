@@ -12,7 +12,8 @@ export type UserSettingKey =
   | "multipleBadgeColumns"
   | "showSearchStatus"
   | "printAfterPayment"
-  | "searchBirthday";
+  | "searchBirthday"
+  | "usesLocalScanner";
 
 export type UserSettings = Record<UserSettingKey, boolean | undefined>;
 
@@ -22,6 +23,7 @@ const USER_DEFAULTS: UserSettings = {
   showSearchStatus: false,
   printAfterPayment: true,
   searchBirthday: true,
+  usesLocalScanner: false,
 };
 
 export class UserSettingsManager {
