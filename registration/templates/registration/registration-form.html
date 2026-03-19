@@ -71,7 +71,7 @@
         <hr/>
         {% if not discount %}
         <div class="form-group">
-          <label class="col-sm-3 control-label">Discount Code</label>
+          <label for="discountCode" class="col-sm-3 control-label">Discount Code</label>
           <div class="col-sm-6">
             <div class="input-group">
               <input type="text" id="discountCode" class="form-control" placeholder="Enter discount code (optional)" />
@@ -84,7 +84,7 @@
         </div>
         {% else %}
         <div class="form-group">
-          <label class="col-sm-3 control-label">Discount Code</label>
+          <span class="col-sm-3 control-label">Discount Code</span>
           <div class="col-sm-9">
             <p class="form-control-static text-success"><strong>{{ discount.codeName }}</strong> applied</p>
           </div>
