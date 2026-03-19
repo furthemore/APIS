@@ -76,7 +76,7 @@
       </table>
 
       <br/>
-      {% if not discount.newStaffEvent and not discount.staffEvent %}
+      {% if not discount.newStaffEvent.exists and not discount.staffEvent.exists %}
         <a class="btn btn-primary" id="addAnother">Add Another Attendee</a>
         <a class="btn btn-danger" id="cancel">Cancel Registration</a>
       {% endif %}
