@@ -230,7 +230,7 @@ def apply_discount(request):
     request.session["discount"] = discount.codeName
     return JsonResponse({
         "success": True,
-        "amountOff": int(discount.amountOff or Decimal("0.00") * 100),
+        "amountOff": int((discount.amountOff or Decimal("0.00")) * 100),
         "percentOff": int(discount.percentOff or 0),
     })
 
