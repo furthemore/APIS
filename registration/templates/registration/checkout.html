@@ -76,7 +76,7 @@
       </table>
 
       <br/>
-      {% if not discount.newStaffEvent and not discount.staffEvent %}
+      {% if not discount.newStaffEvent.exists and not discount.staffEvent.exists %}
         <a class="btn btn-primary" id="addAnother">Add Another Attendee</a>
         <a class="btn btn-danger" id="cancel">Cancel Registration</a>
       {% endif %}
@@ -99,25 +99,6 @@
       <hr/>
       {% if total > 0 %}
 
-        {% if not discount %}
-
-          <h3>Discount</h3>
-          <div class="col-sm-11 col-sm-offset-1" style="padding-left:0px;padding-bottom:10px;">If you have a discount
-            code, enter it below:
-          </div>
-          <div class="row">
-          <div class="col-sm-11 col-sm-offset-1">
-            <div class="form-inline">
-              <div class="form-group">
-                <label for="discount" class="sr-only">Discount Code</label>
-                <input type="text" id="discount" class="form-control"/>
-              </div>
-              <button class="btn btn-primary" id="apply_discount">Apply</button>
-              <p>&nbsp;</p>
-            </div>
-          </div>
-
-        {% endif %}
         <div class="container" style="width: inherit">
           <form class="form-horizontal" role="form" data-toggle="validator">
 
@@ -305,8 +286,7 @@
       const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout' %}";
       const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
       const URL_REGISTRATION_DONE = "{% url 'registration:done' %}";
-      const URL_REGISTRATION_DISCOUNT = "{% url 'registration:discount' %}";
-      const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
+const URL_REGISTRATION_ADDRESSES = "{% url 'registration:addresses' %}";
       const URL_REGISTRATION_REMOVE_FROM_CART = "{% url 'registration:remove_from_cart' %}";
       const URL_REGISTRATION_CANCEL_ORDER = "{% url 'registration:cancel_order' %}";
 
@@ -405,36 +385,6 @@
           });
 
 
-          $("#apply_discount").click(function (e) {
-              const discount = $("#discount").val();
-              if (discount == '') {
-                  alert("You must enter a discount to apply.");
-                  return;
-              }
-              const data = {'discount': discount};
-              $.ajax({
-                  "type": "POST",
-                  "dataType": "json",
-                  "contentType": "application/json; charset=utf-8",
-                  "url": URL_REGISTRATION_DISCOUNT,
-                  "data": JSON.stringify(data),
-                  "beforeSend": function (xhr, settings) {
-                      console.log("Before Send");
-                      $.ajaxSettings.beforeSend(xhr, settings);
-                  },
-                  "error": function (result, status, error) {
-                      alert(`An error has occurred. If this error continues, please contact ${EVENT_REGISTRATION_EMAIL} for assistance.`);
-                  },
-                  "success": function (result, status) {
-                      if (result.success) {
-                          window.location.reload();
-                      } else {
-                          alert(`An error has occurred: ${result.message} If this error continues, please contact ` +
-                              `${EVENT_REGISTRATION_EMAIL} for assistance.`);
-                      }
-                  }
-              });
-          });
       });
   </script>
 {% endblock %}
