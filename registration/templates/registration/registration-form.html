@@ -69,29 +69,6 @@
 
         </div>
         <hr/>
-        {% if not discount %}
-        <div class="form-group">
-          <label for="discountCode" class="col-sm-3 control-label">Discount Code</label>
-          <div class="col-sm-6">
-            <div class="input-group">
-              <input type="text" id="discountCode" class="form-control" placeholder="Enter discount code (optional)" />
-              <span class="input-group-btn">
-                <button class="btn btn-default" type="button" id="apply_discount">Apply</button>
-              </span>
-            </div>
-            <span id="discountMessage" class="help-block" style="display:none;"></span>
-          </div>
-        </div>
-        {% else %}
-        <div class="form-group">
-          <span class="col-sm-3 control-label">Discount Code</span>
-          <div class="col-sm-9">
-            <p class="form-control-static text-success"><strong>{{ discount.codeName }}</strong> applied</p>
-          </div>
-        </div>
-        {% endif %}
-        <hr/>
-
         <div class="container-fluid">
           <div class="row" id="levelContainer">
             <div id="levelsNoBirthday">
@@ -109,7 +86,7 @@
 
         {% include "templatetags/coc_sig.html" %}
         <div class="container-fluid">
-          <button class="btn btn-primary col-sm-6 pull-right" id="register" type="submit">Continue to Checkout &rarr;</button> &nbsp;
+          <button class="btn btn-primary col-sm-6 pull-right" id="register" type="submit">Register</button> &nbsp;
         </div>
       </div>
     </div>
@@ -526,39 +503,6 @@
           });
       }
 
-
-      $("#apply_discount").click(function () {
-          const code = $("#discountCode").val().trim();
-          if (!code) {
-              return;
-          }
-          $.ajax({
-              type: "POST",
-              dataType: "json",
-              contentType: "application/json; charset=utf-8",
-              url: "{% url 'registration:discount' %}",
-              data: JSON.stringify({"discount": code}),
-              beforeSend: function (xhr, settings) {
-                  $.ajaxSettings.beforeSend(xhr, settings);
-              },
-              success: function (result) {
-                  const msg = $("#discountMessage");
-                  if (result.success) {
-                      discount.amountOff = result.amountOff;
-                      discount.percentOff = result.percentOff;
-                      msg.removeClass("text-danger").addClass("text-success").text("Discount applied!").show();
-                      $("#apply_discount").prop("disabled", true);
-                      updatePriceLevels();
-                  } else {
-                      msg.removeClass("text-success").addClass("text-danger").text(result.message).show();
-                  }
-              },
-              error: function () {
-                  $("#discountMessage").removeClass("text-success").addClass("text-danger")
-                      .text("An error occurred. Please try again.").show();
-              }
-          });
-      });
 
       $(document).ready(function (e) {
           $("#register").one('click', register_click);
