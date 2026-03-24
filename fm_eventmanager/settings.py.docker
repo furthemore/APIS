@@ -366,7 +366,12 @@ if DEBUG:
 STATIC_URL = '/static/'
 STATIC_ROOT = '/app/apis/static/'
 STATICFILES_DIRS = (("bundler", "/app/apis/static/bundler"),)
-STATICFILES_STORAGE = 'fm_eventmanager.file_storage.SelectiveManifestStaticFilesStorage'
+
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'fm_eventmanager.file_storage.SelectiveManifestStaticFilesStorage',
+    }
+}
 
 # Session Management
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
