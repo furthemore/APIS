@@ -19,8 +19,8 @@
     "@syfaro/aamva-web": "^0.1.0",
     "@syfaro/scanners-and-such-web": "^0.1.0",
     "@tanstack/solid-devtools": "^0.8.0",
-    "@tanstack/solid-hotkeys": "^0.5.1",
-    "@tanstack/solid-hotkeys-devtools": "^0.4.4",
+    "@tanstack/solid-hotkeys": "^0.6.0",
+    "@tanstack/solid-hotkeys-devtools": "^0.5.0",
     "@tanstack/solid-query": "^5.95.2",
     "@tanstack/solid-query-devtools": "^5.95.2",
     "@tanstack/solid-router": "^1.168.3",
@@ -31,10 +31,10 @@
     "ky": "^1.14.0",
     "lodash": "^4.17.23",
     "mitt": "^3.0.1",
-    "mqtt": "^5.14.1",
+    "mqtt": "^5.15.1",
     "mrtd": "^1.0.0",
     "solid-fa": "^0.2.0",
-    "solid-js": "^1.9.10"
+    "solid-js": "^1.9.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
@@ -44,7 +44,7 @@
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/big.js": "^6.2.2",
     "@types/lodash": "^4.17.24",
-    "@types/w3c-web-hid": "^1.0.6",
+    "@types/w3c-web-hid": "^1.0.7",
     "baseline-browser-mapping": "^2.10.10",
     "eslint": "^9.39.1",
     "eslint-plugin-solid": "^0.14.5",
