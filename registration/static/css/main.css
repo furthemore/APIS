@@ -10,6 +10,10 @@ body {
     background: #3D67B1;
 }
 
+[data-bs-theme="dark"] body {
+    background: var(--bs-body-bg);
+}
+
 hr {
     border-top: 2px solid black;
 }
@@ -39,6 +43,12 @@ hr {
     border-radius: 15px;
 }
 
+[data-bs-theme="dark"] #content-holder {
+    background: var(--bs-card-bg, var(--bs-body-bg));
+    border-color: var(--bs-border-color);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+}
+
 .badge {
     min-width: 500px;
     min-height: 250px;
@@ -66,45 +76,42 @@ hr {
 }
 
 /* COMMON PRICING STYLES */
-.panel {
-    border-color: #ddd;
+.card.price {
+    transition: box-shadow .3s ease;
 }
 
-.panel.price,
-.panel.price > .panel-heading {
-    border-radius: 0px;
-    -moz-transition: all .3s ease;
-    -o-transition: all .3s ease;
-    -webkit-transition: all .3s ease;
-}
-
-.panel.price:hover {
+.card.price:hover {
     box-shadow: 0px 0px 30px rgba(0, 0, 0, .2);
 }
 
-.panel.price > .panel-heading {
+.card.price > .card-header {
     text-shadow: 0px 3px 0px rgba(50, 50, 50, .2);
 }
 
-.price .list-group-item {
-    border-bottom-: 1px solid rgba(250, 250, 250, .5);
-}
-
-.panel.price .list-group-item:last-child {
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-
-.panel.price .list-group-item:first-child {
-    border-top-right-radius: 0px;
-    border-top-left-radius: 0px;
-}
-
-.price .panel-footer {
-    color: #fff;
+.card.price > .card-footer {
     border-bottom: 0px;
     background-color: rgba(0, 0, 0, .1);
     box-shadow: 0px 3px 0px rgba(0, 0, 0, .3);
+}
+
+/* PRICE LEVEL CARD ANIMATIONS */
+@keyframes levelCardExit {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.92); }
+}
+
+@keyframes levelCardEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.level-card-exit {
+    animation: levelCardExit 0.18s ease-in forwards;
+    pointer-events: none;
+}
+
+.level-card-enter {
+    animation: levelCardEnter 0.22s ease-out both;
 }
 
 #terms li {
@@ -209,4 +216,33 @@ body > footer {
 .link-box {
     display: flex;
     justify-content: space-between;
+}
+
+#theme-toggle {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    background: rgba(128, 128, 128, 0.15);
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+#theme-toggle:hover {
+    background: rgba(128, 128, 128, 0.3);
+    border-color: rgba(128, 128, 128, 0.6);
+}
+
+#theme-toggle svg {
+    display: none;
+    pointer-events: none;
 }

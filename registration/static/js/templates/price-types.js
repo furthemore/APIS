@@ -86,7 +86,7 @@ const clearLevels = function () {
     $.each(levelTemplateData, function (key, val) {
         $("#" + val.levelId).text("Select " + val.name);
     });
-    $("form").validator('update');
+    resetFormValidation();
 };
 
 const generateOptions = function (levelId) {
@@ -171,7 +171,7 @@ const generateOptions = function (levelId) {
         }
     });
 
-    $("form").validator('update');
+    resetFormValidation();
 };
 
 const getOptions = function () {
