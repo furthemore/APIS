@@ -49,6 +49,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Login to Docker Hub (read-only)
+        uses: docker/login-action@4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
       - name: Install Dependencies
