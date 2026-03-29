@@ -157,7 +157,13 @@
 
       $(document).ready(function () {
           $("body").ready(function () {
-              $.getJSON("{% url 'registration:pricelevels' %}", function (data) {
+              var birthdate = attendee.birthdate ? attendee.birthdate.split('-') : [];
+              $.post("{% url 'registration:pricelevels' %}", JSON.stringify({
+                  year: birthdate[0],
+                  month: birthdate[1],
+                  day: birthdate[2],
+                  form_type: "attendee",
+              }), function (data) {
                   levelData = data;
                   var prevLevel = 50;
                   if (currentLevel && currentLevel.hasOwnProperty("basePrice")) {
