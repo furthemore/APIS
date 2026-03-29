@@ -88,8 +88,9 @@
 <div class="row mb-3">
   <label for="country" class="col-sm-3 col-form-label">Country <span class="text-danger">*</span></label>
   <div class="col-sm-6">
+    {% venue_country event as venue_country %}
     <select autocomplete="country" class="form-select addr-countries"
-            data-default="{{ attendee.country|default:event.venue.country }}"
+            data-default="{{ attendee.country|default:venue_country }}"
             id="country" name="country" required></select>
   </div>
   <div class="col-sm-3">
@@ -111,8 +112,9 @@
     <div class="invalid-feedback">City is required</div>
   </div>
   <div class="col-sm-5">
+    {% venue_state event as venue_state %}
     <select autocomplete="address-level1" class="form-select addr-states"
-            data-default="{{ attendee.state|default:event.venue.state }}"
+            data-default="{{ attendee.state|default:venue_state }}"
             data-country-id="country"
             id="state" name="state" required></select>
   </div>
