@@ -1485,6 +1485,9 @@ class PriceLevelAdmin(admin.ModelAdmin):
         "group",
     )
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(PriceLevelOption)
 class PriceLevelOptionAdmin(admin.ModelAdmin):
