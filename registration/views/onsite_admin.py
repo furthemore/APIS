@@ -31,6 +31,7 @@ from registration.models import (
     AttendeeOptions,
     Badge,
     Cashdrawer,
+    Department,
     Discount,
     Event,
     Firebase,
@@ -39,6 +40,7 @@ from registration.models import (
     PrintHistory,
     ShirtSizes,
     Staff,
+    generate_discount_code,
     get_random_token,
 )
 from registration.views.attendee import get_attendee_age
@@ -139,10 +141,11 @@ def onsite_admin_context(request):
         },
         "mqtt": mqtt_context,
         "shirtSizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
+        "departments": sorted(dept.name for dept in Department.objects.all()),
         "permissions": {
-            "cash": request.user.has_perm("registration.cash"),
-            "cashAdmin": request.user.has_perm("registration.cash_admin"),
-            "discount": request.user.has_perm("registration.discount"),
+            "cash": request.user.has_perm("order.cash"),
+            "cashAdmin": request.user.has_perm("order.cash_admin"),
+            "discount": request.user.has_perm("order.discount"),
         },
         "terminals": {
             "selected": selected_terminal,
@@ -447,29 +450,16 @@ def onsite_print_badges(request):
     badge_list = request.GET.getlist("id")
     terminal = get_active_terminal(request)
 
-    if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
-        signer = TimestampSigner()
-        data = signer.sign_object(
-            {
-                "badge_ids": [int(badge_id) for badge_id in badge_list],
-                "terminal": terminal.name if terminal else None,
-                "source": PrintHistory.ONSITE,
-            }
-        )
+    signer = TimestampSigner()
+    data = signer.sign_object(
+        {
+            "badge_ids": [int(badge_id) for badge_id in badge_list],
+            "terminal": terminal.name if terminal else None,
+            "source": PrintHistory.ONSITE,
+        }
+    )
 
-        pdf_path = reverse("registration:pdf") + f"?data={data}"
-    else:
-        queryset = Badge.objects.filter(id__in=badge_list)
-        pdf_name = admin.generate_badge_labels(
-            queryset, request, PrintHistory.ONSITE, terminal
-        )
-
-        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
-
-        # Async notify the frontend to refresh the cart
-        logger.info("Refreshing admin cart")
-        admin_push_cart_refresh(request)
-
+    pdf_path = reverse("registration:pdf") + f"?data={data}"
     print_url = reverse("registration:print") + "?" + urlencode({"file": pdf_path})
 
     return JsonResponse(
@@ -1084,42 +1074,47 @@ def get_b32_uuid():
 @staff_member_required
 @permission_required("order.discount")
 def create_discount(request):
-    # e.g '$10.00' or '10%'
-    amount = request.POST.get("amount").strip()
-    amount_off = Decimal("0")
-    percent_off = 0
+    discount_type = request.POST.get("type")
+    notes = request.POST.get("notes") or None
+    department = None
+    if department := request.POST.get("department") or None:
+        department = Department.objects.get(name=department)
 
     try:
-        if amount.startswith("$"):
-            amount_off = Decimal(amount[1:])
-        elif amount.startswith("%"):
-            percent_off = int(amount[1:])
-        elif amount.endswith("%"):
-            percent_off = int(amount[:-1])
-        else:
-            return JsonResponse(
-                {"success": False, "reason": "Unknown discount type"}, status=400
-            )
-    except ValueError as e:
-        return JsonResponse({"success": False, "reason": str(e)}, status=400)
+        value = Decimal(request.POST.get("value"))
+    except ValueError:
+        return JsonResponse({"success": False, "reason": "Unknown value provided"})
 
     cart = request.session.get("cart", None)
-    if cart is None:
-        request.session["cart"] = []
+    if not cart:
         return JsonResponse(
-            {"success": False, "reason": "Cart not initialized"}, status=400
+            {"success": False, "reason": "Cart not initialized or empty"}, status=400
         )
 
+    amount_off = Decimal(0)
+    percent_off = Decimal(0)
+
+    match discount_type:
+        case "Amount":
+            amount_off = value
+        case "Percent":
+            percent_off = value
+
+    notes = "\n\n".join(
+        item for item in [notes, f"Applied by [{request.user}]"] if item is not None
+    )
+
     discount = Discount(
-        codeName=get_b32_uuid(),
+        codeName=generate_discount_code(),
         percentOff=percent_off,
         amountOff=amount_off,
         startDate=timezone.now(),
         endDate=timezone.now() + timedelta(hours=1),
-        notes=f"Applied by [{request.user}]",
+        notes=notes,
         oneTime=True,
         used=0,
         reason="Onsite admin discount",
+        sponsoring_department=department,
     )
     discount.save()
 

@@ -69,6 +69,7 @@ export type OnsiteAdminContext = {
     };
   };
   shirtSizes: IdAndName[];
+  departments: string[];
   permissions: Permissions;
   terminals: {
     selected?: SelectedTerminal;
@@ -403,15 +404,25 @@ export const useRemoveBadgeFromCart = () =>
     };
   });
 
+export type DiscountParams = {
+  type: "Amount" | "Percent";
+  department: string;
+  value: string;
+  notes: string;
+};
+
 const createAndApplyDiscount = (
-  amount: string,
+  params: DiscountParams,
 ): Promise<FallibleRequest<void>> => {
-  const formData = new FormData();
-  formData.set("amount", amount);
+  const searchParams = new URLSearchParams();
+  searchParams.set("type", params.type);
+  searchParams.set("department", params.department);
+  searchParams.set("value", params.value);
+  searchParams.set("notes", params.notes);
 
   return adminApi
     .post("registration/onsite/admin/discount/create", {
-      body: formData,
+      body: searchParams,
     })
     .json();
 };
@@ -421,8 +432,8 @@ export const useCreateAndApplyDiscount = () =>
     return {
       throwOnError: true,
       mutationKey: [...KEY_PREFIX, "discount", "create"],
-      mutationFn: async (amount: string) => {
-        return checkFallibleResponse(await createAndApplyDiscount(amount));
+      mutationFn: async (params: DiscountParams) => {
+        return checkFallibleResponse(await createAndApplyDiscount(params));
       },
       onSuccess: async (_data, _variables, _result, context) => {
         await invalidateCart(context.client);

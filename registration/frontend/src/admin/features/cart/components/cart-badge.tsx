@@ -239,7 +239,7 @@ export const CartBadge: Component<{
                 </td>
               </tr>
             </tbody>
-            <Show when={attendeeOptions() || props.badge.staff}>
+            <Show when={attendeeOptions().length > 0 || props.badge.staff}>
               <thead>
                 <tr>
                   <th>Item</th>

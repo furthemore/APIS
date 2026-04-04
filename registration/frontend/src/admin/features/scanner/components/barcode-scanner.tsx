@@ -85,7 +85,7 @@ export const BarcodeScanner: Component<{ emitter: Emitter<BarcodeEmitter> }> = (
 
   const [pairedHidDevices, { refetch }] = createResource(async () => {
     if (!HID_SUPPORTED) {
-        return [];
+      return [];
     }
 
     return filterDevices(await navigator.hid.getDevices());
