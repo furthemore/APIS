@@ -1,5 +1,4 @@
 import copy
-import html
 import json
 import logging
 from datetime import date
@@ -35,8 +34,6 @@ from registration.forms import FirebaseForm
 from registration.models import *
 from registration.services import CreateAttendeeOptions
 from registration.views import webhooks
-
-from . import printing
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +170,15 @@ class StaffInviteAdmin(admin.ModelAdmin):
     actions = [send_staff_token_email]
     list_display = ["email", "token", "sent", "used"]
     readonly_fields = ["token", "used", "usedDate"]
-    fields = ["token", "email", "validUntil", "ignore_time_window", "used", "usedDate", "sent"]
+    fields = [
+        "token",
+        "email",
+        "validUntil",
+        "ignore_time_window",
+        "used",
+        "usedDate",
+        "sent",
+    ]
 
 
 @admin.action(description="Send approval email and payment instructions")
@@ -898,96 +903,20 @@ def get_attendee_age(attendee):
 
 @admin.action(description="Print Badges")
 def print_badges(modeladmin, request, queryset):
-    if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
-        signer = TimestampSigner()
-        data = signer.sign_object(
-            {
-                "badge_ids": [badge.id for badge in queryset],
-                "source": PrintHistory.ADMIN,
-            }
-        )
+    signer = TimestampSigner()
+    data = signer.sign_object(
+        {
+            "badge_ids": [badge.id for badge in queryset],
+            "source": PrintHistory.ADMIN,
+        }
+    )
 
-        pdf_path = reverse("registration:pdf") + f"?data={data}"
-    else:
-        pdf_name = generate_badge_labels(queryset, request, PrintHistory.ADMIN, None)
-        pdf_path = reverse("registration:pdf") + f"?file={pdf_name}"
+    pdf_path = reverse("registration:pdf") + f"?data={data}"
 
     response = HttpResponseRedirect(reverse("registration:print"))
     url_params = {"file": pdf_path, "next": request.get_full_path()}
     response["Location"] += "?{}".format(urlencode(url_params))
     return response
-
-
-def generate_badge_labels(queryset, request, source, terminal):
-    con = printing.Main(local=True)
-    tags = []
-    for badge in queryset:
-        # print the badge
-        level = badge.effectiveLevel()
-        if level is None or level == Badge.UNPAID:
-            messages.warning(
-                request,
-                f"skipped printing {badge} a number beacuse it's registration level is {level}",
-            )
-            continue
-        if badge.badgeNumber is None:
-            badge_number = ""
-        else:
-            badge_number = "{:04}".format(badge.badgeNumber)
-
-        badge_type = get_badge_type(badge)
-        if badge_type == "Attendee":
-            printed_badge_level = html.escape(str(badge.effectiveLevel()))
-        elif badge_type == "Dealer":
-            printed_badge_level = "Dealer"
-        elif badge_type == "Staff":
-            printed_badge_level = "Staff"
-
-            if source == PrintHistory.ONSITE:
-                staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-                if not staff.checkedIn:
-                    staff.checkedIn = True
-                    staff.save()
-
-        tags.append(
-            {
-                "name": html.escape(badge.badgeName),
-                "number": badge_number,
-                "level": printed_badge_level,
-                "title": "",
-                "age": get_attendee_age(badge.attendee),
-            }
-        )
-
-        badge.printed = True
-        badge.save()
-        PrintHistory.objects.create(badge=badge, firebase=terminal, source=source)
-
-    if len(tags) == 0:
-        messages.warning(request, "None of the selected badges can be printed.")
-        return
-    con.nametags(tags, theme=badge.event.badgeTheme)
-    # serve up this file
-    pdf_path = con.pdf.split("/")[-1]
-    return pdf_path
-
-
-def get_badge_type(badge):
-    # check if staff
-    try:
-        staff = Staff.objects.get(attendee=badge.attendee, event=badge.event)
-    except Staff.DoesNotExist:
-        pass
-    else:
-        return "Staff"
-    # check if dealer
-    try:
-        dealers = Dealer.objects.get(attendee=badge.attendee, event=badge.event)
-    except Dealer.DoesNotExist:
-        pass
-    else:
-        return "Dealer"
-    return "Attendee"
 
 
 class AttendeeOptionInline(NestedTabularInline):
