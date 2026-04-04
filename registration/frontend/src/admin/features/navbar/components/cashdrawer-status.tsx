@@ -2,19 +2,27 @@ import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import { Dialog } from "@kobalte/core/dialog";
 import { createTimeAgo } from "@solid-primitives/date";
 import { useQuery } from "@tanstack/solid-query";
-import { type Component, Suspense, createEffect } from "solid-js";
+import {
+  type Accessor,
+  type Component,
+  Suspense,
+  createEffect,
+} from "solid-js";
 
 import { cashStatusOptions } from "@admin/api";
 import { cleanMoneyAmount } from "@admin/features/cart/utils";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
-import { Modal, type ModalSignal } from "@components/modal";
+import { Modal } from "@components/modal";
 
-export const CashdrawerStatus: Component<{ signal: ModalSignal }> = (props) => {
-  const status = useQuery(() => cashStatusOptions(props.signal[0]()));
+export const CashdrawerStatus: Component<{
+  open: Accessor<boolean>;
+  onOpenChange: (open: boolean) => void;
+}> = (props) => {
+  const status = useQuery(() => cashStatusOptions(props.open()));
 
   createEffect(() => {
-    if (props.signal[0]()) {
+    if (props.open()) {
       status.refetch();
     }
   });
@@ -25,7 +33,7 @@ export const CashdrawerStatus: Component<{ signal: ModalSignal }> = (props) => {
   });
 
   return (
-    <Modal signal={props.signal}>
+    <Modal open={props.open} onOpenChange={props.onOpenChange}>
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">

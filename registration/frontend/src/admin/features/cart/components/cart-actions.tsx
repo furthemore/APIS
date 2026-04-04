@@ -192,7 +192,10 @@ export const CartActions: Component<{
         </ActionButton>
       </div>
 
-      <DiscountModal signal={[creatingDiscount, setCreatingDiscount]} />
+      <DiscountModal
+        open={creatingDiscount}
+        onOpenChange={setCreatingDiscount}
+      />
     </div>
   );
 };

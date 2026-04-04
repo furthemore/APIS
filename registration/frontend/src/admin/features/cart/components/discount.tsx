@@ -2,6 +2,7 @@ import { Combobox } from "@kobalte/core/combobox";
 import { Dialog } from "@kobalte/core/dialog";
 import { ToggleGroup } from "@kobalte/core/toggle-group";
 import {
+  type Accessor,
   type Component,
   For,
   Match,
@@ -14,7 +15,7 @@ import { createStore } from "solid-js/store";
 import { useCreateAndApplyDiscount } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { Button } from "@components/button";
-import { Modal, type ModalSignal } from "@components/modal";
+import { Modal } from "@components/modal";
 
 const DISCOUNT_CHOICES = ["Comp", "Amount", "Percent"] as const;
 type DiscountType = (typeof DISCOUNT_CHOICES)[number];
@@ -38,7 +39,10 @@ const DEFAULT_FORM = {
   notes: "",
 };
 
-export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
+export const DiscountModal: Component<{
+  open: Accessor<boolean>;
+  onOpenChange: (open: boolean) => void;
+}> = (props) => {
   const config = useContext(ConfigContext)!;
 
   const createAndApplyDiscount = useCreateAndApplyDiscount();
@@ -46,7 +50,7 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
   const [form, setForm] = createStore(structuredClone(DEFAULT_FORM));
 
   createEffect(() => {
-    if (!props.signal[0]()) {
+    if (!props.open()) {
       setForm(structuredClone(DEFAULT_FORM));
     }
   });
@@ -68,13 +72,13 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
         notes: form.notes,
       },
       {
-        onSuccess: () => props.signal[1](false),
+        onSuccess: () => props.onOpenChange(false),
       },
     );
   };
 
   return (
-    <Modal signal={props.signal}>
+    <Modal open={props.open} onOpenChange={props.onOpenChange}>
       <div class="modal-dialog modal-dialog-scrollable">
         <form class="modal-content" onSubmit={submit}>
           <div class="modal-header">

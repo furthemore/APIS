@@ -187,7 +187,10 @@ export const Actions: Component<{
 
   return (
     <>
-      <CashdrawerStatus signal={[showCashStatus, setShowCashStatus]} />
+      <CashdrawerStatus
+        open={showCashStatus}
+        onOpenChange={setShowCashStatus}
+      />
 
       <DropdownMenu forceMount={isMounted()} onOpenChange={setShowDropdown}>
         <DropdownMenu.Trigger as="button" class="nav-link dropdown-toggle">
