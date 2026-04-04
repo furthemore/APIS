@@ -1,0 +1,27 @@
+name: Main CI
+on:
+  push:
+    branches:
+      - production
+jobs:
+  bump-tag-version:
+    name: Bump and Tag Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jefflinse/pr-semver-bump@v1.7.1
+        name: Bump and Tag Version
+        with:
+          mode: bump
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          major-label: major release
+          minor-label: minor release
+          patch-label: patch release
+          noop-labels:
+            - documentation change
+            - noop
+          require-release-notes: true
+          release-notes-prefix: ''
+          release-notes-suffix: ''
+          with-v: false
+          base-branch: false
