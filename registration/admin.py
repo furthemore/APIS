@@ -1432,7 +1432,15 @@ class PriceLevelOptionAdmin(admin.ModelAdmin):
 
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
-    list_display = ("codeName", "amountOff", "percentOff", "oneTime", "used", "status")
+    list_display = (
+        "codeName",
+        "amountOff",
+        "percentOff",
+        "sponsoring_department",
+        "oneTime",
+        "used",
+        "status",
+    )
     save_on_top = True
 
 

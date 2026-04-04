@@ -56,3 +56,11 @@ $color-mode-type: media-query;
 table {
   font-variant-numeric: tabular-nums;
 }
+
+button[data-pressed] {
+  @extend .active;
+}
+
+textarea.size-content {
+  field-sizing: content;
+}

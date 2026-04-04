@@ -17,7 +17,6 @@ import {
 import {
   type CartResponse,
   useApplyCashPayment,
-  useCreateAndApplyDiscount,
   useEnableCardPayment,
   usePrintBadges,
   usePrintReceipts,
@@ -29,11 +28,11 @@ import { IconAndLabel } from "@components/icon-and-label";
 
 import {
   attemptCashPayment,
-  createAndApplyDiscountHelper,
   createAutoPrintCheck,
   printBadgesHelper,
 } from "../utils";
 import { ActionButton } from "./action-button";
+import { DiscountModal } from "./discount";
 
 const PRINTABLE_STATUS = new Set(["Paid", "Comp", "Staff", "Dealer"]);
 
@@ -50,9 +49,9 @@ export const CartActions: Component<{
   const applyCashPayment = useApplyCashPayment();
   const enableCardPayment = useEnableCardPayment();
   const printReceipts = usePrintReceipts();
-  const createAndApplyDiscount = useCreateAndApplyDiscount();
 
   const [loading, setLoading] = createSignal<boolean>(false);
+  const [creatingDiscount, setCreatingDiscount] = createSignal(false);
 
   const hasHold = createMemo(
     () =>
@@ -113,6 +112,7 @@ export const CartActions: Component<{
   const canApplyPayment = () => !hasHold() && allNeedPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
   const supportsCard = () => config()?.terminals?.selected?.features.card;
+  const canDiscount = () => config()?.permissions.discount;
 
   const badgeReferences = () =>
     props.entries?.result?.map((badge) => badge.reference) || [];
@@ -122,11 +122,12 @@ export const CartActions: Component<{
       <div class="row g-2 mb-2">
         <ActionButton
           class="btn-outline-warning"
-          disabled={
-            loading() || !config()?.permissions.discount || !canApplyPayment()
-          }
+          disabled={loading() || !canApplyPayment() || !canDiscount()}
           setLoading={setLoading}
-          action={() => createAndApplyDiscountHelper(createAndApplyDiscount)}
+          keyboardShortcut={"Alt+T"}
+          action={() => {
+            setCreatingDiscount(true);
+          }}
         >
           <IconAndLabel children="Discount" icon={faGift} fw />
         </ActionButton>
@@ -190,6 +191,11 @@ export const CartActions: Component<{
           <IconAndLabel children="Print Badges" icon={faPrint} fw />
         </ActionButton>
       </div>
+
+      <DiscountModal
+        open={creatingDiscount}
+        onOpenChange={setCreatingDiscount}
+      />
     </div>
   );
 };
