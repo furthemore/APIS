@@ -69,7 +69,7 @@ class FirebaseAdmin(admin.ModelAdmin):
         "name",
         "cashdrawer",
         "print_via_mqtt",
-        "print_via_payment",
+        "print_target",
         "background_color",
         "webview",
     )

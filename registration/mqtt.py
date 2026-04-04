@@ -68,14 +68,25 @@ def get_onsite_admin_token(firebase: Firebase) -> dict:
     if firebase.print_via_mqtt:
         print_firebase = firebase.print_via_mqtt
 
-        print_device = "station"
-        if firebase.print_via_payment:
-            print_device = "payment"
+        print_device = None
+        match firebase.print_target:
+            case Firebase.STATION_SERVICE:
+                print_device = "station"
+            case Firebase.MQTT_REGISTER_APP:
+                print_device = "payment"
+            case Firebase.WEB_USB:
+                print_device = "web"
 
-        print_topic = get_topic(print_device, "print", name=str(print_firebase.name))
+        if print_device:
+            print_topic = get_topic(
+                print_device, "print", name=str(print_firebase.name)
+            )
 
-        if print_firebase.id != firebase.id:
-            pub.append(print_topic)
+            if (
+                print_device not in ("payment", "station")
+                or print_firebase.id != firebase.id
+            ):
+                pub.append(print_topic)
 
     user = format_topic(str(firebase.name))
     token = get_token(user, subs=[sub], publ=pub, exp=60 * 60 * 24)

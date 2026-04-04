@@ -977,6 +977,13 @@ class Firebase(models.Model):
         (MQTT_REGISTER_APP, "iPad"),
         (SQUARE_TERMINAL, "Square Terminal"),
     )
+    STATION_SERVICE = "station"
+    WEB_USB = "web-usb"
+    PRINT_CHOICES = (
+        (STATION_SERVICE, "Station Service"),
+        (MQTT_REGISTER_APP, "iPad"),
+        (WEB_USB, "WebUSB"),
+    )
     token = models.CharField(max_length=500, default=uuid.uuid4)
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
@@ -989,10 +996,12 @@ class Firebase(models.Model):
         verbose_name="Print via MQTT",
         help_text="Which terminal to use for printing via MQTT, if it should be used at this terminal.",
     )
-    print_via_payment = models.BooleanField(
-        default=False,
-        verbose_name="Print via payment",
-        help_text="When MQTT printing is enabled, print via payment device instead of station.",
+    print_target = models.CharField(
+        max_length=20,
+        choices=PRINT_CHOICES,
+        blank=True,
+        verbose_name="Print Target",
+        help_text="Which device at the selected terminal to use for printing badges.",
     )
     background_color = models.CharField(max_length=10, default="#0099cc")
     foreground_color = models.CharField(max_length=10, default="#ffffff")

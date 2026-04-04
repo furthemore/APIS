@@ -1,4 +1,3 @@
-/// <reference types="w3c-web-hid" />
 import { HidPosDevice, SnapiDevice } from "@syfaro/scanners-and-such-web";
 import { parse } from "date-fns/parse";
 import { type MRTDDate } from "mrtd";

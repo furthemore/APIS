@@ -18,7 +18,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "w3c-web-hid", "w3c-web-usb"],
     "useDefineForClassFields": true,
     "verbatimModuleSyntax": true
   }

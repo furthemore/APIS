@@ -13,6 +13,7 @@ export type UserSettingKey =
   | "showSearchStatus"
   | "printAfterPayment"
   | "searchBirthday"
+  | "usesLocalPrinter"
   | "usesLocalScanner";
 
 export type UserSettings = Record<UserSettingKey, boolean | undefined>;
@@ -23,6 +24,7 @@ const USER_DEFAULTS: UserSettings = {
   showSearchStatus: false,
   printAfterPayment: true,
   searchBirthday: true,
+  usesLocalPrinter: false,
   usesLocalScanner: false,
 };
 
