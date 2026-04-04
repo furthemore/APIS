@@ -28,7 +28,7 @@ from square.types.device import Device
 from square.types.error import Error
 from square.types.payment import Payment
 
-from . import emails, tasks
+from . import tasks
 from .models import *
 
 SQUARE_REQUESTS = Histogram(

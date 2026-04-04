@@ -1,8 +1,5 @@
 from contextlib import contextmanager
 from datetime import timedelta
-from pathlib import Path
-from unittest.mock import patch
-from urllib.parse import urlparse
 
 import httpx
 import respx
@@ -116,20 +113,6 @@ class TestRegistrationPrinting(TestCase):
 
         return data
 
-    @override_settings(PRINT_RENDERER="wkhtmltopdf")
-    def test_print_wkhtmltopdf(self):
-        with patch("subprocess.check_call", return_value=0) as patched:
-            data = self._badge_generates_pdf()
-        self.assertEqual(patched.call_count, 1)
-        args = patched.call_args[0][0]
-        # Last argument is always the filename with path
-        arg_filename = Path(args[-1]).name
-        response_filename = urlparse(data["file"]).query.removeprefix("file=")
-        self.assertEqual(arg_filename, response_filename)
-        # wkhtmltopdf responses return a direct path to the file
-        self.assertIn("?file=", data["file"])
-
-    @override_settings(PRINT_RENDERER="gotenberg")
     def test_print_gotenberg(self):
         with patch_gotenberg(hasattr(settings, "GOTENBERG_HOST")):
             data = self._badge_generates_pdf()

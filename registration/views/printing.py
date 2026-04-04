@@ -5,7 +5,7 @@ from typing import Union
 from django.conf import settings
 from django.contrib import messages
 from django.core.signing import TimestampSigner
-from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import Context, Template
 from gotenberg_client import GotenbergClient
@@ -30,33 +30,7 @@ def printNametag(request):
     return render(request, "registration/printing.html", context)
 
 
-def servePDF(request):
-    if getattr(settings, "PRINT_RENDERER", "wkhtmltopdf") == "gotenberg":
-        return pdfFromGotenberg(request)
-    else:
-        return pdfFromDisk(request)
-
-
-def pdfFromDisk(request: HttpRequest) -> Union[FileResponse, JsonResponse]:
-    name = request.GET.get("file", None)
-    if not name or not isinstance(name, str):
-        return JsonResponse(
-            {"success": False, "reason": "Name was missing"}, status=400
-        )
-
-    root_dir = getattr(settings, "PDF_DIRECTORY", "/tmp")
-    try:
-        path = Path(root_dir).joinpath(Path(name).name)
-        f = open(path, "rb")
-    except IOError:
-        return JsonResponse({"success": False, "reason": "IO error"}, status=404)
-
-    response = FileResponse(f, content_type="application/pdf")
-    response["Access-Control-Allow-Origin"] = "*"
-    return response
-
-
-def pdfFromGotenberg(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
+def servePDF(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
     data = request.GET.get("data", None)
     if not data:
         return JsonResponse({"success": False, "reason": "Missing data"}, status=400)
