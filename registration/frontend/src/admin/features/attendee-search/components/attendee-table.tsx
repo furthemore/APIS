@@ -47,12 +47,12 @@ export const AttendeeTable: Component<AttendeeTableProps> = (props) => {
       <table class="table-striped table-hover table align-baseline">
         <thead>
           <tr class="sticky-top z-1">
-            <th style={{ width: "35%" }}>Name</th>
+            <th>Name</th>
             <th style={{ width: showSearchStatus() ? "40%" : "50%" }}>Badge</th>
             <Show when={showSearchStatus()}>
               <th style={{ width: "10%" }}>Status</th>
             </Show>
-            <th style={{ width: "15%" }} />
+            <th />
           </tr>
         </thead>
         <tbody>

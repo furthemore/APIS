@@ -12,7 +12,7 @@ import {
 } from "solid-js";
 import { createStore } from "solid-js/store";
 
-import { useCreateAndApplyDiscount } from "@admin/api";
+import { type IdAndName, useCreateAndApplyDiscount } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { Button } from "@components/button";
 import { Modal } from "@components/modal";
@@ -32,9 +32,16 @@ const typeForSelectedType = (
   }
 };
 
-const DEFAULT_FORM = {
-  type: "Comp" as DiscountType,
-  department: "",
+type DiscountForm = {
+  type: DiscountType;
+  department: number | null;
+  value: string;
+  notes: string;
+};
+
+const DEFAULT_FORM: DiscountForm = {
+  type: "Comp",
+  department: null,
   value: "",
   notes: "",
 };
@@ -67,7 +74,7 @@ export const DiscountModal: Component<{
     createAndApplyDiscount.mutate(
       {
         type: typeForSelectedType(form.type),
-        department: form.department,
+        department: form.department!,
         value: form.type === "Comp" ? "100" : form.value,
         notes: form.notes,
       },
@@ -163,14 +170,17 @@ export const DiscountModal: Component<{
                 Sponsoring Department
               </label>
 
-              <Combobox
+              <Combobox<IdAndName>
                 options={config()?.departments || []}
+                optionValue="id"
+                optionTextValue="name"
+                optionLabel="name"
                 placeholder="Select department"
-                onChange={(ev) => setForm("department", ev ?? "")}
-                itemComponent={(props) => (
-                  <Combobox.Item item={props.item}>
+                onChange={(ev) => setForm("department", ev?.id ?? null)}
+                itemComponent={(itemProps) => (
+                  <Combobox.Item item={itemProps.item}>
                     <Combobox.ItemLabel as="a" class="dropdown-item" href="#">
-                      {props.item.rawValue}
+                      {itemProps.item.rawValue.name}
                     </Combobox.ItemLabel>
                   </Combobox.Item>
                 )}

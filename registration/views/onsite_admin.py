@@ -134,14 +134,25 @@ def onsite_admin_context(request):
             "auth": mqtt.get_onsite_admin_token(terminal),
         }
 
+    events = [
+        {"id": e.id, "name": e.name}
+        for e in Event.objects.filter(eventEnd__gt=timezone.now())
+        .order_by("eventStart")
+        .all()
+    ]
+
     context = {
         "user": {
             "id": request.user.id,
             "email": request.user.email,
         },
         "mqtt": mqtt_context,
-        "shirtSizes": [{"name": s.name, "id": s.id} for s in ShirtSizes.objects.all()],
-        "departments": sorted(dept.name for dept in Department.objects.all()),
+        "shirtSizes": [{"id": s.id, "name": s.name} for s in ShirtSizes.objects.all()],
+        "departments": [
+            {"id": d.id, "name": d.name}
+            for d in Department.objects.order_by("name").all()
+        ],
+        "events": events,
         "permissions": {
             "cash": request.user.has_perm("order.cash"),
             "cashAdmin": request.user.has_perm("order.cash_admin"),
@@ -886,6 +897,7 @@ def build_result(cart):
             "badgeName": badge.badgeName,
             "badgeNumber": badge.badgeNumber,
             "abandoned": badge.abandoned,
+            "eventId": badge.event_id,
             "effectiveLevel": effectiveLevel,
             "discount": get_discount_dict(order.discount),
             "age": get_attendee_age(badge.attendee),
@@ -1078,7 +1090,7 @@ def create_discount(request):
     notes = request.POST.get("notes") or None
     department = None
     if department := request.POST.get("department") or None:
-        department = Department.objects.get(name=department)
+        department = Department.objects.get(id=int(department))
 
     try:
         value = Decimal(request.POST.get("value"))
@@ -1364,4 +1376,81 @@ def fulfill(request):
         attendee_option.fulfilled_by = request.user
         attendee_option.save()
 
+    return JsonResponse({"success": True})
+
+
+@require_safe
+@staff_member_required
+def onsite_admin_badge_history(request):
+    badge_id = request.GET.get("id")
+    try:
+        badge = Badge.objects.get(id=int(badge_id))
+    except (TypeError, ValueError, Badge.DoesNotExist):
+        return JsonResponse({"success": False, "reason": "Badge not found"})
+
+    source_labels = dict(PrintHistory.SOURCE_CHOICES)
+    print_history = badge.printhistory_set.select_related("firebase").order_by(
+        "created_at"
+    )
+    roll_history = badge.roll_forwards.select_related(
+        "from_event", "to_event", "rolled_by"
+    ).order_by("rolled_at")
+
+    return JsonResponse(
+        {
+            "success": True,
+            "printHistory": [
+                {
+                    "source": source_labels.get(h.source, h.source),
+                    "terminal": h.firebase.name if h.firebase else None,
+                    "printedAt": h.created_at.isoformat(),
+                }
+                for h in print_history
+            ],
+            "rollHistory": [
+                {
+                    "fromEvent": h.from_event.name,
+                    "toEvent": h.to_event.name,
+                    "rolledAt": h.rolled_at.isoformat(),
+                    "rolledBy": h.rolled_by.username if h.rolled_by else None,
+                }
+                for h in roll_history
+            ],
+        }
+    )
+
+
+@require_POST
+@staff_member_required
+def onsite_admin_badge_edit(request):
+    badge_id = request.GET.get("id")
+    badge_name = request.GET.get("badge_name")
+    event_id = request.GET.get("event_id")
+
+    try:
+        badge = Badge.objects.get(id=int(badge_id))
+    except (TypeError, ValueError, Badge.DoesNotExist):
+        return JsonResponse({"success": False, "reason": "Badge not found"})
+
+    if badge_name is not None:
+        badge.badgeName = badge_name
+
+    if event_id is not None:
+        try:
+            to_event = Event.objects.get(id=int(event_id))
+        except (ValueError, Event.DoesNotExist):
+            return JsonResponse({"success": False, "reason": "Event not found"})
+
+        if badge.event_id != to_event.id:
+            try:
+                badge.roll_forward(to_event, rolled_by=request.user)
+            except ValueError:
+                return JsonResponse(
+                    {"success": False, "reason": "Could not roll forward"}
+                )
+
+            # Roll forward already saves the object so don't save again.
+            return JsonResponse({"success": True})
+
+    badge.save()
     return JsonResponse({"success": True})

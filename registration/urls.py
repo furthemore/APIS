@@ -24,36 +24,91 @@ def trigger_error(request):
 
 urlpatterns = [
     path("sentry-debug/", trigger_error),
-    path('', registration.views.common.index, name="index"),
+    path("", registration.views.common.index, name="index"),
     path("logout/", LogoutView.as_view(), name="logout"),
-    path("upgrade/lookup/", registration.views.upgrade.find_upgrade, name="find_upgrade"),
+    path(
+        "upgrade/lookup/", registration.views.upgrade.find_upgrade, name="find_upgrade"
+    ),
     path("upgrade/info/", registration.views.upgrade.info_upgrade, name="info_upgrade"),
     path("upgrade/add/", registration.views.upgrade.add_upgrade, name="add_upgrade"),
-    path("upgrade/invoice/", registration.views.upgrade.invoice_upgrade, name="invoice_upgrade"),
-    path("upgrade/checkout/", registration.views.upgrade.checkout_upgrade, name="checkout_upgrade"),
+    path(
+        "upgrade/invoice/",
+        registration.views.upgrade.invoice_upgrade,
+        name="invoice_upgrade",
+    ),
+    path(
+        "upgrade/checkout/",
+        registration.views.upgrade.checkout_upgrade,
+        name="checkout_upgrade",
+    ),
     path("upgrade/done/", registration.views.upgrade.done_upgrade, name="done_upgrade"),
-    path('upgrade/<slug:guid>/', registration.views.upgrade.upgrade, name="upgrade"),
-    path("returning-staff/done/", registration.views.staff.staff_done, name="returning_staff_done"),
-    path("returning-staff/lookup/", registration.views.staff.find_returning_staff, name="find_returning_staff"),
-    path("returning-staff/info/", registration.views.staff.info_returning_staff, name="info_returning_staff"),
-    path("returning-staff/add/", registration.views.staff.add_returning_staff, name="add_returning_staff"),
-    path('returning-staff/<slug:guid>/', registration.views.staff.returning_staff, name="returning_staff"),
+    path("upgrade/<slug:guid>/", registration.views.upgrade.upgrade, name="upgrade"),
+    path(
+        "returning-staff/done/",
+        registration.views.staff.staff_done,
+        name="returning_staff_done",
+    ),
+    path(
+        "returning-staff/lookup/",
+        registration.views.staff.find_returning_staff,
+        name="find_returning_staff",
+    ),
+    path(
+        "returning-staff/info/",
+        registration.views.staff.info_returning_staff,
+        name="info_returning_staff",
+    ),
+    path(
+        "returning-staff/add/",
+        registration.views.staff.add_returning_staff,
+        name="add_returning_staff",
+    ),
+    path(
+        "returning-staff/<slug:guid>/",
+        registration.views.staff.returning_staff,
+        name="returning_staff",
+    ),
     path("new-staff/done/", registration.views.staff.staff_done, name="new_staff_done"),
-    path("new-staff/lookup/", registration.views.staff.find_new_staff, name="find_new_staff"),
-    path("new-staff/info/", registration.views.staff.info_new_staff, name="info_new_staff"),
-    path("new-staff/add/", registration.views.staff.add_new_staff, name="add_new_staff"),
-    path('new-staff/<slug:guid>/', registration.views.staff.new_staff, name="new_staff"),
+    path(
+        "new-staff/lookup/",
+        registration.views.staff.find_new_staff,
+        name="find_new_staff",
+    ),
+    path(
+        "new-staff/info/",
+        registration.views.staff.info_new_staff,
+        name="info_new_staff",
+    ),
+    path(
+        "new-staff/add/", registration.views.staff.add_new_staff, name="add_new_staff"
+    ),
+    path(
+        "new-staff/<slug:guid>/", registration.views.staff.new_staff, name="new_staff"
+    ),
     path("dealer/", registration.views.dealers.new_dealer, name="new_dealer"),
-    path("dealer/addNew/", registration.views.dealers.addNewDealer, name="addNewDealer"),
+    path(
+        "dealer/addNew/", registration.views.dealers.addNewDealer, name="addNewDealer"
+    ),
     path("dealer/done/", registration.views.dealers.done_dealer, name="done_dealer"),
-    path("dealer/thanks/", registration.views.dealers.thanks_dealer, name="thanks_dealer"),
+    path(
+        "dealer/thanks/", registration.views.dealers.thanks_dealer, name="thanks_dealer"
+    ),
     path("dealer/lookup/", registration.views.dealers.find_dealer, name="find_dealer"),
     path("dealer/add/", registration.views.dealers.add_dealer, name="add_dealer"),
     path("dealer/info/", registration.views.dealers.info_dealer, name="info_dealer"),
-    path("dealer/invoice/", registration.views.dealers.invoice_dealer, name="invoice_dealer"),
-    path("dealer/checkout/", registration.views.dealers.checkout_dealer, name="checkout_dealer"),
-    path('dealer/<slug:guid>/', registration.views.dealers.dealers, name="dealers"),
-    path('dealer/<slug:guid>/assistants/',
+    path(
+        "dealer/invoice/",
+        registration.views.dealers.invoice_dealer,
+        name="invoice_dealer",
+    ),
+    path(
+        "dealer/checkout/",
+        registration.views.dealers.checkout_dealer,
+        name="checkout_dealer",
+    ),
+    path("dealer/<slug:guid>/", registration.views.dealers.dealers, name="dealers"),
+    path(
+        "dealer/<slug:guid>/assistants/",
         registration.views.dealers.find_dealer_to_add_assistant,
         name="find_dealer_to_add_assistant",
     ),
@@ -163,6 +218,16 @@ urlpatterns = [
         "onsite/admin/badge/print/clear",
         registration.views.onsite_admin.onsite_print_clear,
         name="onsite_print_clear",
+    ),
+    path(
+        "onsite/admin/badge/edit",
+        registration.views.onsite_admin.onsite_admin_badge_edit,
+        name="onsite_admin_badge_edit",
+    ),
+    path(
+        "onsite/admin/badge/history",
+        registration.views.onsite_admin.onsite_admin_badge_history,
+        name="onsite_admin_badge_history",
     ),
     re_path(
         r"^onsite/square/complete/?$",

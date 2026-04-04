@@ -69,7 +69,8 @@ export type OnsiteAdminContext = {
     };
   };
   shirtSizes: IdAndName[];
-  departments: string[];
+  departments: IdAndName[];
+  events: IdAndName[];
   permissions: Permissions;
   terminals: {
     selected?: SelectedTerminal;
@@ -130,6 +131,7 @@ export type CartResponse = {
 
 export type BadgeCart = Badge & {
   orderId: number;
+  eventId: number;
   age: number;
   firstName: string;
   lastName: string;
@@ -406,7 +408,7 @@ export const useRemoveBadgeFromCart = () =>
 
 export type DiscountParams = {
   type: "Amount" | "Percent";
-  department: string;
+  department: number;
   value: string;
   notes: string;
 };
@@ -416,7 +418,7 @@ const createAndApplyDiscount = (
 ): Promise<FallibleRequest<void>> => {
   const searchParams = new URLSearchParams();
   searchParams.set("type", params.type);
-  searchParams.set("department", params.department);
+  searchParams.set("department", params.department.toString());
   searchParams.set("value", params.value);
   searchParams.set("notes", params.notes);
 
@@ -837,6 +839,76 @@ export const useFulfillOption = () =>
       },
       onSuccess: async (_data, _variables, _result, context) => {
         await invalidateCart(context.client);
+      },
+    };
+  });
+
+export type BadgeEditParams = {
+  id: number;
+  badgeName: string;
+  eventId: number;
+};
+
+const editBadge = (params: BadgeEditParams): Promise<FallibleRequest<void>> => {
+  const searchParams = new URLSearchParams();
+  searchParams.set("id", params.id.toString());
+  searchParams.set("badge_name", params.badgeName);
+  searchParams.set("event_id", params.eventId.toString());
+
+  return adminApi
+    .post("registration/onsite/admin/badge/edit", { searchParams })
+    .json();
+};
+
+export type PrintHistoryEntry = {
+  source: string;
+  terminal?: string;
+  printedAt: string;
+};
+
+export type RollForwardEntry = {
+  fromEvent: string;
+  toEvent: string;
+  rolledAt: string;
+  rolledBy?: string;
+};
+
+const fetchBadgeHistory = (
+  badgeId: number,
+  init?: RequestInit,
+): Promise<
+  FallibleRequest<{
+    printHistory: PrintHistoryEntry[];
+    rollHistory: RollForwardEntry[];
+  }>
+> =>
+  adminApi
+    .get("registration/onsite/admin/badge/history", {
+      ...init,
+      searchParams: { id: badgeId },
+    })
+    .json();
+
+export const badgeHistoryOptions = (badgeId: number) =>
+  queryOptions({
+    queryKey: [...KEY_PREFIX, "badge", badgeId, "history"],
+    queryFn: async ({ signal }) =>
+      checkFallibleResponse(await fetchBadgeHistory(badgeId, { signal })),
+    throwOnError: true,
+  });
+
+export const useEditBadge = () =>
+  useMutation(() => {
+    return {
+      mutationKey: [...KEY_PREFIX, "badge", "edit"],
+      mutationFn: async (params: BadgeEditParams) => {
+        return checkFallibleResponse(await editBadge(params));
+      },
+      onSuccess: async (_data, _variables, _result, context) => {
+        await invalidateCart(context.client);
+        await context.client.invalidateQueries({
+          queryKey: [...KEY_PREFIX, "attendee", "search"],
+        });
       },
     };
   });
