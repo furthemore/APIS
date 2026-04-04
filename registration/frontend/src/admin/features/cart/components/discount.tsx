@@ -7,9 +7,9 @@ import {
   Match,
   Switch,
   createEffect,
-  createSignal,
   useContext,
 } from "solid-js";
+import { createStore } from "solid-js/store";
 
 import { useCreateAndApplyDiscount } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
@@ -19,34 +19,53 @@ import { Modal, type ModalSignal } from "@components/modal";
 const DISCOUNT_CHOICES = ["Comp", "Amount", "Percent"] as const;
 type DiscountType = (typeof DISCOUNT_CHOICES)[number];
 
+const typeForSelectedType = (
+  selectedType: DiscountType,
+): "Amount" | "Percent" => {
+  if (selectedType === "Amount") {
+    return "Amount";
+  } else if (selectedType === "Comp" || selectedType === "Percent") {
+    return "Percent";
+  } else {
+    throw new Error(`Unknown DiscountType: ${selectedType}`);
+  }
+};
+
+const DEFAULT_FORM = {
+  type: "Comp" as DiscountType,
+  department: "",
+  value: "",
+  notes: "",
+};
+
 export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
   const config = useContext(ConfigContext)!;
 
   const createAndApplyDiscount = useCreateAndApplyDiscount();
 
-  const [selectedType, setSelectedType] = createSignal<DiscountType>("Comp");
+  const [form, setForm] = createStore(structuredClone(DEFAULT_FORM));
 
   createEffect(() => {
     if (!props.signal[0]()) {
-      setSelectedType("Comp");
+      setForm(structuredClone(DEFAULT_FORM));
     }
   });
+
+  const updateType = (type: string | null) => {
+    if (type) {
+      setForm({ type: type as DiscountType, value: "" });
+    }
+  };
 
   const submit = (ev: SubmitEvent) => {
     ev.preventDefault();
 
-    if (!(ev.target instanceof HTMLFormElement)) {
-      return;
-    }
-
-    const data = new FormData(ev.target);
-
     createAndApplyDiscount.mutate(
       {
-        type: data.get("discount-type") === "Amount" ? "Amount" : "Percent",
-        department: data.get("department")?.toString() || "",
-        value: data.get("value")?.toString().trim() || "",
-        notes: data.get("notes")?.toString().trim() || "",
+        type: typeForSelectedType(form.type),
+        department: form.department,
+        value: form.type === "Comp" ? "100" : form.value,
+        notes: form.notes,
       },
       {
         onSuccess: () => props.signal[1](false),
@@ -74,16 +93,10 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
             <div class="mb-3">
               <p class="form-label">Discount Type</p>
 
-              <input
-                type="hidden"
-                name="discount-type"
-                value={selectedType()}
-              />
-
               <ToggleGroup
                 class="btn-group w-100"
-                value={selectedType()}
-                onChange={setSelectedType}
+                value={form.type}
+                onChange={updateType}
               >
                 <For each={DISCOUNT_CHOICES}>
                   {(type) => (
@@ -99,11 +112,7 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
             </div>
 
             <Switch>
-              <Match when={selectedType() === "Comp"}>
-                <input type="hidden" name="value" value="100" />
-              </Match>
-
-              <Match when={selectedType() === "Amount"}>
+              <Match when={form.type === "Amount"}>
                 <div class="mb-3">
                   <label for="amount" class="form-label">
                     Amount
@@ -114,16 +123,16 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
                       type="number"
                       class="form-control"
                       id="amount"
-                      name="value"
                       step="0.01"
                       min="0.01"
+                      onInput={(ev) => setForm("value", ev.target.value)}
                       required
                     />
                   </div>
                 </div>
               </Match>
 
-              <Match when={selectedType() === "Percent"}>
+              <Match when={form.type === "Percent"}>
                 <div class="mb-3">
                   <label for="percent" class="form-label">
                     Percent
@@ -133,10 +142,10 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
                       type="number"
                       class="form-control"
                       id="percent"
-                      name="value"
                       step="1"
                       min="1"
                       max="100"
+                      onInput={(ev) => setForm("value", ev.target.value)}
                       required
                     />
                     <span class="input-group-text">%</span>
@@ -151,9 +160,9 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
               </label>
 
               <Combobox
-                name="department"
                 options={config()?.departments || []}
                 placeholder="Select department"
+                onChange={(ev) => setForm("department", ev ?? "")}
                 itemComponent={(props) => (
                   <Combobox.Item item={props.item}>
                     <Combobox.ItemLabel as="a" class="dropdown-item" href="#">
@@ -162,7 +171,6 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
                   </Combobox.Item>
                 )}
               >
-                <Combobox.HiddenSelect />
                 <Combobox.Control class="input-group">
                   <Combobox.Input
                     class="form-control"
@@ -172,7 +180,7 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
                   <Combobox.Trigger class="btn btn-outline-secondary dropdown-toggle" />
                 </Combobox.Control>
                 <Combobox.Portal>
-                  <Combobox.Content style={{ "z-index": 99999 }}>
+                  <Combobox.Content style={{ "z-index": 9999 }}>
                     <Combobox.Listbox class="dropdown-menu show" />
                   </Combobox.Content>
                 </Combobox.Portal>
@@ -186,8 +194,8 @@ export const DiscountModal: Component<{ signal: ModalSignal }> = (props) => {
 
               <textarea
                 id="notes"
-                name="notes"
                 class="form-control size-content"
+                onInput={(ev) => setForm("notes", ev.target.value)}
               />
             </div>
           </Dialog.Description>
