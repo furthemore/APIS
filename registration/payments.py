@@ -346,7 +346,11 @@ def process_webhook_refund_update(notification: PaymentWebhookNotification) -> b
         )
         return False
     except NotSupportedError:
-        orders = [rec for rec in Order.objects.all() if "id" in rec["apiData"] and rec["apiData"]["id"] == refund_id ]
+        orders = [
+            rec
+            for rec in Order.objects.all()
+            if "id" in rec["apiData"] and rec["apiData"]["id"] == refund_id
+        ]
         if len(orders) == 0:
             logger.warning(
                 f"Got refund.updated webhook update for a refund id not found: {refund_id}"
@@ -482,7 +486,7 @@ def process_webhook_dispute_created_or_updated(
                 firstName=attendee.firstName,
                 lastName=attendee.lastName,
                 email=attendee.email,
-                reason=f"Initiated chargeback [APIS {datetime.datetime.now().isoformat()}]",
+                reason=f"Initiated chargeback [APIS {datetime.now().isoformat()}]",
             )
 
             ban.save()
