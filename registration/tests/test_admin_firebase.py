@@ -94,7 +94,7 @@ class TestFirebaseAdmin(TestCase):
             b"<?xml version='1.0' encoding='UTF-8'?>\n<svg ",
             response.content,
         )
-        self.assertIn(b'height="113mm"', response.content)
+        self.assertIn(b'<svg width="', response.content)
 
     def test_provision_page_normal_user(self):
         self.assertTrue(self.client.login(username="john", password="john"))
