@@ -124,7 +124,9 @@ def get_cart(request):
             "discount": discount,
             "hasMinors": hasMinors,
         }
-    return render(request, "registration/checkout.html", context)
+    output = render(request, "registration/checkout.html", context)
+    output.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
+    return output
 
 
 def saveCart(cart):

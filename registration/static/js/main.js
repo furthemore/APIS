@@ -53,7 +53,7 @@ async function postJSON(url, body) {
         headers['IDEMPOTENCY-KEY'] = IDEMPOTENCY_KEY;
     }
 
-    return fetch(URL_REGISTRATION_CHECKOUT, {
+    return fetch(url, {
         method: 'POST',
         headers: headers,
         body,

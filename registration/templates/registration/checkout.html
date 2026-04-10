@@ -37,9 +37,9 @@
           {% for option in item.options %}
             <tr>
             {% if "number" in option and option.number %}
-              <td id="sub-item">{{ option.name }} x{{ option.number }}</td>
+              <td class="sub-item">{{ option.name }} x{{ option.number }}</td>
             {% else %}
-              <td id="sub-item">{{ option.name }}</td>
+              <td class="sub-item">{{ option.name }}</td>
             {% endif %}
               <td></td>
             {% if option.total == 0 %}
@@ -58,7 +58,7 @@
         {% endif %}
         {% if discount %}
           <tr>
-            <td id="sub-item">Discount - {{ discount.codeName }}</td>
+            <td class="sub-item">Discount - {{ discount.codeName }}</td>
             <td></td>
             {% if discount.amountOff == 0 %}
               <td>- ${{ total_discount|floatformat:2 }}</td>
@@ -68,10 +68,10 @@
           </tr>
         {% endif %}
       {% endfor %}
-        <tr class="success">
+        <tr class="total success">
           <td></td>
-          <td><span id="total">Total</span></td>
-          <td><span id="total">{{ total|floatformat:2 }}</span></td>
+          <td><span>Total</span></td>
+          <td><span id="totalAmount">{{ total|floatformat:2 }}</span></td>
         </tr>
       </table>
 
@@ -244,19 +244,11 @@
             {% endif %}
 
             <div>
-              <form id="payment-form">
-                <div id="card-container"></div>
-              </form>
               <div id="payment-status-container"></div>
+              <div id="card-container"></div>
             </div>
             <br/>
             {% csrf_token %}
-
-            <div class="row">
-              <div class="col-sm-3 col-sm-offset-9">
-                <button class="btn btn-primary btn-block" id="checkout">Checkout</button>
-              </div>
-            </div>
 
           </form>
         </div>
@@ -290,10 +282,17 @@
 
 {% block javascript %}
   {% if total > 0 %}
-    {% if SQUARE_ENVIRONMENT == "sandbox" %}
-      <script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+  {% if PAYPAL_ENVIRONMENT == "sandbox" %}
+    <!-- Initialize the JS-SDK -->
+      <script
+          src="https://www.paypal.com/sdk/js?client-id={% settings_value 'PAYPAL_CLIENT_ID' %}&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,card"
+          data-sdk-integration-source="developer-studio"
+      ></script>
     {% else %}
-      <script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+      <script
+          src="https://www.paypal.com/sdk/js?client-id={% settings_value 'PAYPAL_CLIENT_ID' %}&components=buttons&enable-funding=venmo,card"
+          data-sdk-integration-source="developer-studio"
+      ></script>
     {% endif %}
   {% endif %}
   <script type="text/javascript">
@@ -302,6 +301,7 @@
       const LOCATION_ID = "{% settings_value 'SQUARE_LOCATION_ID' %}";
 
       /* APIS URLs */
+      const URL_REGISTRATION_CREATEORDER = "{% url 'registration:paypalcreate' %}";
       const URL_REGISTRATION_CHECKOUT = "{% url 'registration:checkout' %}";
       const URL_REGISTRATION_INDEX = "{% url 'registration:index' %}";
       const URL_REGISTRATION_DONE = "{% url 'registration:done' %}";
@@ -316,7 +316,7 @@
   </script>
   <script type="application/javascript" src="{% static 'js/checkout.js' %}"></script>
   {% if total > 0 %}
-    <script type="application/javascript" src="{% static 'js/payments.js' %}"></script>
+    <script type="application/javascript" src="{% static 'js/payments-paypal.js' %}"></script>
   {% else %}
     <script type="application/javascript">
         async function checkout(event) {
