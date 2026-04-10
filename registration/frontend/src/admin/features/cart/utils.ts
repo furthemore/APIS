@@ -49,10 +49,6 @@ export const cleanMoneyAmount = (input?: string): string => {
   return format(parsed.toNumber());
 };
 
-export const getBadgeIds = (badges: BadgeCart[]): Set<number> => {
-  return new Set(badges.map((badge) => badge.id));
-};
-
 export const createAutoPrintCheck = (): ((
   printableIds: number[],
   currentBadges: BadgeCart[],
@@ -120,17 +116,6 @@ export const attemptCashPayment = async (
   });
 
   alert(`Change: ${cleanMoneyAmount(change.toString())}`);
-};
-
-export const createAndApplyDiscountHelper = async (
-  createAndApplyDiscount: UseMutationResult<void, Error, string>,
-) => {
-  const discountAmount = prompt(
-    "Enter discount amount, starting with either $ or %",
-  );
-  if (!discountAmount) return;
-
-  await createAndApplyDiscount.mutateAsync(discountAmount);
 };
 
 export const printBadgesHelper = async (

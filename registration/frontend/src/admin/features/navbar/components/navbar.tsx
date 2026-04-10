@@ -99,7 +99,8 @@ export const Navbar: Component<{
 
             <li class="nav-item dropdown">
               <KeyboardShortcuts
-                signal={[showKeyboardShortcuts, setShowKeyboardShortcuts]}
+                open={showKeyboardShortcuts}
+                onOpenChange={setShowKeyboardShortcuts}
               />
 
               <DropdownMenu>

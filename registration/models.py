@@ -12,6 +12,7 @@ from django.utils import timezone
 # Uppercase letters and digits, excluding visually ambiguous characters: 0/O, 1/I, 5/S, 8/B, 2/Z
 VISUALLY_UNAMBIGUOUS_CHARS = "ACDEFGHJKLMNPQRTUVWXY3467"
 
+
 # Lookup and supporting tables.
 class LookupTable(models.Model):
     name = models.CharField(max_length=200)
@@ -52,6 +53,9 @@ class Discount(models.Model):
     oneTime = models.BooleanField(default=False)
     used = models.IntegerField(default=0)
     reason = models.CharField(max_length=100, blank=True)
+    sponsoring_department = models.ForeignKey(
+        "Department", on_delete=models.SET_NULL, null=True
+    )
 
     def __str__(self):
         return self.codeName
@@ -407,14 +411,12 @@ class Department(models.Model):
 
 def get_random_token(length):
     return "".join(
-        random.SystemRandom().choice(VISUALLY_UNAMBIGUOUS_CHARS)
-        for _ in range(length)
+        random.SystemRandom().choice(VISUALLY_UNAMBIGUOUS_CHARS) for _ in range(length)
     )
 
 
 def get_registration_token():
     return get_random_token(15)
-
 
 
 def generate_discount_code():

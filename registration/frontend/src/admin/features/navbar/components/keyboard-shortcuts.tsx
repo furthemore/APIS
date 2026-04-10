@@ -1,16 +1,17 @@
 import { Dialog } from "@kobalte/core/dialog";
 import { formatForDisplay } from "@tanstack/solid-hotkeys";
-import { type Component, For } from "solid-js";
+import { type Accessor, type Component, For } from "solid-js";
 
-import { Modal, type ModalSignal } from "@components/modal";
+import { Modal } from "@components/modal";
 
 import { KNOWN_SHORTCUTS } from "../utils";
 
-export const KeyboardShortcuts: Component<{ signal: ModalSignal }> = (
-  props,
-) => {
+export const KeyboardShortcuts: Component<{
+  open: Accessor<boolean>;
+  onOpenChange: (open: boolean) => void;
+}> = (props) => {
   return (
-    <Modal signal={props.signal}>
+    <Modal open={props.open} onOpenChange={props.onOpenChange}>
       <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">

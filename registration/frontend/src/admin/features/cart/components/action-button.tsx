@@ -19,7 +19,7 @@ export type ActionButtonProps = {
   disabled: boolean;
   setLoading: Setter<boolean>;
   keyboardShortcut?: Hotkey;
-  action: (holdingShift: boolean) => Promise<unknown> | undefined;
+  action: (holdingShift: boolean) => Promise<unknown> | void | undefined;
   children: JSX.Element;
 };
 
