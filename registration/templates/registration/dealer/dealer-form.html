@@ -173,7 +173,7 @@
 
   <div class="mb-3">
     <div class="d-flex justify-content-end">
-      <button id="register" type="submit" class="btn btn-primary" aria-controls="profile">Submit
+      <button id="register" type="button" class="btn btn-primary" aria-controls="profile">Submit
       </button>
     </div>
   </div>
@@ -282,6 +282,8 @@
       return;
     }
 
+    $("#register").prop("disabled", true);
+
     var data = {
       'attendee': {
         'firstName': $("#firstName").val(),
@@ -325,6 +327,7 @@
         $.ajaxSettings.beforeSend(xhr, settings);
       },
       "error": function (result, status, error) {
+        $("#register").prop("disabled", false);
         alert("An error has occurred. Please contact {{event.dealerEmail}} and we will correct the problem.")
       },
       "success": function () {

@@ -41,7 +41,7 @@
       <div class="col-sm-9 offset-sm-3">
         {% csrf_token %}
         <div class="d-flex justify-content-end">
-          <button id="lookup" type="submit" class="btn btn-primary" aria-controls="profile">Find My Application
+          <button id="lookup" type="button" class="btn btn-primary" aria-controls="profile">Find My Application
           </button>
         </div>
       </div>
@@ -60,6 +60,8 @@
               return;
           }
 
+          $("#lookup").prop("disabled", true);
+
           var data = {
               'email': $("#email").val(), 'token': $("#token").val()
           };
@@ -73,6 +75,7 @@
                   $.ajaxSettings.beforeSend(xhr, settings);
               },
               "error": function (result, status, error) {
+                  $("#lookup").prop("disabled", false);
                   bootstrap.Modal.getOrCreateInstance(document.getElementById('errorModal')).show();
               },
               "success": function () {
