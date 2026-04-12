@@ -40,70 +40,59 @@
   </div>
 
   <form class="row g-3" novalidate>
-    <ul class="nav nav-tabs mb-3" role="tablist">
-      <li class="nav-item" role="presentation">
-        <a class="nav-link active" id="personal-tab" data-bs-toggle="tab" href="#personal" role="tab" aria-controls="personal" aria-selected="true">Personal Info</a>
-      </li>
-      <li class="nav-item" role="presentation">
-        <a class="nav-link" id="registration-tab" data-bs-toggle="tab" href="#registration" role="tab" aria-controls="registration" aria-selected="false">Registration</a>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane fade show active" id="personal">
-        <h1>{{ event }} Onsite Registration</h1>
-        <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked
-          with a red asterisk (<span class="text-danger">*</span>).</p>
-        <hr>
+    <h1>{{ event }} Onsite Registration</h1>
+    <p>Welcome to the registration system. To continue, enter your information below. Required fields are marked
+      with a red asterisk (<span class="text-danger">*</span>).</p>
+    <hr>
 
-        {% show_attendee_form event=event emailOptions=True attendee=request.GET %}
+    {% show_attendee_form event=event emailOptions=True attendee=request.GET %}
 
-        <div class="d-flex justify-content-end mt-3">
-          <a href="#registration" class="btn btn-primary"
-             aria-controls="registration" role="tab" data-bs-toggle="tab" id="next-personal">Next &raquo;</a>
-        </div>
+    <h2>Registration Info</h2>
+    <p>Select your registration options and level.</p>
+    <hr>
+
+    <div class="row mb-3">
+      <label for="badgeName" class="col-sm-3 col-form-label">Badge Name <span class="text-danger">*</span></label>
+      <div class="col-sm-9">
+        <input type="text" id="badgeName" name="badgeName" autocomplete="off" placeholder="Your Name Here.."
+               class="form-control" maxlength="25" required>
       </div>
+      <div class="offset-sm-3 col-sm-9">
+        <div class="invalid-feedback with-errors"></div>
+      </div>
+    </div>
 
-      <div role="tabpanel" class="tab-pane fade" id="registration">
-        <h2>Registration Info</h2>
-        <p>Select your registration options and level.</p>
-        <hr>
+    <div id="levelContainerAlert" class="alert alert-danger d-none">
+      <b>No price levels have been set up yet!</b>
+      If you are the site administrator, you'll need to <a href="{% url 'admin:registration_pricelevel_add' %}">add
+      some</a> before this form will work.
+    </div>
+    <div id="levelContainer" class="row">
+      <div id="levelsNoBirthday">
+        <p>Please enter your birthdate to see available registration levels</p>
+      </div>
+    </div>
+    <br/>
+    <hr/>
 
-        <div class="row mb-3">
-          <label for="badgeName" class="col-sm-3 col-form-label">Badge Name <span class="text-danger">*</span></label>
-          <div class="col-sm-9">
-            <input type="text" id="badgeName" name="badgeName" autocomplete="off" placeholder="Your Name Here.."
-                   class="form-control" maxlength="25" required>
-          </div>
-          <div class="offset-sm-3 col-sm-9">
-            <div class="invalid-feedback with-errors"></div>
-          </div>
-        </div>
-
-        <div class="row" id="levelContainer"></div>
-        <br/>
-        <hr/>
-
-        <div class="row mb-3">
-          <div class="col-sm-12">
-            <div class="form-check">
-              <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-check-input" required>
-              <label class="form-check-label" for="agreeToRules">
-                I agree to abide by the {{ event.name }}
-                <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>.
-                By registering for {{ event }} you attest that you are not listed on any sexual offender registry.
-              </label>
-              <div class="invalid-feedback">You must agree to the event code of conduct to register.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-between mt-3">
-          <a href="#personal" class="btn btn-primary" aria-controls="personal" role="tab"
-             data-bs-toggle="tab" id="back-registration">&laquo; Back</a>
-          <button type="submit" class="btn btn-primary" id="register">Register</button>
+    <div class="row mb-3">
+      <div class="col-sm-12">
+        <div class="form-check">
+          <input type="checkbox" id="agreeToRules" name="agreeToRules" class="form-check-input" required>
+          <label class="form-check-label" for="agreeToRules">
+            I agree to abide by the {{ event.name }}
+            <a href="{{ event.codeOfConduct }}" target="_blank">Code of Conduct</a>.
+            By registering for {{ event }} you attest that you are not listed on any sexual offender registry.
+          </label>
+          <div class="invalid-feedback">You must agree to the event code of conduct to register.</div>
         </div>
       </div>
     </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="submit" class="btn btn-primary" id="register">Register</button>
+    </div>
+
     {% csrf_token %}
   </form>
 
@@ -112,7 +101,7 @@
 {% block javascript %}
 
   <script type="text/html" id="levelTemplate">
-    <div class="col-6 col-sm-6 col-md-6 col-lg-4">
+    <div id="levelTemplateColumn" class="col-12 col-sm-6 col-lg-4">
       <div class="card mb-3 price">
         <div class="card-header text-center">
           <h3 data-content="name"></h3>
@@ -121,13 +110,21 @@
           <p class="lead fs-1"><strong data-content="price"></strong></p>
         </div>
         <div class="card-footer d-grid gap-2">
-          <a class="btn btn-lg btn-danger selectLevel" href="#" data-id="levelId">Select</a>
-          <a class="btn btn-secondary changeLevel" href="#">Change Level?</a>
+          <a class="btn btn-lg btn-danger selectLevel" data-id="levelId">Select</a>
+          <a class="btn btn-secondary changeLevel">Change Level?</a>
         </div>
       </div>
     </div>
   </script>
 
+  <script type="text/html" id="optionPlainTextTemplate">
+    <div class="row mb-3">
+      <label class="col-sm-3 col-form-label" data-content="name"></label>
+      <div class="col-sm-9">
+        <div data-content="content"></div>
+      </div>
+    </div>
+  </script>
   <script type="text/html" id="optionBoolTemplate">
     <div class="row mb-3">
       <div class="col-sm-9 offset-sm-3">
@@ -219,6 +216,18 @@
                       selectText: "Select " + val.name
                   });
               });
+              if (levelTemplateData.length == 0) {
+                  $("#levelContainerAlert").removeClass("d-none");
+              } else {
+                  $("#levelsNoBirthday").hide();
+                  animateLevelSelect($("#levelContainer"), function () {
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
+                      revealLevelCards($("#levelContainer"));
+                      if (levelTemplateData.length == 1) {
+                          select_level(1);
+                      }
+                  });
+              }
               $(".changeLevel").hide();
           });
       }
@@ -238,53 +247,11 @@
               shirtSizes = data;
           });
 
-          // scroll to top on tab switch
-          $("#next-personal").click(function () {
-              window.scrollTo(0, 0);
-          });
-
-          $("body").on("click", '#next-personal', function () {
-              let birthdate = new Date(Date.parse($("#birthDate").val()));
-              let age;
-              try {
-                  age = getAgeByEventStart(birthdate);
-              } catch (e) {
-                  alert(e);
-                  return false;
-              }
-              if (age < 0) {
-                  alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
-                  return false;
-              }
-              if (levelTemplateData.length == 0) {
-                  alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
-                  return false;
-              }
-              animateLevelSelect($("#levelContainer"), function () {
-                  $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
-                  $(".changeLevel").hide();
-                  revealLevelCards($("#levelContainer"));
-              });
-          });
-
           $("#levelContainer").on('click', 'a.selectLevel', function () {
               clearLevels();
-              let levelId = $(this).attr('id').split('_')[1];
-              let startRect = $(this).closest('[class*="col-"]')[0].getBoundingClientRect();
-              $.each(levelTemplateData, function (key, val) {
-                  let id = val.levelId.split('_')[1];
-                  if (id == levelId) {
-                      animateLevelSelect($("#levelContainer"), function () {
-                          $("#regLevel").val(val.name);
-                          $("#levelContainer").loadTemplate($("#levelTemplate"), val);
-                          $(".changeLevel").show();
-                          $(".selectLevel").text("Selected!");
-                          generateOptions(id);
-                          flipCardToPosition($("#levelContainer .card").first(), startRect);
-                      });
-                      return false;
-                  }
-              });
+              var levelId = $(this).attr('id').split('_')[1];
+              var startRect = $(this).closest('[class*="col-"]')[0].getBoundingClientRect();
+              select_level(levelId, startRect);
           });
 
           $("#levelContainer").on('click', 'a.changeLevel', function () {
@@ -297,76 +264,117 @@
           });
       });
 
-      let clearLevels = function () {
+      var clearLevels = function () {
           $.each(levelTemplateData, function (key, val) {
               $("#" + val.levelId).text("Select " + val.name);
           });
           resetFormValidation();
       };
 
-      let generateOptions = function (levelId) {
-          let data = [];
-          $.each(levelData, function (key, thing) {
-              if (thing.id == levelId) { data = thing.options; return false; }
-          });
-          let container = $("<div id='optionsContainer' class='col-6 col-sm-6 col-md-6 col-lg-8'><h4>Registration Options</h4><hr/></div>");
-          $("#levelContainer").append(container);
-          if (data.length == 0) {
-              $("#optionsContainer").append("<h4>None</h4>");
-          }
-          $.each(data, function (key, val) {
-              if (!val.active) return true;
-              let price = val.value == "0.00" ? " (Free) " : " (+$" + val.value + ") ";
-              switch (val.type) {
-                  case "bool":
-                      let boolTpl = val.required ? $("#optionBoolReqTemplate") : $("#optionBoolTemplate");
-                      $("#optionsContainer").loadTemplate(boolTpl, {
-                          'name': val.name + " " + price, 'id': "option_" + val.id
-                      }, {append: true});
-                      break;
-                  case "int":
-                      let intTpl = val.required ? $("#optionIntReqTemplate") : $("#optionIntTemplate");
-                      $("#optionsContainer").loadTemplate(intTpl, {
-                          'name': val.name + " " + price, 'id': "option_" + val.id
-                      }, {append: true});
-                      break;
-                  case "string":
-                      let strTpl = val.required ? $("#optionStringReqTemplate") : $("#optionStringTemplate");
-                      $("#optionsContainer").loadTemplate(strTpl, {
-                          'name': val.name + " " + price, 'id': "option_" + val.id, 'placeholder': val.name,
-                      }, {append: true});
-                      break;
-                  case "Jersey":
-                  case "StaffJersey":
-                      break;
-                  default:
-                      if (val.list == []) break;
-                      let options = [];
-                      if (!val.required) options.push({"content": "Select One...", "value": ""});
-                      $.each(val.list, function (k, item) {
-                          options.push({"content": item.name, "value": item.id});
-                      });
-                      $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
-                          'name': val.name + " " + price, 'id': "option_" + val.id, 'options': options
-                      }, {append: true});
-                      break;
+      var select_level = function (levelId, startRect) {
+          $.each(levelTemplateData, function (key, val) {
+              var id = val.levelId.split('_')[1];
+              if (id == levelId) {
+                  animateLevelSelect($("#levelContainer"), function () {
+                      $("#regLevel").val(val.name);
+                      $("#levelContainer").loadTemplate($("#levelTemplate"), val);
+                      $(".changeLevel").show();
+                      $(".selectLevel").text("Selected!");
+                      $("#levelTemplateColumn").removeClass("col-6").addClass("col-12");
+                      generateOptions(id);
+                      flipCardToPosition($("#levelContainer .card").first(), startRect);
+                  });
+                  return false;
               }
           });
-          if ($.trim($('#optionsContainer').html()).length <= 33) {
-              $("#optionsContainer").append("<h4>None</h4>");
-          }
+      };
+
+      var generateOptions = function (levelId) {
+          var data = [];
+          var description = "";
+          var image = null;
+          $.each(levelData, function (key, thing) {
+              if (thing.id == levelId) {
+                  data = thing.options;
+                  description = thing.description;
+                  if (thing.image !== undefined) {
+                      image = "<br><button data-url='" + thing.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</button>";
+                  }
+                  return false;
+              }
+          });
+          var container = $("<div id='optionsContainer' class='col-12 col-sm-6 col-md-8'><h4>Level Options</h4><hr/><div class='row mb-3'><div class='col-sm-12'>" + description + "</div></div></div>");
+          $("#levelContainer").append(container);
+          $.each(data, function (key, val) {
+              var price = val.value == "0.00" ? " (Free) " : " (+$" + val.value + ") ";
+              var imageHtml = val.image ? "<br><a href='javascript:;' data-image='" + val.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>" : "";
+              if (val.active) {
+                  switch (val.type) {
+                      case "plaintext":
+                          $("#optionsContainer").loadTemplate($("#optionPlainTextTemplate"), {
+                              'content': val.description
+                          }, {append: true});
+                          break;
+                      case "bool":
+                          var template = val.required ? $("#optionBoolReqTemplate") : $("#optionBoolTemplate");
+                          $("#optionsContainer").loadTemplate(template, {
+                              'name': val.name + " " + price + imageHtml,
+                              'id': "option_" + val.id
+                          }, {append: true});
+                          if (val.value == "0.00") {
+                              $("#option_" + val.id).prop('checked', true);
+                          }
+                          break;
+                      case "int":
+                          var template = val.required ? $("#optionIntReqTemplate") : $("#optionIntTemplate");
+                          $("#optionsContainer").loadTemplate(template, {
+                              'name': val.name + " " + price + imageHtml,
+                              'id': "option_" + val.id
+                          }, {append: true});
+                          break;
+                      case "string":
+                          var template = val.required ? $("#optionStringReqTemplate") : $("#optionStringTemplate");
+                          $("#optionsContainer").loadTemplate(template, {
+                              'name': val.name + " " + price + imageHtml,
+                              'id': "option_" + val.id,
+                              'placeholder': val.name,
+                          }, {append: true});
+                          break;
+                      case "Jersey":
+                      case "StaffJersey":
+                          break;
+                      default:
+                          if (val.list == []) break;
+                          var options = [];
+                          if (!val.required) {
+                              options.push({"content": "Select One...", "value": ""});
+                          }
+                          $.each(val.list, function (key, item) {
+                              options.push({"content": item.name, "value": item.id});
+                          });
+                          $("#optionsContainer").loadTemplate($("#optionListTemplate"), {
+                              'name': val.name + " " + price + imageHtml,
+                              'id': "option_" + val.id,
+                              'options': options
+                          }, {append: true});
+                          break;
+                  }
+              }
+          });
           resetFormValidation();
       };
 
-      let getOptions = function () {
-          let data = [];
+      var getOptions = function () {
+          var data = [];
           $.each($(".levelOptions"), function (key, option) {
               if ($(option).is(':checkbox')) {
                   if ($(option).is(':checked')) {
-                      data.push({'id': option.id.split('_')[1], 'value': true});
+                      data.push({'id': option.id.split('_')[1], 'value': $(option).is(':checked')});
                   }
               } else {
-                  data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                  if ($(option).val() != "") {
+                      data.push({'id': option.id.split('_')[1], 'value': $(option).val()});
+                  }
               }
           });
           return data;
@@ -380,6 +388,30 @@
           }
           if ($("#birthDate").val() == "") {
               alert("You must enter your birthdate to submit your registration.");
+              $("#register").one('click', register_click);
+              return;
+          }
+          let birthdate = new Date(Date.parse($("#birthDate").val()));
+          let age;
+          try {
+              age = getAgeByEventStart(birthdate);
+          } catch (err) {
+              alert(err);
+              $("#register").one('click', register_click);
+              return;
+          }
+          if (age < 0) {
+              alert("You must be born before today to exist.\n(Please check your date of birth and try again)");
+              $("#register").one('click', register_click);
+              return;
+          }
+          if (levelTemplateData.length == 0) {
+              alert("Assistance Required:\n\nNo price level matching this age range (age = " + age + ") is available for this event.  Please see staff for assistance.");
+              $("#register").one('click', register_click);
+              return;
+          }
+          if (!$(".changeLevel").is(':visible')) {
+              alert("Please select a registration level before continuing.");
               $("#register").one('click', register_click);
               return;
           }
