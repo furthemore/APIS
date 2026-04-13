@@ -62,7 +62,7 @@ async function postJSON(url, body) {
 
 // ==== price level card animations ====
 function animateLevelSelect(container, afterFade) {
-    var cards = container.find('.card');
+    let cards = container.find('.card');
     if (cards.length === 0) {
         afterFade();
         return;
@@ -85,9 +85,9 @@ function flipCardToPosition($card, startRect) {
         $card.closest('#levelContainer').length && revealLevelCards($card.closest('#levelContainer'));
         return;
     }
-    var endRect = $card[0].getBoundingClientRect();
-    var dx = startRect.left - endRect.left;
-    var dy = startRect.top - endRect.top;
+    let endRect = $card[0].getBoundingClientRect();
+    let dx = startRect.left - endRect.left;
+    let dy = startRect.top - endRect.top;
 
     $card.css({ transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.88)', opacity: 0, transition: 'none' });
     void $card[0].offsetHeight; // force reflow
@@ -118,20 +118,20 @@ function setColorScheme(scheme) {
         document.documentElement.removeAttribute('data-bs-theme');
     }
     localStorage.setItem('color-scheme', scheme);
-    var sun = document.getElementById('theme-icon-sun');
-    var moon = document.getElementById('theme-icon-moon');
+    let sun = document.getElementById('theme-icon-sun');
+    let moon = document.getElementById('theme-icon-moon');
     if (sun)  sun.style.display  = scheme === 'dark'  ? 'block' : 'none';
     if (moon) moon.style.display = scheme === 'light' ? 'block' : 'none';
 }
 
 function toggleColorScheme() {
-    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    let isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     setColorScheme(isDark ? 'light' : 'dark');
 }
 
 $(document).ready(function (e) {
     // Sync icon to current scheme on load
-    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    let isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     setColorScheme(isDark ? 'dark' : 'light');
 
     // Follow OS preference changes only when user hasn't set a manual override
