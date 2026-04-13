@@ -181,8 +181,8 @@
       var shirtSizes = [];
       {% if discount %}
           var discount = {
-              amountOff: {{ discount.amountOff }},
-              percentOff: {{ discount.percentOff }}
+              amountOff: {{ discount.amountOff|default:0 }},
+              percentOff: {{ discount.percentOff|default:0 }}
           };
       {% else %}
           var discount = {
@@ -210,10 +210,13 @@
           }), function (data) {
               levelData = data;
               $.each(data, function (key, val) {
-                  var centsOff = (parseFloat(val.base_price) * discount.percentOff) / 100;
+                  var baseCents = Math.round(parseFloat(val.base_price) * 100);
+                  var percentOffCents = Math.round(baseCents * discount.percentOff / 100);
+                  var amountOffCents = Math.round(discount.amountOff * 100);
+                  var finalCents = Math.max(baseCents - percentOffCents - amountOffCents, 0);
                   levelTemplateData.push({
                       name: val.name,
-                      price: "$" + (parseFloat(val.base_price) - centsOff - parseFloat(discount.amountOff)),
+                      price: "$" + (finalCents / 100).toFixed(2),
                       levelId: "level_" + val.id,
                       selectText: "Select " + val.name
                   });
@@ -253,8 +256,10 @@
       };
 
       $(document).ready(function () {
+          var updateTimer = null;
           $("#bday, #bmonth, #byear").on("input", function() {
-            updatePriceLevels();
+            clearTimeout(updateTimer);
+            updateTimer = setTimeout(updatePriceLevels, 300);
           });
           $.getJSON("{% url 'registration:departments' %}", function (data) {
               deptData = data;

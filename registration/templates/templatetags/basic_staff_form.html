@@ -36,7 +36,7 @@
 <div class="row mb-3">
   <label for="shirt" class="col-sm-3 col-form-label">Shirt Size <span class="text-danger">*</span></label>
   <div class="col-sm-9">
-    <select id="shirt" name="department" class="form-select" required>
+    <select id="shirt" name="shirtsize" class="form-select" required{% if staff.shirtsize %} data-value="{{ staff.shirtsize.id }}"{% endif %}>
       <option value="">-- Select One --</option>
     </select>
   </div>

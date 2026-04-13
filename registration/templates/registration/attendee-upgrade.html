@@ -38,7 +38,7 @@
             href="mailto:{{ badge.event.registrationEmail }}">{{ badge.event.registrationEmail }}</a>.
       </div>
 
-      <div class="row" id="levelContainer"></div>
+      <div class="row mt-3" id="levelContainer"></div>
 
       <div class="mb-3">
         <div class="d-flex justify-content-end">
@@ -62,17 +62,17 @@
 
 {% block javascript %}
   <script type="text/html" id="levelTemplate">
-    <div id="levelTemplateColumn" class="col-12 col-sm-6 col-md-6 col-lg-4">
-      <div class="card price">
+    <div id="levelTemplateColumn" class="col-12 col-sm-6 col-lg-4">
+      <div class="card mb-3 price">
         <div class="card-header text-center">
           <h3 data-content="name"></h3>
         </div>
         <div class="card-body text-center">
-          <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+          <p class="lead fs-1"><strong data-content="price"></strong></p>
         </div>
-        <div class="card-footer">
-          <a class="btn btn-lg btn-block btn-danger selectLevel" data-id="levelId">Select</a>
-          <a class="btn btn-secondary btn-block changeLevel">Change Level?</a>
+        <div class="card-footer d-grid gap-2">
+          <a class="btn btn-lg btn-danger selectLevel" data-id="levelId">Select</a>
+          <a class="btn btn-secondary changeLevel">Change Level?</a>
         </div>
       </div>
     </div>
@@ -165,32 +165,25 @@
                   form_type: "attendee",
               }), function (data) {
                   levelData = data;
-                  var prevLevel = 50;
+                  var prevLevelCents = 5000;
                   if (currentLevel && currentLevel.hasOwnProperty("basePrice")) {
-                      prevLevel = parseFloat(currentLevel.basePrice);
+                      prevLevelCents = Math.round(parseFloat(currentLevel.basePrice) * 100);
                   }
                   $.each(data, function (key, val) {
-                      let currentPrice = val.base_price - prevLevel;
-                      if (currentPrice > 0) {
+                      var currentPriceCents = Math.round(parseFloat(val.base_price) * 100) - prevLevelCents;
+                      if (currentPriceCents > 0) {
                           levelTemplateData.push({
                               name: val.name,
-                              price: "$" + currentPrice,
+                              price: "$" + (currentPriceCents / 100).toFixed(2),
                               levelId: "level_" + val.id,
                           });
                       }
                   });
                   $("#levelContainer").loadTemplate($("#levelTemplate"), levelTemplateData);
                   $(".changeLevel").hide();
-                  if (shirtSizes.length > 0) {
-                      $(".selectLevel")[0].click();
-                  }
-
               });
               $.getJSON("{% url 'registration:shirtsizes' %}", function (data) {
                   shirtSizes = data;
-                  if (levelTemplateData.length > 0) {
-                      $(".selectLevel")[0].click();
-                  }
               });
           });
 

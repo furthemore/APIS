@@ -1,16 +1,22 @@
-<div class="row" id="levelContainer"></div>
-
-
-
+<div id="levelContainerAlert" class="alert alert-danger d-none">
+    <b>No price levels have been set up yet!</b>
+    If you are the site administrator, you'll need to <a href="/admin/registration/pricelevel/add/">add
+    some</a> before this form will work.
+</div>
+<div class="row" id="levelContainer">
+    <div id="levelsNoBirthday">
+        <p>Please enter your birthdate to see available registration levels</p>
+    </div>
+</div>
 
 <script type="text/html" id="levelTemplate">
-    <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-    <div class="card price">
+    <div id="levelTemplateColumn" class="col-12 col-sm-6 col-lg-4">
+    <div class="card mb-3 price">
         <div class="card-header text-center">
             <h3 data-content="name"></h3>
         </div>
         <div class="card-body text-center">
-            <p class="lead" style="font-size:40px"><strong data-content="price"></strong></p>
+            <p class="lead fs-1"><strong data-content="price"></strong></p>
         </div>
         <div class="card-footer d-grid gap-2">
             <a class="btn btn-lg btn-danger selectLevel" data-id="levelId">Select</a>
