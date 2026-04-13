@@ -1,10 +1,10 @@
-var levelTemplateData = [];
-var levelData = [];
-var shirtSizes = [];
+let levelTemplateData = [];
+let levelData = [];
+let shirtSizes = [];
 
 
 $("body").ready(function () {
-    var levelTemplate = document.getElementById('levelTemplate');
+    let levelTemplate = document.getElementById('levelTemplate');
     if (levelTemplate === null) {
         return;
     }
@@ -28,7 +28,7 @@ $("body").ready(function () {
         }), function (data) {
             levelData = data;
             $.each(data, function (_, val) {
-                var priceCents = Math.round(parseFloat(val.base_price) * 100);
+                let priceCents = Math.round(parseFloat(val.base_price) * 100);
 
                 if (discount) {
                     priceCents = Math.max(priceCents - Math.round(discount * 100) - Math.round(paid_total * 100), 0);
@@ -37,7 +37,7 @@ $("body").ready(function () {
                 if (priceCents >= 0) {
                     levelTemplateData.push({
                         name: val.name,
-                        price: "$" + (priceCents / 100).toFixed(2),
+                        price: priceCents === 0 ? "FREE" : "$" + (priceCents / 100).toFixed(2),
                         levelId: "level_" + val.id,
                         selectText: "Select " + val.name
                     });
@@ -62,21 +62,21 @@ $("body").ready(function () {
 
     updatePriceLevels();
 
-    var updateTimer = null;
+    let updateTimer = null;
     $("#bday, #bmonth, #byear").on("input", function() {
         clearTimeout(updateTimer);
         updateTimer = setTimeout(updatePriceLevels, 300);
     });
 
-    $.getJSON("/registration/shirts", function (data) {
+    $.getJSON(SHIRT_SIZES_URL, function (data) {
         shirtSizes = data;
     });
 
 });
 
-var select_level = function (levelId, startRect) {
+function select_level(levelId, startRect) {
     $.each(levelTemplateData, function (_, val) {
-        var id = val.levelId.split('_')[1];
+        let id = val.levelId.split('_')[1];
         if (id == levelId) {
             animateLevelSelect($("#levelContainer"), function () {
                 $("#regLevel").val(val.name);
@@ -90,12 +90,12 @@ var select_level = function (levelId, startRect) {
             return false;
         }
     });
-};
+}
 
 $("#levelContainer").on('click', 'a.selectLevel', function () {
     clearLevels();
-    var levelId = $(this).attr('id').split('_')[1];
-    var startRect = $(this).closest('[class*="col-"]')[0].getBoundingClientRect();
+    let levelId = $(this).attr('id').split('_')[1];
+    let startRect = $(this).closest('[class*="col-"]')[0].getBoundingClientRect();
     select_level(levelId, startRect);
 });
 
@@ -108,16 +108,16 @@ $("#levelContainer").on('click', 'a.changeLevel', function () {
     });
 });
 
-var clearLevels = function () {
+function clearLevels() {
     $.each(levelTemplateData, function (_, val) {
         $("#" + val.levelId).text("Select " + val.name);
     });
     resetFormValidation();
-};
+}
 
-var generateOptions = function (levelId) {
-    var data = [];
-    var description = "";
+function generateOptions(levelId) {
+    let data = [];
+    let description = "";
     $.each(levelData, function (_, thing) {
         if (thing.id == levelId) {
             data = thing.options;
@@ -125,13 +125,13 @@ var generateOptions = function (levelId) {
             return false;
         }
     });
-    var container = $("<div id='optionsContainer' class='col-12 col-sm-6 col-md-8'><h4>Level Options</h4><hr/><div class='row mb-3'><div class='col-sm-12'>" + description + "</div></div></div>");
+    let container = $("<div id='optionsContainer' class='col-12 col-sm-6 col-md-8'><h4>Level Options</h4><hr/><div class='row mb-3'><div class='col-sm-12'>" + description + "</div></div></div>");
     $("#levelContainer").append(container);
     $.each(data, function (_, val) {
-        var price = val.value == "0.00" ? " (Free) " : " (+$" + val.value + ") ";
-        var imageHtml = val.image ? "<br><a href='javascript:;' data-image='" + val.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>" : "";
+        let price = val.value == "0.00" ? " (Free) " : " (+$" + val.value + ") ";
+        let imageHtml = val.image ? "<br><a href='javascript:;' data-image='" + val.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>" : "";
         if (val.active) {
-            var template;
+            let template;
             switch (val.type) {
                 case "plaintext":
                     template = $("#optionPlainTextTemplate");
@@ -166,7 +166,7 @@ var generateOptions = function (levelId) {
                     break;
                 default:
                     if (val.list == []) break;
-                    var options = [];
+                    let options = [];
                     if (!val.required) {
                         options.push({"content": "Select One...", "value": ""});
                     }
@@ -183,10 +183,10 @@ var generateOptions = function (levelId) {
         }
     });
     resetFormValidation();
-};
+}
 
-var getOptions = function () {
-    var data = [];
+function getOptions() {
+    let data = [];
     $.each($(".levelOptions"), function (_, option) {
         if ($(option).is(':checkbox')) {
             if ($(option).is(':checked')) {
@@ -199,4 +199,4 @@ var getOptions = function () {
         }
     });
     return data;
-};
+}

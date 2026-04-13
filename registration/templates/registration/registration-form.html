@@ -216,7 +216,7 @@
                   var finalCents = Math.max(baseCents - percentOffCents - amountOffCents, 0);
                   levelTemplateData.push({
                       name: val.name,
-                      price: "$" + (finalCents / 100).toFixed(2),
+                      price: finalCents === 0 ? "FREE" : "$" + (finalCents / 100).toFixed(2),
                       levelId: "level_" + val.id,
                       selectText: "Select " + val.name
                   });
@@ -314,7 +314,6 @@
           $.each(data, function (key, val) {
               var price = val.value == "0.00" ? " (Free) " : " (+$" + val.value + ") ";
               var imageHtml = val.image ? "<br><a href='javascript:;' data-image='" + val.image + "' class='open-image btn btn-sm btn-link btn-block'>(View Image)</a>" : "";
-              console.log(val);
               if (val.active) {
                   switch (val.type) {
                       case "plaintext":
@@ -346,9 +345,6 @@
                               'id': "option_" + val.id,
                               'placeholder': val.name,
                           }, {append: true});
-                          break;
-                      case "Jersey":
-                      case "StaffJersey":
                           break;
                       default:
                           if (val.list == []) break;

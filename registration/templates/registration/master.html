@@ -56,6 +56,7 @@
     {% endif %}
     let IDEMPOTENCY_KEY = "{% idempotency_key %}";
     const FORM_TYPE = "{{ form_type }}";
+    const SHIRT_SIZES_URL = "{% url 'registration:shirtsizes' %}";
 </script>
 
 <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
