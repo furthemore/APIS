@@ -21,6 +21,30 @@ jobs:
     concurrency: ${{ github.event.inputs.environment }}
     steps:
     - uses: actions/checkout@v4
+    - name: Get version from latest tag
+      id: version
+      run: |
+        VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0-dev")
+        SHA=$(git rev-parse --short HEAD)
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+    - name: Install GlitchTip CLI
+      run: |
+        curl -sL "https://gitlab.com/glitchtip/glitchtip-cli/-/jobs/artifacts/v0.1.0/raw/artifacts/glitchtip-cli-linux-x86_64?job=build-linux-x86_64" -o /usr/local/bin/glitchtip-cli
+        chmod +x /usr/local/bin/glitchtip-cli
+
+    - name: Create GlitchTip release
+      env:
+        SENTRY_URL: ${{ vars.GLITCHTIP_URL }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.GLITCHTIP_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ vars.GLITCHTIP_ORG }}
+        SENTRY_PROJECT: ${{ vars.GLITCHTIP_PROJECT }}
+      run: |
+        glitchtip-cli releases new ${{ steps.version.outputs.version }}
+        glitchtip-cli releases set-commits ${{ steps.version.outputs.version }} --auto
+        glitchtip-cli releases finalize ${{ steps.version.outputs.version }}
+
     - name: Login to packages container registry
       uses: docker/login-action@v3
       with:
@@ -30,7 +54,7 @@ jobs:
 
     - name: Build image
       run: |
-        make build-docker-image
+        make build-docker-image VERSION_TAG=${{ steps.version.outputs.version }} GIT_SHA=${{ steps.version.outputs.sha }}
         make tag-${{ github.event.inputs.environment }}
 
     - name: Deploy to server
@@ -46,3 +70,12 @@ jobs:
           cd /opt/docker
           docker-compose pull
           docker-compose up -d apis-${{ github.event.inputs.environment }} apis-${{ github.event.inputs.environment }}-worker
+
+    - name: Record GlitchTip deployment
+      env:
+        SENTRY_URL: ${{ vars.GLITCHTIP_URL }}
+        SENTRY_AUTH_TOKEN: ${{ secrets.GLITCHTIP_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ vars.GLITCHTIP_ORG }}
+        SENTRY_PROJECT: ${{ vars.GLITCHTIP_PROJECT }}
+      run: |
+        glitchtip-cli deploys new ${{ steps.version.outputs.version }} --env ${{ github.event.inputs.environment }}

@@ -1,6 +1,8 @@
 
-IMAGE	?= ghcr.io/furthemore/apis
-TAG	?= $(shell git describe --tag --always)
+IMAGE		?= ghcr.io/furthemore/apis
+VERSION		?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo 0.0.0-dev)
+GIT_SHA		?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
+TAG			?= $(VERSION)
 
 all: help
 
@@ -37,11 +39,13 @@ build-docker-image:
 		--file Dockerfile \
 		--cache-from $(IMAGE):latest \
 		--cache-from $(IMAGE):production \
-		--build-arg SENTRY_RELEASE=$(TAG) \
+		--build-arg APIS_VERSION=$(VERSION) \
+		--build-arg APIS_GIT_SHA=$(GIT_SHA) \
 		--tag $(IMAGE):$(TAG) \
 		.
 
 	docker tag $(IMAGE):$(TAG) $(IMAGE):latest
+	docker tag $(IMAGE):$(TAG) $(IMAGE):git-$(GIT_SHA)
 
 tag-stage:
 	docker tag $(IMAGE):$(TAG) $(IMAGE):stage
@@ -53,6 +57,7 @@ tag-production:
 
 push-docker-image:
 	docker push $(IMAGE):$(TAG)
+	docker push $(IMAGE):git-$(GIT_SHA)
 	docker push $(IMAGE):latest
 
 dev:
