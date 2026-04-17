@@ -54,7 +54,7 @@ jobs:
 
     - name: Build image
       run: |
-        make build-docker-image VERSION_TAG=${{ steps.version.outputs.version }} GIT_SHA=${{ steps.version.outputs.sha }}
+        make build-docker-image VERSION=${{ steps.version.outputs.version }} GIT_SHA=${{ steps.version.outputs.sha }}
         make tag-${{ github.event.inputs.environment }}
 
     - name: Deploy to server
