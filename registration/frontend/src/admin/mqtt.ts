@@ -26,6 +26,7 @@ export type MqttTopic =
   | "notify/scan/shc"
   | "notify/scan/url"
   | "presence"
+  | "print"
   | "refresh"
   | "registration/completed"
   | "transfer";
@@ -210,8 +211,10 @@ export default class MqttClient {
   }
 
   public async publishPrintMessage(payload: string) {
-    const topic =
-      this.config?.auth.print_topic || this.getPrefixedTopic("station/print");
+    const topic = this.config?.auth.print_topic;
+    if (!topic) {
+      throw new Error("Attempted to use MQTT print without configured topic");
+    }
     await this.client?.publishAsync(topic, payload);
   }
 

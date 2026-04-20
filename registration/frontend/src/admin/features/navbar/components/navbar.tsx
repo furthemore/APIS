@@ -138,6 +138,11 @@ export const Navbar: Component<{
                       key="usesLocalScanner"
                     />
 
+                    <ToggleSetting
+                      name="Enable Local Printer"
+                      key="usesLocalPrinter"
+                    />
+
                     <Show when={config()?.mqtt?.auth?.print_topic}>
                       <ToggleSetting
                         name="Auto Print After Payment"
