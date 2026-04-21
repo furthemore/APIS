@@ -26,6 +26,7 @@ import { ErrorCard } from "@components/error-card";
 import { SentryErrorBoundary } from "../../common";
 import { AttendeeSearch } from "./attendee-search";
 import { Cart } from "./cart";
+import { Printer } from "./printer";
 import { type IdData, Scan } from "./scan";
 
 export type BarcodeEmitter = {
@@ -167,6 +168,16 @@ export const Onsite: Component<{
             </Suspense>
           </Show>
         </SentryErrorBoundary>
+
+        <Show when={userSettings().settings().usesLocalPrinter}>
+          <SentryErrorBoundary
+            fallback={(err, reset) => (
+              <ErrorCard title="Printer Error" err={err} reset={reset} />
+            )}
+          >
+            <Printer />
+          </SentryErrorBoundary>
+        </Show>
       </div>
 
       <div class="col">
