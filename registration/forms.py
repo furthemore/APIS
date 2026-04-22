@@ -32,7 +32,7 @@ class FirebaseForm(ModelForm):
             "payment_type",
             "square_terminal_id",
             "print_via_mqtt",
-            "print_via_payment",
+            "print_target",
             "webview",
             "background_color",
         )

@@ -6,6 +6,10 @@ $("body").ready(function () {
             $("#shirt").append("<option value='" + val.id + "'>" + val.name + "</option>");
         });
         shirtSizes = data;
+        let savedSize = $("#shirt").data("value");
+        if (savedSize) {
+            $("#shirt").val(savedSize);
+        }
     });
 });
 

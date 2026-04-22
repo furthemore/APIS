@@ -4,12 +4,8 @@
 <head>
   <title>APIS Register</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link href="{% static 'css/fontawesome-all-6.0.0-beta3.css' %}" rel="stylesheet">
-  <link href="{% static 'css/bootstrap-darkly.min.css' %}" rel="stylesheet" media="screen">
-  <link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
-  <link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
-  <link href="{% static 'css/bootstrap-icons.css' %}" rel="stylesheet">
+  <meta name="static-url" content="{% get_static_prefix %}">
+  <link href="{% static 'css/bs5-darkly.min.css' %}" rel="stylesheet">
   <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
   <script
       src="https://browser.sentry-cdn.com/8.51.0/bundle.min.js"
@@ -30,26 +26,19 @@
 </head>
 <body>
 
-<!-- Subhead
-================================================== -->
-
-<div class="container">
-
+<div class="container mt-3">
   {% block content %}
-
   {% endblock %}
 </div>
 
-<script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+<script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/jquery.loadTemplate.min.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/bootstrap-formhelpers.js' %}"></script>
-<script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/address-fields.js' %}"></script>
 <script src="{% static 'js/validator.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
 
 {% block javascript %}
-
 {% endblock %}
 
 </body>

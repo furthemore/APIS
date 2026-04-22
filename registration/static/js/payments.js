@@ -125,9 +125,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             // payment request.
             cardButton.disabled = true;
 
-            $("form").validator('validate');
-            const errorCount = $(".has-error").length;
-            if (errorCount > 0) {
+            if (!formIsValid(document.querySelector('form[novalidate]'))) {
                 cardButton.disabled = false;
                 return;
             }
