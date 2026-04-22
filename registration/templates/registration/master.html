@@ -5,12 +5,10 @@
   <title>{% current_site_name %} {% block title %}{% endblock %}</title>
   <!-- APIS release: {% settings_value 'SENTRY_RELEASE' %} -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Bootstrap -->
-  <!-- <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen"> -->
-  <link href="{% static 'css/bs-cerulean.css' %}" rel="stylesheet" media="screen">
-  <link href="{% static 'css/main.css' %}" rel="stylesheet" media="screen">
-  <link href="{% static 'css/bootstrap-formhelpers.css' %}" rel="stylesheet" media="screen">
-  <link href="{% static 'css/bootstrap-datepicker.css' %}" rel="stylesheet" media="screen">
+  <meta name="static-url" content="{% get_static_prefix %}">
+  <script>(function(){var s=localStorage.getItem('color-scheme')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');if(s==='dark')document.documentElement.setAttribute('data-bs-theme','dark');})();</script>
+  <link href="{% static 'css/bs5-cerulean.min.css' %}" rel="stylesheet">
+  <link href="{% static 'css/main.css' %}" rel="stylesheet">
   <script
       src="https://browser.sentry-cdn.com/8.51.0/bundle.min.js"
       integrity="sha384-UOoDPZa8zKe2+XR6MQctS46ElT1RITQSH47kT4eyprRgzqtUHu7xEGJCPQFZgre6"
@@ -25,17 +23,14 @@
   </script>
   <script src="{% static 'js/main-init-sentry.js' %}"></script>
   {% block head %}{% endblock %}
-
 </head>
 <body>
 
-<!-- Subhead
-================================================== -->
 <div class="artisan2">
   <div class="artisan">
     <div class="container">
       <div class="row">
-        <div class="col-md-8 col-md-offset-2" id="content-holder">
+        <div class="col-md-8 offset-md-2" id="content-holder">
           {% block content %}
           {% endblock %}
         </div>
@@ -61,19 +56,27 @@
     {% endif %}
     let IDEMPOTENCY_KEY = "{% idempotency_key %}";
     const FORM_TYPE = "{{ form_type }}";
+    const SHIRT_SIZES_URL = "{% url 'registration:shirtsizes' %}";
 </script>
 
-<script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+<script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/jquery.loadTemplate.min.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/bootstrap-formhelpers.js' %}"></script>
-<script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
-<script src="{% static 'js/validator.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/address-fields.js' %}"></script>
 <script src="{% static 'js/main.js' %}"></script>
-<script src="{% static 'js/jSignature.min.js' %}"></script>
+<script src="{% static 'js/signature_pad.min.js' %}"></script>
 
 {% block javascript %}
 {% endblock %}
+
+<button id="theme-toggle" onclick="toggleColorScheme()" aria-label="Toggle color scheme" title="Toggle dark/light mode">
+  <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+  </svg>
+  <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/>
+  </svg>
+</button>
 
 </body>
 </html>

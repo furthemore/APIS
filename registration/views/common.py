@@ -184,9 +184,7 @@ def index(request):
     today = datetime.now(tz=tz)
     discount = request.session.get("discount")
     if discount:
-        discount = Discount.objects.filter(codeName=discount)
-        if discount.count() > 0:
-            discount = discount.first()
+        discount = Discount.objects.filter(codeName=discount).first()
 
     context = {"event": event, "discount": discount, "form_type": "attendee"}
 
@@ -195,7 +193,8 @@ def index(request):
     else:
         context["homeRedirect"] = reverse("registration:index")
 
-    if event.attendeeRegStart <= today <= event.attendeeRegEnd:
+    # Dealer assistants are allowed to register even outside the normal attendee window
+    if request.session.get("assistant_id") or event.attendeeRegStart <= today <= event.attendeeRegEnd:
         return render(request, "registration/registration-form.html", context)
     elif event.attendeeRegStart >= today:
         context["message"] = "is not yet open. Please stay tuned to our social media for updates!"

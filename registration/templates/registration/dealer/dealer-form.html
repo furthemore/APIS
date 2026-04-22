@@ -4,14 +4,12 @@
 {% block content %}
 
 
-<div class="modal fade" id="ageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
+<div class="modal fade" id="ageModal" tabindex="-1" aria-labelledby="ageModal_title" aria-hidden="true">
+  <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-            aria-hidden="true">&times;</span>
-        </button>
-        <h4 class="modal-title" id="ageModal_title">Why do we need your birthdate?</h4>
+        <h5 class="modal-title" id="ageModal_title">Why do we need your birthdate?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>Due to state and federal laws, minors may not sell merchandise in our Marketplace. You must be 18
@@ -23,171 +21,163 @@
   </div>
 </div>
 
-<noscript>
-  <h1>Javascript is required to use this form.</h1>
-</noscript>
-<form class="form-horizontal" role="form" data-toggle="validator" style="display: none">
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="personal">
-      <h1>Dealer Registration - {{ event }}</h1>
-      <p>Welcome to the registration system. To continue, enter your information below.</p>
+<form class="form-horizontal" novalidate>
+  <h1>Dealer Registration - {{ event }}</h1>
+  <p>Welcome to the registration system. To continue, enter your information below.</p>
 
-      {% show_attendee_form event=event emailOptions=True %}
+  {% show_attendee_form event=event emailOptions=True %}
 
-      <div class="form-group">
-        <label for="far" class="col-sm-3 control-label">Badge Name</label>
-        <div class="col-sm-9">
-          <input type="text" id="badgename" name="badgename" placeholder="Badge Name"
-            class="form-control form-control-text" />
-        </div>
-      </div>
-
-      <p>&nbsp;</p>
-      <h2>Business Information</h2>
-      <p>Fill out the information related to your business below.</p>
-      <hr>
-      <div class="form-group">
-        <label for="businessName" class="col-sm-3 control-label">Business Name <span style="color:red;">*</span></label>
-        <div class="col-sm-9">
-          <input type="text" id="businessName" name="businessName" placeholder="Business Name"
-            class="form-control form-control-text" required maxlength="200">
-        </div>
-        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="license" class="col-sm-3 control-label">{{ venue.state }} Tax License <span
-            style="color:red;">*</span></label>
-        <div class="col-sm-9">
-          <input type="text" id="license" name="license" placeholder="Tax License ID"
-            class="form-control form-control-text" required maxlength="50">
-
-          <label>
-            <input type="checkbox" id="tempLicense" /> I need a temporary tax license for {{ venue.state }}.
-          </label>
-        </div>
-        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="website" class="col-sm-3 control-label">Website <span style="color:red;">*</span></label>
-        <div class="col-sm-9">
-          <input type="url" id="website" name="website" placeholder="http://www.mysite.org"
-            class="form-control form-control-text" required maxlength="500"
-            data-error="Please enter a full URL here. Ex: http://www.google.com" />
-        </div>
-        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-      </div>
-      <div class="form-group">
-        <label for="website" class="col-sm-3 control-label">Logo</label>
-        <div class="col-sm-9">
-          <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png"
-            class="form-control form-control-text" maxlength="500"
-            data-error="Please enter a full URL here. Ex: http://www.google.com/image.png" />
-        </div>
-        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        <div class="col-sm-9 col-sm-offset-3 small">We will include your logo or icon on our dealer location
-          map.
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="description" class="col-sm-3 control-label">Description of Wares <span
-            style="color:red;">*</span></label>
-        <div class="col-sm-9">
-          <textarea id="description" name="description" class="form-control form-control-textarea" required></textarea>
-        </div>
-        <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-      </div>
-
-      <div class="form-group">
-        <label for="charityRaffle" class="col-sm-3 control-label">I have these items to donate to the Charity
-          Raffle</label>
-        <div class="col-sm-9">
-          <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea"> </textarea>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 small">Any donation provided may be tax deductible. Please see the
-          charity onsite for additional information and receipts. Consult your tax professional for guidance.
-        </div>
-      </div>
-
-      <p>&nbsp;</p>
-      <h2>Placement Options</h2>
-      <p>The options below may limit where you can be placed in our Marketplace.</p>
-      <hr />
-      {% if event.dealerWifi %}
-      <div class="form-group">
-        <label for="wifi" class="col-sm-3 control-label">I need Wi-Fi</label>
-        <div class="col-sm-9">
-          <input type="checkbox" id="wifi" name="wifi" class="form-control form-control-checkbox" />
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 small">This option adds ${{ event.dealerWifiPrice }} to your table price.
-          You will receive
-          Wi-Fi access details in your welcome packet at the con.
-        </div>
-      </div>
-      {% else %}
-      <input type="hidden" id="wifi" name="wifi" value="unchecked">
-      {% endif %}
-      <div class="form-group">
-        <label for="switch" class="col-sm-3 control-label">I will consider different table types</label>
-        <div class="col-sm-9">
-          <input type="checkbox" id="switch" name="switch" class="form-control form-control-checkbox" />
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 small">If the table/booth type I selected is no longer available, I
-          am willing to be assigned a different spot type (Table to booth or booth to table). You can decide
-          to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept,
-          you will be responsible for any difference in price.
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="tableSize" class="col-sm-3 control-label">Space Type</label>
-        <div class="col-sm-9">
-          <select id="tableSize" class="form-control form-control-select"></select>
-          <div id="tableSizeDescription"></div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="chairs" class="col-sm-3 control-label">Chairs</label>
-        <div class="col-sm-9">
-          <input type="number" id="chairs" name="chairs" class="form-control form-control-text" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="tables" class="col-sm-3 control-label">Tables</label>
-        <div class="col-sm-9">
-          <input type="number" id="tables" name="tables" class="form-control form-control-text" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="tables" class="col-sm-3 control-label">Partner Information</label>
-        <div class="col-sm-9" id="partnerList">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="near" class="col-sm-3 control-label">I would like to be near this person</label>
-        <div class="col-sm-9">
-          <input type="text" id="near" name="near" placeholder="Business or Person"
-            class="form-control form-control-text" maxlength="200" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="far" class="col-sm-3 control-label">I would like to NOT be near this person</label>
-        <div class="col-sm-9">
-          <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text"
-            maxlength="200" />
-        </div>
-      </div>
-      <hr />
-      {% include "templatetags/coc_sig.html" %}
-
-      <div class="form-group">
-        <div class="col-sm-9 col-sm-offset-3">
-          <button id="register" type="submit" class="btn btn-primary col-sm-6 pull-right" aria-controls="profile"
-            data-toggle="tab">Submit
-          </button>
-        </div>
-      </div>
+  <div class="row mb-3">
+    <label for="far" class="col-sm-3 col-form-label">Badge Name</label>
+    <div class="col-sm-9">
+      <input type="text" id="badgename" name="badgename" placeholder="Badge Name"
+        class="form-control form-control-text" />
     </div>
-    {% csrf_token %}
   </div>
+
+  <p>&nbsp;</p>
+  <h2>Business Information</h2>
+  <p>Fill out the information related to your business below.</p>
+  <hr>
+  <div class="row mb-3">
+    <label for="businessName" class="col-sm-3 col-form-label">Business Name <span class="text-danger">*</span></label>
+    <div class="col-sm-9">
+      <input type="text" id="businessName" name="businessName" placeholder="Business Name"
+        class="form-control form-control-text" required maxlength="200">
+    </div>
+    <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+  </div>
+  <div class="row mb-3">
+    <label for="license" class="col-sm-3 col-form-label">{{ venue.state }} Tax License <span
+        class="text-danger">*</span></label>
+    <div class="col-sm-9">
+      <input type="text" id="license" name="license" placeholder="Tax License ID"
+        class="form-control form-control-text" required maxlength="50">
+
+      <label>
+        <input type="checkbox" id="tempLicense" /> I need a temporary tax license for {{ venue.state }}.
+      </label>
+    </div>
+    <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+  </div>
+  <div class="row mb-3">
+    <label for="website" class="col-sm-3 col-form-label">Website <span class="text-danger">*</span></label>
+    <div class="col-sm-9">
+      <input type="url" id="website" name="website" placeholder="http://www.mysite.org"
+        class="form-control form-control-text" required maxlength="500" />
+      <div class="invalid-feedback">Please enter a full URL here. Ex: http://www.google.com</div>
+    </div>
+    <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+  </div>
+  <div class="row mb-3">
+    <label for="website" class="col-sm-3 col-form-label">Logo</label>
+    <div class="col-sm-9">
+      <input type="url" id="logo" name="website" placeholder="http://www.mysite.org/logo.png"
+        class="form-control form-control-text" maxlength="500" />
+      <div class="invalid-feedback">Please enter a full URL here. Ex: http://www.google.com/image.png</div>
+    </div>
+    <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+    <div class="col-sm-9 offset-sm-3 small">We will include your logo or icon on our dealer location
+      map.
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="description" class="col-sm-3 col-form-label">Description of Wares <span
+        class="text-danger">*</span></label>
+    <div class="col-sm-9">
+      <textarea id="description" name="description" class="form-control form-control-textarea" required></textarea>
+    </div>
+    <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+  </div>
+
+  <div class="row mb-3">
+    <label for="charityRaffle" class="col-sm-3 col-form-label">I have these items to donate to the Charity
+      Raffle</label>
+    <div class="col-sm-9">
+      <textarea id="charityRaffle" name="charityRaffle" class="form-control form-control-textarea"> </textarea>
+    </div>
+    <div class="col-sm-9 offset-sm-3 small">Any donation provided may be tax deductible. Please see the
+      charity onsite for additional information and receipts. Consult your tax professional for guidance.
+    </div>
+  </div>
+
+  <p>&nbsp;</p>
+  <h2>Placement Options</h2>
+  <p>The options below may limit where you can be placed in our Marketplace.</p>
+  <hr />
+  {% if event.dealerWifi %}
+  <div class="row mb-3">
+    <label for="wifi" class="col-sm-3 col-form-label">I need Wi-Fi</label>
+    <div class="col-sm-9">
+      <input type="checkbox" id="wifi" name="wifi" class="form-check-input" />
+    </div>
+    <div class="col-sm-9 offset-sm-3 small">This option adds ${{ event.dealerWifiPrice }} to your table price.
+      You will receive
+      Wi-Fi access details in your welcome packet at the con.
+    </div>
+  </div>
+  {% else %}
+  <input type="hidden" id="wifi" name="wifi" value="unchecked">
+  {% endif %}
+  <div class="row mb-3">
+    <label for="switch" class="col-sm-3 col-form-label">I will consider different table types</label>
+    <div class="col-sm-9">
+      <input type="checkbox" id="switch" name="switch" class="form-check-input" />
+    </div>
+    <div class="col-sm-9 offset-sm-3 small">If the table/booth type I selected is no longer available, I
+      am willing to be assigned a different spot type (Table to booth or booth to table). You can decide
+      to decline a dealer spot if you'd rather not have the spot type assigned in this way. If you accept,
+      you will be responsible for any difference in price.
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="tableSize" class="col-sm-3 col-form-label">Space Type</label>
+    <div class="col-sm-9">
+      <select id="tableSize" class="form-select"></select>
+      <div id="tableSizeDescription"></div>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="chairs" class="col-sm-3 col-form-label">Chairs</label>
+    <div class="col-sm-9">
+      <input type="number" id="chairs" name="chairs" class="form-control form-control-text" />
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="tables" class="col-sm-3 col-form-label">Tables</label>
+    <div class="col-sm-9">
+      <input type="number" id="tables" name="tables" class="form-control form-control-text" />
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="tables" class="col-sm-3 col-form-label">Partner Information</label>
+    <div class="col-sm-9" id="partnerList">
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="near" class="col-sm-3 col-form-label">I would like to be near this person</label>
+    <div class="col-sm-9">
+      <input type="text" id="near" name="near" placeholder="Business or Person"
+        class="form-control form-control-text" maxlength="200" />
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="far" class="col-sm-3 col-form-label">I would like to NOT be near this person</label>
+    <div class="col-sm-9">
+      <input type="text" id="far" name="far" placeholder="Business or Person" class="form-control form-control-text"
+        maxlength="200" />
+    </div>
+  </div>
+  <hr />
+  {% include "templatetags/coc_sig.html" %}
+
+  <div class="mb-3">
+    <div class="d-flex justify-content-end">
+      <button id="register" type="button" class="btn btn-primary" aria-controls="profile">Submit
+      </button>
+    </div>
+  </div>
+  {% csrf_token %}
 </form>
 
 {% endblock %}
@@ -271,9 +261,7 @@
 
 
   function doRegister() {
-    $("form").validator('validate');
-    var errorCount = $(".has-error").length;
-    if (errorCount > 0) {
+    if (!formIsValid()) {
       return;
     }
     if ($("#birthDate").val() == "") {
@@ -288,13 +276,13 @@
       return;
     }
 
-    let signature = $("#jsign_signature");
-    let nativeData = signature.jSignature("getData", "native");
-    if (nativeData.length < 2) {
+    if (!window._signaturePad || window._signaturePad.isEmpty()) {
       alert("You must sign to acknowledge your acceptance of the Code of Conduct.");
       $("#register").one('click', register_click);
       return;
     }
+
+    $("#register").prop("disabled", true);
 
     var data = {
       'attendee': {
@@ -313,8 +301,8 @@
         'emailsOk': $("#contact").is(':checked'),
         'surveyOk': $("#survey").is(':checked'),
         'badgeName': $("#badgename").val(),
-        'signature_svg': signature.jSignature("getData", "svgbase64")[1],
-        'signature_bitmap': signature.jSignature("getData", "image")[1]
+        'signature_svg': null,
+        'signature_bitmap': window.getSignatureBitmap()
       },
       'dealer': {
         'businessName': $("#businessName").val(), 'website': $("#website").val(), 'logo': $("#logo").val(),
@@ -339,6 +327,7 @@
         $.ajaxSettings.beforeSend(xhr, settings);
       },
       "error": function (result, status, error) {
+        $("#register").prop("disabled", false);
         alert("An error has occurred. Please contact {{event.dealerEmail}} and we will correct the problem.")
       },
       "success": function () {
@@ -426,10 +415,6 @@
 
     $("#register").click(doRegister);
 
-  });
-
-  $(document).ready(function () {
-    $("form").fadeIn();
   });
 
 </script>

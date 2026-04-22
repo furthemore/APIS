@@ -1,19 +1,15 @@
 {% extends "registration/master.html" %}
 
 {% block content %}
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane fade in active" id="personal">
-      <h1>Registration - {{ event }}</h1>
-      <hr>
-      <p>Registration for {{ event }} {{ message }}</p>
-      <div class="link-box">
-        <p>If you have any questions please contact
-          <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
-        </p>
-        <p>
-          <a href="{{ homeRedirect }}">Back to Main Page</a>
-        </p>
-      </div>
-    </div>
+  <h1>Registration - {{ event }}</h1>
+  <hr>
+  <p>Registration for {{ event }} {{ message }}</p>
+  <div class="link-box">
+    <p>If you have any questions please contact
+      <a href="mailto:{{ event.registrationEmail }}">{{ event.registrationEmail }}</a>
+    </p>
+    <p>
+      <a href="{{ homeRedirect }}">Back to Main Page</a>
+    </p>
   </div>
 {% endblock %}
