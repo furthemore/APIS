@@ -2,7 +2,7 @@ from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 
 
 def _is_excluded(name: str) -> bool:
-    return name.startswith("bundler/")
+    return name.startswith("bundler/") or name.endswith(".map")
 
 
 class SelectiveManifestStaticFilesStorage(ManifestStaticFilesStorage):
