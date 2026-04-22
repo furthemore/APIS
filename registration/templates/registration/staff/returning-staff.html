@@ -1,13 +1,12 @@
 {% extends "registration/master.html" %}
 
 {% block content %}
-  <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">Staff Not Found</h4>
+          <h5 class="modal-title" id="myModalLabel">Staff Not Found</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>We weren't able to find a staff record matching the entered email and token. Please check the email you
@@ -18,35 +17,32 @@
     </div>
   </div>
 
-  <form class="form-horizontal" role="form" data-toggle="validator">
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane fade in active" id="personal">
-        <h1>Staff Registration - {{ event }}</h1>
-        <p>Please enter your email.</p>
-        <hr>
+  <form class="form-horizontal" novalidate>
+    <h1>Staff Registration - {{ event }}</h1>
+    <p>Please enter your email.</p>
+    <hr>
 
-        <div class="form-group">
-          <label for="email" class="col-sm-3 control-label">Email</label>
-          <div class="col-sm-9">
-            <input type="email" id="email" placeholder="Email" class="form-control" required
-                   data-error="Email is required."/>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-        <div class="form-group">
-          <label for="token" class="col-sm-3 control-label">Registration Token</label>
-          <div class="col-sm-9">
-            <input type="text" id="token" class="form-control" disabled value="{{ token }}"/>
-          </div>
-          <div class="col-sm-offset-3 help-block with-errors" style=" padding-left:15px;"></div>
-        </div>
-        <div class="form-group">
-          <div class="col-sm-9 col-sm-offset-3">
-            {% csrf_token %}
-            <button id="lookup" type="submit" class="btn btn-primary col-sm-6 col-sm-offset-6" aria-controls="profile"
-                    data-toggle="tab">Find My Application
-            </button>
-          </div>
+    <div class="row mb-3">
+      <label for="email" class="col-sm-3 col-form-label">Email</label>
+      <div class="col-sm-9">
+        <input type="email" id="email" placeholder="Email" class="form-control" required/>
+        <div class="invalid-feedback">Email is required.</div>
+      </div>
+      <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+    </div>
+    <div class="row mb-3">
+      <label for="token" class="col-sm-3 col-form-label">Registration Token</label>
+      <div class="col-sm-9">
+        <input type="text" id="token" class="form-control" disabled value="{{ token }}"/>
+      </div>
+      <div class="offset-sm-3 col-sm-9 invalid-feedback with-errors"></div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-sm-9 offset-sm-3">
+        {% csrf_token %}
+        <div class="d-flex justify-content-end">
+          <button id="lookup" type="button" class="btn btn-primary" aria-controls="profile">Find My Application
+          </button>
         </div>
       </div>
     </div>
@@ -58,11 +54,11 @@
   <script type="text/javascript">
 
       function doRegister() {
-          $("form").validator('validate');
-          let errorCount = $(".has-error").length;
-          if (errorCount > 0) {
+          if (!formIsValid()) {
               return;
           }
+
+          $("#lookup").prop("disabled", true);
 
           let data = {
               'email': $("#email").val(), 'token': $("#token").val()
@@ -77,7 +73,8 @@
                   $.ajaxSettings.beforeSend(xhr, settings);
               },
               "error": function (result, status, error) {
-                  $("#errorModal").modal('show');
+                  $("#lookup").prop("disabled", false);
+                  bootstrap.Modal.getOrCreateInstance(document.getElementById('errorModal')).show();
               },
               "success": function () {
                   window.location = "{% url 'registration:info_returning_staff' %}";

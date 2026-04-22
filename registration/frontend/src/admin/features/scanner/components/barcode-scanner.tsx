@@ -182,7 +182,7 @@ export const BarcodeScanner: Component<{ emitter: Emitter<BarcodeEmitter> }> = (
           when={HID_SUPPORTED}
           fallback={
             <div class="card-body pb-0">
-              <div class="alert alert-warning">Web HID not supported</div>
+              <div class="alert alert-warning">WebHID not supported</div>
             </div>
           }
         >

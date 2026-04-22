@@ -45,6 +45,7 @@
     "@types/big.js": "^6.2.2",
     "@types/lodash": "^4.17.24",
     "@types/w3c-web-hid": "^1.0.7",
+    "@types/w3c-web-usb": "^1.0.14",
     "baseline-browser-mapping": "^2.10.19",
     "eslint": "^9.39.1",
     "eslint-plugin-solid": "^0.14.5",
