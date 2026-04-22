@@ -7,7 +7,9 @@ def _is_excluded(name: str) -> bool:
 
 class SelectiveManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(self, name, content=None, filename=None):
-        if _is_excluded(name):
+        if _is_excluded(name) or (filename and _is_excluded(filename)):
             return name
-        else:
+        try:
             return super().hashed_name(name, content, filename)
+        except ValueError:
+            return name
