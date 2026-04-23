@@ -1,14 +1,15 @@
 {% load allauth %}
 {% if attrs.type == "checkbox" or attrs.type == "radio" %}
-    <div class="checkbox">
-        <label for="{{ attrs.id }}">
-            <input {% if attrs.required %}required{% endif %}
+    <div class="form-check">
+        <input {% if attrs.required %}required{% endif %}
                name="{{ attrs.name }}"
                id="{{ attrs.id }}"
                {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
                {% if attrs.disabled %}disabled{% endif %}
-               type="{{ attrs.type }}">
+               type="{{ attrs.type }}"
+               class="form-check-input">
 
+        <label class="form-check-label" for="{{ attrs.id }}">
             {% slot label %}
             {% endslot %}
         </label>
@@ -21,7 +22,7 @@
         {% endif %}
     </div>
 {% elif attrs.type == "textarea" %}
-    <div class="form-group">
+    <div class="mb-3">
         <label for="{{ attrs.id }}">
             {% slot label %}
             {% endslot %}
@@ -41,7 +42,7 @@
            {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
            type="hidden">
 {% else %}
-    <div class="form-group">
+    <div class="mb-3">
         <label for="{{ attrs.id }}">
             {% slot label %}
             {% endslot %}

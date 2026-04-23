@@ -52,3 +52,11 @@ def venue_country(event):
         return event.venue.country
     else:
         return ""
+
+
+@register.simple_tag
+def venue_state(event):
+    if event.venue:
+        return event.venue.state
+    else:
+        return ""

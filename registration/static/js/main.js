@@ -60,6 +60,90 @@ async function postJSON(url, body) {
     })
 }
 
+// ==== price level card animations ====
+function animateLevelSelect(container, afterFade) {
+    let cards = container.find('.card');
+    if (cards.length === 0) {
+        afterFade();
+        return;
+    }
+    cards.addClass('level-card-exit');
+    setTimeout(afterFade, 200);
+}
+
+function revealLevelCards(container) {
+    container.find('[class*="col-"]').each(function (i) {
+        $(this).find('.card')
+            .css('animation-delay', (i * 70) + 'ms')
+            .addClass('level-card-enter');
+    });
+}
+
+// FLIP: animate the newly placed card from startRect (where it was) to its natural position.
+function flipCardToPosition($card, startRect) {
+    if (!startRect || !$card.length) {
+        $card.closest('#levelContainer').length && revealLevelCards($card.closest('#levelContainer'));
+        return;
+    }
+    let endRect = $card[0].getBoundingClientRect();
+    let dx = startRect.left - endRect.left;
+    let dy = startRect.top - endRect.top;
+
+    $card.css({ transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.88)', opacity: 0, transition: 'none' });
+    void $card[0].offsetHeight; // force reflow
+    $card.css({
+        transition: 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.22s ease-out',
+        transform: 'translate(0, 0) scale(1)',
+        opacity: 1,
+    });
+    setTimeout(function () { $card.css({ transition: '', transform: '', opacity: '' }); }, 350);
+}
+
+// ==== form validation ====
+function formIsValid(form) {
+    form = form || document.querySelector('form');
+    form.classList.add('was-validated');
+    return form.checkValidity();
+}
+
+function resetFormValidation(form) {
+    (form || document.querySelector('form')).classList.remove('was-validated');
+}
+
+// ==== color scheme / dark mode ====
+function setColorScheme(scheme) {
+    if (scheme === 'dark') {
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-bs-theme');
+    }
+    localStorage.setItem('color-scheme', scheme);
+    let sun = document.getElementById('theme-icon-sun');
+    let moon = document.getElementById('theme-icon-moon');
+    if (sun)  sun.style.display  = scheme === 'dark'  ? 'block' : 'none';
+    if (moon) moon.style.display = scheme === 'light' ? 'block' : 'none';
+}
+
+function toggleColorScheme() {
+    let isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    setColorScheme(isDark ? 'light' : 'dark');
+}
+
+$(document).ready(function (e) {
+    // Sync icon to current scheme on load
+    let isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    setColorScheme(isDark ? 'dark' : 'light');
+
+    // Follow OS preference changes only when user hasn't set a manual override
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+            if (!localStorage.getItem('color-scheme')) {
+                setColorScheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
+});
+
 $(document).ready(function (e) {
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {

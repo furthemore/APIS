@@ -46,9 +46,9 @@ $("body").ready(function () {
             $("#add1").val(address.address1);
             $("#add2").val(address.address2);
             $("#city").val(address.city);
+            $("#country").val(address.country).trigger('change');
             $("#state").val(address.state);
             $("#postal").val(address.postalCode);
-            $("#country").val(address.country);
         });
     }
 });

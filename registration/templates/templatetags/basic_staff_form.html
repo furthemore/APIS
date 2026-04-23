@@ -5,107 +5,129 @@
 <p>If your department and/or title are not correct, contact the Staff Services department to have it corrected.</p>
 {% endif %}
 
-<div class="form-group">
-    <label for="add1" class="col-sm-3 control-label">Badge Name <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="text" name="badgeName" id="badgeName" value="{{badge.badgeName}}" placeholder="Badge Name" class="form-control" required data-error="Badge name is required.">
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors" style="padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="badgeName" class="col-sm-3 col-form-label">Badge Name <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="text" name="badgeName" id="badgeName" value="{{badge.badgeName}}" placeholder="Badge Name"
+           class="form-control" required>
+    <div class="invalid-feedback">Badge name is required.</div>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>
 
 {% if staff %}
-<div class="form-group">
-    <label for="department" class="col-sm-3 control-label">Department </label>
-    <div class="col-sm-9">
-        <input id="department" name="department"class="form-control" value="{{staff.department}}" disabled />
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="department" class="col-sm-3 col-form-label">Department</label>
+  <div class="col-sm-9">
+    <input id="department" name="department" class="form-control" value="{{staff.department}}" disabled/>
+  </div>
 </div>
 
-<div class="form-group">
-    <label for="title" class="col-sm-3 control-label">Title </label>
-    <div class="col-sm-9">
-        <input type="text" id="title" name="title" value="{{staff.title}}" placeholder="Title" class="form-control form-control-text" disabled>
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="title" class="col-sm-3 col-form-label">Title</label>
+  <div class="col-sm-9">
+    <input type="text" id="title" name="title" value="{{staff.title}}" placeholder="Title" class="form-control" disabled>
+  </div>
 </div>
 {% endif %}
 
-<div class="form-group">
-    <label for="shirt" class="col-sm-3 control-label">Shirt Size <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <select id="shirt" name="department" class="form-control" required>
-            <option value="">-- Select One --</option>
-        </select>
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="shirt" class="col-sm-3 col-form-label">Shirt Size <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <select id="shirt" name="shirtsize" class="form-select" required{% if staff.shirtsize %} data-value="{{ staff.shirtsize.id }}"{% endif %}>
+      <option value="">-- Select One --</option>
+    </select>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>
 
 <hr/>
 
 <h3>Emergency Contact Info</h3>
 
-<div class="form-group">
-    <label for="contactName" class="col-sm-3 control-label">Name <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="text" id="contactName" name="contactName" value="{{staff.contactName}}" placeholder="Contact Name" class="form-control form-control-text" required>
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="contactName" class="col-sm-3 col-form-label">Name <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="text" id="contactName" name="contactName" value="{{staff.contactName}}"
+           placeholder="Contact Name" class="form-control" required>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>
 
-<div class="form-group">
-    <label for="contactRel" class="col-sm-3 control-label">Relationship <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="text" id="contactRel" name="contactRel" value="{{staff.contactRelation}}" placeholder="Relationship To You" class="form-control form-control-text" required>
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="contactRel" class="col-sm-3 col-form-label">Relationship <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="text" id="contactRel" name="contactRel" value="{{staff.contactRelation}}"
+           placeholder="Relationship To You" class="form-control" required>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>
 
-<div class="form-group">
-    <label for="contactPhone" class="col-sm-3 control-label">Phone Number <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="phone" id="contactPhone" name="contactPhone" value="{{staff.contactPhone}}" placeholder="Phone Number" class="form-control form-control-text" required>
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="contactPhone" class="col-sm-3 col-form-label">Phone Number <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="tel" id="contactPhone" name="contactPhone" value="{{staff.contactPhone}}"
+           placeholder="Phone Number" class="form-control" required>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>
 
 <hr/>
 
 <h3>Other Info</h3>
 
-<div class="form-group">
-    <label for="twitter" class="col-sm-3 control-label">Twitter Handle</label>
-    <div class="col-sm-9">
-        <input type="text" id="twitter" value="{{staff.twitter}}" name="twitter" placeholder="@somefurry" class="form-control form-control-text" />
-    </div>
-</div>
-<div class="form-group">
-    <label for="telegram" class="col-sm-3 control-label">Telegram Handle</label>
-    <div class="col-sm-9">
-        <input type="text" id="telegram" value="{{staff.telegram}}" name="telegram" placeholder="@somefurry" class="form-control form-control-text" />
-    </div>
+<div class="row mb-3">
+  <label for="twitter" class="col-sm-3 col-form-label">Twitter Handle</label>
+  <div class="col-sm-9">
+    <input type="text" id="twitter" value="{{staff.twitter}}" name="twitter"
+           placeholder="@somefurry" class="form-control"/>
+  </div>
 </div>
 
-<div class="form-group">
-    <label for="medical" class="col-sm-3 control-label">Medical Needs <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="text" id="medical" name="medical" value="{{staff.specialMedical}}" class="form-control form-control-text" required />
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="telegram" class="col-sm-3 col-form-label">Telegram Handle</label>
+  <div class="col-sm-9">
+    <input type="text" id="telegram" value="{{staff.telegram}}" name="telegram"
+           placeholder="@somefurry" class="form-control"/>
+  </div>
 </div>
 
-<div class="form-group">
-    <label for="food" class="col-sm-3 control-label">Dietary Needs <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="text" id="food" name="food" value="{{staff.specialFood}}" class="form-control form-control-text" required />
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="medical" class="col-sm-3 col-form-label">Medical Needs <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="text" id="medical" name="medical" value="{{staff.specialMedical}}" class="form-control" required/>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>
 
-<div class="form-group">
-    <label for="skills" class="col-sm-3 control-label">Additional Skills <span style="color:red;">*</span></label>
-    <div class="col-sm-9">
-        <input type="text" id="skills" name="skills" value="{{staff.specialSkills}}" class="form-control form-control-text" required />
-    </div>
-    <div class="col-sm-offset-3 help-block with-errors"style=" padding-left:15px;"></div>
+<div class="row mb-3">
+  <label for="food" class="col-sm-3 col-form-label">Dietary Needs <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="text" id="food" name="food" value="{{staff.specialFood}}" class="form-control" required/>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <label for="skills" class="col-sm-3 col-form-label">Additional Skills <span class="text-danger">*</span></label>
+  <div class="col-sm-9">
+    <input type="text" id="skills" name="skills" value="{{staff.specialSkills}}" class="form-control" required/>
+  </div>
+  <div class="offset-sm-3 col-sm-9">
+    <div class="invalid-feedback with-errors"></div>
+  </div>
 </div>

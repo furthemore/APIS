@@ -5,44 +5,36 @@
     <head>
         <title>{% current_site_name %} {% block title %}{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-        <link href="{% static 'css/bootstrap-darkly.min.css' %}" rel="stylesheet" media="screen">
-
+        <link href="{% static 'css/bs5-darkly.min.css' %}" rel="stylesheet">
         {% block head %}{% endblock %}
     </head>
     <body>
         {% block nav %}
-        <nav class="navbar navbar-default">
+        <nav class="navbar navbar-expand-md navbar-dark bg-primary mb-3">
           <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" href="{% url 'admin:index' %}">APIS</a>
-            </div>
-
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <a class="navbar-brand" href="{% url 'admin:index' %}">APIS</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-nav">
               {% if user.is_authenticated %}
-              <form method="post" action="{% url 'admin:logout' %}" class="navbar-form navbar-right">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Logout</button>
-              </form>
-
-              <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                  <a href=""#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                    <span class="glyphicon glyphicon-user"></span>
+              <ul class="navbar-nav ms-auto align-items-md-center">
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.029 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>
                     {{ user }}
-                    <span class="caret"></span>
                   </a>
-                  <ul class="dropdown-menu">
-                    <li><a href="{% url 'mfa_index' %}">2FA</a></li>
-                    <li><a href="{% url 'account_email' %}">Email</a></li>
-                    <li><a href="{% url 'account_change_password' %}">Password</a></li>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'mfa_index' %}">2FA</a></li>
+                    <li><a class="dropdown-item" href="{% url 'account_email' %}">Email</a></li>
+                    <li><a class="dropdown-item" href="{% url 'account_change_password' %}">Password</a></li>
                   </ul>
+                </li>
+                <li class="nav-item">
+                  <form method="post" action="{% url 'admin:logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-light ms-2">Logout</button>
+                  </form>
                 </li>
               </ul>
               {% endif %}
@@ -55,7 +47,9 @@
             {% if messages %}
                 {% for message in messages %}
                 <div class="alert {% if message.tags %}{% bootstrap_message message.tags %}{% endif %}" role="alert">
-                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}<span class="glyphicon glyphicon-alert"></span> {% endif %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+                    {% endif %}
                     <b>{{ message }}</b>
                 </div>
                 {% endfor %}
@@ -65,8 +59,8 @@
         </div>
 
         {% block scripts %}
-            <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
-            <script src="{% static 'js/bootstrap.min.js' %}"></script>
+            <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+            <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
         {% endblock %}
 
         {% block extra_body %}{% endblock extra_body %}
