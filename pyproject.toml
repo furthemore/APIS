@@ -8,7 +8,7 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     "celery[redis]>=5.6.3",
     "configobj>=5.0.9",
-    "django~=6.0.3",
+    "django~=6.0.5",
     "django-admin-env-notice~=1.0.1",
     "django-allauth[mfa]>=65.16.1",
     "django-extensions~=4.1",
@@ -33,13 +33,13 @@ dependencies = [
     "psycopg[binary,pool]>=3.3.3",
     "pygments~=2.20.0",
     "pyjwt~=2.12.1",
-    "pytz~=2026.1.post1",
+    "pytz~=2026.2.0",
     "qrcode~=8.2.0",
     "respx>=0.22.0",
-    "sentry-sdk>=2.58.0",
+    "sentry-sdk>=2.59.0",
     "soupsieve>=2.8.3",
     "squareup==44.0.1.20260122",
-    "uvicorn>=0.40.0",
+    "uvicorn>=0.46.0",
     "uvicorn-worker>=0.4.0",
 ]
 
@@ -50,7 +50,7 @@ django-prometheus = { git = "https://github.com/django-commons/django-prometheus
 dev = [
     "coveralls>=4.1.0",
     "django-debug-toolbar~=6.3.0",
-    "django-types>=0.22.0",
-    "ruff>=0.15.10",
+    "django-types>=0.24.0",
+    "ruff>=0.15.12",
     "werkzeug>=3.1.5",
 ]
