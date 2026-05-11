@@ -71,9 +71,6 @@ updates:
     rebase-strategy: "disabled"
     cooldown:
       default-days: 7
-      semver-major-days: 14
-      semver-minor-days: 5
-      semver-patch-days: 3
     groups:
       minor-and-patch:
         patterns:
@@ -99,6 +96,3 @@ updates:
     rebase-strategy: "disabled"
     cooldown:
       default-days: 7
-      semver-major-days: 14
-      semver-minor-days: 5
-      semver-patch-days: 3

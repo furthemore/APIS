@@ -6,8 +6,14 @@ name: 🌈 GitHub Actions Security Analysis (zizmor)
 on:
   push:
     branches: [production]
+    paths:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
   pull_request:
     branches: ["**"]
+    paths:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
 
 permissions: {}
 
