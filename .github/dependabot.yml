@@ -49,6 +49,29 @@ updates:
         update-types:
           - "major"
 
+  # Keep GitHub Actions pinned to latest SHA
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "18:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 3
+    rebase-strategy: "disabled"
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
   # Enable version updates for Docker
   - package-ecosystem: "docker"
     directory: "/"

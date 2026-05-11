@@ -20,9 +20,9 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     concurrency: ${{ github.event.inputs.environment }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
     - name: Login to packages container registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -34,7 +34,7 @@ jobs:
         make tag-${{ github.event.inputs.environment }}
 
     - name: Deploy to server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
       with:
         host: maaa-registration
         username: ${{ secrets.SSH_USERNAME }}
