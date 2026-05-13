@@ -77,7 +77,7 @@ jobs:
       - name: Run Tests
         run: |
           cp fm_eventmanager/settings.py.ci fm_eventmanager/settings.py
-          uv run python ./manage.py collectstatic --noinput
+          uv run python ./manage.py collectstatic --noinput --skip-checks
           uv run coverage run ./manage.py test registration
         env:
           SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
