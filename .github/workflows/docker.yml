@@ -14,13 +14,20 @@ on:
   #  workflows: ["Django CI"]
   #  types: [completed]
 
+permissions: {}
+
 jobs:
   build_docker:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     environment: ${{ github.event.inputs.environment }}
     concurrency: ${{ github.event.inputs.environment }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      with:
+        persist-credentials: false
     - name: Get version from latest tag
       id: version
       run: |
@@ -46,19 +53,23 @@ jobs:
         glitchtip-cli releases finalize ${{ steps.version.outputs.version }}
 
     - name: Login to packages container registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build image
+      env:
+        DEPLOY_ENV: ${{ github.event.inputs.environment }}
       run: |
         make build-docker-image VERSION=${{ steps.version.outputs.version }} GIT_SHA=${{ steps.version.outputs.sha }}
-        make tag-${{ github.event.inputs.environment }}
+        make "tag-${DEPLOY_ENV}"
 
     - name: Deploy to server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+      env:
+        DEPLOY_ENV: ${{ github.event.inputs.environment }}
       with:
         host: maaa-registration
         username: ${{ secrets.SSH_USERNAME }}
@@ -66,10 +77,11 @@ jobs:
         proxy_host: ${{ secrets.SSH_HOST }}
         proxy_username: ${{ secrets.SSH_USERNAME }}
         proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        envs: DEPLOY_ENV
         script: |
           cd /opt/docker
           docker-compose pull
-          docker-compose up -d apis-${{ github.event.inputs.environment }} apis-${{ github.event.inputs.environment }}-worker
+          docker-compose up -d "apis-${DEPLOY_ENV}" "apis-${DEPLOY_ENV}-worker"
 
     - name: Record GlitchTip deployment
       env:

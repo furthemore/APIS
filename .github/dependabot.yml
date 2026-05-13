@@ -9,6 +9,11 @@ updates:
       timezone: "America/Los_Angeles"
     open-pull-requests-limit: 3
     rebase-strategy: "disabled"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 5
+      semver-patch-days: 3
     groups:
       # Low risk - merge without much review
       minor-and-patch:
@@ -34,6 +39,11 @@ updates:
       timezone: "America/Los_Angeles"
     open-pull-requests-limit: 3
     rebase-strategy: "disabled"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+      semver-minor-days: 5
+      semver-patch-days: 3
     groups:
       # Low risk - merge without much review
       minor-and-patch:
@@ -43,6 +53,31 @@ updates:
           - "minor"
           - "patch"
       # Higher risk - review more carefully
+      major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+
+  # Keep GitHub Actions pinned to latest SHA
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "18:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 3
+    rebase-strategy: "disabled"
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
       major:
         patterns:
           - "*"
@@ -59,3 +94,5 @@ updates:
       timezone: "America/Los_Angeles"
     open-pull-requests-limit: 2
     rebase-strategy: "disabled"
+    cooldown:
+      default-days: 7
