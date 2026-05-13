@@ -47,7 +47,7 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{ secrets.GLITCHTIP_AUTH_TOKEN }}
         SENTRY_ORG: ${{ vars.GLITCHTIP_ORG }}
         SENTRY_PROJECT: ${{ vars.GLITCHTIP_PROJECT }}
-      run: |
+      run: | # zizmor: ignore[template-injection] values are from git describe in a prior step
         glitchtip-cli releases new ${{ steps.version.outputs.version }}
         glitchtip-cli releases set-commits ${{ steps.version.outputs.version }} --auto
         glitchtip-cli releases finalize ${{ steps.version.outputs.version }}
@@ -62,7 +62,7 @@ jobs:
     - name: Build image
       env:
         DEPLOY_ENV: ${{ github.event.inputs.environment }}
-      run: |
+      run: | # zizmor: ignore[template-injection] values are from git describe in a prior step
         make build-docker-image VERSION=${{ steps.version.outputs.version }} GIT_SHA=${{ steps.version.outputs.sha }}
         make "tag-${DEPLOY_ENV}"
 
@@ -89,5 +89,6 @@ jobs:
         SENTRY_AUTH_TOKEN: ${{ secrets.GLITCHTIP_AUTH_TOKEN }}
         SENTRY_ORG: ${{ vars.GLITCHTIP_ORG }}
         SENTRY_PROJECT: ${{ vars.GLITCHTIP_PROJECT }}
-      run: |
-        glitchtip-cli deploys new ${{ steps.version.outputs.version }} --env ${{ github.event.inputs.environment }}
+        DEPLOY_ENV: ${{ github.event.inputs.environment }}
+      run: | # zizmor: ignore[template-injection] version is from git describe in a prior step
+        glitchtip-cli deploys new ${{ steps.version.outputs.version }} --env "${DEPLOY_ENV}"
