@@ -36,10 +36,10 @@ dependencies = [
     "pytz~=2026.2.0",
     "qrcode~=8.2.0",
     "respx>=0.22.0",
-    "sentry-sdk>=2.59.0",
+    "sentry-sdk>=2.60.0",
     "soupsieve>=2.8.3",
     "squareup==44.0.1.20260122",
-    "uvicorn>=0.46.0",
+    "uvicorn>=0.47.0",
     "uvicorn-worker>=0.4.0",
 ]
 
@@ -51,6 +51,6 @@ dev = [
     "coveralls>=4.1.0",
     "django-debug-toolbar~=6.3.0",
     "django-types>=0.24.0",
-    "ruff>=0.15.12",
+    "ruff>=0.15.13",
     "werkzeug>=3.1.5",
 ]
