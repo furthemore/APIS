@@ -31,6 +31,7 @@ dependencies = [
     "paho-mqtt~=2.1.0",
     "pillow>=12.1.0",
     "psycopg[binary,pool]>=3.3.4",
+    "python-json-logger>=3.3.0",
     "pygments~=2.20.0",
     "pyjwt~=2.12.1",
     "pytz~=2026.2.0",

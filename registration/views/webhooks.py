@@ -28,7 +28,10 @@ def square_webhook(request):
     )
 
     if not signature_valid:
-        logger.warning("Invalid signature in Square request")
+        logger.warning(
+            "Invalid webhook signature",
+            extra={"notification_url": notification_url},
+        )
         return common.abort(403, "Forbidden: invalid signature")
 
     try:
@@ -56,9 +59,11 @@ def square_webhook(request):
     )
     try:
         notification.save()
-    except IntegrityError as e:
-        logger.warning(f"Conflict: event_id {event_id} already exists")
-        logger.debug(e)
+    except IntegrityError:
+        logger.info(
+            "Duplicate webhook event_id received",
+            extra={"event_id": event_id},
+        )
         return common.success(200)
 
     process_webhook(notification)
@@ -67,6 +72,13 @@ def square_webhook(request):
 
 
 def process_webhook(notification: PaymentWebhookNotification):
+    logger.info(
+        "Processing webhook notification",
+        extra={
+            "event_id": notification.event_id,
+            "event_type": notification.body.get("type"),
+        },
+    )
     result = False
     if notification.body["type"] == "refund.updated":
         result = payments.process_webhook_refund_update(notification)
@@ -76,6 +88,11 @@ def process_webhook(notification: PaymentWebhookNotification):
         result = payments.process_webhook_payment_updated(notification)
     elif notification.body["type"] in ("dispute.created", "dispute.state.updated"):
         result = payments.process_webhook_dispute_created_or_updated(notification)
+    else:
+        logger.warning(
+            "Unhandled webhook event type",
+            extra={"event_type": notification.body.get("type"), "event_id": notification.event_id},
+        )
 
     notification.processed = result
     notification.save()

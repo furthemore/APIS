@@ -38,7 +38,8 @@ def servePDF(request: HttpRequest) -> Union[HttpResponse, JsonResponse]:
     signer = TimestampSigner()
     try:
         data_obj = signer.unsign_object(data, max_age=60)
-    except:
+    except Exception:
+        logger.warning("Invalid or expired signed data in PDF request")
         return JsonResponse({"success": False, "reason": "Invalid data"}, status=401)
 
     badge_ids = data_obj.get("badge_ids", [])
