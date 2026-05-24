@@ -529,7 +529,7 @@ def addNewDealer(request):
     tz = timezone.get_current_timezone()
     try:
         birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
-    except ValueError as e:
+    except ValueError:
         logger.warning("Unable to parse birthdate in dealer registration")
         return common.abort(400, "Unable to parse birthdate")
     event = Event.objects.get(name=evt)
@@ -601,7 +601,7 @@ def addNewDealer(request):
 
     try:
         registration.emails.send_dealer_application_email(dealer.id)
-    except Exception as e:
+    except Exception:
         logger.exception("Error sending DealerApplicationEmail")
         dealerEmail = get_dealer_email()
         return JsonResponse(
@@ -615,7 +615,7 @@ def addNewDealer(request):
     return JsonResponse({"success": True})
 
 
-def getTableSizes(request):
+def getTableSizes(request):  # noqa: S1172, S1542 removing parameter will break django
     event = Event.objects.get(default=True)
     sizes = TableSize.objects.filter(event=event)
     data = [
