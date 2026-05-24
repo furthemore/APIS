@@ -107,13 +107,10 @@ def charge_payment(order: Order, cc_data: dict, request=None):
                 buyer_email_address=cc_data.get("email"),
             )
     except ApiError as e:
-        logger.error(
-            "Payment API error",
-            extra={
-                "order_reference": order.reference,
-                "errors": [err.code for err in (e.errors or [])],
-            },
-        )
+        logger.exception("Payment API error", extra={
+            "order_reference": order.reference,
+            "errors": [err.code for err in (e.errors or [])],
+        })
         logger.debug("Transaction failed", extra={"api_errors": str(e.errors)})
         order.status = Order.FAILED
         order.apiData = e.body
@@ -622,8 +619,8 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
                     line_items=line_items,
                 ),
             )
-    except ApiError as e:
-        logger.error("Failed to create Square order", extra={"errors": str(e.errors)})
+    except ApiError:
+        logger.exception("Failed to create Square order")
         return None
 
     if api_response.order:
@@ -649,8 +646,8 @@ def print_payment_receipt(
                     ),
                 ),
             )
-    except ApiError as e:
-        logger.error("Could not print receipt", extra={"errors": str(e.errors)})
+    except ApiError:
+        logger.exception("Could not print receipt")
         return False
 
     if api_response.errors:

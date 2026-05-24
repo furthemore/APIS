@@ -1,6 +1,5 @@
 import json
 import logging
-from json import JSONDecodeError
 
 from django.core.signing import TimestampSigner
 from django.http import JsonResponse
@@ -262,7 +261,7 @@ def checkout(request):
 
     try:
         post_data = json.loads(request.body)
-    except (ValueError, JSONDecodeError):
+    except ValueError:
         logger.warning("Unable to decode JSON for checkout()")
         return common.abort(400, "Unable to parse input options")
 

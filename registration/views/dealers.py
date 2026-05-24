@@ -355,7 +355,7 @@ def add_assistants_checkout(request):
 def add_dealer(request):
     try:
         postData = json.loads(request.body)
-    except ValueError as e:
+    except ValueError:
         logger.exception("Unable to decode JSON for add_dealer()")
         return JsonResponse({"success": False})
 
@@ -517,7 +517,7 @@ def checkout_dealer(request):
 def addNewDealer(request):
     try:
         postData = json.loads(request.body)
-    except ValueError as e:
+    except ValueError:
         logger.warning("Unable to decode JSON for addNewDealer()")
         return common.abort(400, "Unable to decode JSON")
 

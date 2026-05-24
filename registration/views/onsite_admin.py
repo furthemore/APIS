@@ -314,8 +314,8 @@ def send_mqtt_message_to_terminal(
 
     try:
         mqtt.send_mqtt_message(topic, data)
-    except Exception as ex:
-        logger.error("Could not send MQTT message", extra={"topic": topic, "error": str(ex)})
+    except Exception:
+        logger.exception("Could not send MQTT message", extra={"topic": topic})
         return JsonResponse(
             {"success": False, "reason": "Could not send MQTT message"}, status=500
         )
