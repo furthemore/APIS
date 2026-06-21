@@ -8,11 +8,11 @@ import type MqttClient from "./mqtt";
 
 const KEY_PREFIX = ["onsiteAdmin"];
 
-const redirectOnLoginResponse: AfterResponseHook = (
-  _request,
-  _options,
+const redirectOnLoginResponse: AfterResponseHook = ({
   response,
-) => {
+}: {
+  response: Response;
+}) => {
   if (response.redirected && response.url.includes("/accounts/login")) {
     const url = new URL(response.url);
     url.searchParams.set(

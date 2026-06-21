@@ -6,10 +6,10 @@ import { CSRF_TOKEN } from "./common";
 const MUTATING_METHODS = new Set(["put", "delete", "post", "patch", "connect"]);
 
 export const api = ky.extend({
-  prefixUrl: import.meta.env.VITE_API_PREFIX_URL || globalThis.location.origin,
+  prefix: import.meta.env.VITE_API_PREFIX_URL || globalThis.location.origin,
   hooks: {
     beforeRequest: [
-      (request) => {
+      ({ request }: { request: Request }) => {
         if (MUTATING_METHODS.has(request.method.toLowerCase())) {
           if (!request.headers.has("idempotency-key")) {
             request.headers.set(
