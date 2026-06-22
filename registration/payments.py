@@ -35,7 +35,7 @@ SQUARE_REQUESTS = Histogram(
     "square_requests", "HTTP requests to Square API", ["endpoint"]
 )
 
-logger = logging.getLogger("registration.payments")
+logger = logging.getLogger(__name__)
 
 environment = SquareEnvironment.PRODUCTION
 if settings.SQUARE_ENVIRONMENT == "sandbox":
@@ -78,10 +78,20 @@ def charge_payment(order: Order, cc_data: dict, request=None):
             last_name=cc_data["cc_lastname"],
         )
     except KeyError:
-        logger.debug("One or more billing address field omited - skipping")
+        logger.debug(
+            "Billing address field omitted, using postal-only fallback",
+            extra={"order_reference": order.reference},
+        )
         billing_address = AddressParams(postal_code=cc_data["postal"])
 
-    logger.debug("---- Begin Transaction ----")
+    logger.info(
+        "Processing payment",
+        extra={
+            "order_reference": order.reference,
+            "amount_cents": converted_total,
+            "idempotency_key": idempotency_key,
+        },
+    )
 
     try:
         with SQUARE_REQUESTS.labels(endpoint="create_payment").time():
@@ -97,14 +107,20 @@ def charge_payment(order: Order, cc_data: dict, request=None):
                 buyer_email_address=cc_data.get("email"),
             )
     except ApiError as e:
-        logger.debug(e.errors)
-        logger.debug("---- Transaction Failed ----")
+        logger.exception("Payment API error", extra={
+            "order_reference": order.reference,
+            "errors": [err.code for err in (e.errors or [])],
+        })
+        logger.debug("Transaction failed", extra={"api_errors": str(e.errors)})
         order.status = Order.FAILED
         order.apiData = e.body
         order.save()
         return False, e.body
 
-    logger.debug("---- Charge Submitted ----")
+    logger.info(
+        "Payment submitted to Square",
+        extra={"order_reference": order.reference},
+    )
 
     # Square still returns data for failed payments
     order.apiData = api_response.model_dump()
@@ -117,14 +133,20 @@ def charge_payment(order: Order, cc_data: dict, request=None):
         if api_response.payment.card_details and api_response.payment.card_details.card:
             order.lastFour = str(api_response.payment.card_details.card.last4)
 
-        logger.debug("---- End Transaction ----")
+        logger.info(
+            "Payment completed successfully",
+            extra={"order_reference": order.reference, "payment_id_prefix": api_response.payment.id[:4]},
+        )
         order.status = Order.COMPLETED
         order.notes = "Square: #" + api_response.payment.id[:4]
         order.save()
         return True, None
     else:
-        logger.debug(api_response.errors)
-        logger.debug("---- Transaction Failed ----")
+        logger.debug("Payment response errors", extra={"errors": str(api_response.errors)})
+        logger.warning(
+            "Payment failed after submission",
+            extra={"order_reference": order.reference},
+        )
         order.status = Order.FAILED
         order.save()
         return False, {"errors": [e.model_dump() for e in api_response.errors or []]}
@@ -144,7 +166,10 @@ def refresh_payment(order, store_api_data=None):
     else:
         api_data = order.apiData
         if not api_data:
-            logger.warning("No order data yet for {0}".format(order.reference))
+            logger.warning(
+                "No order data yet for refresh",
+                extra={"order_reference": order.reference},
+            )
             return False, "No order data yet for {0}".format(order.reference)
     order_total = 0
 
@@ -293,12 +318,18 @@ def refund_card_payment(order, amount, reason=None, request=None):
             )
     except ApiError as e:
         errors = format_errors(e.errors)
-        logger.error("Error in square refund: {0}".format(errors))
+        logger.error(
+            "Square refund API error",
+            extra={"order_id": order.id, "payment_id": payment_id, "errors": errors},
+        )
         return False, errors
 
     if api_response.errors:
         errors = format_errors(api_response.errors)
-        logger.error("Error in square refund: {0}".format(errors))
+        logger.error(
+            "Square refund response errors",
+            extra={"order_id": order.id, "payment_id": payment_id, "errors": errors},
+        )
         return False, errors
 
     stored_refunds = api_data.get("refunds", [])
@@ -340,7 +371,8 @@ def process_webhook_refund_update(notification: PaymentWebhookNotification) -> b
         order = Order.objects.get(apiData__refunds__contains=[{"id": refund_id}])
     except Order.DoesNotExist:
         logger.warning(
-            f"Got refund.updated webhook update for a refund id not found: {refund_id}"
+            "Refund webhook for unknown refund_id",
+            extra={"refund_id": refund_id},
         )
         return False
 
@@ -368,7 +400,8 @@ def process_webhook_payment_updated(notification: PaymentWebhookNotification) ->
         order = Order.objects.get(apiData__payment__id=payment_id)
     except Order.DoesNotExist:
         logger.warning(
-            f"Got payment.updated webhook update for a payment id not found: {payment_id}"
+            "Payment webhook for unknown payment_id",
+            extra={"payment_id": payment_id},
         )
         return False
 
@@ -389,14 +422,18 @@ def process_webhook_refund_created(notification: PaymentWebhookNotification) -> 
         order = Order.objects.get(apiData__payment__id=payment_id)
     except Order.DoesNotExist:
         logger.warning(
-            f"Got refund.created webhook update for a payment id not found: {payment_id}"
+            "Refund created webhook for unknown payment_id",
+            extra={"payment_id": payment_id, "refund_id": refund_id},
         )
         return False
 
     # Skip processing if we already have this refund id stored:
     refund_exists = Order.objects.filter(apiData__refunds__contains=[{"id": refund_id}])
     if len(refund_exists) > 0:
-        logger.info(f"Refund {refund_id} already exists, skipping processing...")
+        logger.info(
+            "Refund already exists, skipping",
+            extra={"refund_id": refund_id},
+        )
         return True
 
     # Store refund in api data
@@ -438,7 +475,8 @@ def process_webhook_dispute_created_or_updated(
         order = Order.objects.get(apiData__payment__id=payment_id)
     except Order.DoesNotExist:
         logger.warning(
-            f"Got dispute.created webhook update for a payment id not found: {payment_id}"
+            "Dispute webhook for unknown payment_id",
+            extra={"payment_id": payment_id},
         )
         return False
 
@@ -581,14 +619,14 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
                     line_items=line_items,
                 ),
             )
-    except ApiError as e:
-        logger.error("failed to create order: %s", e.errors)
+    except ApiError:
+        logger.exception("Failed to create Square order")
         return None
 
     if api_response.order:
         return api_response.order.id
     else:
-        logger.error("failed to create order: %s", api_response.errors)
+        logger.error("Failed to create Square order", extra={"errors": str(api_response.errors)})
         return None
 
 
@@ -608,12 +646,12 @@ def print_payment_receipt(
                     ),
                 ),
             )
-    except ApiError as e:
-        logger.error("Could not print receipt: %s", e.errors)
+    except ApiError:
+        logger.exception("Could not print receipt")
         return False
 
     if api_response.errors:
-        logger.error("Could not print receipt: %s", api_response.errors)
+        logger.error("Could not print receipt", extra={"errors": str(api_response.errors)})
         return False
     else:
         return True

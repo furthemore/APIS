@@ -27,7 +27,7 @@ from registration.models import (
     get_random_token,
 )
 
-logger = logging.getLogger("django.request")
+logger = logging.getLogger(__name__)
 
 
 def flush(request):
@@ -50,7 +50,6 @@ def clear_session(request):
     for key in list(request.session.keys()):
         if key[0] != "_":
             del request.session[key]
-            logger.debug(f"Delete session key {key}")
     request.session.save()
 
 
@@ -117,7 +116,7 @@ def abort(status=400, reason="Bad request"):
     status: A valid HTTP status code
     reason: Human-readable explanation
     """
-    logger.info("JSON {0}: {1}".format(status, reason))
+    logger.info("Client error response", extra={"status": status, "reason": reason})
     return JsonResponse({"success": False, "reason": reason}, status=status)
 
 
@@ -129,10 +128,10 @@ def success(status=200, reason=None):
     reason: (Optional) human-readable explanation
     """
     if reason is None:
-        logger.debug("JSON {0}".format(status))
+        logger.debug("Success response", extra={"status": status})
         return JsonResponse({"success": True}, status=status)
     else:
-        logger.debug("JSON {0}: {1}".format(status, reason))
+        logger.debug("Success response", extra={"status": status, "reason": reason})
         return JsonResponse(
             {
                 "success": True,
@@ -390,7 +389,7 @@ def get_registration_email(event=None):
     if event is None:
         try:
             event = Event.objects.get(default=True)
-        except BaseException:
+        except Event.DoesNotExist:
             return settings.APIS_DEFAULT_EMAIL
     if event.registrationEmail == "":
         return settings.APIS_DEFAULT_EMAIL

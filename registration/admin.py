@@ -1256,7 +1256,8 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
                     f"Error while loading JSON from apiData field for this order: {obj}",
                 )
                 logger.warning(
-                    f"Error while loading JSON from api_data for order {obj}",
+                    "Empty apiData for credit order",
+                    extra={"order_id": obj.id},
                 )
             else:
                 if "dispute" in obj.apiData:
@@ -1483,8 +1484,8 @@ class PrettyJSONWidget(widgets.Textarea):
             self.attrs["rows"] = min(max(len(row_lengths) + 2, 10), 30)
             self.attrs["cols"] = min(max(max(row_lengths) + 2, 40), 120)
             return value
-        except Exception as e:
-            logger.warning("Error while formatting JSON: {}".format(e))
+        except Exception:
+            logger.warning("Error while formatting JSON in admin widget", exc_info=True)
             return super(PrettyJSONWidget, self).format_value(value)
 
 
@@ -1509,7 +1510,8 @@ def process_unprocessed_notifications(
 ):
     for notification in queryset.filter(processed=False).all():
         logger.info(
-            f"Manually processing webhook notification with event_id = {notification.event_id}"
+            "Manually processing webhook notification",
+            extra={"event_id": notification.event_id},
         )
         webhooks.process_webhook(notification)
 

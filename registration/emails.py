@@ -10,7 +10,7 @@ import registration.views.dealers
 import registration.views.staff
 from registration.models import *
 
-logger = logging.getLogger("registration.emails")
+logger = logging.getLogger(__name__)
 
 
 def _get_event_url(event: Event) -> str:
@@ -24,7 +24,10 @@ def _get_event_url(event: Event) -> str:
 
 
 def send_registration_email(order, email, send_vip=True):
-    logger.debug("Enter send_registration_email...")
+    logger.info(
+        "Sending registration email",
+        extra={"order_id": order.id, "order_reference": order.reference},
+    )
     order_items = OrderItem.objects.filter(order=order)
     order_dict = {}
     has_minors = False
@@ -336,7 +339,10 @@ def send_chargeback_notice_email(order):
 
 
 def send_email(reply_address, to_address_list, subject, message, html_message, bcc=[]):
-    logger.debug("Enter send_email...")
+    logger.info(
+        "Sending email",
+        extra={"subject": subject, "recipient_count": len(to_address_list)},
+    )
     mail_message = EmailMultiAlternatives(
         subject,
         message,
@@ -345,8 +351,6 @@ def send_email(reply_address, to_address_list, subject, message, html_message, b
         reply_to=[reply_address],
         bcc=bcc,
     )
-    logger.debug("Message to: {0}".format(to_address_list))
     mail_message.attach_alternative(html_message, "text/html")
-    logger.debug("Sending...")
     mail_message.send()
-    logger.debug("Email sent")
+    logger.debug("Email sent", extra={"subject": subject})
