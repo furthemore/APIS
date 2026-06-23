@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST
 from registration.models import *
 from registration.services import CreateAttendeeOptions
 
-from .common import abort, handler, logger
+from .common import abort, handler
 from .ordering import get_total
 
 logger = logging.getLogger(__name__)
@@ -186,7 +186,7 @@ def find_returning_staff(request):
         email = post_data["email"]
         token = post_data["token"]
     except (json.JSONDecodeError, KeyError) as e:
-        logger.warning(f"Unable to find returning staff: bad request - {request.body}")
+        logger.warning("Unable to find returning staff: malformed request")
         return abort(400, str(e))
 
     try:

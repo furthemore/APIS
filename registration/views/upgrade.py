@@ -20,7 +20,6 @@ from .common import (
     get_registration_email,
     getOptionsDict,
     handler,
-    logger,
 )
 from .ordering import do_checkout, doZeroCheckout, get_total
 

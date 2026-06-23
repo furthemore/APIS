@@ -44,7 +44,6 @@ from registration.models import (
     get_random_token,
 )
 from registration.views.attendee import get_attendee_age
-from registration.views.common import logger
 from registration.views.ordering import (
     get_discount_total,
     get_order_item_option_total,
@@ -315,8 +314,8 @@ def send_mqtt_message_to_terminal(
 
     try:
         mqtt.send_mqtt_message(topic, data)
-    except Exception as ex:
-        logger.error("could not send mqtt message: %s", ex)
+    except Exception:
+        logger.exception("Could not send MQTT message", extra={"topic": topic})
         return JsonResponse(
             {"success": False, "reason": "Could not send MQTT message"}, status=500
         )
@@ -482,6 +481,7 @@ def complete_square_transaction(request):
     try:
         token = request.headers.get("authorization").removeprefix("Bearer ")
     except:
+        logger.warning("Invalid authorization header in square transaction request")
         return JsonResponse(
             {"success": False, "reason": "Invalid authorization"}, status=401
         )
@@ -521,7 +521,7 @@ def complete_square_transaction(request):
     try:
         orders = Order.objects.filter(reference=reference).prefetch_related()
     except Order.DoesNotExist:
-        logger.error("No order matching reference {0}".format(reference))
+        logger.error("No order matching reference", extra={"reference": reference})
         return JsonResponse(
             {
                 "success": False,
@@ -580,7 +580,7 @@ def combine_orders(orders):
             old_order = order_item.order
             order_item.order = first_order
             if old_order and old_order.id:
-                logger.warning("Deleting old order id={0}".format(old_order.id))
+                logger.warning("Deleting old order during combine", extra={"order_id": old_order.id})
                 old_order.delete()
             order_item.save()
 
@@ -1297,6 +1297,10 @@ def print_receipts(request):
             try:
                 note_data = json.loads(order.notes)
             except:
+                logger.warning(
+                    "Cash order missing note data for receipt reprint",
+                    extra={"order_id": order.id},
+                )
                 return JsonResponse(
                     {"success": False, "reason": "Cash order was missing note data"}
                 )

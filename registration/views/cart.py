@@ -71,9 +71,9 @@ def get_cart(request):
                 )
             except ValueError:
                 logger.warning(
-                    f"The required field 'birthdate' is not well-formed (got '{pda['birthdate']}')"
+                    "Malformed birthdate in cart, removing from session",
+                    extra={"cart_id": cart.id},
                 )
-                logger.warning(f"Removing malformed cart from session: {cart}")
                 request.session["cart_items"].pop(idx)
                 cart.delete()
                 del cartItems[idx]
@@ -194,7 +194,10 @@ def add_to_cart(request):
     pda = attendee_form.cleaned_data
 
     if check_ban_list(pda["firstName"], pda["lastName"], pda["email"]):
-        logger.error(f"***ban list registration attempt: {pda['email']}***")
+        logger.warning(
+            "Ban list registration attempt blocked",
+            extra={"email": pda["email"], "first_name": pda["firstName"], "last_name": pda["lastName"]},
+        )
         registrationEmail = common.get_registration_email()
         return common.abort(
             403,
@@ -229,8 +232,7 @@ def remove_from_cart(request):
     id = postData["id"]
 
     # Old workflow
-    common.logger.debug("order_items: {0}".format(order))
-    common.logger.debug("delete order from session: {0}".format(id))
+    logger.debug("Removing item from cart", extra={"item_id": id, "order_items": order})
     if int(id) in order:
         order.remove(int(id))
         deleted = True
@@ -239,7 +241,7 @@ def remove_from_cart(request):
 
     # New cart workflow
     cartItems = request.session.get("cart_items", [])
-    common.logger.debug("cartItems: {0}".format(cartItems))
+    logger.debug("Checking cart_items for removal", extra={"cart_items": cartItems, "item_id": id})
     for item in cartItems:
         if str(item) == str(id):
             cart = Cart.objects.get(id=id)
