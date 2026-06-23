@@ -13,8 +13,11 @@ FROM python:3.14-slim-trixie
 
 LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
-ARG SENTRY_RELEASE=local
-ENV SENTRY_RELEASE=${SENTRY_RELEASE}
+ARG APIS_VERSION=0.0.0-dev
+ARG APIS_GIT_SHA=unknown
+ENV APIS_VERSION=${APIS_VERSION}
+ENV APIS_GIT_SHA=${APIS_GIT_SHA}
+ENV SENTRY_RELEASE=${APIS_VERSION}
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 80 81
 

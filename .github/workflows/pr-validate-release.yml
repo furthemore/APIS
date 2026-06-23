@@ -1,0 +1,32 @@
+name: Release Info
+on:
+  pull_request:
+    types: [labeled, unlabeled, opened, edited, reopened, synchronize, ready_for_review]
+jobs:
+  check-pr:
+    name: Validate Release Label and Notes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: jefflinse/pr-semver-bump@a0f7df89cce6675d4b4cc249327882d1788a726b  # v1.7.1
+        name: Validate Pull Request Metadata
+        with:
+          mode: validate
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          major-label: major release
+          minor-label: minor release
+          patch-label: patch release
+          noop-labels: |
+            documentation change
+            noop
+          require-release-notes: true
+          release-notes-prefix: ''
+          release-notes-suffix: ''
+          with-v: false
+          base-branch: false

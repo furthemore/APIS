@@ -265,3 +265,7 @@ ENVIRONMENT_FLOAT = True
 DJANGO_VITE_STATIC_URL_PREFIX = "bundler"
 
 VALIDATE_TEMPLATES_IGNORE_APPS = ["allauth"]
+
+# Version information (injected at build time)
+APIS_VERSION = os.environ.get("APIS_VERSION", "0.0.0-dev")
+APIS_GIT_SHA = os.environ.get("APIS_GIT_SHA", "unknown")
