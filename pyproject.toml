@@ -5,7 +5,7 @@ description = "Attendee registration software for fan conventions"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "beautifulsoup4>=4.12.3",
+    "beautifulsoup4>=4.15.0",
     "celery[redis]>=5.6.3",
     "configobj>=5.0.9",
     "django~=6.0.6",
@@ -31,12 +31,13 @@ dependencies = [
     "paho-mqtt~=2.1.0",
     "pillow>=12.1.0",
     "psycopg[binary,pool]>=3.3.4",
+    "python-json-logger>=3.3.0",
     "pygments~=2.20.0",
     "pyjwt~=2.13.0",
     "pytz~=2026.2.0",
     "qrcode~=8.2.0",
     "respx>=0.22.0",
-    "sentry-sdk>=2.61.1",
+    "sentry-sdk>=2.62.0",
     "soupsieve>=2.8.4",
     "squareup==44.1.0.20260520",
     "uvicorn>=0.49.0",
@@ -51,6 +52,6 @@ dev = [
     "coveralls>=4.1.0",
     "django-debug-toolbar~=6.3.0",
     "django-types>=0.24.0",
-    "ruff>=0.15.16",
+    "ruff>=0.15.17",
     "werkzeug>=3.1.5",
 ]

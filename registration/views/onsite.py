@@ -67,12 +67,14 @@ def onsite_cart(request):
             try:
                 event = Event.objects.get(name=cartJson["event"])
             except Event.DoesNotExist:
+                logger.debug("Cart references unknown event, using default", extra={"cart_id": cart.id})
                 event = Event.objects.get(default=True)
             evt = event.eventStart
             tz = timezone.get_current_timezone()
             try:
                 birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
             except ValueError:
+                logger.warning("Malformed birthdate in onsite cart, using fallback", extra={"cart_id": cart.id})
                 birthdate = datetime.strptime("2000-01-01", "%Y-%m-%d").replace(tzinfo=tz)
 
             age_at_event = (

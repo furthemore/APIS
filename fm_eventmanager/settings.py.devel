@@ -28,40 +28,37 @@ DEBUG = True
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-	'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-	},
-    'filters' : {
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
+    'formatters': {
+        'json': {
+            '()': 'pythonjsonlogger.json.JsonFormatter',
+            'format': '%(asctime)s %(levelname)s %(name)s %(module)s %(funcName)s %(lineno)d %(message)s',
+            'rename_fields': {
+                'asctime': 'timestamp',
+                'levelname': 'level',
+                'funcName': 'function',
+                'lineno': 'line',
+            },
         },
     },
-    'handlers' : {
-        'console' : {
-            'level' : 'DEBUG',
-            'filters': ['require_debug_true'],
-            'formatter' : 'verbose',
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'formatter': 'json',
             'class': 'logging.StreamHandler',
         }
     },
     'loggers': {
         '': {
-            'handlers': ['console',],
-            'level' : 'DEBUG' if DEBUG else 'INFO',
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
         },
         'registration': {
-            'level' : 'DEBUG' if DEBUG else 'INFO',
-            'propagate' : True,
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True,
         },
     }
 }
 
-ADMINS = [('Super Adminton', 'admin@example.com'),]
 SERVER_EMAIL = "no-reply@example.com"
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 

@@ -18,7 +18,7 @@ from registration.models import *
 from registration.services import CreateAttendeeOptions
 
 from . import common
-from .common import clear_session, handler, logger
+from .common import clear_session, handler
 from .ordering import do_checkout, doZeroCheckout, get_discount_total
 
 logger = logging.getLogger(__name__)
@@ -132,7 +132,8 @@ def find_dealer(request):
             attendee__email__iexact=email, registrationToken=token
         )
     except Dealer.DoesNotExist:
-        return common.abort(404, "No Dealer Found " + email)
+        logger.info("Dealer lookup failed: no match found")
+        return common.abort(404, "No Dealer Found")
 
     request.session["dealer_id"] = dealer.id
     return common.success()
@@ -261,7 +262,7 @@ def add_assistants_checkout(request):
     try:
         form_data = json.loads(request.body)
     except ValueError as e:
-        logger.warning(f"Unable to decode JSON for add_assistants_checkout(): {e}")
+        logger.warning("Unable to decode JSON for add_assistants_checkout()")
         return common.abort(400, str(e))
     billing_data = form_data["billingData"]
     assistants_form = form_data["assistants"]
@@ -315,7 +316,8 @@ def add_assistants_checkout(request):
 
     if total <= 0:
         logger.warning(
-            f"Error checking out dealer while adding assistants: total too low: {total} <= 0"
+            "Dealer assistant checkout total too low",
+            extra={"dealer_id": dealer.id, "total": str(total)},
         )
         return common.abort(500, "An error occurred while adding your assistants.")
 
@@ -336,8 +338,7 @@ def add_assistants_checkout(request):
             for assistant in dealer.dealerasst_set.all().filter(attendee__isnull=True):
                 registration.emails.send_dealer_assistant_registration_invite(assistant)
         except Exception as e:
-            logger.error("Error emailing DealerAsstEmail")
-            logger.exception(e)
+            logger.exception("Error emailing DealerAsstEmail")
             dealer_email = get_dealer_email()
             return common.abort(
                 500,
@@ -354,9 +355,8 @@ def add_assistants_checkout(request):
 def add_dealer(request):
     try:
         postData = json.loads(request.body)
-    except ValueError as e:
-        logger.error("Unable to decode JSON for add_staff()")
-        logger.exception(e)
+    except ValueError:
+        logger.exception("Unable to decode JSON for add_dealer()")
         return JsonResponse({"success": False})
 
     pda = postData["attendee"]
@@ -462,8 +462,10 @@ def checkout_dealer(request):
         try:
             registration.emails.send_dealer_payment_email(dealer, order)
         except Exception as e:
-            logger.error("Error sending DealerPaymentEmail - zero sum.")
-            logger.exception(e)
+            logger.exception(
+                "Error sending DealerPaymentEmail (zero sum)",
+                extra={"dealer_id": dealer.id},
+            )
             dealer_email = get_dealer_email()
             return common.abort(
                 500,
@@ -496,8 +498,10 @@ def checkout_dealer(request):
             dealer.resetToken()
             registration.emails.send_dealer_payment_email(dealer, order)
         except Exception as e:
-            logger.error("Error sending DealerPaymentEmail. " + request.body)
-            logger.exception(e)
+            logger.exception(
+                "Error sending DealerPaymentEmail",
+                extra={"dealer_id": dealer.id, "order_id": order.id},
+            )
             dealer_email = get_dealer_email()
             return common.abort(
                 500,
@@ -513,8 +517,8 @@ def checkout_dealer(request):
 def addNewDealer(request):
     try:
         postData = json.loads(request.body)
-    except ValueError as e:
-        logger.warning(f"Unable to decode JSON for addNewDealer(): {e}")
+    except ValueError:
+        logger.warning("Unable to decode JSON for addNewDealer()")
         return common.abort(400, "Unable to decode JSON")
 
     # create attendee from request post
@@ -525,9 +529,9 @@ def addNewDealer(request):
     tz = timezone.get_current_timezone()
     try:
         birthdate = datetime.strptime(pda["birthdate"], "%Y-%m-%d").replace(tzinfo=tz)
-    except ValueError as e:
-        logger.warning(f"Unable to parse birthdate: {pda['birthdate']} - {e}")
-        return common.abort(400, f"Unable to parse birthdate: {pda['birthdate']}")
+    except ValueError:
+        logger.warning("Unable to parse birthdate in dealer registration")
+        return common.abort(400, "Unable to parse birthdate")
     event = Event.objects.get(name=evt)
 
     attendee = Attendee(
@@ -597,9 +601,8 @@ def addNewDealer(request):
 
     try:
         registration.emails.send_dealer_application_email(dealer.id)
-    except Exception as e:
-        logger.error("Error sending DealerApplicationEmail.")
-        logger.exception(e)
+    except Exception:
+        logger.exception("Error sending DealerApplicationEmail")
         dealerEmail = get_dealer_email()
         return JsonResponse(
             {
@@ -612,7 +615,7 @@ def addNewDealer(request):
     return JsonResponse({"success": True})
 
 
-def getTableSizes(request):
+def getTableSizes(request):  # noqa: S1172, S1542 removing parameter will break django
     event = Event.objects.get(default=True)
     sizes = TableSize.objects.filter(event=event)
     data = [

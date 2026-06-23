@@ -1,6 +1,5 @@
 import json
 import logging
-from json import JSONDecodeError
 
 from django.core.signing import TimestampSigner
 from django.http import JsonResponse
@@ -234,7 +233,10 @@ def apply_discount(request):
 def add_attendee_to_assistant(request, attendee):
     assistant_id = request.session.get("assistant_id")
     if assistant_id:
-        logger.info(f"Add attendee {attendee} to assistant id: {assistant_id}")
+        logger.info(
+            "Linking attendee to dealer assistant",
+            extra={"assistant_id": assistant_id, "attendee_id": attendee.id},
+        )
         try:
             assistant = DealerAsst.objects.get(pk=assistant_id)
             assistant.attendee = attendee
@@ -259,9 +261,8 @@ def checkout(request):
 
     try:
         post_data = json.loads(request.body)
-    except (ValueError, JSONDecodeError) as e:
-        logger.exception(e)
-        logger.error("Unable to decode JSON for checkout()")
+    except ValueError:
+        logger.warning("Unable to decode JSON for checkout()")
         return common.abort(400, "Unable to parse input options")
 
     discount = Discount.objects.filter(codeName=pdisc)
@@ -390,6 +391,5 @@ def notify_terminal(request, order):
                     ),
                     {"badgeId": order_item.badge_id},
                 )
-    except Exception as ex:
-        logger.warning(f"Could not use terminal-token: {ex}")
-        pass
+    except Exception:
+        logger.warning("Could not use terminal-token for post-checkout notification", exc_info=True)
