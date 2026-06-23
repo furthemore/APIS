@@ -79,7 +79,7 @@ jobs:
           --service apis-staging \
           --desired-count 1 \
           --force-new-deployment \
-          --deployment-configuration "minimumHealthyPercent=0,maximumPercent=100"
+          --deployment-configuration "minimumHealthyPercent=0,maximumPercent=200"
         aws ecs wait services-stable \
           --cluster $ECS_CLUSTER \
           --services apis-staging
