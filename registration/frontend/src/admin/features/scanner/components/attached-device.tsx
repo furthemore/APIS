@@ -25,7 +25,11 @@ export const AttachedDevice: Component<{
     [HIDDevice, (value: string) => void, boolean],
     DeviceDriver | undefined
   >(
-    () => [props.device, props.emitRawScan, connected()],
+    (): [HIDDevice, (value: string) => void, boolean] => [
+      props.device,
+      props.emitRawScan,
+      connected(),
+    ],
     async ([device, emit, connected], { value }) => {
       if (value) {
         await value.close();
