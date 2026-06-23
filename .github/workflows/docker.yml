@@ -9,11 +9,6 @@ on:
         required: true
         type: environment
 
-  # Dependency to a forking workflow
-  #workflow_run:
-  #  workflows: ["Django CI"]
-  #  types: [completed]
-
 permissions: {}
 
 jobs:
@@ -22,12 +17,22 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
     environment: ${{ github.event.inputs.environment }}
     concurrency: ${{ github.event.inputs.environment }}
+    env:
+      ECS_CLUSTER: maaa-prod
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         persist-credentials: false
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
+
     - name: Login to packages container registry
       uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
       with:
@@ -35,26 +40,65 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build image
-      env:
-        DEPLOY_ENV: ${{ github.event.inputs.environment }}
-      run: |
-        make build-docker-image
-        make "tag-${DEPLOY_ENV}"
-
-    - name: Deploy to server
-      uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-      env:
-        DEPLOY_ENV: ${{ github.event.inputs.environment }}
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6.1.0
       with:
-        host: maaa-registration
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        proxy_host: ${{ secrets.SSH_HOST }}
-        proxy_username: ${{ secrets.SSH_USERNAME }}
-        proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
-        envs: DEPLOY_ENV
-        script: |
-          cd /opt/docker
-          docker-compose pull
-          docker-compose up -d "apis-${DEPLOY_ENV}" "apis-${DEPLOY_ENV}-worker"
+        images: ghcr.io/furthemore/apis
+        tags: |
+          type=raw,value=${{ github.event.inputs.environment }}
+          type=raw,value=latest
+
+    - name: Build and push multi-arch image
+      uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: |
+          type=registry,ref=ghcr.io/furthemore/apis:latest
+          type=registry,ref=ghcr.io/furthemore/apis:production
+        build-args: |
+          SENTRY_RELEASE=${{ github.sha }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
+      with:
+        role-to-assume: arn:aws:iam::783453695466:role/maaa-github-actions
+        aws-region: us-east-2
+
+    - name: Deploy to ECS (staging)
+      id: deploy-staging
+      if: github.event.inputs.environment == 'stage'
+      run: |
+        aws ecs update-service \
+          --cluster $ECS_CLUSTER \
+          --service apis-staging \
+          --desired-count 1 \
+          --force-new-deployment \
+          --deployment-configuration "minimumHealthyPercent=0,maximumPercent=200"
+        aws ecs wait services-stable \
+          --cluster $ECS_CLUSTER \
+          --services apis-staging
+
+    - name: Rollback staging on failure
+      if: failure() && steps.deploy-staging.outcome == 'failure'
+      run: |
+        aws ecs update-service \
+          --cluster $ECS_CLUSTER \
+          --service apis-staging \
+          --desired-count 0
+
+    - name: Deploy to ECS (production)
+      if: github.event.inputs.environment == 'production'
+      run: |
+        aws ecs update-service \
+          --cluster $ECS_CLUSTER \
+          --service apis \
+          --force-new-deployment
+        aws ecs wait services-stable \
+          --cluster $ECS_CLUSTER \
+          --services apis
