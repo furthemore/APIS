@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.mfa',
     'registration',
+    'staff',
     'debug_toolbar',
     'django_vite',
 ]

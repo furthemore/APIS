@@ -13,6 +13,7 @@ urlpatterns = [
         name="robots_file"
     ),
     path("registration/", include("registration.urls", namespace="registration")),
+    path("staff/", include("staff.urls", namespace="staff")),
     re_path(r"^admin/", admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path("", RedirectView.as_view(url="registration"), name="root"),

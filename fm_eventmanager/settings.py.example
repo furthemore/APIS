@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.mfa',
     'registration',
+    'staff',
     'nested_inline',
     'debug_toolbar',
     'django_vite',
