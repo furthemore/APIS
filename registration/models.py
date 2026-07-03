@@ -54,7 +54,7 @@ class Discount(models.Model):
     used = models.IntegerField(default=0)
     reason = models.CharField(max_length=100, blank=True)
     sponsoring_department = models.ForeignKey(
-        "Department", on_delete=models.SET_NULL, null=True
+        "staff.Department", on_delete=models.SET_NULL, null=True
     )
 
     def __str__(self):
@@ -398,14 +398,6 @@ class TableSize(LookupTable):
         return f"{self.name} {self.event.name}"
 
 
-class Department(models.Model):
-    name = models.CharField(max_length=200, blank=True)
-    volunteerListOk = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.name
-
-
 # End lookup and supporting tables
 
 
@@ -606,7 +598,7 @@ class Staff(models.Model):
     )
     registrationToken = models.CharField(max_length=200, default=get_registration_token)
     department = models.ForeignKey(
-        Department, null=True, blank=True, on_delete=models.SET_NULL
+        "staff.Department", null=True, blank=True, on_delete=models.SET_NULL
     )
     supervisor = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL

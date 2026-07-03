@@ -17,7 +17,6 @@ from django.views.decorators.cache import cache_page
 
 from registration.models import (
     Cart,
-    Department,
     Discount,
     Event,
     OrderItem,
@@ -26,6 +25,7 @@ from registration.models import (
     Staff,
     get_random_token,
 )
+from staff.models import Department
 
 logger = logging.getLogger(__name__)
 

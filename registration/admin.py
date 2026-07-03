@@ -1445,11 +1445,6 @@ class DiscountAdmin(admin.ModelAdmin):
     save_on_top = True
 
 
-@admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ("name", "volunteerListOk")
-
-
 @admin.register(Cashdrawer)
 class CashdrawerAdmin(ImportExportModelAdmin):
     list_display = ("timestamp", "action", "total", "tendered", "user", "position")

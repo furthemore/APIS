@@ -31,7 +31,6 @@ from registration.models import (
     AttendeeOptions,
     Badge,
     Cashdrawer,
-    Department,
     Discount,
     Event,
     Firebase,
@@ -43,6 +42,7 @@ from registration.models import (
     generate_discount_code,
     get_random_token,
 )
+from staff.models import Department
 from registration.views.attendee import get_attendee_age
 from registration.views.ordering import (
     get_discount_total,
