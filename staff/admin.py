@@ -10,5 +10,5 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(StaffPosition)
 class StaffPositionAdmin(admin.ModelAdmin):
-    list_display = ("title", "department", "event", "is_open")
-    list_filter = ("is_open", "department", "event")
+    list_display = ("title", "position_type", "department")
+    list_filter = ("position_type", "department")

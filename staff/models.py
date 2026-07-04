@@ -12,13 +12,26 @@ class Department(models.Model):
 
 
 class StaffPosition(models.Model):
+    HELD_POSITION = "Held Position"
+    STAFF_POOL = "Staff Pool"
+    VOLUNTEER_POOL = "Volunteer Pool"
+    
+    POSITION_TYPE_CHOICES = [
+        (HELD_POSITION, "Held Position"),
+        (STAFF_POOL, "Staff Pool"),
+        (VOLUNTEER_POOL, "Volunteer Pool"),
+    ]
+    
     title = models.CharField(max_length=200)
+    position_type = models.CharField(
+        max_length=50,
+        choices=POSITION_TYPE_CHOICES,
+        default=VOLUNTEER_POOL,
+    )
     department = models.ForeignKey(
         Department, null=True, blank=True, on_delete=models.SET_NULL
     )
-    event = models.ForeignKey(Event, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(blank=True)
-    is_open = models.BooleanField(default=True, verbose_name="Open")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
