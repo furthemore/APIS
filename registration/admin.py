@@ -62,6 +62,10 @@ class UserProfileAdmin(auth.admin.UserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserProfileAdmin)
 
+# Unregister Site model - needed by allauth, not used otherwise. Did not work the way
+# we thought it did when adding it way back
+admin.site.unregister(Site)
+
 
 @admin.register(Firebase)
 class FirebaseAdmin(admin.ModelAdmin):
