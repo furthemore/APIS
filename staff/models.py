@@ -1,6 +1,6 @@
 from django.db import models
 
-from registration.models import Event
+from registration.models import Event, Person
 
 
 class Department(models.Model):
@@ -41,3 +41,11 @@ class StaffPosition(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Staff(Person):
+    title = models.CharField(max_length=200)
+    fandom_name = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Staff"

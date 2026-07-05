@@ -14,6 +14,48 @@ VISUALLY_UNAMBIGUOUS_CHARS = "ACDEFGHJKLMNPQRTUVWXY3467"
 
 
 # Lookup and supporting tables.
+
+
+class Person(models.Model):
+    legal_first_name = models.CharField(max_length=200)
+    legal_last_name = models.CharField(max_length=200)
+    preferred_first_name = models.CharField(max_length=200, blank=True)
+    preferred_last_name = models.CharField(max_length=200, blank=True)
+    street_address_1 = models.CharField(max_length=200, blank=True)
+    street_address_2 = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=200, blank=True)
+    country = models.CharField(max_length=200, blank=True)
+    postal_code = models.CharField(max_length=200, blank=True)
+    phone = models.CharField(max_length=200)
+    email = models.EmailField(max_length=200)
+    birthdate = models.DateField()
+    email_ok = models.BooleanField(default=False)
+    survey_ok = models.BooleanField(default=False)
+    registration_token = models.CharField(max_length=200)
+
+    def first_name(self):
+        if not self.preferred_first_name:
+            return self.legal_first_name
+        else:
+            return self.preferred_first_name
+
+    def last_name(self):
+        if not self.preferred_last_name:
+            return self.legal_last_name
+        else:
+            return self.preferred_last_name
+
+    def __str__(self):
+        if not self.preferred_first_name:
+            return f"{self.legal_first_name} {self.legal_last_name}"
+        else:
+            return f"{self.preferred_first_name} {self.legal_last_name}"
+
+    class Meta:
+        abstract = True
+
+
 class LookupTable(models.Model):
     name = models.CharField(max_length=200)
 
