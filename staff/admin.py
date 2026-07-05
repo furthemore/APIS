@@ -6,6 +6,7 @@ from staff.models import Department, Staff, StaffPosition
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ("name", "volunteerListOk")
+    filter_horizontal = ("heads", "assistant_heads")
 
 
 @admin.register(StaffPosition)
@@ -21,6 +22,7 @@ class StaffAdmin(admin.ModelAdmin):
         "legal_last_name",
         "fandom_name",
         "title",
+        "user",
         "email",
         "phone",
     )
@@ -32,7 +34,10 @@ class StaffAdmin(admin.ModelAdmin):
         "preferred_last_name",
         "fandom_name",
         "email",
+        "user__username",
+        "user__email",
     )
+    autocomplete_fields = ["user"]
     fieldsets = (
         (
             "Personal Information",
@@ -70,6 +75,7 @@ class StaffAdmin(admin.ModelAdmin):
             "Staff Information",
             {
                 "fields": (
+                    "user",
                     "title",
                     "registration_token",
                 )

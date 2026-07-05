@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 from registration.models import Event, Person
@@ -6,6 +7,18 @@ from registration.models import Event, Person
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
     volunteerListOk = models.BooleanField(default=False)
+    heads = models.ManyToManyField(
+        "Staff",
+        blank=True,
+        related_name="departments_headed",
+        verbose_name="Department Heads",
+    )
+    assistant_heads = models.ManyToManyField(
+        "Staff",
+        blank=True,
+        related_name="departments_assisted",
+        verbose_name="Assistant Heads",
+    )
 
     def __str__(self):
         return self.name
@@ -44,6 +57,13 @@ class StaffPosition(models.Model):
 
 
 class Staff(Person):
+    user = models.OneToOneField(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="staff_profile",
+    )
     title = models.CharField(max_length=200)
     fandom_name = models.CharField(max_length=200, blank=True)
 
