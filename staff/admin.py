@@ -22,11 +22,12 @@ class StaffAdmin(admin.ModelAdmin):
         "legal_last_name",
         "fandom_name",
         "title",
+        "department",
         "user",
         "email",
         "phone",
     )
-    list_filter = ("title",)
+    list_filter = ("title", "department")
     search_fields = (
         "legal_first_name",
         "legal_last_name",
@@ -76,6 +77,7 @@ class StaffAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "user",
+                    "department",
                     "title",
                     "registration_token",
                 )

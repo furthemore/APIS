@@ -7,6 +7,11 @@ from registration.models import Event, Person
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
     volunteerListOk = models.BooleanField(default=False)
+    default_landing_page = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="URL path (e.g., '/staff/portal/') or named URL (e.g., 'staff:portal') for this department's default landing page after login",
+    )
     heads = models.ManyToManyField(
         "Staff",
         blank=True,
@@ -63,6 +68,13 @@ class Staff(Person):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="staff_profile",
+    )
+    department = models.ForeignKey(
+        Department,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="staff_members",
     )
     title = models.CharField(max_length=200)
     fandom_name = models.CharField(max_length=200, blank=True)
