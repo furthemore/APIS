@@ -56,7 +56,12 @@ def profile(request):
         # Build stats for each department
         department_stats = []
         for dept in led_departments:
-            total_staff = Staff.objects.filter(department=dept).count()
+            # Get direct staff count
+            direct_staff_count = Staff.objects.filter(department=dept).count()
+            
+            # Get all staff including sub-departments
+            all_staff = dept.get_all_staff()
+            total_staff = all_staff.count()
             
             # Count how many are registered for current event (have registration.Staff record)
             registered_count = 0
@@ -66,7 +71,7 @@ def profile(request):
                     event=current_event
                 ).count()
             
-            # Get staff list with their registration status
+            # Get staff list with their registration status (direct members only)
             staff_list = []
             for staff_member in Staff.objects.filter(department=dept).select_related('user'):
                 # Check if they're registered for current event
@@ -91,11 +96,30 @@ def profile(request):
                     'checked_in': registration_record.checkedIn if registration_record else False,
                 })
             
+            # Get sub-departments with their stats
+            sub_dept_stats = []
+            for sub_dept in dept.sub_departments.all():
+                sub_staff_count = Staff.objects.filter(department=sub_dept).count()
+                sub_registered_count = 0
+                if current_event:
+                    sub_registered_count = RegistrationStaff.objects.filter(
+                        department=sub_dept,
+                        event=current_event
+                    ).count()
+                
+                sub_dept_stats.append({
+                    'department': sub_dept,
+                    'staff_count': sub_staff_count,
+                    'registered_count': sub_registered_count,
+                })
+            
             department_stats.append({
                 'department': dept,
+                'direct_staff_count': direct_staff_count,
                 'total_staff': total_staff,
                 'registered_count': registered_count,
                 'staff_list': staff_list,
+                'sub_departments': sub_dept_stats,
             })
         
         context = {

@@ -6,6 +6,15 @@ from registration.models import Event, Person, get_registration_token
 
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
+    parent_department = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='sub_departments',
+        verbose_name='Parent Department',
+        help_text='Select a parent department if this is a sub-department',
+    )
     volunteerListOk = models.BooleanField(default=False)
     default_landing_page = models.CharField(
         max_length=200,
@@ -26,7 +35,22 @@ class Department(models.Model):
     )
 
     def __str__(self):
+        if self.parent_department:
+            return f"{self.parent_department.name} > {self.name}"
         return self.name
+    
+    def get_all_staff(self):
+        """Get all staff in this department and its sub-departments"""
+        from django.db.models import Q
+        
+        # Get staff directly in this department
+        staff_ids = list(Staff.objects.filter(department=self).values_list('id', flat=True))
+        
+        # Get staff from all sub-departments recursively
+        for sub_dept in self.sub_departments.all():
+            staff_ids.extend(sub_dept.get_all_staff().values_list('id', flat=True))
+        
+        return Staff.objects.filter(id__in=staff_ids).distinct()
 
 
 class StaffPosition(models.Model):

@@ -45,8 +45,21 @@ def mark_onboarding_incomplete(modeladmin, request, queryset):
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ("name", "volunteerListOk")
+    list_display = ("name", "parent_department", "volunteerListOk")
+    list_filter = ("parent_department",)
+    search_fields = ("name",)
     filter_horizontal = ("heads", "assistant_heads")
+    fieldsets = (
+        (None, {
+            "fields": ("name", "parent_department", "volunteerListOk")
+        }),
+        ("Leadership", {
+            "fields": ("heads", "assistant_heads")
+        }),
+        ("Settings", {
+            "fields": ("default_landing_page",)
+        }),
+    )
 
 
 @admin.register(StaffPosition)

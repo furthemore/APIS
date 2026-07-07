@@ -27,15 +27,23 @@
     </div>
     <div class="card-body">
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card bg-light">
                     <div class="card-body text-center">
-                        <h2 class="display-4 mb-0">{{ dept_stat.total_staff }}</h2>
-                        <p class="text-muted mb-0">Total Staff Members</p>
+                        <h2 class="display-4 mb-0">{{ dept_stat.direct_staff_count }}</h2>
+                        <p class="text-muted mb-0">Direct Staff</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h2 class="display-4 mb-0">{{ dept_stat.total_staff }}</h2>
+                        <p class="mb-0">Total (with sub-depts)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="card bg-success text-white">
                     <div class="card-body text-center">
                         <h2 class="display-4 mb-0">{{ dept_stat.registered_count }}</h2>
@@ -45,7 +53,32 @@
             </div>
         </div>
 
-        <h5 class="border-bottom pb-2 mb-3">Staff Members</h5>
+        {% if dept_stat.sub_departments %}
+        <h5 class="border-bottom pb-2 mb-3">Sub-Departments</h5>
+        <div class="row mb-4">
+            {% for sub_dept in dept_stat.sub_departments %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-diagram-3"></i> {{ sub_dept.department.name }}</h6>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">Staff:</small>
+                                <div class="fw-bold">{{ sub_dept.staff_count }}</div>
+                            </div>
+                            <div>
+                                <small class="text-muted">Registered:</small>
+                                <div class="fw-bold text-success">{{ sub_dept.registered_count }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h5 class="border-bottom pb-2 mb-3">Direct Staff Members</h5>
         
         {% if dept_stat.staff_list %}
         <div class="table-responsive">
