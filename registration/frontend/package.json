@@ -42,7 +42,7 @@
     "@tanstack/eslint-plugin-query": "^5.101.0",
     "@tanstack/router-plugin": "^1.168.18",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
-    "@types/big.js": "^6.2.2",
+    "@types/big.js": "^7.0.0",
     "@types/lodash": "^4.17.24",
     "@types/w3c-web-hid": "^1.0.7",
     "@types/w3c-web-usb": "^1.0.14",
