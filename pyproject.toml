@@ -29,7 +29,7 @@ dependencies = [
     "influxdb-client~=1.50.0",
     "markuppy>=1.14",
     "paho-mqtt~=2.1.0",
-    "pillow>=12.1.0",
+    "pillow>=12.3.0",
     "psycopg[binary,pool]>=3.3.4",
     "python-json-logger>=3.3.0",
     "pygments~=2.20.0",
@@ -37,7 +37,7 @@ dependencies = [
     "pytz~=2026.2.0",
     "qrcode~=8.2.0",
     "respx>=0.22.0",
-    "sentry-sdk>=2.63.0",
+    "sentry-sdk>=2.64.0",
     "soupsieve>=2.8.4",
     "squareup==44.1.0.20260520",
     "uvicorn>=0.49.0",
@@ -50,8 +50,8 @@ django-prometheus = { git = "https://github.com/django-commons/django-prometheus
 [dependency-groups]
 dev = [
     "coveralls>=4.1.0",
-    "django-debug-toolbar~=6.3.0",
+    "django-debug-toolbar~=7.0.0",
     "django-types>=0.24.0",
-    "ruff>=0.15.18",
+    "ruff>=0.15.20",
     "werkzeug>=3.1.5",
 ]
