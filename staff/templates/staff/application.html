@@ -1,0 +1,79 @@
+{% extends "staff/base.html" %}
+
+{% block title %}Application Submitted - Staff Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-check-circle"></i> Application Submitted Successfully!
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <h5>Thank you, {{ applicant.first_name }}!</h5>
+                    <p class="mb-0">Your application has been received and is under review.</p>
+                </div>
+                
+                <h5 class="mt-4 mb-3">Application Details</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Position</strong><br>
+                        <span class="text-muted">{{ applicant.posting.position.title }}</span>
+                    </div>
+                    
+                    {% if applicant.posting.position.department %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Department</strong><br>
+                        <span class="text-muted">{{ applicant.posting.position.department.name }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if applicant.posting.event %}
+                    <div class="col-md-6 mb-3">
+                        <strong>Event</strong><br>
+                        <span class="text-muted">{{ applicant.posting.event.name }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-6 mb-3">
+                        <strong>Submitted</strong><br>
+                        <span class="text-muted">{{ applicant.applied_at|date:"F d, Y \a\t g:i A" }}</span>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <strong>Application ID</strong><br>
+                        <code class="bg-light p-2 rounded d-inline-block">{{ applicant.registration_token }}</code>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <strong>Status</strong><br>
+                        <span class="badge bg-info">{{ applicant.get_status_display }}</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                    <h6><i class="bi bi-info-circle"></i> What's Next?</h6>
+                    <ul class="mb-0 small">
+                        <li>We'll review your application and contact you at <strong>{{ applicant.email }}</strong></li>
+                        <li>Please save your Application ID: <code>{{ applicant.registration_token }}</code></li>
+                        <li>Check your email for updates on your application status</li>
+                    </ul>
+                </div>
+                
+                <div class="d-flex gap-2 mt-4">
+                    <a href="{% url 'staff:openings' %}" class="btn btn-primary">
+                        <i class="bi bi-briefcase"></i> View More Openings
+                    </a>
+                    <a href="{% url 'staff:portal' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house-door"></i> Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
