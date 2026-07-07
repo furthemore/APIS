@@ -78,9 +78,17 @@ class Staff(Person):
     )
     title = models.CharField(max_length=200)
     fandom_name = models.CharField(max_length=200, blank=True)
+    onboarding_complete = models.BooleanField(
+        default=False,
+        help_text="Has this staff member completed their onboarding process?",
+    )
 
     class Meta:
-        verbose_name_plural = "Staff"
+        verbose_name = "Staff Profile"
+        verbose_name_plural = "Staff Profiles"
+        permissions = [
+            ("change_fandom_name", "Can change fandom/credit name"),
+        ]
 
 
 class StaffPosting(models.Model):

@@ -7,6 +7,7 @@ from io import BytesIO
 import qrcode
 from allauth.account.decorators import secure_admin_login
 from django import forms
+from django.apps import apps
 from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -49,6 +50,23 @@ admin.site.register(TableSize)
 admin.site.register(Cart)
 
 
+class StaffProfileInline(admin.StackedInline):
+    model = apps.get_model('staff', 'Staff')
+    can_delete = False
+    verbose_name_plural = 'Staff Profile'
+    fk_name = 'user'
+    extra = 0
+    fields = (
+        ('legal_first_name', 'legal_last_name'),
+        ('preferred_first_name', 'preferred_last_name'),
+        'fandom_name',
+        'department',
+        'title',
+        'email',
+        'phone',
+    )
+
+
 class UserProfileAdmin(auth.admin.UserAdmin):
     model = User
     list_display = (
@@ -56,7 +74,15 @@ class UserProfileAdmin(auth.admin.UserAdmin):
         "email",
         "first_name",
         "last_name",
+        "has_staff_profile",
     )
+    search_fields = ("username", "email", "first_name", "last_name")
+    inlines = [StaffProfileInline]
+    
+    def has_staff_profile(self, obj):
+        return hasattr(obj, 'staff_profile')
+    has_staff_profile.boolean = True
+    has_staff_profile.short_description = 'Staff Profile'
 
 
 admin.site.unregister(User)
@@ -793,28 +819,60 @@ class StaffAdmin(ImportExportModelAdmin):
 
 @admin.action(description="Add to Staff")
 def make_staff(modeladmin, request, queryset):
-    event = Event.objects.get(default=True)
+    from staff.models import Staff as StaffProfile
+    from registration.models import get_registration_token
+    
     skipped = 0
+    created = 0
+    
     for att in queryset:
-        if Staff.objects.filter(attendee=att, event=event).exists():
+        # Check if this attendee already has a staff profile
+        # We'll match by email to avoid duplicates
+        if StaffProfile.objects.filter(email=att.email).exists():
             skipped += 1
             continue
-        staff = Staff(attendee=att, event=event)
+        
+        # Create a new staff profile from the attendee data
+        staff = StaffProfile(
+            legal_first_name=att.firstName,
+            legal_last_name=att.lastName,
+            preferred_first_name=att.preferredName,
+            email=att.email,
+            phone=att.phone,
+            street_address_1=att.address1,
+            street_address_2=att.address2,
+            city=att.city,
+            state=att.state,
+            country=att.country,
+            postal_code=att.postalCode,
+            birthdate=att.birthdate,
+            email_ok=att.emailsOk,
+            survey_ok=att.surveyOk,
+            registration_token=get_registration_token(),
+            title='',  # Will need to be filled in later
+        )
         staff.save()
+        created += 1
+    
     if queryset.count() > 1:
         if skipped > 0:
             messages.success(
                 request,
-                f"{queryset.count() - skipped} attendees added to staff ({skipped} ommited that were already on staff for {event})",
+                f"{created} attendees added to staff profiles ({skipped} skipped - already have staff profiles)",
             )
         else:
             messages.success(
-                request, f"{queryset.count()} attendees added to staff for {event}"
+                request, f"{queryset.count()} attendees added to staff profiles"
             )
     else:
-        messages.success(
-            request, f"Successfully added {queryset[0]} to staff for {event}"
-        )
+        if created > 0:
+            messages.success(
+                request, f"Successfully added {queryset[0]} to staff profiles"
+            )
+        else:
+            messages.warning(
+                request, f"{queryset[0]} already has a staff profile"
+            )
 
 
 @admin.action(description="Send upgrade info email")
