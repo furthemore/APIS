@@ -6,6 +6,7 @@ app_name = "staff"
 
 urlpatterns = [
     path("", staff.views.index, name="index"),
+    path("profile/", staff.views.profile, name="profile"),
     path("openings/", staff.views.openings, name="openings"),
     path("apply/<int:posting_id>/", staff.views.apply, name="apply"),
     path("application/<int:applicant_id>/", staff.views.application, name="application"),

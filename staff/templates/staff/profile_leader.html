@@ -1,0 +1,271 @@
+{% extends "staff/base.html" %}
+
+{% block title %}Department Dashboard - Staff Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Department Dashboard</h1>
+    <p class="text-muted">Managing staff for your departments</p>
+</div>
+
+{% if current_event %}
+<div class="alert alert-info mb-4">
+    <i class="bi bi-calendar-event"></i> <strong>Current Event:</strong> {{ current_event.name }}
+</div>
+{% else %}
+<div class="alert alert-warning mb-4">
+    <i class="bi bi-exclamation-triangle"></i> No default event is currently set.
+</div>
+{% endif %}
+
+{% for dept_stat in department_stats %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">
+            <i class="bi bi-building"></i> {{ dept_stat.department.name }}
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h2 class="display-4 mb-0">{{ dept_stat.total_staff }}</h2>
+                        <p class="text-muted mb-0">Total Staff Members</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h2 class="display-4 mb-0">{{ dept_stat.registered_count }}</h2>
+                        <p class="mb-0">Registered for {{ current_event.name|default:"Event" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="border-bottom pb-2 mb-3">Staff Members</h5>
+        
+        {% if dept_stat.staff_list %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Title</th>
+                        <th>Onboarding</th>
+                        <th>Event Registration</th>
+                        <th>Checked In</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in dept_stat.staff_list %}
+                    <tr>
+                        <td>
+                            {{ item.staff.first_name }} {{ item.staff.last_name }}
+                            {% if item.staff.fandom_name %}
+                            <br><small class="text-muted">({{ item.staff.fandom_name }})</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.staff.email }}</td>
+                        <td>{{ item.staff.title|default:"—" }}</td>
+                        <td>
+                            {% if item.staff.onboarding_complete %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complete</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.is_registered %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Registered</span>
+                            {% else %}
+                            <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Not Registered</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.checked_in %}
+                            <span class="badge bg-info"><i class="bi bi-check2-all"></i> Checked In</span>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No staff members in this department yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> You are not currently leading any departments.
+</div>
+{% endfor %}
+
+<!-- Personal Information Section -->
+<div class="row mt-4">
+    <div class="col-lg-8">
+        <!-- Personal Information -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> My Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Legal Name</label>
+                        <div class="fw-bold">{{ staff_profile.legal_first_name }} {{ staff_profile.legal_last_name }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Preferred Name</label>
+                        <div class="fw-bold">
+                            {% if staff_profile.preferred_first_name or staff_profile.preferred_last_name %}
+                                {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }} 
+                                {{ staff_profile.preferred_last_name|default:staff_profile.legal_last_name }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if staff_profile.fandom_name %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label text-muted">Fandom/Credit Name</label>
+                        <div class="fw-bold">{{ staff_profile.fandom_name }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Email</label>
+                        <div class="fw-bold">{{ staff_profile.email }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Phone</label>
+                        <div class="fw-bold">{{ staff_profile.phone|default:"—" }}</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Department</label>
+                        <div class="fw-bold">{{ staff_profile.department.name|default:"Not assigned" }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted">Title</label>
+                        <div class="fw-bold">{{ staff_profile.title|default:"—" }}</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label text-muted">Onboarding Status</label>
+                        <div>
+                            {% if staff_profile.onboarding_complete %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complete</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pending</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Event Registration Status -->
+        {% if current_event %}
+        <div class="card mb-4">
+            <div class="card-header {% if staff_profile.user and staff_profile.user.attendee_set.first %}bg-success{% else %}bg-warning{% endif %} text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> My Event Registration</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="mb-3">{{ current_event.name }}</h6>
+                
+                {% if staff_profile.user %}
+                    {% with attendee=staff_profile.user.attendee_set.first %}
+                    {% if attendee %}
+                        {% with reg=attendee.staff_set.all|first %}
+                        {% if reg and reg.event.id == current_event.id %}
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle-fill"></i> <strong>Registered!</strong>
+                            <p class="mb-0 mt-2 small">You are registered for this event.</p>
+                            
+                            {% if reg.checkedIn %}
+                            <hr>
+                            <p class="mb-0"><i class="bi bi-check2-all"></i> <strong>Checked In</strong></p>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Not Registered</strong>
+                            <p class="mb-0 mt-2 small">You are not currently registered for this event.</p>
+                        </div>
+                        <div class="mt-3">
+                            <a href="/registration/" class="btn btn-primary w-100">
+                                <i class="bi bi-pencil-square"></i> Register Now
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Not Registered</strong>
+                            <p class="mb-0 mt-2 small">You are not currently registered for this event.</p>
+                        </div>
+                        <div class="mt-3">
+                            <a href="/registration/" class="btn btn-primary w-100">
+                                <i class="bi bi-pencil-square"></i> Register Now
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i> <small>No user account linked to this profile.</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-x"></i> No Active Event</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-0">There is no active event at this time.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'staff:openings' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-briefcase"></i> View Open Positions
+                    </a>
+                    {% if staff_profile.department %}
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="bi bi-people"></i> View My Department
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

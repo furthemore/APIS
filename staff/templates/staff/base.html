@@ -84,6 +84,11 @@
         </a>
         <div class="ms-auto d-flex align-items-center gap-3">
             {% if user.is_authenticated %}
+                {% if user.staff_profile %}
+                <a href="{% url 'staff:profile' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-person-circle"></i> My Profile
+                </a>
+                {% endif %}
                 <span class="text-muted">{{ user.username }}</span>
                 <a href="{% url 'account_logout' %}" class="btn btn-sm btn-outline-secondary">Logout</a>
             {% else %}
