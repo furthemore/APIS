@@ -32,8 +32,15 @@ jobs:
         with:
           filters: |
             backend:
-              - 'registration/**'
-              - '!registration/frontend/**'
+              - 'registration/*.py'
+              - 'registration/management/**'
+              - 'registration/migrations/**'
+              - 'registration/static/**'
+              - 'registration/templates/**'
+              - 'registration/templatetags/**'
+              - 'registration/tests/**'
+              - 'registration/utils/**'
+              - 'registration/views/**'
               - 'fm_eventmanager/**'
               - 'manage.py'
               - 'pyproject.toml'
