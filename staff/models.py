@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from registration.models import Event, Person
+from registration.models import Event, Person, get_registration_token
 
 
 class Department(models.Model):
@@ -180,4 +180,25 @@ class StaffApplicant(Person):
 
     def __str__(self):
         return f"{self.first_name()} {self.last_name()} - {self.posting}"
+
+
+class StaffInvite(models.Model):
+    token = models.CharField(max_length=200, default=get_registration_token)
+    email = models.CharField(max_length=200)
+    ignore_time_window = models.BooleanField(
+        default=False,
+        verbose_name="Ignore Registration Time Window",
+        help_text="Enabling this option will allow this invite code to disregard the open and close date and time specified in the event. The Valid Until setting on this form will still apply",
+    )
+    valid_until = models.DateTimeField(verbose_name="Valid Until")
+    used = models.BooleanField(default=False)
+    used_date = models.DateTimeField(null=True, blank=True, verbose_name="Used Date")
+    sent = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Staff Invite"
+        verbose_name_plural = "Staff Invites"
+
+    def __str__(self):
+        return f"{self.email} - {self.token}"
 

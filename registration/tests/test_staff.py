@@ -7,6 +7,7 @@ from django.urls import reverse
 from freezegun import freeze_time
 
 from registration.models import *
+from staff.models import StaffInvite
 from registration.tests.common import OrdersTestCase
 from registration.views import staff
 

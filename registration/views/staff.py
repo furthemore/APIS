@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from registration.models import *
+from staff.models import StaffInvite
 from registration.services import CreateAttendeeOptions
 
 from .common import abort, handler

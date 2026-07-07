@@ -82,7 +82,7 @@ def send_staff_promotion_email_task(self, staff_id):
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def send_new_staff_email_task(self, token_id):
-    from registration.models import StaffInvite
+    from staff.models import StaffInvite
 
     try:
         token = StaffInvite.objects.get(id=token_id)

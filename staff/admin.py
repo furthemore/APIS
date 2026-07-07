@@ -1,6 +1,28 @@
 from django.contrib import admin
 
-from staff.models import Department, Staff, StaffApplicant, StaffPosition, StaffPosting
+from staff.models import Department, Staff, StaffApplicant, StaffInvite, StaffPosition, StaffPosting
+
+
+@admin.action(description="Send staff invitation email")
+def send_staff_invite_email(modeladmin, request, queryset):
+    from registration import tasks
+    from django.contrib import messages
+    
+    if queryset.count() == 0:
+        messages.error(request, "No invites selected")
+        return
+
+    for invite in queryset:
+        tasks.send_new_staff_email_task.delay(invite.id)
+        invite.sent = True
+        invite.save()
+    
+    if queryset.count() > 1:
+        messages.success(
+            request, f"Successfully sent emails to {queryset.count()} staff members"
+        )
+    else:
+        messages.success(request, f"Successfully sent email to {queryset[0].email}")
 
 
 @admin.action(description="Mark onboarding as complete")
@@ -130,6 +152,24 @@ class StaffPostingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["position"]
     # Don't use autocomplete for event since Event admin might not have search_fields
     # Instead use a regular dropdown
+
+
+@admin.register(StaffInvite)
+class StaffInviteAdmin(admin.ModelAdmin):
+    actions = [send_staff_invite_email]
+    list_display = ["email", "token", "valid_until", "sent", "used", "used_date"]
+    list_filter = ["sent", "used"]
+    readonly_fields = ["token", "used", "used_date"]
+    search_fields = ["email", "token"]
+    fields = [
+        "token",
+        "email",
+        "valid_until",
+        "ignore_time_window",
+        "used",
+        "used_date",
+        "sent",
+    ]
 
 
 @admin.register(StaffApplicant)
