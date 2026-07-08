@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from registration.models import Event, get_registration_token, Staff as RegistrationStaff
-from staff.forms import StaffApplicationForm
-from staff.models import Department, StaffApplicant, StaffPosting, Staff
+from registration.models import Event, get_registration_token, Staff as RegistrationStaff, Attendee, Badge, ShirtSizes, PriceLevel, OrderItem
+from registration.views.ordering import CreateAttendeeOptions
+from staff.forms import StaffApplicationForm, StaffRegistrationForm
+from staff.models import Department, StaffApplicant, StaffPosting, Staff, StaffInvite
 
 
 def index(request):
@@ -107,10 +109,35 @@ def profile(request):
                         event=current_event
                     ).count()
                 
+                # Get staff list for sub-department
+                sub_staff_list = []
+                for staff_member in Staff.objects.filter(department=sub_dept).select_related('user'):
+                    # Check if they're registered for current event
+                    is_registered = False
+                    registration_record = None
+                    if current_event and staff_member.user:
+                        try:
+                            attendee = staff_member.user.attendee_set.first()
+                            if attendee:
+                                registration_record = RegistrationStaff.objects.filter(
+                                    attendee=attendee,
+                                    event=current_event
+                                ).first()
+                                is_registered = registration_record is not None
+                        except:
+                            pass
+                    
+                    sub_staff_list.append({
+                        'staff': staff_member,
+                        'is_registered': is_registered,
+                        'checked_in': registration_record.checkedIn if registration_record else False,
+                    })
+                
                 sub_dept_stats.append({
                     'department': sub_dept,
                     'staff_count': sub_staff_count,
                     'registered_count': sub_registered_count,
+                    'staff_list': sub_staff_list,
                 })
             
             department_stats.append({
