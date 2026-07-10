@@ -1,0 +1,201 @@
+{% extends "staff/base.html" %}
+
+{% block title %}Event Registration - Staff Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Staff Event Registration</h1>
+    <p class="text-muted">Register for {{ event.name }}</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Registration Form</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information (readonly display) -->
+                    <div class="alert alert-info mb-4">
+                        <h6><i class="bi bi-info-circle"></i> Your Profile Information</h6>
+                        <p class="mb-1"><small>The following information is pulled from your staff profile and cannot be changed here. If you need to update your name, email, or birthdate, please contact your department head.</small></p>
+                        <p class="mb-0"><small><strong>Badge Name:</strong> Your badge will display "{{ staff_profile.fandom_name|default:staff_profile.first_name }}" - update your Fandom Name in your profile to change this.</small></p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Legal Name</label>
+                            <div class="fw-bold">{{ staff_profile.legal_first_name }} {{ staff_profile.legal_last_name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Preferred Name</label>
+                            <div class="fw-bold">
+                                {% if staff_profile.preferred_first_name or staff_profile.preferred_last_name %}
+                                    {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }} 
+                                    {{ staff_profile.preferred_last_name|default:staff_profile.legal_last_name }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Email</label>
+                            <div class="fw-bold">{{ staff_profile.email }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Phone</label>
+                            <div class="fw-bold">{{ staff_profile.phone }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Department</label>
+                            <div class="fw-bold">{{ staff_profile.department.name|default:"Not assigned" }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Title</label>
+                            <div class="fw-bold">{{ staff_profile.title|default:"—" }}</div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Address (editable) -->
+                    <h6 class="mb-3"><i class="bi bi-house"></i> Mailing Address</h6>
+                    <div class="mb-3">
+                        <label for="{{ form.street_address_1.id_for_label }}" class="form-label">Street Address</label>
+                        {{ form.street_address_1 }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.street_address_2.id_for_label }}" class="form-label">Address Line 2</label>
+                        {{ form.street_address_2 }}
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                            {{ form.city }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.state.id_for_label }}" class="form-label">State/Province</label>
+                            {{ form.state }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                            {{ form.country }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.postal_code.id_for_label }}" class="form-label">Postal Code</label>
+                            {{ form.postal_code }}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Shirt Size -->
+                    <h6 class="mb-3"><i class="bi bi-cart"></i> Staff Shirt</h6>
+                    <div class="mb-4">
+                        <label for="{{ form.shirt_size.id_for_label }}" class="form-label">Shirt Size</label>
+                        {{ form.shirt_size }}
+                        <div class="form-text">Select your preferred staff shirt size</div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Social Media -->
+                    <h6 class="mb-3"><i class="bi bi-chat-dots"></i> Social Media (optional)</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.twitter.id_for_label }}" class="form-label">Twitter/X</label>
+                            {{ form.twitter }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.telegram.id_for_label }}" class="form-label">Telegram</label>
+                            {{ form.telegram }}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Emergency Contact -->
+                    <h6 class="mb-3"><i class="bi bi-telephone"></i> Emergency Contact</h6>
+                    <div class="mb-3">
+                        <label for="{{ form.contact_name.id_for_label }}" class="form-label">Contact Name</label>
+                        {{ form.contact_name }}
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.contact_phone.id_for_label }}" class="form-label">Contact Phone</label>
+                            {{ form.contact_phone }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.contact_relation.id_for_label }}" class="form-label">Relationship</label>
+                            {{ form.contact_relation }}
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Special Needs -->
+                    <h6 class="mb-3"><i class="bi bi-info-square"></i> Special Information (optional)</h6>
+                    <div class="mb-3">
+                        <label for="{{ form.special_skills.id_for_label }}" class="form-label">Special Skills</label>
+                        {{ form.special_skills }}
+                        <div class="form-text">Any special skills that might be useful during the event</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.special_food.id_for_label }}" class="form-label">Dietary Restrictions</label>
+                        {{ form.special_food }}
+                        <div class="form-text">Food allergies or dietary preferences</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="{{ form.special_medical.id_for_label }}" class="form-label">Medical Information</label>
+                        {{ form.special_medical }}
+                        <div class="form-text">Medical conditions staff coordinators should be aware of</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Complete Registration
+                        </button>
+                        <a href="{% url 'staff:profile' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Event Details</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title">{{ event.name }}</h6>
+                <p class="mb-2"><strong>Dates:</strong> {{ event.eventStart|date:"M d, Y" }} - {{ event.eventEnd|date:"M d, Y" }}</p>
+                {% if event.venue %}
+                <p class="mb-0"><strong>Location:</strong> {{ event.venue.name }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-question-circle"></i> Need Help?</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">If you have questions about registration or need to update your profile information, contact:</p>
+                <p class="mb-0 mt-2"><strong>{{ event.staffEmail }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

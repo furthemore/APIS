@@ -116,9 +116,15 @@
                     <p class="mb-0 mt-2 small">You are not currently registered for this event.</p>
                 </div>
                 <div class="mt-3">
+                    {% if registration_token %}
+                    <a href="{% url 'staff:register' token=registration_token %}" class="btn btn-primary w-100">
+                        <i class="bi bi-pencil-square"></i> Register Now
+                    </a>
+                    {% else %}
                     <a href="/registration/" class="btn btn-primary w-100">
                         <i class="bi bi-pencil-square"></i> Register Now
                     </a>
+                    {% endif %}
                 </div>
                 {% endif %}
             </div>

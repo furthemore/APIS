@@ -268,54 +268,36 @@
         <!-- Event Registration Status -->
         {% if current_event %}
         <div class="card mb-4">
-            <div class="card-header {% if staff_profile.user and staff_profile.user.attendee_set.first %}bg-success{% else %}bg-warning{% endif %} text-white">
+            <div class="card-header {% if is_registered %}bg-success{% else %}bg-warning{% endif %} text-white">
                 <h5 class="mb-0"><i class="bi bi-calendar-event"></i> My Event Registration</h5>
             </div>
             <div class="card-body">
                 <h6 class="mb-3">{{ current_event.name }}</h6>
                 
-                {% if staff_profile.user %}
-                    {% with attendee=staff_profile.user.attendee_set.first %}
-                    {% if attendee %}
-                        {% with reg=attendee.staff_set.all|first %}
-                        {% if reg and reg.event.id == current_event.id %}
-                        <div class="alert alert-success mb-0">
-                            <i class="bi bi-check-circle-fill"></i> <strong>Registered!</strong>
-                            <p class="mb-0 mt-2 small">You are registered for this event.</p>
-                            
-                            {% if reg.checkedIn %}
-                            <hr>
-                            <p class="mb-0"><i class="bi bi-check2-all"></i> <strong>Checked In</strong></p>
-                            {% endif %}
-                        </div>
-                        {% else %}
-                        <div class="alert alert-warning mb-0">
-                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Not Registered</strong>
-                            <p class="mb-0 mt-2 small">You are not currently registered for this event.</p>
-                        </div>
-                        <div class="mt-3">
-                            <a href="/registration/" class="btn btn-primary w-100">
-                                <i class="bi bi-pencil-square"></i> Register Now
-                            </a>
-                        </div>
-                        {% endif %}
-                        {% endwith %}
-                    {% else %}
-                        <div class="alert alert-warning mb-0">
-                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Not Registered</strong>
-                            <p class="mb-0 mt-2 small">You are not currently registered for this event.</p>
-                        </div>
-                        <div class="mt-3">
-                            <a href="/registration/" class="btn btn-primary w-100">
-                                <i class="bi bi-pencil-square"></i> Register Now
-                            </a>
-                        </div>
+                {% if is_registered %}
+                <div class="alert alert-success mb-0">
+                    <i class="bi bi-check-circle-fill"></i> <strong>Registered!</strong>
+                    <p class="mb-0 mt-2 small">You are registered for this event.</p>
+                    
+                    {% if registration_record.checked_in %}
+                    <hr>
+                    <p class="mb-0"><i class="bi bi-check2-all"></i> <strong>Checked In</strong></p>
                     {% endif %}
-                    {% endwith %}
+                </div>
                 {% else %}
-                    <div class="alert alert-info mb-0">
-                        <i class="bi bi-info-circle"></i> <small>No user account linked to this profile.</small>
-                    </div>
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <strong>Not Registered</strong>
+                    <p class="mb-0 mt-2 small">You are not currently registered for this event.</p>
+                </div>
+                <div class="mt-3">
+                    {% if registration_token %}
+                    <a href="{% url 'staff:register' token=registration_token %}" class="btn btn-primary w-100">
+                        <i class="bi bi-pencil-square"></i> Register Now
+                    </a>
+                    {% else %}
+                    <p class="text-muted small">Registration token not available. Please contact staff coordinators.</p>
+                    {% endif %}
+                </div>
                 {% endif %}
             </div>
         </div>

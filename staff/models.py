@@ -115,6 +115,58 @@ class Staff(Person):
         ]
 
 
+class StaffEventRegistration(models.Model):
+    """Event-specific registration data for staff members"""
+    staff = models.ForeignKey(
+        Staff,
+        on_delete=models.CASCADE,
+        related_name="event_registrations",
+    )
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name="staff_registrations",
+    )
+    registration_token = models.CharField(max_length=200, default=get_registration_token)
+    
+    # Shirt and swag
+    shirt_size = models.ForeignKey(
+        'registration.ShirtSizes',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    
+    # Social media
+    twitter = models.CharField(max_length=200, blank=True)
+    telegram = models.CharField(max_length=200, blank=True)
+    
+    # Emergency contact
+    contact_name = models.CharField(max_length=200, blank=True)
+    contact_phone = models.CharField(max_length=200, blank=True)
+    contact_relation = models.CharField(max_length=200, blank=True)
+    
+    # Special needs/requests
+    special_skills = models.TextField(blank=True)
+    special_food = models.TextField(blank=True)
+    special_medical = models.TextField(blank=True)
+    
+    # Event status
+    checked_in = models.BooleanField(default=False)
+    registered_date = models.DateTimeField(auto_now_add=True)
+    
+    # Notes
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name = "Staff Event Registration"
+        verbose_name_plural = "Staff Event Registrations"
+        unique_together = [['staff', 'event']]
+        
+    def __str__(self):
+        return f"{self.staff} - {self.event}"
+
+
 class StaffPosting(models.Model):
     position = models.ForeignKey(
         StaffPosition,

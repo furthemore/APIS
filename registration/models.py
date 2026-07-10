@@ -545,6 +545,11 @@ class Badge(models.Model):
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.CASCADE
     )
+    staff = models.ForeignKey(
+        "staff.Staff", null=True, blank=True, on_delete=models.CASCADE,
+        related_name="badges",
+        help_text="Link to staff profile instead of attendee for staff badges"
+    )
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     registeredDate = models.DateTimeField(null=True)
     registrationToken = models.CharField(max_length=200, default=get_registration_token)
@@ -553,6 +558,17 @@ class Badge(models.Model):
     printed = models.BooleanField(default=False)
     signature_svg = models.TextField(null=True, blank=True)
     signature_bitmap = models.TextField(null=True, blank=True)
+    
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(attendee__isnull=False, staff__isnull=True) |
+                    models.Q(attendee__isnull=True, staff__isnull=False)
+                ),
+                name='badge_attendee_or_staff_not_both',
+            )
+        ]
 
     def __str__(self):
         if self.badgeNumber is not None or self.badgeNumber == "":
@@ -566,7 +582,13 @@ class Badge(models.Model):
         return "Badge object {0}".format(self.registrationToken)
 
     def isMinor(self):
-        birthdate = self.attendee.birthdate
+        if self.attendee:
+            birthdate = self.attendee.birthdate
+        elif self.staff:
+            birthdate = self.staff.birthdate
+        else:
+            return False
+            
         eventdate = self.event.eventStart
         age_at_event = (
             eventdate.year
@@ -595,6 +617,10 @@ class Badge(models.Model):
 
     @property
     def abandoned(self):
+        # Check if badge is linked directly to staff profile (new staff system)
+        if self.staff is not None:
+            return Badge.STAFF
+        # Check old staff system (registration.Staff via attendee)
         if Staff.objects.filter(attendee=self.attendee, event=self.event).exists():
             return Badge.STAFF
         if Dealer.objects.filter(attendee=self.attendee, event=self.event).exists():

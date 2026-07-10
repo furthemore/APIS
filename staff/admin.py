@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from staff.models import Department, Staff, StaffApplicant, StaffInvite, StaffPosition, StaffPosting
+from staff.models import Department, Staff, StaffApplicant, StaffInvite, StaffPosition, StaffPosting, StaffEventRegistration
 
 
 @admin.action(description="Send staff invitation email")
@@ -256,3 +256,44 @@ class StaffApplicantAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+
+@admin.register(StaffEventRegistration)
+class StaffEventRegistrationAdmin(admin.ModelAdmin):
+    list_display = ['staff', 'event', 'checked_in', 'registered_date']
+    list_filter = ['event', 'checked_in', 'registered_date']
+    search_fields = ['staff__legal_first_name', 'staff__legal_last_name', 'staff__email']
+    readonly_fields = ['registration_token', 'registered_date']
+    
+    fieldsets = (
+        ('Staff & Event', {
+            'fields': ('staff', 'event', 'registration_token', 'registered_date')
+        }),
+        ('Apparel', {
+            'fields': ('shirt_size',)
+        }),
+        ('Social Media', {
+            'fields': ('twitter', 'telegram')
+        }),
+        ('Emergency Contact', {
+            'fields': ('contact_name', 'contact_phone', 'contact_relation')
+        }),
+        ('Special Needs', {
+            'fields': ('special_skills', 'special_food', 'special_medical')
+        }),
+        ('Status', {
+            'fields': ('checked_in', 'notes')
+        }),
+    )
+    
+    actions = ['mark_checked_in', 'mark_not_checked_in']
+    
+    @admin.action(description='Mark as checked in')
+    def mark_checked_in(self, request, queryset):
+        updated = queryset.update(checked_in=True)
+        self.message_user(request, f'{updated} registration(s) marked as checked in.')
+    
+    @admin.action(description='Mark as not checked in')
+    def mark_not_checked_in(self, request, queryset):
+        updated = queryset.update(checked_in=False)
+        self.message_user(request, f'{updated} registration(s) marked as not checked in.')

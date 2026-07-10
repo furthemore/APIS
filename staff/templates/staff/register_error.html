@@ -1,0 +1,29 @@
+{% extends "staff/base.html" %}
+
+{% block title %}Registration Error - Staff Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Registration Issue</h1>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                {% if is_info %}
+                <i class="bi bi-info-circle text-info" style="font-size: 4rem;"></i>
+                {% else %}
+                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                {% endif %}
+                <h3 class="mt-4 mb-3">{{ error }}</h3>
+                <div class="d-grid gap-2 col-6 mx-auto mt-4">
+                    <a href="{% url 'staff:profile' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

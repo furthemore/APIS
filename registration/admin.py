@@ -918,10 +918,11 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
-    list_select_related = ("event", "attendee")
-    raw_id_fields = ("attendee",)
+    list_select_related = ("event", "attendee", "staff")
+    raw_id_fields = ("attendee", "staff")
     list_display = (
         "attendee",
+        "staff",
         "badgeName",
         "badgeNumber",
         "printed",
@@ -936,6 +937,12 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "attendee__lastName",
         "attendee__firstName",
         "attendee__preferredName",
+        "staff__email",
+        "staff__legal_first_name",
+        "staff__legal_last_name",
+        "staff__preferred_first_name",
+        "staff__preferred_last_name",
+        "staff__fandom_name",
         "badgeName",
         "badgeNumber",
     ]
@@ -958,6 +965,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
                     ("registeredDate", "event", "registrationToken"),
                     "image_signature",
                     "attendee",
+                    "staff",
                 )
             },
         ),
@@ -969,7 +977,14 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     @admin.display(description="Age Group")
     def get_age_range(self, obj):
         try:
-            born = obj.attendee.birthdate
+            # Get birthdate from attendee or staff
+            if obj.attendee:
+                born = obj.attendee.birthdate
+            elif obj.staff:
+                born = obj.staff.birthdate
+            else:
+                return "No DOB"
+            
             event_start = obj.event.eventStart
             age = (
                 event_start.year
