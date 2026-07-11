@@ -6,23 +6,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0100_webhook_type'),
+        ("registration", "0100_webhook_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='badge',
-            name='signature_bitmap',
+            model_name="badge",
+            name="signature_bitmap",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='badge',
-            name='signature_svg',
+            model_name="badge",
+            name="signature_svg",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='status',
-            field=models.CharField(choices=[('Pending', 'Pending'), ('Captured', 'Captured'), ('Completed', 'Completed'), ('Refunded', 'Refunded'), ('Refund Pending', 'Refund Pending'), ('Failed', 'Failed'), ('Dispute Evidence Required', 'Dispute Evidence Required'), ('Dispute Processing', 'Dispute Processing'), ('Dispute Won', 'Dispute Won'), ('Dispute Lost', 'Dispute Lost'), ('Dispute Accepted', 'Dispute Accepted')], default='Pending', max_length=50),
+            model_name="order",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("Pending", "Pending"),
+                    ("Captured", "Captured"),
+                    ("Completed", "Completed"),
+                    ("Refunded", "Refunded"),
+                    ("Refund Pending", "Refund Pending"),
+                    ("Failed", "Failed"),
+                    ("Dispute Evidence Required", "Dispute Evidence Required"),
+                    ("Dispute Processing", "Dispute Processing"),
+                    ("Dispute Won", "Dispute Won"),
+                    ("Dispute Lost", "Dispute Lost"),
+                    ("Dispute Accepted", "Dispute Accepted"),
+                ],
+                default="Pending",
+                max_length=50,
+            ),
         ),
     ]

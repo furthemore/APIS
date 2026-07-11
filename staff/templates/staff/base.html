@@ -11,12 +11,12 @@
         :root {
             --topbar-height: 60px;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f8f9fa;
         }
-        
+
         /* Topbar */
         .topbar {
             position: fixed;
@@ -31,44 +31,44 @@
             align-items: center;
             padding: 0 1.5rem;
         }
-        
+
         .topbar .brand {
             font-weight: 600;
             font-size: 1.25rem;
             color: #212529;
             text-decoration: none;
         }
-        
+
         .topbar .brand:hover {
             color: #0d6efd;
         }
-        
+
         /* Main content */
         .main-content {
             margin-top: var(--topbar-height);
             padding: 2rem;
             min-height: calc(100vh - var(--topbar-height));
         }
-        
+
         /* Cards */
         .card {
             border: none;
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
             margin-bottom: 1.5rem;
         }
-        
+
         /* Page header */
         .page-header {
             margin-bottom: 2rem;
         }
-        
+
         .page-header h1 {
             font-size: 2rem;
             font-weight: 600;
             color: #212529;
             margin-bottom: 0.5rem;
         }
-        
+
         .page-header .breadcrumb {
             margin-bottom: 0;
             background: none;
@@ -108,7 +108,7 @@
                 </div>
                 {% endfor %}
             {% endif %}
-            
+
             {% block content %}
             {% endblock %}
         </div>

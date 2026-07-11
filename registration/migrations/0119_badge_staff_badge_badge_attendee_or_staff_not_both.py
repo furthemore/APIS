@@ -7,18 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0118_alter_staff_department_and_more'),
-        ('staff', '0018_department_parent_department'),
+        ("registration", "0118_alter_staff_department_and_more"),
+        ("staff", "0018_department_parent_department"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='badge',
-            name='staff',
-            field=models.ForeignKey(blank=True, help_text='Link to staff profile instead of attendee for staff badges', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='badges', to='staff.staff'),
+            model_name="badge",
+            name="staff",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Link to staff profile instead of attendee for staff badges",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="badges",
+                to="staff.staff",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='badge',
-            constraint=models.CheckConstraint(condition=models.Q(models.Q(('attendee__isnull', False), ('staff__isnull', True)), models.Q(('attendee__isnull', True), ('staff__isnull', False)), _connector='OR'), name='badge_attendee_or_staff_not_both'),
+            model_name="badge",
+            constraint=models.CheckConstraint(
+                condition=models.Q(
+                    models.Q(("attendee__isnull", False), ("staff__isnull", True)),
+                    models.Q(("attendee__isnull", True), ("staff__isnull", False)),
+                    _connector="OR",
+                ),
+                name="badge_attendee_or_staff_not_both",
+            ),
         ),
     ]

@@ -4,19 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0008_department_assistant_heads_department_head'),
+        ("staff", "0008_department_assistant_heads_department_head"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='department',
-            name='head',
+            model_name="department",
+            name="head",
         ),
         migrations.AddField(
-            model_name='department',
-            name='heads',
-            field=models.ManyToManyField(blank=True, related_name='departments_headed', to='staff.staff', verbose_name='Department Heads'),
+            model_name="department",
+            name="heads",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="departments_headed",
+                to="staff.staff",
+                verbose_name="Department Heads",
+            ),
         ),
     ]

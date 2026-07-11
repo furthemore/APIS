@@ -5,20 +5,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0010_staff_user'),
+        ("staff", "0010_staff_user"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='department',
-            name='default_landing_page',
-            field=models.CharField(blank=True, help_text="URL path (e.g., '/staff/portal/') or named URL (e.g., 'staff:portal') for this department's default landing page after login", max_length=200),
+            model_name="department",
+            name="default_landing_page",
+            field=models.CharField(
+                blank=True,
+                help_text="URL path (e.g., '/staff/portal/') or named URL (e.g., 'staff:portal') for this department's default landing page after login",
+                max_length=200,
+            ),
         ),
         migrations.AddField(
-            model_name='staff',
-            name='department',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='staff_members', to='staff.department'),
+            model_name="staff",
+            name="department",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="staff_members",
+                to="staff.department",
+            ),
         ),
     ]

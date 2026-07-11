@@ -4,14 +4,16 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0012_staffposting_staffapplicant_and_more'),
+        ("staff", "0012_staffposting_staffapplicant_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='staff',
-            options={'verbose_name': 'Staff Profile', 'verbose_name_plural': 'Staff Profiles'},
+            name="staff",
+            options={
+                "verbose_name": "Staff Profile",
+                "verbose_name_plural": "Staff Profiles",
+            },
         ),
     ]

@@ -4,14 +4,19 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0013_alter_staff_options'),
+        ("staff", "0013_alter_staff_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='staff',
-            options={'permissions': [('change_fandom_name', 'Can change fandom/credit name')], 'verbose_name': 'Staff Profile', 'verbose_name_plural': 'Staff Profiles'},
+            name="staff",
+            options={
+                "permissions": [
+                    ("change_fandom_name", "Can change fandom/credit name")
+                ],
+                "verbose_name": "Staff Profile",
+                "verbose_name_plural": "Staff Profiles",
+            },
         ),
     ]

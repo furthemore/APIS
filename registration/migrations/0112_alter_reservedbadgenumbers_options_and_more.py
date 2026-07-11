@@ -6,25 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0111_migrate_u2f_totp_to_allauth'),
+        ("registration", "0111_migrate_u2f_totp_to_allauth"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='reservedbadgenumbers',
-            options={'verbose_name_plural': 'Reserved badge numbers'},
+            name="reservedbadgenumbers",
+            options={"verbose_name_plural": "Reserved badge numbers"},
         ),
         migrations.RemoveField(
-            model_name='reservedbadgenumbers',
-            name='event',
+            model_name="reservedbadgenumbers",
+            name="event",
         ),
         migrations.RemoveField(
-            model_name='reservedbadgenumbers',
-            name='priceLevel',
+            model_name="reservedbadgenumbers",
+            name="priceLevel",
         ),
         migrations.AlterField(
-            model_name='reservedbadgenumbers',
-            name='badgeNumber',
+            model_name="reservedbadgenumbers",
+            name="badgeNumber",
             field=models.IntegerField(unique=True),
         ),
     ]

@@ -1,5 +1,4 @@
 import random
-import string
 import uuid
 from datetime import datetime
 from decimal import Decimal
@@ -348,7 +347,7 @@ class Event(LookupTable):
     collectAddress = models.BooleanField(
         default=True,
         verbose_name="Collect Address",
-        help_text="Disable to skip collecting a mailing address for each " "attendee.",
+        help_text="Disable to skip collecting a mailing address for each attendee.",
     )
     collectBillingAddress = models.BooleanField(
         default=True,
@@ -546,9 +545,12 @@ class Badge(models.Model):
         Attendee, null=True, blank=True, on_delete=models.CASCADE
     )
     staff = models.ForeignKey(
-        "staff.Staff", null=True, blank=True, on_delete=models.CASCADE,
+        "staff.Staff",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
         related_name="badges",
-        help_text="Link to staff profile instead of attendee for staff badges"
+        help_text="Link to staff profile instead of attendee for staff badges",
     )
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     registeredDate = models.DateTimeField(null=True)
@@ -558,15 +560,15 @@ class Badge(models.Model):
     printed = models.BooleanField(default=False)
     signature_svg = models.TextField(null=True, blank=True)
     signature_bitmap = models.TextField(null=True, blank=True)
-    
+
     class Meta:
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(attendee__isnull=False, staff__isnull=True) |
-                    models.Q(attendee__isnull=True, staff__isnull=False)
+                    models.Q(attendee__isnull=False, staff__isnull=True)
+                    | models.Q(attendee__isnull=True, staff__isnull=False)
                 ),
-                name='badge_attendee_or_staff_not_both',
+                name="badge_attendee_or_staff_not_both",
             )
         ]
 
@@ -588,7 +590,7 @@ class Badge(models.Model):
             birthdate = self.staff.birthdate
         else:
             return False
-            
+
         eventdate = self.event.eventStart
         age_at_event = (
             eventdate.year

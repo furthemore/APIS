@@ -188,7 +188,10 @@ def format_topic(topic: str, allow_wildcard: bool = False) -> str:
 
 def send_mqtt_message(topic: str, payload: dict = {}, retain: bool = False):
     payload_json = json.dumps(payload, cls=JSONDecimalEncoder)
-    logger.debug("Sending MQTT message", extra={"topic": topic, "payload_size": len(payload_json)})
+    logger.debug(
+        "Sending MQTT message",
+        extra={"topic": topic, "payload_size": len(payload_json)},
+    )
 
     auth = {
         "username": "apis-server",

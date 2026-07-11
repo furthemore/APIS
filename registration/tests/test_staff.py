@@ -7,9 +7,9 @@ from django.urls import reverse
 from freezegun import freeze_time
 
 from registration.models import *
-from staff.models import StaffInvite
 from registration.tests.common import OrdersTestCase
 from registration.views import staff
+from staff.models import StaffInvite
 
 tz = timezone.get_current_timezone()
 now = timezone.now()
@@ -134,7 +134,9 @@ class TestNewStaff(StaffTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"not yet open", response.content)
-        self.assertIn(b'<a href="/registration/">Back to Main Page</a>', response.content)
+        self.assertIn(
+            b'<a href="/registration/">Back to Main Page</a>', response.content
+        )
 
     @freeze_time(timezone.now() + timedelta(days=20))
     def test_new_staff_invite_good_closed_ended(self):
@@ -149,7 +151,9 @@ class TestNewStaff(StaffTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"has ended", response.content)
-        self.assertIn(b'<a href="/registration/">Back to Main Page</a>', response.content)
+        self.assertIn(
+            b'<a href="/registration/">Back to Main Page</a>', response.content
+        )
 
     @freeze_time("2000-01-01")
     def test_new_staff_invite_override(self):
@@ -285,19 +289,25 @@ class TestAddNewStaff(StaffTestCase):
 
 class TestReturningStaff(StaffTestCase):
     def test_returning_staff(self):
-        response = self.client.get(reverse("registration:returning_staff", args=("foo",)))
+        response = self.client.get(
+            reverse("registration:returning_staff", args=("foo",))
+        )
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(b"not yet open", response.content)
 
     @freeze_time(timezone.now() - timedelta(days=20))
     def test_returning_staff_closed_upcoming(self):
-        response = self.client.get(reverse("registration:returning_staff", args=("foo",)))
+        response = self.client.get(
+            reverse("registration:returning_staff", args=("foo",))
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"not yet open", response.content)
 
     @freeze_time(timezone.now() + timedelta(days=20))
     def test_returning_staff_closed_ended(self):
-        response = self.client.get(reverse("registration:returning_staff", args=("foo",)))
+        response = self.client.get(
+            reverse("registration:returning_staff", args=("foo",))
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"has ended", response.content)
 

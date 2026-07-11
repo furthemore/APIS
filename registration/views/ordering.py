@@ -392,4 +392,6 @@ def notify_terminal(request, order):
                     {"badgeId": order_item.badge_id},
                 )
     except Exception:
-        logger.warning("Could not use terminal-token for post-checkout notification", exc_info=True)
+        logger.warning(
+            "Could not use terminal-token for post-checkout notification", exc_info=True
+        )

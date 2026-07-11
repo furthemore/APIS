@@ -5,25 +5,32 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('registration', '0117_remove_firebase_print_via_payment_and_more'),
+        ("registration", "0117_remove_firebase_print_via_payment_and_more"),
     ]
 
     operations = [
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.CreateModel(
-                    name='Department',
+                    name="Department",
                     fields=[
-                        ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                        ('name', models.CharField(blank=True, max_length=200)),
-                        ('volunteerListOk', models.BooleanField(default=False)),
+                        (
+                            "id",
+                            models.AutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        ),
+                        ("name", models.CharField(blank=True, max_length=200)),
+                        ("volunteerListOk", models.BooleanField(default=False)),
                     ],
                     options={
-                        'db_table': 'registration_department',
+                        "db_table": "registration_department",
                     },
                 ),
             ],
@@ -31,20 +38,44 @@ class Migration(migrations.Migration):
             database_operations=[],
         ),
         migrations.CreateModel(
-            name='StaffPosition',
+            name="StaffPosition",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=200)),
-                ('description', models.TextField(blank=True)),
-                ('is_open', models.BooleanField(default=True, verbose_name='Open')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('department', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='staff.department')),
-                ('event', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='registration.event')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=200)),
+                ("description", models.TextField(blank=True)),
+                ("is_open", models.BooleanField(default=True, verbose_name="Open")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "department",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="staff.department",
+                    ),
+                ),
+                (
+                    "event",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="registration.event",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'staff position',
-                'verbose_name_plural': 'staff positions',
+                "verbose_name": "staff position",
+                "verbose_name_plural": "staff positions",
             },
         ),
     ]

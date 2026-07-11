@@ -7,13 +7,13 @@ from registration.models import Event, Person, get_registration_token
 class Department(models.Model):
     name = models.CharField(max_length=200, blank=True)
     parent_department = models.ForeignKey(
-        'self',
+        "self",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name='sub_departments',
-        verbose_name='Parent Department',
-        help_text='Select a parent department if this is a sub-department',
+        related_name="sub_departments",
+        verbose_name="Parent Department",
+        help_text="Select a parent department if this is a sub-department",
     )
     volunteerListOk = models.BooleanField(default=False)
     default_landing_page = models.CharField(
@@ -38,18 +38,19 @@ class Department(models.Model):
         if self.parent_department:
             return f"{self.parent_department.name} > {self.name}"
         return self.name
-    
+
     def get_all_staff(self):
         """Get all staff in this department and its sub-departments"""
-        from django.db.models import Q
-        
+
         # Get staff directly in this department
-        staff_ids = list(Staff.objects.filter(department=self).values_list('id', flat=True))
-        
+        staff_ids = list(
+            Staff.objects.filter(department=self).values_list("id", flat=True)
+        )
+
         # Get staff from all sub-departments recursively
         for sub_dept in self.sub_departments.all():
-            staff_ids.extend(sub_dept.get_all_staff().values_list('id', flat=True))
-        
+            staff_ids.extend(sub_dept.get_all_staff().values_list("id", flat=True))
+
         return Staff.objects.filter(id__in=staff_ids).distinct()
 
 
@@ -57,13 +58,13 @@ class StaffPosition(models.Model):
     HELD_POSITION = "Held Position"
     STAFF_POOL = "Staff Pool"
     VOLUNTEER_POOL = "Volunteer Pool"
-    
+
     POSITION_TYPE_CHOICES = [
         (HELD_POSITION, "Held Position"),
         (STAFF_POOL, "Staff Pool"),
         (VOLUNTEER_POOL, "Volunteer Pool"),
     ]
-    
+
     title = models.CharField(max_length=200)
     position_type = models.CharField(
         max_length=50,
@@ -117,6 +118,7 @@ class Staff(Person):
 
 class StaffEventRegistration(models.Model):
     """Event-specific registration data for staff members"""
+
     staff = models.ForeignKey(
         Staff,
         on_delete=models.CASCADE,
@@ -127,42 +129,44 @@ class StaffEventRegistration(models.Model):
         on_delete=models.CASCADE,
         related_name="staff_registrations",
     )
-    registration_token = models.CharField(max_length=200, default=get_registration_token)
-    
+    registration_token = models.CharField(
+        max_length=200, default=get_registration_token
+    )
+
     # Shirt and swag
     shirt_size = models.ForeignKey(
-        'registration.ShirtSizes',
+        "registration.ShirtSizes",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
-    
+
     # Social media
     twitter = models.CharField(max_length=200, blank=True)
     telegram = models.CharField(max_length=200, blank=True)
-    
+
     # Emergency contact
     contact_name = models.CharField(max_length=200, blank=True)
     contact_phone = models.CharField(max_length=200, blank=True)
     contact_relation = models.CharField(max_length=200, blank=True)
-    
+
     # Special needs/requests
     special_skills = models.TextField(blank=True)
     special_food = models.TextField(blank=True)
     special_medical = models.TextField(blank=True)
-    
+
     # Event status
     checked_in = models.BooleanField(default=False)
     registered_date = models.DateTimeField(auto_now_add=True)
-    
+
     # Notes
     notes = models.TextField(blank=True)
-    
+
     class Meta:
         verbose_name = "Staff Event Registration"
         verbose_name_plural = "Staff Event Registrations"
-        unique_together = [['staff', 'event']]
-        
+        unique_together = [["staff", "event"]]
+
     def __str__(self):
         return f"{self.staff} - {self.event}"
 
@@ -277,4 +281,3 @@ class StaffInvite(models.Model):
 
     def __str__(self):
         return f"{self.email} - {self.token}"
-

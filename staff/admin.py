@@ -1,13 +1,22 @@
 from django.contrib import admin
 
-from staff.models import Department, Staff, StaffApplicant, StaffInvite, StaffPosition, StaffPosting, StaffEventRegistration
+from staff.models import (
+    Department,
+    Staff,
+    StaffApplicant,
+    StaffEventRegistration,
+    StaffInvite,
+    StaffPosition,
+    StaffPosting,
+)
 
 
 @admin.action(description="Send staff invitation email")
 def send_staff_invite_email(modeladmin, request, queryset):
-    from registration import tasks
     from django.contrib import messages
-    
+
+    from registration import tasks
+
     if queryset.count() == 0:
         messages.error(request, "No invites selected")
         return
@@ -16,7 +25,7 @@ def send_staff_invite_email(modeladmin, request, queryset):
         tasks.send_new_staff_email_task.delay(invite.id)
         invite.sent = True
         invite.save()
-    
+
     if queryset.count() > 1:
         messages.success(
             request, f"Successfully sent emails to {queryset.count()} staff members"
@@ -50,15 +59,9 @@ class DepartmentAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     filter_horizontal = ("heads", "assistant_heads")
     fieldsets = (
-        (None, {
-            "fields": ("name", "parent_department", "volunteerListOk")
-        }),
-        ("Leadership", {
-            "fields": ("heads", "assistant_heads")
-        }),
-        ("Settings", {
-            "fields": ("default_landing_page",)
-        }),
+        (None, {"fields": ("name", "parent_department", "volunteerListOk")}),
+        ("Leadership", {"fields": ("heads", "assistant_heads")}),
+        ("Settings", {"fields": ("default_landing_page",)}),
     )
 
 
@@ -95,7 +98,7 @@ class StaffProfileAdmin(admin.ModelAdmin):
     )
     raw_id_fields = ["user"]
     actions = [mark_onboarding_complete, mark_onboarding_incomplete]
-    
+
     def get_fieldsets(self, request, obj=None):
         """Dynamically build fieldsets based on permissions"""
         fieldsets = [
@@ -145,15 +148,15 @@ class StaffProfileAdmin(admin.ModelAdmin):
             ),
         ]
         return fieldsets
-    
+
     def get_readonly_fields(self, request, obj=None):
         """Make fandom_name readonly unless user has the special permission"""
         readonly = []
-        
+
         # Check if user has permission to change fandom_name
-        if not request.user.has_perm('staff.change_fandom_name'):
-            readonly.append('fandom_name')
-        
+        if not request.user.has_perm("staff.change_fandom_name"):
+            readonly.append("fandom_name")
+
         return readonly
 
 
@@ -251,49 +254,50 @@ class StaffApplicantAdmin(admin.ModelAdmin):
         ),
         (
             "Registration",
-            {
-                "fields": ("registration_token",)
-            },
+            {"fields": ("registration_token",)},
         ),
     )
 
 
 @admin.register(StaffEventRegistration)
 class StaffEventRegistrationAdmin(admin.ModelAdmin):
-    list_display = ['staff', 'event', 'checked_in', 'registered_date']
-    list_filter = ['event', 'checked_in', 'registered_date']
-    search_fields = ['staff__legal_first_name', 'staff__legal_last_name', 'staff__email']
-    readonly_fields = ['registration_token', 'registered_date']
-    
+    list_display = ["staff", "event", "checked_in", "registered_date"]
+    list_filter = ["event", "checked_in", "registered_date"]
+    search_fields = [
+        "staff__legal_first_name",
+        "staff__legal_last_name",
+        "staff__email",
+    ]
+    readonly_fields = ["registration_token", "registered_date"]
+
     fieldsets = (
-        ('Staff & Event', {
-            'fields': ('staff', 'event', 'registration_token', 'registered_date')
-        }),
-        ('Apparel', {
-            'fields': ('shirt_size',)
-        }),
-        ('Social Media', {
-            'fields': ('twitter', 'telegram')
-        }),
-        ('Emergency Contact', {
-            'fields': ('contact_name', 'contact_phone', 'contact_relation')
-        }),
-        ('Special Needs', {
-            'fields': ('special_skills', 'special_food', 'special_medical')
-        }),
-        ('Status', {
-            'fields': ('checked_in', 'notes')
-        }),
+        (
+            "Staff & Event",
+            {"fields": ("staff", "event", "registration_token", "registered_date")},
+        ),
+        ("Apparel", {"fields": ("shirt_size",)}),
+        ("Social Media", {"fields": ("twitter", "telegram")}),
+        (
+            "Emergency Contact",
+            {"fields": ("contact_name", "contact_phone", "contact_relation")},
+        ),
+        (
+            "Special Needs",
+            {"fields": ("special_skills", "special_food", "special_medical")},
+        ),
+        ("Status", {"fields": ("checked_in", "notes")}),
     )
-    
-    actions = ['mark_checked_in', 'mark_not_checked_in']
-    
-    @admin.action(description='Mark as checked in')
+
+    actions = ["mark_checked_in", "mark_not_checked_in"]
+
+    @admin.action(description="Mark as checked in")
     def mark_checked_in(self, request, queryset):
         updated = queryset.update(checked_in=True)
-        self.message_user(request, f'{updated} registration(s) marked as checked in.')
-    
-    @admin.action(description='Mark as not checked in')
+        self.message_user(request, f"{updated} registration(s) marked as checked in.")
+
+    @admin.action(description="Mark as not checked in")
     def mark_not_checked_in(self, request, queryset):
         updated = queryset.update(checked_in=False)
-        self.message_user(request, f'{updated} registration(s) marked as not checked in.')
+        self.message_user(
+            request, f"{updated} registration(s) marked as not checked in."
+        )

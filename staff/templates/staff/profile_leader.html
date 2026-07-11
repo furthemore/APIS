@@ -54,7 +54,7 @@
         </div>
 
         <h5 class="border-bottom pb-2 mb-3">Direct Staff Members</h5>
-        
+
         {% if dept_stat.staff_list %}
         <div class="table-responsive">
             <table class="table table-hover">
@@ -208,7 +208,7 @@
                         <label class="form-label text-muted">Preferred Name</label>
                         <div class="fw-bold">
                             {% if staff_profile.preferred_first_name or staff_profile.preferred_last_name %}
-                                {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }} 
+                                {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }}
                                 {{ staff_profile.preferred_last_name|default:staff_profile.legal_last_name }}
                             {% else %}
                                 <span class="text-muted">—</span>
@@ -216,7 +216,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {% if staff_profile.fandom_name %}
                 <div class="row mb-3">
                     <div class="col-md-12">
@@ -225,7 +225,7 @@
                     </div>
                 </div>
                 {% endif %}
-                
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label text-muted">Email</label>
@@ -247,7 +247,7 @@
                         <div class="fw-bold">{{ staff_profile.title|default:"—" }}</div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-12">
                         <label class="form-label text-muted">Onboarding Status</label>
@@ -273,12 +273,12 @@
             </div>
             <div class="card-body">
                 <h6 class="mb-3">{{ current_event.name }}</h6>
-                
+
                 {% if is_registered %}
                 <div class="alert alert-success mb-0">
                     <i class="bi bi-check-circle-fill"></i> <strong>Registered!</strong>
                     <p class="mb-0 mt-2 small">You are registered for this event.</p>
-                    
+
                     {% if registration_record.checked_in %}
                     <hr>
                     <p class="mb-0"><i class="bi bi-check2-all"></i> <strong>Checked In</strong></p>

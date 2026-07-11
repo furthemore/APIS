@@ -14,7 +14,7 @@
                 <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
                 <h2 class="mt-4 mb-3">You're All Set!</h2>
                 <p class="lead">Your staff registration for {{ event.name }} is complete.</p>
-                
+
                 <div class="alert alert-info mt-4 text-start">
                     <h5><i class="bi bi-info-circle"></i> What's Next?</h5>
                     <ul class="mb-0">
@@ -23,7 +23,7 @@
                         <li>Mark your calendar for {{ event.eventStart|date:"F j, Y" }}</li>
                     </ul>
                 </div>
-                
+
                 <div class="d-grid gap-2 col-6 mx-auto mt-4">
                     <a href="{% url 'staff:profile' %}" class="btn btn-primary btn-lg">
                         <i class="bi bi-person"></i> View My Profile

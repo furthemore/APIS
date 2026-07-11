@@ -23,7 +23,7 @@ class Command(BaseCommand):
             "--delete",
             type=bool,
             default=False,
-            help="Whether or not to delete the database after it has been stopped, default False."
+            help="Whether or not to delete the database after it has been stopped, default False.",
         )
 
     def handle(self, *args, **options):

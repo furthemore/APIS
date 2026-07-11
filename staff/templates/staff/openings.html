@@ -18,14 +18,14 @@
                         <h5 class="card-title mb-0">{{ posting.position.title }}</h5>
                         <span class="badge bg-primary">{{ posting.slots }} slot{{ posting.slots|pluralize }}</span>
                     </div>
-                    
+
                     <div class="mb-3">
                         <span class="badge bg-secondary me-1">{{ posting.position.position_type }}</span>
                         {% if posting.position.department %}
                         <span class="badge bg-info text-dark">{{ posting.position.department.name }}</span>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-2 small text-muted">
                         {% if posting.event %}
                         <i class="bi bi-calendar-event"></i> {{ posting.event.name }}
@@ -33,17 +33,17 @@
                         <i class="bi bi-arrow-repeat"></i> Ongoing Position
                         {% endif %}
                     </div>
-                    
+
                     {% if posting.application_deadline %}
                     <div class="mb-2 small text-muted">
                         <i class="bi bi-clock"></i> Deadline: {{ posting.application_deadline|date:"M d, Y" }}
                     </div>
                     {% endif %}
-                    
+
                     {% if posting.position.description %}
                     <p class="card-text small">{{ posting.position.description|truncatewords:30 }}</p>
                     {% endif %}
-                    
+
                     {% if posting.notes %}
                     <p class="card-text small text-muted">{{ posting.notes|truncatewords:20 }}</p>
                     {% endif %}

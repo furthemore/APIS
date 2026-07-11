@@ -7,25 +7,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0117_remove_firebase_print_via_payment_and_more'),
-        ('staff', '0001_initial'),
+        ("registration", "0117_remove_firebase_print_via_payment_and_more"),
+        ("staff", "0001_initial"),
     ]
 
     operations = [
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.AlterField(
-                    model_name='staff',
-                    name='department',
-                    field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='staff.department'),
+                    model_name="staff",
+                    name="department",
+                    field=models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="staff.department",
+                    ),
                 ),
                 migrations.AlterField(
-                    model_name='discount',
-                    name='sponsoring_department',
-                    field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='staff.department'),
+                    model_name="discount",
+                    name="sponsoring_department",
+                    field=models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="staff.department",
+                    ),
                 ),
                 migrations.DeleteModel(
-                    name='Department',
+                    name="Department",
                 ),
             ],
             # Database operations: none. The foreign keys still point to the same

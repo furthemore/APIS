@@ -17,14 +17,14 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    
+
                     <!-- Personal Information (readonly display) -->
                     <div class="alert alert-info mb-4">
                         <h6><i class="bi bi-info-circle"></i> Your Profile Information</h6>
                         <p class="mb-1"><small>The following information is pulled from your staff profile and cannot be changed here. If you need to update your name, email, or birthdate, please contact your department head.</small></p>
                         <p class="mb-0"><small><strong>Badge Name:</strong> Your badge will display "{{ staff_profile.fandom_name|default:staff_profile.first_name }}" - update your Fandom Name in your profile to change this.</small></p>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Legal Name</label>
@@ -34,7 +34,7 @@
                             <label class="form-label text-muted">Preferred Name</label>
                             <div class="fw-bold">
                                 {% if staff_profile.preferred_first_name or staff_profile.preferred_last_name %}
-                                    {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }} 
+                                    {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }}
                                     {{ staff_profile.preferred_last_name|default:staff_profile.legal_last_name }}
                                 {% else %}
                                     <span class="text-muted">—</span>
@@ -42,7 +42,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Email</label>
@@ -53,7 +53,7 @@
                             <div class="fw-bold">{{ staff_profile.phone }}</div>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Department</label>
@@ -64,9 +64,9 @@
                             <div class="fw-bold">{{ staff_profile.title|default:"—" }}</div>
                         </div>
                     </div>
-                    
+
                     <hr class="my-4">
-                    
+
                     <!-- Address (editable) -->
                     <h6 class="mb-3"><i class="bi bi-house"></i> Mailing Address</h6>
                     <div class="mb-3">
@@ -95,9 +95,9 @@
                             {{ form.postal_code }}
                         </div>
                     </div>
-                    
+
                     <hr class="my-4">
-                    
+
                     <!-- Shirt Size -->
                     <h6 class="mb-3"><i class="bi bi-cart"></i> Staff Shirt</h6>
                     <div class="mb-4">
@@ -105,9 +105,9 @@
                         {{ form.shirt_size }}
                         <div class="form-text">Select your preferred staff shirt size</div>
                     </div>
-                    
+
                     <hr class="my-4">
-                    
+
                     <!-- Social Media -->
                     <h6 class="mb-3"><i class="bi bi-chat-dots"></i> Social Media (optional)</h6>
                     <div class="row mb-4">
@@ -120,9 +120,9 @@
                             {{ form.telegram }}
                         </div>
                     </div>
-                    
+
                     <hr class="my-4">
-                    
+
                     <!-- Emergency Contact -->
                     <h6 class="mb-3"><i class="bi bi-telephone"></i> Emergency Contact</h6>
                     <div class="mb-3">
@@ -139,9 +139,9 @@
                             {{ form.contact_relation }}
                         </div>
                     </div>
-                    
+
                     <hr class="my-4">
-                    
+
                     <!-- Special Needs -->
                     <h6 class="mb-3"><i class="bi bi-info-square"></i> Special Information (optional)</h6>
                     <div class="mb-3">
@@ -159,7 +159,7 @@
                         {{ form.special_medical }}
                         <div class="form-text">Medical conditions staff coordinators should be aware of</div>
                     </div>
-                    
+
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="bi bi-check-circle"></i> Complete Registration
@@ -172,7 +172,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-header bg-info text-white">
@@ -186,7 +186,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-question-circle"></i> Need Help?</h5>

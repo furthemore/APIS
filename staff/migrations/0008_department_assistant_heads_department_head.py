@@ -5,20 +5,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0007_staff_fandom_name'),
+        ("staff", "0007_staff_fandom_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='department',
-            name='assistant_heads',
-            field=models.ManyToManyField(blank=True, related_name='departments_assisted', to='staff.staff', verbose_name='Assistant Heads'),
+            model_name="department",
+            name="assistant_heads",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="departments_assisted",
+                to="staff.staff",
+                verbose_name="Assistant Heads",
+            ),
         ),
         migrations.AddField(
-            model_name='department',
-            name='head',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='departments_headed', to='staff.staff', verbose_name='Department Head'),
+            model_name="department",
+            name="head",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="departments_headed",
+                to="staff.staff",
+                verbose_name="Department Head",
+            ),
         ),
     ]

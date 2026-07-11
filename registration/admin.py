@@ -1,4 +1,3 @@
-import copy
 import json
 import logging
 from datetime import date
@@ -51,19 +50,19 @@ admin.site.register(Cart)
 
 
 class StaffProfileInline(admin.StackedInline):
-    model = apps.get_model('staff', 'Staff')
+    model = apps.get_model("staff", "Staff")
     can_delete = False
-    verbose_name_plural = 'Staff Profile'
-    fk_name = 'user'
+    verbose_name_plural = "Staff Profile"
+    fk_name = "user"
     extra = 0
     fields = (
-        ('legal_first_name', 'legal_last_name'),
-        ('preferred_first_name', 'preferred_last_name'),
-        'fandom_name',
-        'department',
-        'title',
-        'email',
-        'phone',
+        ("legal_first_name", "legal_last_name"),
+        ("preferred_first_name", "preferred_last_name"),
+        "fandom_name",
+        "department",
+        "title",
+        "email",
+        "phone",
     )
 
 
@@ -78,11 +77,12 @@ class UserProfileAdmin(auth.admin.UserAdmin):
     )
     search_fields = ("username", "email", "first_name", "last_name")
     inlines = [StaffProfileInline]
-    
+
     def has_staff_profile(self, obj):
-        return hasattr(obj, 'staff_profile')
+        return hasattr(obj, "staff_profile")
+
     has_staff_profile.boolean = True
-    has_staff_profile.short_description = 'Staff Profile'
+    has_staff_profile.short_description = "Staff Profile"
 
 
 admin.site.unregister(User)
@@ -184,8 +184,8 @@ def send_staff_token_email(modeladmin, request, queryset):
     This function is kept for backwards compatibility but redirects to staff app.
     """
     messages.warning(
-        request, 
-        "Staff invites have been moved to the Staff app. Please use Admin → STAFF → Staff Invites instead."
+        request,
+        "Staff invites have been moved to the Staff app. Please use Admin → STAFF → Staff Invites instead.",
     )
 
 
@@ -631,19 +631,19 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.action(description="Add to Staff")
 def make_staff(modeladmin, request, queryset):
-    from staff.models import Staff as StaffProfile
     from registration.models import get_registration_token
-    
+    from staff.models import Staff as StaffProfile
+
     skipped = 0
     created = 0
-    
+
     for att in queryset:
         # Check if this attendee already has a staff profile
         # We'll match by email to avoid duplicates
         if StaffProfile.objects.filter(email=att.email).exists():
             skipped += 1
             continue
-        
+
         # Create a new staff profile from the attendee data
         staff = StaffProfile(
             legal_first_name=att.firstName,
@@ -661,11 +661,11 @@ def make_staff(modeladmin, request, queryset):
             email_ok=att.emailsOk,
             survey_ok=att.surveyOk,
             registration_token=get_registration_token(),
-            title='',  # Will need to be filled in later
+            title="",  # Will need to be filled in later
         )
         staff.save()
         created += 1
-    
+
     if queryset.count() > 1:
         if skipped > 0:
             messages.success(
@@ -682,9 +682,7 @@ def make_staff(modeladmin, request, queryset):
                 request, f"Successfully added {queryset[0]} to staff profiles"
             )
         else:
-            messages.warning(
-                request, f"{queryset[0]} already has a staff profile"
-            )
+            messages.warning(request, f"{queryset[0]} already has a staff profile")
 
 
 @admin.action(description="Send upgrade info email")
@@ -984,7 +982,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
                 born = obj.staff.birthdate
             else:
                 return "No DOB"
-            
+
             event_start = obj.event.eventStart
             age = (
                 event_start.year
@@ -1137,7 +1135,6 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
         obj = kwargs.get("obj")
         if obj and obj.billingType == Order.CREDIT:
-
             context["api_data"] = obj.apiData
             if not obj.apiData:
                 messages.warning(

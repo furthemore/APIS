@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0099_webhook_completed'),
+        ("registration", "0099_webhook_completed"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='paymentwebhooknotification',
-            name='event_type',
-            field=models.CharField(default='', max_length=50),
+            model_name="paymentwebhooknotification",
+            name="event_type",
+            field=models.CharField(default="", max_length=50),
         ),
         migrations.AlterField(
-            model_name='firebase',
-            name='token',
-            field=models.CharField(help_text="Use 'none' to disable push", max_length=500),
+            model_name="firebase",
+            name="token",
+            field=models.CharField(
+                help_text="Use 'none' to disable push", max_length=500
+            ),
         ),
     ]

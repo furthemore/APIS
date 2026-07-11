@@ -4,36 +4,43 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0005_remove_staffposition_is_open'),
+        ("staff", "0005_remove_staffposition_is_open"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Staff',
+            name="Staff",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('legal_first_name', models.CharField(max_length=200)),
-                ('legal_last_name', models.CharField(max_length=200)),
-                ('preferred_first_name', models.CharField(blank=True, max_length=200)),
-                ('preferred_last_name', models.CharField(blank=True, max_length=200)),
-                ('street_address_1', models.CharField(blank=True, max_length=200)),
-                ('street_address_2', models.CharField(blank=True, max_length=200)),
-                ('city', models.CharField(blank=True, max_length=200)),
-                ('state', models.CharField(blank=True, max_length=200)),
-                ('country', models.CharField(blank=True, max_length=200)),
-                ('postal_code', models.CharField(blank=True, max_length=200)),
-                ('phone', models.CharField(max_length=200)),
-                ('email', models.EmailField(max_length=200)),
-                ('birthdate', models.DateField()),
-                ('email_ok', models.BooleanField(default=False)),
-                ('survey_ok', models.BooleanField(default=False)),
-                ('registration_token', models.CharField(max_length=200)),
-                ('title', models.CharField(max_length=200)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("legal_first_name", models.CharField(max_length=200)),
+                ("legal_last_name", models.CharField(max_length=200)),
+                ("preferred_first_name", models.CharField(blank=True, max_length=200)),
+                ("preferred_last_name", models.CharField(blank=True, max_length=200)),
+                ("street_address_1", models.CharField(blank=True, max_length=200)),
+                ("street_address_2", models.CharField(blank=True, max_length=200)),
+                ("city", models.CharField(blank=True, max_length=200)),
+                ("state", models.CharField(blank=True, max_length=200)),
+                ("country", models.CharField(blank=True, max_length=200)),
+                ("postal_code", models.CharField(blank=True, max_length=200)),
+                ("phone", models.CharField(max_length=200)),
+                ("email", models.EmailField(max_length=200)),
+                ("birthdate", models.DateField()),
+                ("email_ok", models.BooleanField(default=False)),
+                ("survey_ok", models.BooleanField(default=False)),
+                ("registration_token", models.CharField(max_length=200)),
+                ("title", models.CharField(max_length=200)),
             ],
             options={
-                'verbose_name_plural': 'Staff',
+                "verbose_name_plural": "Staff",
             },
         ),
     ]

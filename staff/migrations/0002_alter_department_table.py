@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0001_initial'),
+        ("staff", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelTable(
-            name='department',
+            name="department",
             table=None,
         ),
     ]

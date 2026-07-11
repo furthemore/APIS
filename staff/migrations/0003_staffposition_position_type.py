@@ -4,15 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0002_alter_department_table'),
+        ("staff", "0002_alter_department_table"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='staffposition',
-            name='position_type',
-            field=models.CharField(choices=[('Held Position', 'Held Position'), ('Staff Pool', 'Staff Pool'), ('Volunteer Pool', 'Volunteer Pool')], default='Volunteer Pool', max_length=50),
+            model_name="staffposition",
+            name="position_type",
+            field=models.CharField(
+                choices=[
+                    ("Held Position", "Held Position"),
+                    ("Staff Pool", "Staff Pool"),
+                    ("Volunteer Pool", "Volunteer Pool"),
+                ],
+                default="Volunteer Pool",
+                max_length=50,
+            ),
         ),
     ]

@@ -28,11 +28,20 @@ class StaffApplicationForm(forms.ModelForm):
             "legal_last_name": forms.TextInput(attrs={"class": "form-control"}),
             "preferred_first_name": forms.TextInput(attrs={"class": "form-control"}),
             "preferred_last_name": forms.TextInput(attrs={"class": "form-control"}),
-            "birthdate": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "birthdate": forms.DateInput(
+                attrs={"type": "date", "class": "form-control"}
+            ),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
-            "street_address_1": forms.TextInput(attrs={"class": "form-control", "placeholder": "Street Address"}),
-            "street_address_2": forms.TextInput(attrs={"class": "form-control", "placeholder": "Apt, Suite, etc. (optional)"}),
+            "street_address_1": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Street Address"}
+            ),
+            "street_address_2": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Apt, Suite, etc. (optional)",
+                }
+            ),
             "city": forms.TextInput(attrs={"class": "form-control"}),
             "state": forms.TextInput(attrs={"class": "form-control"}),
             "country": forms.TextInput(attrs={"class": "form-control"}),
@@ -50,90 +59,108 @@ class StaffApplicationForm(forms.ModelForm):
 
 class StaffRegistrationForm(forms.Form):
     """Form for staff event registration - pulls data from staff profile"""
+
     # Address fields (editable)
     street_address_1 = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Street Address"})
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "Street Address"}
+        ),
     )
     street_address_2 = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Apt, Suite, etc. (optional)"})
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Apt, Suite, etc. (optional)",
+            }
+        ),
     )
     city = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     state = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     country = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     postal_code = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
-    
+
     # Shirt size (editable)
     shirt_size = forms.ModelChoiceField(
         queryset=None,
         required=True,
-        widget=forms.Select(attrs={"class": "form-select"})
+        widget=forms.Select(attrs={"class": "form-select"}),
     )
-    
+
     # Social media handles (editable)
     twitter = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "@username"})
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "@username"}
+        ),
     )
     telegram = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "@username"})
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "@username"}
+        ),
     )
-    
+
     # Emergency contact (editable)
     contact_name = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     contact_phone = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
     contact_relation = forms.CharField(
         max_length=200,
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g., Spouse, Parent, Friend"})
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "e.g., Spouse, Parent, Friend",
+            }
+        ),
     )
-    
+
     # Special needs (editable)
     special_skills = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3})
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
     )
     special_food = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3})
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
     )
     special_medical = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3})
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3}),
     )
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Populate shirt size choices
         from registration.models import ShirtSizes
-        self.fields['shirt_size'].queryset = ShirtSizes.objects.all()
+
+        self.fields["shirt_size"].queryset = ShirtSizes.objects.all()

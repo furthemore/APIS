@@ -5,15 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0017_copy_staff_invites'),
+        ("staff", "0017_copy_staff_invites"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='department',
-            name='parent_department',
-            field=models.ForeignKey(blank=True, help_text='Select a parent department if this is a sub-department', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sub_departments', to='staff.department', verbose_name='Parent Department'),
+            model_name="department",
+            name="parent_department",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Select a parent department if this is a sub-department",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="sub_departments",
+                to="staff.department",
+                verbose_name="Parent Department",
+            ),
         ),
     ]

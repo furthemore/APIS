@@ -5,16 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('registration', '0119_badge_staff_badge_badge_attendee_or_staff_not_both'),
-        ('staff', '0020_remove_staffeventregistration_badge_name_and_more'),
+        ("registration", "0119_badge_staff_badge_badge_attendee_or_staff_not_both"),
+        ("staff", "0020_remove_staffeventregistration_badge_name_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='staffeventregistration',
-            name='badge',
-            field=models.OneToOneField(blank=True, help_text='Badge associated with this registration', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='staff_event_registration', to='registration.badge'),
+            model_name="staffeventregistration",
+            name="badge",
+            field=models.OneToOneField(
+                blank=True,
+                help_text="Badge associated with this registration",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="staff_event_registration",
+                to="registration.badge",
+            ),
         ),
     ]

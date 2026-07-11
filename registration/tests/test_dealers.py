@@ -1,8 +1,9 @@
+from datetime import timedelta
+
 from django.http import HttpRequest
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
-from datetime import timedelta
 from freezegun import freeze_time
 
 from registration.models import Attendee, Dealer, DealerAsst, Event
@@ -60,14 +61,18 @@ class TestDealers(DealerTestCase):
         response = self.client.get(reverse("registration:new_dealer"))
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"not yet open", response.content)
-        self.assertIn(b'<a href="/registration/">Back to Main Page</a>', response.content)
+        self.assertIn(
+            b'<a href="/registration/">Back to Main Page</a>', response.content
+        )
 
     @freeze_time(timezone.now() + timedelta(days=20))
     def test_addNewDealer_closed_ended(self) -> None:
         response = self.client.get(reverse("registration:new_dealer"))
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"has ended", response.content)
-        self.assertIn(b'<a href="/registration/">Back to Main Page</a>', response.content)
+        self.assertIn(
+            b'<a href="/registration/">Back to Main Page</a>', response.content
+        )
 
     def test_find_dealer_to_add_assistant(self):
         response = self.client.get(

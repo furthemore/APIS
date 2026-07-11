@@ -6,10 +6,10 @@ from django.db import migrations
 def copy_staff_invites(apps, schema_editor):
     """Copy data from registration_temp_token to staff_staffinvite"""
     # Get the old model from registration
-    OldStaffInvite = apps.get_model('registration', 'StaffInvite')
+    OldStaffInvite = apps.get_model("registration", "StaffInvite")
     # Get the new model from staff
-    NewStaffInvite = apps.get_model('staff', 'StaffInvite')
-    
+    NewStaffInvite = apps.get_model("staff", "StaffInvite")
+
     # Copy all records
     for old_invite in OldStaffInvite.objects.all():
         NewStaffInvite.objects.create(
@@ -25,15 +25,17 @@ def copy_staff_invites(apps, schema_editor):
 
 def reverse_copy(apps, schema_editor):
     """Clear the new staff invites if rolling back"""
-    NewStaffInvite = apps.get_model('staff', 'StaffInvite')
+    NewStaffInvite = apps.get_model("staff", "StaffInvite")
     NewStaffInvite.objects.all().delete()
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0016_staffinvite'),
-        ('registration', '0118_alter_staff_department_and_more'),  # Ensure registration is ready
+        ("staff", "0016_staffinvite"),
+        (
+            "registration",
+            "0118_alter_staff_department_and_more",
+        ),  # Ensure registration is ready
     ]
 
     operations = [

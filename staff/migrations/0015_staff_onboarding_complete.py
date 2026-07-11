@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('staff', '0014_alter_staff_options'),
+        ("staff", "0014_alter_staff_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='staff',
-            name='onboarding_complete',
-            field=models.BooleanField(default=False, help_text='Has this staff member completed their onboarding process?'),
+            model_name="staff",
+            name="onboarding_complete",
+            field=models.BooleanField(
+                default=False,
+                help_text="Has this staff member completed their onboarding process?",
+            ),
         ),
     ]

@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -32,4 +32,7 @@ class Command(BaseCommand):
         elif status == DatabaseStatus.RUNNING:
             print("Postgres server is already running")
         else:
-            print(f"Cannot start Postgres server, invalid status: {status}", file=sys.stderr)
+            print(
+                f"Cannot start Postgres server, invalid status: {status}",
+                file=sys.stderr,
+            )

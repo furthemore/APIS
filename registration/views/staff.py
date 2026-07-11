@@ -10,8 +10,8 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from registration.models import *
-from staff.models import StaffInvite
 from registration.services import CreateAttendeeOptions
+from staff.models import StaffInvite
 
 from .common import abort, handler
 from .ordering import get_total
@@ -207,7 +207,9 @@ def info_returning_staff(request):
 
     staff_id = request.session.get("staff_id")
     if staff_id is None:
-        return render(request, "registration/staff/returning-staff-payment.html", context)
+        return render(
+            request, "registration/staff/returning-staff-payment.html", context
+        )
 
     staff = Staff.objects.get(id=staff_id)
     if staff:

@@ -23,12 +23,14 @@ class TestAttendeeCheckout(OrdersTestCase):
     def test_get_prices(self):
         response = self.client.post(
             reverse("registration:pricelevels"),
-            json.dumps({
-                "year": "1990",
-                "month": "1",
-                "day": "1",
-                "form_type": "attendee",
-            }),
+            json.dumps(
+                {
+                    "year": "1990",
+                    "month": "1",
+                    "day": "1",
+                    "form_type": "attendee",
+                }
+            ),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)

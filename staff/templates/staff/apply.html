@@ -54,23 +54,23 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    
+
                     <h6 class="border-bottom pb-2 mb-3">Personal Information</h6>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.legal_first_name.errors }}
                             <label for="{{ form.legal_first_name.id_for_label }}" class="form-label">Legal First Name <span class="text-danger">*</span></label>
                             {{ form.legal_first_name }}
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             {{ form.legal_last_name.errors }}
                             <label for="{{ form.legal_last_name.id_for_label }}" class="form-label">Legal Last Name <span class="text-danger">*</span></label>
                             {{ form.legal_last_name }}
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.preferred_first_name.errors }}
@@ -80,7 +80,7 @@
                             <div class="form-text">{{ form.preferred_first_name.help_text }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             {{ form.preferred_last_name.errors }}
                             <label for="{{ form.preferred_last_name.id_for_label }}" class="form-label">Preferred Last Name</label>
@@ -90,85 +90,85 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         {{ form.birthdate.errors }}
                         <label for="{{ form.birthdate.id_for_label }}" class="form-label">Birthdate <span class="text-danger">*</span></label>
                         {{ form.birthdate }}
                     </div>
-                    
+
                     <h6 class="border-bottom pb-2 mb-3 mt-4">Contact Information</h6>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.email.errors }}
                             <label for="{{ form.email.id_for_label }}" class="form-label">Email <span class="text-danger">*</span></label>
                             {{ form.email }}
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             {{ form.phone.errors }}
                             <label for="{{ form.phone.id_for_label }}" class="form-label">Phone <span class="text-danger">*</span></label>
                             {{ form.phone }}
                         </div>
                     </div>
-                    
+
                     <h6 class="border-bottom pb-2 mb-3 mt-4">Address</h6>
-                    
+
                     <div class="mb-3">
                         {{ form.street_address_1.errors }}
                         <label for="{{ form.street_address_1.id_for_label }}" class="form-label">Street Address</label>
                         {{ form.street_address_1}}
                     </div>
-                    
+
                     <div class="mb-3">
                         {{ form.street_address_2.errors }}
                         <label for="{{ form.street_address_2.id_for_label }}" class="form-label">Address Line 2</label>
                         {{ form.street_address_2}}
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.city.errors }}
                             <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
                             {{ form.city }}
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             {{ form.state.errors }}
                             <label for="{{ form.state.id_for_label }}" class="form-label">State/Province</label>
                             {{ form.state }}
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.country.errors }}
                             <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
                             {{ form.country }}
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             {{ form.postal_code.errors }}
                             <label for="{{ form.postal_code.id_for_label }}" class="form-label">Postal Code</label>
                             {{ form.postal_code }}
                         </div>
                     </div>
-                    
+
                     <h6 class="border-bottom pb-2 mb-3 mt-4">Preferences</h6>
-                    
+
                     <div class="mb-3 form-check">
                         {{ form.email_ok.errors }}
                         {{ form.email_ok }}
                         <label for="{{ form.email_ok.id_for_label }}" class="form-check-label">{{ form.email_ok.help_text }}</label>
                     </div>
-                    
+
                     <div class="mb-3 form-check">
                         {{ form.survey_ok.errors }}
                         {{ form.survey_ok }}
                         <label for="{{ form.survey_ok.id_for_label }}" class="form-check-label">{{ form.survey_ok.help_text }}</label>
                     </div>
-                    
+
                     <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-send"></i> Submit Application
@@ -179,7 +179,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-lg-4">
         <div class="card">
             <div class="card-header">

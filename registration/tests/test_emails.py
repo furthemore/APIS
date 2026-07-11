@@ -14,9 +14,9 @@ from registration.models import (
     Order,
     Staff,
 )
-from staff.models import StaffInvite
 from registration.templatetags import site as site_tags
 from registration.tests.common import DEFAULT_EVENT_ARGS
+from staff.models import StaffInvite
 
 
 class TestSendEmail(TestCase):
