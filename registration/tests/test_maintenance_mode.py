@@ -1,3 +1,4 @@
+import shutil
 import tempfile
 from http import HTTPStatus
 from pathlib import Path
@@ -13,11 +14,12 @@ class MaintenanceModeTest(SimpleTestCase):
     """
 
     def setUp(self):
-        self.state_file = Path(tempfile.mktemp(suffix="_maintenance_mode_state.txt"))
+        self._tmp_dir = tempfile.mkdtemp()
+        self.state_file = Path(self._tmp_dir) / "maintenance_mode_state.txt"
         self.state_file.write_text("0")
 
     def tearDown(self):
-        self.state_file.unlink(missing_ok=True)
+        shutil.rmtree(self._tmp_dir, ignore_errors=True)
 
     def _enable_maintenance(self):
         self.state_file.write_text("1")
