@@ -19,8 +19,8 @@ class StaffLoginRedirectMiddleware:
             and request.path.startswith("/admin/")
             and not request.user.is_superuser
         ):
-            # Redirect staff to their profile instead
-            return redirect("staff:profile")
+            # Redirect staff to their portal instead
+            return redirect("staff:portal")
 
         response = self.get_response(request)
         return response

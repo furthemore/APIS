@@ -151,7 +151,7 @@ class StaffProfileAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         """Make fandom_name readonly unless user has the special permission"""
-        readonly = []
+        readonly = ['registration_token']  # Always readonly, auto-generated
 
         # Check if user has permission to change fandom_name
         if not request.user.has_perm("staff.change_fandom_name"):

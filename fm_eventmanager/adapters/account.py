@@ -33,7 +33,7 @@ class RegistrationAccountAdapter(DefaultAccountAdapter):
                         return landing_page
 
             # Go to staff profile page
-            return reverse("staff:profile")
+            return reverse("staff:portal")
 
         # Fall back to default behavior (respects next, uses LOGIN_REDIRECT_URL)
         return super().get_login_redirect_url(request)
@@ -44,5 +44,5 @@ class RegistrationAccountAdapter(DefaultAccountAdapter):
         """
         user = request.user
         if hasattr(user, "staff_profile") and user.staff_profile:
-            return reverse("staff:profile")
+            return reverse("staff:portal")
         return super().get_email_confirmation_redirect_url(request)

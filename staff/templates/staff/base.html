@@ -85,7 +85,7 @@
         <div class="ms-auto d-flex align-items-center gap-3">
             {% if user.is_authenticated %}
                 {% if user.staff_profile %}
-                <a href="{% url 'staff:profile' %}" class="btn btn-sm btn-outline-primary">
+                <a href="{% url 'staff:portal' %}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-person-circle"></i> My Profile
                 </a>
                 {% endif %}

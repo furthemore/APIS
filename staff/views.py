@@ -268,11 +268,6 @@ def application(request, applicant_id):
     return render(request, "staff/application.html", context)
 
 
-def portal(request):
-    """Portal redirects to profile view"""
-    return redirect("staff:profile")
-
-
 def register(request, token):
     """
     Staff registration for current event using token.
