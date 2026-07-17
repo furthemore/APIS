@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to {{event.name}} Staff!</title>
+    <title>Promoted to Staff - {{event.name}}</title>
     <style>
         body {
             margin: 0;
@@ -21,7 +21,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             padding: 40px 20px;
             text-align: center;
             color: white;
@@ -51,22 +51,22 @@
             line-height: 1.6;
             margin: 0 0 20px 0;
         }
-        .alert-box {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
+        .highlight-box {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
             margin: 20px 0;
             border-radius: 4px;
         }
-        .alert-box p {
+        .highlight-box p {
             margin: 0;
-            color: #856404;
-            font-size: 14px;
+            color: #92400e;
+            font-size: 15px;
         }
         .button {
             display: inline-block;
             padding: 14px 32px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             color: white !important;
             text-decoration: none;
             border-radius: 6px;
@@ -74,10 +74,10 @@
             font-size: 16px;
             text-align: center;
             margin: 20px 0;
-            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.25);
         }
         .button:hover {
-            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.35);
+            box-shadow: 0 6px 12px rgba(245, 158, 11, 0.35);
         }
         .link-box {
             background-color: #f8f9fa;
@@ -92,8 +92,28 @@
             color: #666;
         }
         .link-box a {
-            color: #667eea;
+            color: #f59e0b;
             text-decoration: none;
+        }
+        .benefits {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .benefits h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        .benefits ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+        .benefits li {
+            margin: 8px 0;
+            line-height: 1.5;
         }
         .footer {
             background-color: #f8f9fa;
@@ -116,18 +136,31 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>🎉 Welcome to {{event.name}} Staff!</h1>
-            <p>You've been invited to join our amazing team</p>
+            <h1>🌟 Congratulations!</h1>
+            <p>You've been promoted to {{event.name}} staff</p>
         </div>
         
         <div class="content">
-            <h2>Ready to Get Started?</h2>
+            <h2>Welcome to the Team!</h2>
             
-            <p>We're excited to have you join the {{event.name}} staff team! To complete your registration and access the staff portal, please click the button below.</p>
+            <p>Great news! You've been promoted from attendee to staff member for {{event.name}}. We're thrilled to have you join our team!</p>
             
-            <div class="alert-box">
-                <p><strong>⚠️ Important:</strong> If you have already registered as an attendee, please do not use this registration link. Contact staff services to get the correct link for your situation.</p>
+            <div class="highlight-box">
+                <p><strong>🎯 What This Means:</strong> As a staff member, you'll have access to exclusive benefits, the staff portal, and the opportunity to be part of making this event amazing for everyone!</p>
             </div>
+            
+            <div class="benefits">
+                <h3>✨ Staff Benefits</h3>
+                <ul>
+                    <li>Access to the staff portal and scheduling system</li>
+                    <li>Staff badge and credentials</li>
+                    <li>Behind-the-scenes experience</li>
+                    <li>Staff-only events and perks</li>
+                    <li>Be part of an amazing community</li>
+                </ul>
+            </div>
+            
+            <p><strong>Next Step:</strong> Complete your staff registration using the link below to finalize your promotion and access all staff features.</p>
             
             <center>
                 <a href="https://{% current_domain %}{% url 'staff:register' token=registrationToken %}" class="button">
@@ -145,7 +178,7 @@
             
             <div class="divider"></div>
             
-            <p style="font-size: 14px;">Questions? Feel free to reach out to our staff coordinators for assistance.</p>
+            <p style="font-size: 14px;">Questions about your promotion? Feel free to reach out to your department head or staff coordinators.</p>
         </div>
         
         <div class="footer">

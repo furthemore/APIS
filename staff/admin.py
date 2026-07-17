@@ -14,15 +14,14 @@ from staff.models import (
 @admin.action(description="Send staff invitation email")
 def send_staff_invite_email(modeladmin, request, queryset):
     from django.contrib import messages
-
-    from registration import tasks
+    import staff.tasks
 
     if queryset.count() == 0:
         messages.error(request, "No invites selected")
         return
 
     for invite in queryset:
-        tasks.send_new_staff_email_task.delay(invite.id)
+        staff.tasks.send_staff_invitation_email_task.delay(invite.id)
         invite.sent = True
         invite.save()
 
