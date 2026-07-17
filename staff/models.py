@@ -103,6 +103,11 @@ class Staff(Person):
     )
     title = models.CharField(max_length=200)
     fandom_name = models.CharField(max_length=200, blank=True)
+    registration_token = models.CharField(
+        max_length=200,
+        default=get_registration_token,
+        help_text="Unique token for event registration, rotates after each use"
+    )
     onboarding_complete = models.BooleanField(
         default=False,
         help_text="Has this staff member completed their onboarding process?",
@@ -114,6 +119,12 @@ class Staff(Person):
         permissions = [
             ("change_fandom_name", "Can change fandom/credit name"),
         ]
+    
+    def save(self, *args, **kwargs):
+        # Ensure registration_token is set on creation
+        if not self.registration_token:
+            self.registration_token = get_registration_token()
+        super().save(*args, **kwargs)
 
 
 class StaffEventRegistration(models.Model):
