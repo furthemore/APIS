@@ -28,7 +28,7 @@ def index(request):
     - Otherwise, redirect to openings (public view)
     """
     if request.user.is_authenticated and hasattr(request.user, "staff_profile"):
-        return redirect("staff:profile")
+        return redirect("staff:portal")
     return redirect("staff:openings")
 
 

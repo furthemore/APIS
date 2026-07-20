@@ -38,11 +38,11 @@ class RegistrationAccountAdapter(DefaultAccountAdapter):
         # Fall back to default behavior (respects next, uses LOGIN_REDIRECT_URL)
         return super().get_login_redirect_url(request)
 
-    def get_email_confirmation_redirect_url(self, request):
+    def get_email_verification_redirect_url(self, email_address):
         """
-        Override to also handle staff redirects after email confirmation.
+        Override to also handle staff redirects after email verification.
         """
-        user = request.user
+        user = email_address.user
         if hasattr(user, "staff_profile") and user.staff_profile:
             return reverse("staff:portal")
-        return super().get_email_confirmation_redirect_url(request)
+        return super().get_email_verification_redirect_url(email_address)
