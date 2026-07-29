@@ -153,7 +153,7 @@ class StaffEventRegistration(models.Model):
     )
 
     # Social media
-    twitter = models.CharField(max_length=200, blank=True)
+    bluesky = models.CharField(max_length=200, blank=True)
     telegram = models.CharField(max_length=200, blank=True)
 
     # Emergency contact

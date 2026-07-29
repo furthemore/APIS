@@ -275,7 +275,7 @@ class StaffEventRegistrationAdmin(admin.ModelAdmin):
             {"fields": ("staff", "event", "registration_token", "registered_date")},
         ),
         ("Apparel", {"fields": ("shirt_size",)}),
-        ("Social Media", {"fields": ("twitter", "telegram")}),
+        ("Social Media", {"fields": ("bluesky", "telegram")}),
         (
             "Emergency Contact",
             {"fields": ("contact_name", "contact_phone", "contact_relation")},

@@ -107,11 +107,12 @@ class StaffRegistrationForm(forms.Form):
     )
 
     # Social media handles (editable)
-    twitter = forms.CharField(
+    bluesky = forms.CharField(
+        label="Bluesky Handle",
         max_length=200,
         required=False,
         widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "@username"}
+            attrs={"class": "form-control", "placeholder": "@username.bsky.social"}
         ),
     )
     telegram = forms.CharField(

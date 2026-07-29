@@ -674,7 +674,7 @@ class Staff(models.Model):
         "self", null=True, blank=True, on_delete=models.SET_NULL
     )
     title = models.CharField(max_length=200, blank=True)
-    twitter = models.CharField(max_length=200, blank=True)
+    bluesky = models.CharField(max_length=200, blank=True)
     telegram = models.CharField(max_length=200, blank=True)
     shirtsize = models.ForeignKey(
         ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL

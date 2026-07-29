@@ -345,7 +345,7 @@ def register(request, token):
                 event=event,
                 registration_token=get_registration_token(),
                 shirt_size=form.cleaned_data["shirt_size"],
-                twitter=form.cleaned_data["twitter"],
+                bluesky=form.cleaned_data["bluesky"],
                 telegram=form.cleaned_data["telegram"],
                 contact_name=form.cleaned_data["contact_name"],
                 contact_phone=form.cleaned_data["contact_phone"],
@@ -417,7 +417,7 @@ def register(request, token):
         if last_reg:
             initial_data.update(
                 {
-                    "twitter": last_reg.twitter,
+                    "bluesky": last_reg.bluesky,
                     "telegram": last_reg.telegram,
                     "contact_name": last_reg.contact_name,
                     "contact_phone": last_reg.contact_phone,

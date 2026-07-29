@@ -81,7 +81,7 @@ def staff_from_post_data(pds, attendee, event, staff):
     shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
     if not staff:
         staff = Staff(attendee=attendee, event=event)
-    staff.twitter = pds["twitter"]
+    staff.bluesky = pds["bluesky"]
     staff.telegram = pds["telegram"]
     staff.shirtsize = shirt
     staff.specialSkills = pds["specialSkills"]
