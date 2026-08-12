@@ -59,5 +59,10 @@
     "vite-plugin-solid": "^2.11.12",
     "vite-plugin-wasm": "^3.5.0",
     "vite-tsconfig-paths": "^6.1.1"
+  },
+  "overrides": {
+    "brace-expansion@1": "1.1.18",
+    "brace-expansion@2": "2.1.4",
+    "brace-expansion@5": "5.0.9"
   }
 }
