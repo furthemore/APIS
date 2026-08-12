@@ -23,12 +23,14 @@ class TestAttendeeCheckout(OrdersTestCase):
     def test_get_prices(self):
         response = self.client.post(
             reverse("registration:pricelevels"),
-            json.dumps({
-                "year": "1990",
-                "month": "1",
-                "day": "1",
-                "form_type": "attendee",
-            }),
+            json.dumps(
+                {
+                    "year": "1990",
+                    "month": "1",
+                    "day": "1",
+                    "form_type": "attendee",
+                }
+            ),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -89,6 +91,47 @@ class TestAttendeeCheckout(OrdersTestCase):
     def test_zero_checkout(self):
         # TODO
         pass
+
+    def test_checkout_invalid_billing_returns_400_with_errors(self):
+        self.add_to_cart(self.attendee_form_2, self.price_45, [])
+
+        # Omit some require billing data fields so OrderForm.is_valid() returns False
+        post_data = {
+            "billingData": {
+                "cc_firstname": "Buffy",
+                "cc_lastname": "Cleveland",
+                "address1": "123 Any Street",
+                "source_id": "cnon:card-nonce-ok",
+            },
+            "charityDonation": "0",
+            "orgDonation": "0",
+            "onsite": False,
+        }
+
+        response = self.client.post(
+            reverse("registration:checkout"),
+            json.dumps(post_data),
+            content_type="application/json",
+            headers={"idempotency-key": str(uuid.uuid4())},
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        body = response.json()
+        self.assertFalse(body["success"])
+        errors = body["reason"]["errors"]
+        self.assertIsInstance(errors, list)
+        self.assertGreater(len(errors), 0)
+
+        codes = [err["code"] for err in errors]
+        # ErrorDict is keyed by form so we should see at least one missing field
+        self.assertTrue(
+            any("billingEmail" in code for code in codes),
+            f"Expected billingEmail error, got: {codes}",
+        )
+
+        # No Attendee should be persisted when validation fails
+        self.assertEqual(Attendee.objects.filter(firstName="Bea").count(), 0)
 
     def assert_square_error(self, nonce, error):
         self.add_to_cart(self.attendee_form_2, self.price_45, [])
