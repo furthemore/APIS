@@ -169,7 +169,7 @@ jobs:
     container: python:3-alpine
     steps:
     - name: Install coveralls
-      run: pip3 install --only-binary :all: coveralls==4.1.0
+      run: "pip3 install --only-binary=:all: coveralls==4.1.0"
     - name: Finished
       run: coveralls --finish
       env:
