@@ -112,7 +112,7 @@ requires-dist = [
     { name = "django-mathfilters", specifier = "~=1.0.0" },
     { name = "django-nested-admin", specifier = ">=4.1.1" },
     { name = "django-nested-inline", specifier = "~=0.4.6" },
-    { name = "django-prometheus", git = "https://github.com/django-commons/django-prometheus?rev=ea2d559476675a688f82cc37fac22b796ec7bcba" },
+    { name = "django-prometheus", specifier = "~=2.5.0" },
     { name = "django-redis", specifier = "~=7.0.0" },
     { name = "django-vite", specifier = ">=3.1.0" },
     { name = "django-widget-tweaks", specifier = "~=1.5.1" },
@@ -640,11 +640,15 @@ wheels = [
 
 [[package]]
 name = "django-prometheus"
-version = "2.5.0.dev0"
-source = { git = "https://github.com/django-commons/django-prometheus?rev=ea2d559476675a688f82cc37fac22b796ec7bcba#ea2d559476675a688f82cc37fac22b796ec7bcba" }
+version = "2.5.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "prometheus-client" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7b/c7/dc39c4c19f7b35e827a486d08376de1fad31c50decb26c56e32668314f13/django_prometheus-2.5.0.tar.gz", hash = "sha256:4837b3c3734d8350880839ab8235aafd250b668c348e159d4aecc3cbefeee53e", size = 26465, upload-time = "2026-05-26T19:04:00.77Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5d/5d/6ec3083ba69545696c962ae505a0e52e280e7592d4c278c2f3803cabb688/django_prometheus-2.5.0-py2.py3-none-any.whl", hash = "sha256:f15efb526cd53f9cf12da72dc55506322f5566b017a819ff27be1da302303134", size = 31801, upload-time = "2026-05-26T19:03:59.505Z" },
 ]
 
 [[package]]
