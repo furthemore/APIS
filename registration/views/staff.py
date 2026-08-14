@@ -238,7 +238,7 @@ def info_returning_staff(request):
 def add_returning_staff(request):
     try:
         postData = json.loads(request.body)
-    except ValueError as e:
+    except ValueError:
         logger.error("Unable to decode JSON for add_returning_staff()")
         return JsonResponse({"success": False})
 
