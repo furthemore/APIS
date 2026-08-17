@@ -23,6 +23,7 @@ import {
 } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
@@ -44,6 +45,7 @@ export const CartActions: Component<{
   const config = useContext(ConfigContext)!;
   const userSettings = useContext(UserSettingsContext)!;
   const mqtt = useContext(MqttContext)!;
+  const selectedTerminal = useContext(SelectedTerminalContext)!;
 
   const printBadges = usePrintBadges();
   const applyCashPayment = useApplyCashPayment();
@@ -103,15 +105,13 @@ export const CartActions: Component<{
     }
   });
 
-  const hasSquareTerminal = () =>
-    config()?.terminals.selected?.features.squareTerminal;
+  const hasSquareTerminal = () => selectedTerminal().features.squareTerminal;
   const terminalHandlesCash = () =>
-    config()?.permissions.cash &&
-    config()?.terminals.selected?.features.cashdrawer;
+    config()?.permissions.cash && selectedTerminal().features.cashdrawer;
 
   const canApplyPayment = () => !hasHold() && allNeedPayment();
   const hasPrintableBadges = () => printableBadgeIds()?.length > 0 || false;
-  const supportsCard = () => config()?.terminals?.selected?.features.card;
+  const supportsCard = () => selectedTerminal().features.card;
   const canDiscount = () => config()?.permissions.discount;
 
   const badgeReferences = () =>
@@ -141,7 +141,7 @@ export const CartActions: Component<{
             if (props.entries) {
               return attemptCashPayment(
                 applyCashPayment,
-                props.entries.reference,
+                props.entries.badge_ids,
                 props.entries.total,
               );
             }
@@ -155,7 +155,12 @@ export const CartActions: Component<{
           disabled={loading() || !supportsCard() || !canApplyPayment()}
           setLoading={setLoading}
           keyboardShortcut={"Alt+C"}
-          action={(holdingShift) => enableCardPayment.mutateAsync(holdingShift)}
+          action={(holdingShift) =>
+            enableCardPayment.mutateAsync({
+              badgeIds: props.entries?.badge_ids || [],
+              fallback: holdingShift,
+            })
+          }
         >
           <IconAndLabel children="Card" icon={faCreditCard} fw />
         </ActionButton>
@@ -195,6 +200,7 @@ export const CartActions: Component<{
       <DiscountModal
         open={creatingDiscount}
         onOpenChange={setCreatingDiscount}
+        badgeIds={props.entries?.badge_ids || []}
       />
     </div>
   );

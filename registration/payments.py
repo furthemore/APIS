@@ -46,7 +46,7 @@ client = Square(token=settings.SQUARE_ACCESS_TOKEN, environment=environment)
 
 def get_idempotency_key(request=None):
     if request:
-        header_key = request.META.get("IDEMPOTENCY_KEY")
+        header_key = request.headers.get("Idempotency-Key")
         if header_key:
             return header_key
     return str(uuid.uuid4())

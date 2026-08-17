@@ -7,7 +7,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { createHotkey } from "@tanstack/solid-hotkeys";
-import { useQuery } from "@tanstack/solid-query";
 import Fa from "solid-fa";
 import {
   type Component,
@@ -22,15 +21,15 @@ import {
 
 import {
   type IdAndName,
-  fetchCartOptions,
-  useAddBadgeToCart,
-  useClearCart,
+  useCart,
+  useExpandBadges,
   usePendingTransfers,
-  useRemoveBadgeFromCart,
   useTransferCart,
 } from "@admin/api";
+import { CartContext } from "@admin/providers/cart-provider";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
 
@@ -44,30 +43,26 @@ export const Cart: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext)!;
   const mqtt = useContext(MqttContext)!;
+  const cartStore = useContext(CartContext)!;
+  const selectedTerminal = useContext(SelectedTerminalContext)!;
 
-  const cart = useQuery(fetchCartOptions);
+  const cart = useCart();
 
-  const clearCart = useClearCart();
-  const addBadgeToCart = useAddBadgeToCart();
-  const removeBadgeFromCart = useRemoveBadgeFromCart();
+  const expandBadges = useExpandBadges();
   const transferCart = useTransferCart();
 
   const [pendingTransfers, takeNextTransfer] = usePendingTransfers(mqtt);
 
   const otherTerminals = createMemo(() =>
     config()?.terminals.available.filter(
-      (terminal) => terminal.id !== config()?.terminals.selected?.id,
+      (terminal) => terminal.id !== selectedTerminal().id,
     ),
   );
 
-  const history = useCartHistory(() => cart.data, addBadgeToCart);
+  const history = useCartHistory(cartStore);
 
   const anythingLoading = () =>
-    cart.isFetching ||
-    clearCart.isPending ||
-    addBadgeToCart.isPending ||
-    removeBadgeFromCart.isPending ||
-    transferCart.isPending;
+    cart.isFetching || expandBadges.isPending || transferCart.isPending;
 
   const canTransfer = () =>
     !anythingLoading() && (cart.data?.result.length || 0) > 0;
@@ -80,24 +75,24 @@ export const Cart: Component<{
   });
 
   createHotkey("Alt+A", () => {
-    if (anythingLoading()) return;
-    clearCart.mutate();
+    if (expandBadges.isPending) return;
+    cartStore().clear();
   });
 
   createHotkey("Alt+\\", () => {
-    if (anythingLoading()) return;
+    if (expandBadges.isPending) return;
 
     const lastBadge = cart.data?.result?.at(-1);
     if (!lastBadge) return;
 
-    removeBadgeFromCart.mutate(lastBadge.id);
+    cartStore().remove(lastBadge.id);
   });
 
-  const receiveTransfer = async () => {
+  const receiveTransfer = () => {
     const transfer = takeNextTransfer();
     if (!transfer) return;
 
-    await addBadgeToCart.mutateAsync({ ids: transfer, assign: true });
+    cartStore().replace(transfer);
   };
 
   const performTransfer = (terminal: IdAndName) => {
@@ -106,11 +101,11 @@ export const Cart: Component<{
     transferCart.mutate(
       {
         terminalId: terminal.id,
-        badgeIds: cart.data?.result?.map((badge) => badge.id) || [],
+        badgeIds: cartStore().badgeIds(),
       },
       {
         onSuccess: () => {
-          clearCart.mutateAsync();
+          cartStore().clear();
         },
       },
     );
@@ -120,7 +115,7 @@ export const Cart: Component<{
     const badgeId =
       payload && "badgeId" in payload && (payload["badgeId"] as number);
     if (badgeId) {
-      addBadgeToCart.mutate(badgeId);
+      expandBadges.mutate(badgeId);
     }
   };
 
@@ -152,7 +147,6 @@ export const Cart: Component<{
                   class="btn btn-sm btn-info"
                   title="Receive Transfer"
                   onClick={receiveTransfer}
-                  loading={transferCart.isPending}
                 >
                   <Fa icon={faSatelliteDish} fw pulse />
                 </Button>
@@ -201,10 +195,9 @@ export const Cart: Component<{
 
               <Button
                 class="btn btn-warning btn-sm"
-                disabled={anythingLoading() || !cart.data?.result.length}
-                loading={clearCart.isPending}
+                disabled={expandBadges.isPending || !cart.data?.result.length}
                 title="Alt+A"
-                onClick={() => clearCart.mutate()}
+                onClick={() => cartStore().clear()}
               >
                 <IconAndLabel children="Clear" icon={faXmark} fw />
               </Button>
