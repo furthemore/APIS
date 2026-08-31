@@ -9,7 +9,7 @@ RUN npm ci --ignore-scripts
 COPY ./registration/frontend/ /app/registration/frontend/
 RUN npm run build
 
-FROM python:3.14.6-slim-trixie
+FROM python:3.14.7-slim-trixie
 
 LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
