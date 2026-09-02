@@ -39,7 +39,7 @@ dependencies = [
     "respx>=0.22.0",
     "sentry-sdk>=2.66.1",
     "soupsieve>=2.9.2",
-    "squareup==44.1.0.20260520",
+    "squareup==45.1.0.20260819",
     "uvicorn>=0.52.1",
     "uvicorn-worker>=0.4.0",
 ]
