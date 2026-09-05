@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 # Uppercase letters and digits, excluding visually ambiguous characters: 0/O, 1/I, 5/S, 8/B, 2/Z
@@ -594,6 +594,26 @@ class Badge(models.Model):
         oi = self.getOrderItems().first()
         return oi.order
 
+    def roll_forward(self, to_event, rolled_by, force=False):
+        """Move this badge to a different event and record the history.
+
+        Raises ValueError if the badge has already been rolled forward.
+        """
+        if not force and BadgeRollForward.objects.filter(badge=self).exists():
+            raise ValueError(
+                f"Badge {self} has already been rolled forward and cannot be rolled again."
+            )
+        from_event = self.event
+        with transaction.atomic():
+            self.event = to_event
+            self.save()
+            BadgeRollForward.objects.create(
+                badge=self,
+                from_event=from_event,
+                to_event=to_event,
+                rolled_by=rolled_by,
+            )
+
     def save(self, *args, **kwargs):
         if not self.id and not self.registeredDate:
             self.registeredDate = timezone.now()
@@ -1097,6 +1117,33 @@ class PrintHistory(models.Model):
     class Meta:
         db_table = "registration_print_history"
         verbose_name_plural = "Print history"
+
+
+class BadgeRollForward(models.Model):
+    badge = models.ForeignKey(
+        Badge, on_delete=models.CASCADE, related_name="roll_forwards"
+    )
+    from_event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="+", verbose_name="From event"
+    )
+    to_event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="+", verbose_name="To event"
+    )
+    rolled_at = models.DateTimeField(auto_now_add=True)
+    rolled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Rolled by",
+    )
+
+    class Meta:
+        db_table = "registration_badge_roll_forward"
+        verbose_name = "Badge roll forward"
+        verbose_name_plural = "Badge roll forwards"
+
+    def __str__(self):
+        return f"{self.badge} from {self.from_event} to {self.to_event} ({self.rolled_at:%Y-%m-%d})"
 
 
 # vim: ts=4 sts=4 sw=4 expandtab smartindent
