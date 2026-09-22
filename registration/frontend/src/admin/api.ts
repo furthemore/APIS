@@ -1,12 +1,26 @@
-import { QueryClient, queryOptions, useMutation } from "@tanstack/solid-query";
+import {
+  QueryClient,
+  queryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/solid-query";
 import type Big from "big.js";
-import type { AfterResponseHook } from "ky";
-import { type Accessor, createEffect, createSignal, onCleanup } from "solid-js";
+import type { AfterResponseHook, BeforeRequestHook } from "ky";
+import {
+  type Accessor,
+  createEffect,
+  createSignal,
+  onCleanup,
+  useContext,
+} from "solid-js";
 
 import { api as baseApi } from "../queries";
 import type MqttClient from "./mqtt";
+import { CartContext } from "./providers/cart-provider";
 
 const KEY_PREFIX = ["onsiteAdmin"];
+
+export const TERMINAL_SEARCH_PARAM = "terminal";
 
 const redirectOnLoginResponse: AfterResponseHook = ({
   response,
@@ -24,8 +38,21 @@ const redirectOnLoginResponse: AfterResponseHook = ({
   }
 };
 
+const injectTerminal: BeforeRequestHook = ({ request }) => {
+  const raw = new URLSearchParams(globalThis.location.search).get(
+    TERMINAL_SEARCH_PARAM,
+  );
+  if (!raw) return;
+
+  const terminalId = Number(raw);
+  if (Number.isSafeInteger(terminalId) && terminalId > 0) {
+    request.headers.set("X-Terminal-Id", terminalId.toString());
+  }
+};
+
 const adminApi = baseApi.extend({
   hooks: {
+    beforeRequest: [injectTerminal],
     afterResponse: [redirectOnLoginResponse],
   },
 });
@@ -104,12 +131,7 @@ export type SelectedTerminal = {
 };
 
 export type BadgeState =
-  | "Staff"
-  | "Dealer"
-  | "Paid"
-  | "Unpaid"
-  | "Comp"
-  | "Abandoned";
+  "Staff" | "Dealer" | "Paid" | "Unpaid" | "Comp" | "Abandoned";
 
 export type Badge = {
   id: number;
@@ -119,10 +141,11 @@ export type Badge = {
 };
 
 export type CartResponse = {
+  badge_ids: number[];
   charityDonation: string;
-  order_id: number;
+  order_id: number | null;
   orgDonation: string;
-  reference: string;
+  reference: string | null;
   subtotal: string;
   total: string;
   total_discount: string;
@@ -290,17 +313,91 @@ export const contextQueryOptions = (id?: number) =>
     enabled: !!id,
   });
 
-const fetchCart = async (init?: RequestInit): Promise<CartResponse> => {
-  return adminApi.get("registration/onsite/admin/cart", init).json();
+const ping = async (init?: RequestInit): Promise<FallibleRequest<void>> => {
+  return adminApi.get("registration/onsite/admin/ping", init).json();
 };
 
-export const fetchCartOptions = () =>
+export const useSessionKeepalive = () =>
+  useQuery(() => ({
+    queryKey: [...KEY_PREFIX, "ping"],
+    queryFn: ({ signal }) => ping({ signal }),
+    refetchInterval: 1000 * 60 * 10,
+    staleTime: 0,
+    retry: false,
+  }));
+
+const fetchCart = async (
+  badgeIds: number[],
+  init?: RequestInit,
+): Promise<CartResponse> => {
+  const searchParams = new URLSearchParams();
+  for (const id of badgeIds) {
+    searchParams.append("id", id.toString());
+  }
+
+  return adminApi
+    .get("registration/onsite/admin/cart", { ...init, searchParams })
+    .json();
+};
+
+const fetchCartOptions = (badgeIds: number[]) =>
   queryOptions({
-    queryKey: [...KEY_PREFIX, "cart"],
-    queryFn: ({ signal }) => fetchCart({ signal }),
+    queryKey: [...KEY_PREFIX, "cart", badgeIds],
+    queryFn: ({ signal }) => fetchCart(badgeIds, { signal }),
     throwOnError: true,
     staleTime: 1000,
   });
+
+export const useCart = () => {
+  const cart = useContext(CartContext)!;
+
+  return useQuery(() => fetchCartOptions(cart().badgeIds()));
+};
+
+export const useCartSync = () => {
+  const cart = useContext(CartContext)!;
+  const query = useCart();
+
+  createEffect(() => {
+    const ids = query.data?.badge_ids;
+    if (ids) cart().replace(ids);
+  });
+
+  return query;
+};
+
+const expandBadges = async (badgeIds: number[]): Promise<number[]> => {
+  const searchParams = new URLSearchParams();
+  for (const id of badgeIds) {
+    searchParams.append("id", id.toString());
+  }
+
+  const resp = await adminApi
+    .get<FallibleRequest<{ badge_ids: number[] }>>(
+      "registration/onsite/admin/cart/expand",
+      { searchParams },
+    )
+    .json();
+
+  return checkFallibleResponse(resp).badge_ids;
+};
+
+export const useExpandBadges = () => {
+  const cart = useContext(CartContext)!;
+
+  return useMutation(() => {
+    return {
+      throwOnError: true,
+      mutationKey: [...KEY_PREFIX, "cart", "expand"],
+      mutationFn: async (params: number | number[]) => {
+        const ids = typeof params === "number" ? [params] : params;
+        const expanded = await expandBadges(ids);
+        cart().add(expanded);
+        return expanded;
+      },
+    };
+  });
+};
 
 const clearBadgePrinted = async (
   id: number,
@@ -328,103 +425,26 @@ export const useClearBadgePrinted = () =>
     };
   });
 
-const clearCart = async (): Promise<FallibleRequest<void>> => {
-  return adminApi.post("registration/onsite/admin/clear").json();
-};
-
-export const useClearCart = () =>
-  useMutation(() => {
-    return {
-      throwOnError: true,
-      mutationKey: [...KEY_PREFIX, "cart", "clear"],
-      mutationFn: async () => {
-        return checkFallibleResponse(await clearCart());
-      },
-      onSuccess: async (_data, _variables, _result, context) => {
-        await invalidateCart(context.client);
-      },
-    };
-  });
-
-export type AddBadgeParams = number | { ids: number[]; assign?: boolean };
-
-const addBadgeToCart = (
-  params: AddBadgeParams,
-): Promise<FallibleRequest<void>> => {
-  let ids;
-  let assign;
-  if (typeof params === "number") {
-    ids = [params];
-    assign = false;
-  } else {
-    ids = params.ids;
-    assign = params.assign || false;
-  }
-
-  const searchParams = new URLSearchParams();
-  if (assign) searchParams.set("assign", "yes");
-  for (const id of ids) {
-    searchParams.append("id", id.toString());
-  }
-
-  return adminApi
-    .post("registration/onsite/admin/cart/add", { searchParams })
-    .json();
-};
-
-export const useAddBadgeToCart = () =>
-  useMutation(() => {
-    return {
-      throwOnError: true,
-      mutationKey: [...KEY_PREFIX, "cart", "add"],
-      mutationFn: async (params: AddBadgeParams) => {
-        return checkFallibleResponse(await addBadgeToCart(params));
-      },
-      onSuccess: async (_data, _variables, _result, context) => {
-        await invalidateCart(context.client);
-      },
-    };
-  });
-
-const removeBadgeFromCart = (id: number): Promise<FallibleRequest<void>> => {
-  return adminApi
-    .post("registration/onsite/admin/cart/remove", { searchParams: { id } })
-    .json();
-};
-
-export const useRemoveBadgeFromCart = () =>
-  useMutation(() => {
-    return {
-      throwOnError: true,
-      mutationKey: [...KEY_PREFIX, "cart", "remove"],
-      mutationFn: async (id: number) => {
-        return checkFallibleResponse(await removeBadgeFromCart(id));
-      },
-      onSuccess: async (_data, _variables, _result, context) => {
-        await invalidateCart(context.client);
-      },
-    };
-  });
-
 export type DiscountParams = {
   type: "Amount" | "Percent";
   department: number;
   value: string;
   notes: string;
+  badgeIds: number[];
 };
 
 const createAndApplyDiscount = (
   params: DiscountParams,
 ): Promise<FallibleRequest<void>> => {
-  const searchParams = new URLSearchParams();
-  searchParams.set("type", params.type);
-  searchParams.set("department", params.department.toString());
-  searchParams.set("value", params.value);
-  searchParams.set("notes", params.notes);
-
   return adminApi
     .post("registration/onsite/admin/discount/create", {
-      body: searchParams,
+      json: {
+        type: params.type,
+        department: params.department,
+        value: params.value,
+        notes: params.notes,
+        badge_ids: params.badgeIds,
+      },
     })
     .json();
 };
@@ -444,17 +464,27 @@ export const useCreateAndApplyDiscount = () =>
   });
 
 export type CashPaymentOpts = {
-  reference: string;
-  total: string;
+  badgeIds: number[];
   tendered: string;
 };
 
+export type CashPaymentResult = {
+  total: string;
+  change: string;
+};
+
+export type EnableCardPaymentOpts = {
+  badgeIds: number[];
+  fallback: boolean;
+};
+
 const enableCardPayment = (
-  fallback: boolean,
+  opts: EnableCardPaymentOpts,
 ): Promise<FallibleRequest<void>> => {
   return adminApi
     .post("registration/onsite/admin/payment", {
-      searchParams: { fallback: fallback || undefined },
+      json: { badge_ids: opts.badgeIds },
+      searchParams: opts.fallback ? { fallback: "true" } : undefined,
     })
     .json();
 };
@@ -464,17 +494,19 @@ export const useEnableCardPayment = () =>
     return {
       throwOnError: true,
       mutationKey: [...KEY_PREFIX, "payment", "card"],
-      mutationFn: async (fallback: boolean) => {
-        return checkFallibleResponse(await enableCardPayment(fallback));
+      mutationFn: async (opts: EnableCardPaymentOpts) => {
+        return checkFallibleResponse(await enableCardPayment(opts));
       },
     };
   });
 
 const applyCashPayment = (
   opts: CashPaymentOpts,
-): Promise<FallibleRequest<void>> => {
+): Promise<FallibleRequest<CashPaymentResult>> => {
   return adminApi
-    .post("registration/onsite/cash/complete", { searchParams: opts })
+    .post("registration/onsite/cash/complete", {
+      json: { badge_ids: opts.badgeIds, tendered: opts.tendered },
+    })
     .json();
 };
 
@@ -495,7 +527,10 @@ export const useApplyCashPayment = () =>
 const printReceipts = (
   references: string[],
 ): Promise<FallibleRequest<void>> => {
-  const searchParams = references.map((reference) => ["reference", reference]);
+  const searchParams = new URLSearchParams();
+  for (const reference of references) {
+    searchParams.append("reference", reference);
+  }
 
   return adminApi
     .post("registration/onsite/admin/receipt", { searchParams })
@@ -527,15 +562,19 @@ const printBadges = async (
     .json();
 
   if (!assignmentData.success) {
-    return { success: false };
+    return { success: false, reason: assignmentData.reason };
   }
 
-  const searchParams = ids.map((id) => ["id", id]);
+  const searchParams = new URLSearchParams();
+  for (const id of ids) {
+    searchParams.append("id", id.toString());
+  }
 
   const printData = await adminApi
-    .post<
-      FallibleRequest<BadgePrintResponse>
-    >("registration/onsite/admin/badge/print", { searchParams })
+    .post<FallibleRequest<BadgePrintResponse>>(
+      "registration/onsite/admin/badge/print",
+      { searchParams },
+    )
     .json();
 
   return printData;
@@ -645,26 +684,6 @@ export const searchAttendeesOptions = (query: string) =>
     gcTime: 1000 * 60,
   });
 
-const setTerminalStatus = (
-  status: TerminalStatus,
-): Promise<FallibleRequest<void>> => {
-  return adminApi
-    .post("registration/onsite/admin/terminal/status", {
-      searchParams: { status },
-    })
-    .json();
-};
-
-export const useSetTerminalStatus = () =>
-  useMutation(() => {
-    return {
-      mutationKey: [...KEY_PREFIX, "terminal", "status"],
-      mutationFn: async (status: TerminalStatus) => {
-        return checkFallibleResponse(await setTerminalStatus(status));
-      },
-    };
-  });
-
 const cashStatus = (
   init?: RequestInit,
 ): Promise<FallibleRequest<DrawerStatus>> => {
@@ -708,7 +727,9 @@ const cashAmountAction = ({
   formData.set("amount", amount.toString());
 
   return adminApi
-    .post(`registration/onsite/cashdrawer/${action}`, { body: formData })
+    .post(`registration/onsite/cashdrawer/${action}`, {
+      body: formData,
+    })
     .json();
 };
 
@@ -717,9 +738,7 @@ export const useCashAmountAction = (action: CashAction) =>
     return {
       mutationKey: [...KEY_PREFIX, "cash", action],
       mutationFn: async (amount: Big) => {
-        return checkFallibleResponse(
-          await cashAmountAction({ action, amount }),
-        );
+        return checkFallibleResponse(await cashAmountAction({ action, amount }));
       },
     };
   });

@@ -1,6 +1,6 @@
 import { toaster } from "@kobalte/core/toast";
 import { createEmitter } from "@solid-primitives/event-bus";
-import { useQuery, useQueryClient } from "@tanstack/solid-query";
+import { useQueryClient } from "@tanstack/solid-query";
 import {
   type Component,
   type Setter,
@@ -13,11 +13,8 @@ import {
   useContext,
 } from "solid-js";
 
-import {
-  fetchCartOptions,
-  updateResultsFromCart,
-  useClearCart,
-} from "@admin/api";
+import { updateResultsFromCart, useCartSync } from "@admin/api";
+import { CartContext } from "@admin/providers/cart-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
 import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 import { ActionToast, type ActionToastType } from "@components/action-toast";
@@ -81,12 +78,12 @@ export const Onsite: Component<{
 }> = (props) => {
   const userSettings = useContext(UserSettingsContext)!;
   const mqtt = useContext(MqttContext)!;
+  const cartStore = useContext(CartContext)!;
 
   const [searchQuery, setSearchQuery] = createSignal<string>("");
 
   const queryClient = useQueryClient();
-  const cart = useQuery(fetchCartOptions);
-  const clearCart = useClearCart();
+  const cart = useCartSync();
 
   const refresh = () => cart.refetch();
 
@@ -95,9 +92,8 @@ export const Onsite: Component<{
   createEffect(() => {
     if (props.readyForNext) {
       setSearchQuery("");
-      clearCart.mutate(undefined, {
-        onSuccess: () => props.setReadyForNext(false),
-      });
+      cartStore().clear();
+      props.setReadyForNext(false);
     }
   });
 

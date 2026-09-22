@@ -37,7 +37,9 @@ def get_topic(*args: str, name: str) -> str:
 
 
 def get_payment_token(firebase: Firebase) -> dict:
-    sub = get_topic("payment/#", name=str(firebase.name))
+    subs = [get_topic("payment/#", name=str(firebase.name))]
+    if firebase.web_access:
+        subs.append(get_topic("web/#", name=str(firebase.name)))
 
     pub = [
         get_topic("web/notify/alert", name=str(firebase.name)),
@@ -46,7 +48,7 @@ def get_payment_token(firebase: Firebase) -> dict:
     ]
 
     user = format_topic(str(firebase.name))
-    token = get_token(user, subs=[sub], publ=pub, exp=60 * 60 * 24 * 7)
+    token = get_token(user, subs=subs, publ=pub, exp=60 * 60 * 24 * 7)
 
     return {
         "user": user,

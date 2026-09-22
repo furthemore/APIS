@@ -12,8 +12,8 @@ import {
   badgeHistoryOptions,
   urlForBadge,
   useEditBadge,
-  useRemoveBadgeFromCart,
 } from "@admin/api";
+import { CartContext } from "@admin/providers/cart-provider";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { Button } from "@components/button";
 import { Modal } from "@components/modal";
@@ -24,6 +24,7 @@ export const BadgeEditModal: Component<{
   onOpenChange: (open: boolean) => void;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
+  const cart = useContext(CartContext)!;
 
   const [badgeName, setBadgeName] = createWritableMemo(
     () => props.badge.badgeName,
@@ -31,7 +32,6 @@ export const BadgeEditModal: Component<{
   const [eventId, setEventId] = createWritableMemo(() => props.badge.eventId);
 
   const editBadge = useEditBadge();
-  const removeFromCart = useRemoveBadgeFromCart();
   const history = useQuery(() => badgeHistoryOptions(props.badge.id));
 
   const currentEvent = () => config()?.events.find((e) => e.id === eventId());
@@ -51,7 +51,7 @@ export const BadgeEditModal: Component<{
     try {
       await editBadge.mutateAsync(params);
       if (rollingForward) {
-        await removeFromCart.mutateAsync(props.badge.id);
+        cart().remove(props.badge.id);
       }
       props.onOpenChange(false);
     } catch (err) {
