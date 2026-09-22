@@ -14,7 +14,6 @@ import {
   type BadgeCart,
   type BadgeState,
   attendeeDetailsOptions,
-  urlForBadge,
   urlForOnsiteDetails,
   useClearBadgePrinted,
   useGetToken,
@@ -74,6 +73,7 @@ type FieldType = "basic" | "clone";
 export const CartBadge: Component<{
   badge: BadgeCart;
   hoveredOrderIdSelector: (key?: number) => boolean;
+  onEdit: () => void;
 }> = (props) => {
   const config = useContext(ConfigContext)!;
   const mqtt = useContext(MqttContext)!;
@@ -161,9 +161,7 @@ export const CartBadge: Component<{
               </span>
             </Show>
 
-            <a href={urlForBadge(props.badge.id).toString()} target="edit">
-              {`${props.badge.firstName} ${props.badge.lastName}`}
-            </a>
+            {`${props.badge.firstName} ${props.badge.lastName}`}
 
             <div class="d-flex align-items-center column-gap-2 flex-wrap">
               <span class={`badge ${STATE_COLORS[props.badge.abandoned]}`}>
@@ -299,6 +297,16 @@ export const CartBadge: Component<{
       <ContextMenu.Portal>
         <ContextMenu.Content class="dropdown is-active">
           <div class="dropdown-menu show">
+            <ContextMenu.Item
+              as="button"
+              class="dropdown-item"
+              onClick={() => props.onEdit()}
+            >
+              Edit Badge
+            </ContextMenu.Item>
+
+            <ContextMenu.Separator class="dropdown-divider" />
+
             <ContextMenu.Item
               as="button"
               class="dropdown-item"

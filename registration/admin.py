@@ -1037,10 +1037,20 @@ class PriceLevelFilter(admin.SimpleListFilter):
             return queryset.filter(orderitem__priceLevel__name=priceLevel)
 
 
+class BadgeRollForwardInline(admin.TabularInline):
+    model = BadgeRollForward
+    extra = 0
+    readonly_fields = ("from_event", "to_event", "rolled_at", "rolled_by")
+    can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
 @admin.register(Badge)
 class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     list_per_page = 30
-    inlines = [OrderItemInlineBadge]
+    inlines = [OrderItemInlineBadge, BadgeRollForwardInline]
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
@@ -1116,6 +1126,13 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         self.message_user(
             request, "Removed {0} abandoned orders.".format(len(abandoned))
         )
+
+    def save_model(self, request, obj, form, change):
+        if change and "event" in form.changed_data:
+            obj.event_id = form.initial["event"]
+            obj.roll_forward(form.cleaned_data["event"], request.user, force=True)
+        else:
+            super().save_model(request, obj, form, change)
 
 
 @admin.register(Attendee)
