@@ -33,7 +33,7 @@
     "mitt": "^3.0.1",
     "mqtt": "^5.15.1",
     "mrtd": "^1.0.0",
-    "solid-fa": "^0.2.0",
+    "solid-fa": "^1.0.0",
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
@@ -42,7 +42,7 @@
     "@tanstack/eslint-plugin-query": "^5.101.2",
     "@tanstack/router-plugin": "^1.168.19",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
-    "@types/big.js": "^6.2.2",
+    "@types/big.js": "^7.0.0",
     "@types/lodash": "^4.17.24",
     "@types/w3c-web-hid": "^1.0.7",
     "@types/w3c-web-usb": "^1.0.14",
