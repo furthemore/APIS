@@ -34,7 +34,7 @@
     "mqtt": "^5.15.1",
     "mrtd": "^1.0.0",
     "solid-fa": "^0.2.0",
-    "solid-js": "^1.9.14"
+    "solid-js": "^1.9.17"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
