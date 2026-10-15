@@ -2,28 +2,27 @@ import base64
 import json
 import logging
 import re
-import time
 import uuid
 from dataclasses import dataclass
 from datetime import timedelta
-from decimal import Decimal
-from typing import Iterable, List, Optional, Union
+from decimal import Decimal, InvalidOperation
+from typing import Iterable, List, Optional
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import permission_required
 from django.contrib.messages import get_messages
 from django.contrib.postgres.search import TrigramSimilarity
+from django.core.cache import cache
 from django.core.signing import TimestampSigner
 from django.db import transaction
 from django.db.models import Case, F, Func, Q, Sum, Value, When
-from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import urlencode
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_safe
 
 from registration import admin, mqtt, payments
@@ -44,7 +43,16 @@ from registration.models import (
     get_random_token,
 )
 from registration.views.attendee import get_attendee_age
+from registration.views.auth import (
+    RequiredTerminalRequest,
+    TerminalRequest,
+    device_token_required,
+    no_terminal_response,
+    resolve_terminal_from_request,
+    staff_or_terminal_required,
+)
 from registration.views.ordering import (
+    complete_comp_order,
     get_discount_total,
     get_order_item_option_total,
 )
@@ -59,29 +67,21 @@ logger = logging.getLogger(__name__)
 TWOPLACES = Decimal(10) ** -2
 
 
-def get_active_terminal(request) -> Optional[Firebase]:
-    term_id = request.session.get("terminal")
-    if term_id:
-        try:
-            return Firebase.objects.get(pk=int(term_id))
-        except Firebase.DoesNotExist:
-            return None
-    return None
-
-
 @require_safe
 @staff_member_required
 def onsite_admin(request):
-    # Modify a dummy session variable to keep it alive
-    request.session["heartbeat"] = time.time()
-
-    get_terminal_from_request(request)
-
     return render(request, "registration/spa-host.html")
 
 
 @require_safe
 @staff_member_required
+def onsite_admin_ping(request):
+    request.session.modified = True
+    return JsonResponse({"success": True})
+
+
+@require_safe
+@staff_or_terminal_required()
 def onsite_admin_terminals(request):
     terminals = list(Firebase.objects.order_by("name").all())
 
@@ -116,7 +116,6 @@ def onsite_admin_context(request):
     terminal_id = request.GET.get("terminal", None)
     if terminal_id:
         terminal = Firebase.objects.get(id=terminal_id)
-        request.session["terminal"] = terminal.id
 
         selected_terminal = {
             "id": terminal.id,
@@ -196,7 +195,7 @@ class SearchFields:
 
 
 @require_safe
-@staff_member_required
+@staff_or_terminal_required()
 def onsite_admin_search(request):
     event = Event.objects.get(default=True)
     query = request.GET.get("search", None)
@@ -217,6 +216,7 @@ def onsite_admin_search(request):
                         "firstName": badge.attendee.firstName,
                         "lastName": badge.attendee.lastName,
                         "preferredName": badge.attendee.preferredName,
+                        "dob": badge.attendee.birthdate,
                     },
                     "badgeName": badge.badgeName,
                     "badgeNumber": badge.badgeNumber,
@@ -264,64 +264,19 @@ def onsite_admin_search(request):
     return JsonResponse({"success": True, "results": data})
 
 
-def update_terminal_status(request, status: str) -> JsonResponse:
-    active = get_terminal_from_request(request)
-    if not active:
-        return JsonResponse(
-            {"success": False, "reason": "No terminal associated with request"},
-            status=400,
+def parse_badge_id_params(request):
+    try:
+        return [int(badge_id) for badge_id in request.GET.getlist("id")], None
+    except ValueError:
+        return None, JsonResponse(
+            {"success": False, "reason": "Unexpected badge ID value"}, status=400
         )
-
-    return send_mqtt_message_to_terminal(
-        active,
-        "payment/state",
-        status,
-    )
-
-
-@require_POST
-@staff_member_required
-def set_terminal_status(request):
-    status = request.GET.get("status", "close")
-    return update_terminal_status(request, status)
-
-
-def get_terminal_from_request(request) -> Optional[Firebase]:
-    url_terminal = request.GET.get("terminal", None)
-    session_terminal = request.session.get("terminal", None)
-
-    active = None
-
-    if url_terminal:
-        try:
-            active = Firebase.objects.get(id=int(url_terminal))
-            request.session["terminal"] = active.id
-        except (ValueError, Firebase.DoesNotExist):
-            return None
-
-    if not active and session_terminal:
-        try:
-            active = Firebase.objects.get(id=int(session_terminal))
-        except Firebase.DoesNotExist:
-            return None
-
-    return active
 
 
 def send_mqtt_message_to_terminal(
-    request: Union[HttpRequest, Firebase], topic: str, data={}
+    terminal: Firebase, topic: str, data={}
 ) -> JsonResponse:
-    if isinstance(request, Firebase):
-        active = request
-    else:
-        active = get_terminal_from_request(request)
-        if not active:
-            return JsonResponse(
-                {"sucess": False, "reason": "No terminal associated with request"},
-                status=400,
-            )
-
-    topic = mqtt.get_topic(topic, name=str(active.name))
+    topic = mqtt.get_topic(topic, name=str(terminal.name))
 
     try:
         mqtt.send_mqtt_message(topic, data)
@@ -334,50 +289,89 @@ def send_mqtt_message_to_terminal(
     return JsonResponse({"success": True})
 
 
-@require_POST
-@staff_member_required
-def enable_payment(request):
-    cart = request.session.get("cart", None)
-    if cart is None:
-        request.session["cart"] = []
-        return JsonResponse(
-            {"success": False, "reason": "Cart not initialized"}, status=200
-        )
+def load_json_body(request) -> dict:
+    try:
+        body = json.loads(request.body or b"{}")
+    except ValueError:
+        return {}
+    return body if isinstance(body, dict) else {}
 
-    badges = []
-    first_order = None
 
-    for pk in cart:
+def extract_badge_ids(values) -> List[int]:
+    result = []
+    for value in values or []:
         try:
-            badge = Badge.objects.get(id=pk)
-            badges.append(badge)
+            result.append(int(value))
+        except (TypeError, ValueError):
+            continue
+    return result
 
-            order = badge.getOrder()
-            if first_order is None:
-                first_order = order
-            else:
-                # FIXME: use order.onsite_reference instead.
-                # FIXME: Put this in cash handling, too
-                # Reassign order references of items in cart to match first:
-                order = badge.getOrder()
-                order.reference = first_order.reference
-                order.save()
-        except Badge.DoesNotExist:
-            cart.remove(pk)
-            logger.error(
-                "ID {0} was in cart but doesn't exist in the database".format(pk)
-            )
 
-    # Force a cart refresh to get the latest order reference to the terminal
-    onsite_admin_cart(request)
+def get_cart_orders(badges) -> List[Order]:
+    orders_by_id = {}
+    for badge in badges:
+        order = badge.getOrder()
+        if order is not None:
+            orders_by_id.setdefault(order.id, order)
+    return list(orders_by_id.values())
 
-    data = build_result(cart)
 
-    terminal = get_terminal_from_request(request)
-    if not terminal:
+def unify_order_references(badges) -> Optional[str]:
+    orders = get_cart_orders(badges)
+    if not orders:
+        return None
+
+    first_reference = orders[0].reference
+    for order in orders[1:]:
+        if order.reference != first_reference:
+            order.reference = first_reference
+            order.save()
+    return first_reference
+
+
+def push_cart_to_terminal(terminal: Firebase, data: dict) -> None:
+    terminal_data = {
+        "badges": [
+            {
+                "id": badge["id"],
+                "firstName": badge["firstName"],
+                "lastName": badge["lastName"],
+                "badgeName": badge["badgeName"],
+                "effectiveLevel": {
+                    "name": badge["effectiveLevel"]["name"],
+                    "price": str(badge["level_subtotal"]),
+                },
+                "discountedPrice": str(badge["level_total"]),
+            }
+            for badge in data["result"]
+        ],
+        "charityDonation": str(data["charityDonation"]),
+        "organizationDonation": str(data["orgDonation"]),
+        "totalDiscount": str(data["total_discount"]),
+        "total": str(data["total"]),
+        "paid": str(data["paid"]),
+    }
+
+    send_mqtt_message_to_terminal(terminal, "payment/cart/update", terminal_data)
+
+
+@require_POST
+@staff_or_terminal_required(require_terminal=True)
+def enable_payment(request: RequiredTerminalRequest):
+    badge_ids = extract_badge_ids(load_json_body(request).get("badge_ids"))
+    if not badge_ids:
         return JsonResponse(
-            {"sucess": False, "reason": "No terminal associated with request."}
+            {"success": False, "reason": "Cart not initialized or empty"}, status=400
         )
+
+    terminal = request.terminal
+
+    badges = list(Badge.objects.filter(id__in=badge_ids))
+    unify_order_references(badges)
+
+    data = build_result(badge_ids)
+
+    push_cart_to_terminal(terminal, data)
 
     order_id = payments.create_square_order(str(terminal.name), data)
 
@@ -431,7 +425,7 @@ def enable_payment(request):
 
 
 @require_POST
-@staff_member_required
+@staff_or_terminal_required()
 def assign_badge_number(request):
     request_badges = json.loads(request.body)
 
@@ -455,10 +449,10 @@ def get_messages_list(request):
 
 
 @require_POST
-@staff_member_required
-def onsite_print_badges(request):
+@staff_or_terminal_required()
+def onsite_print_badges(request: TerminalRequest):
     badge_list = request.GET.getlist("id")
-    terminal = get_active_terminal(request)
+    terminal = request.terminal
 
     signer = TimestampSigner()
     data = signer.sign_object(
@@ -482,33 +476,15 @@ def onsite_print_badges(request):
     )
 
 
-def admin_push_cart_refresh(request):
-    send_mqtt_message_to_terminal(request, "web/refresh")
+def admin_push_cart_refresh(request: TerminalRequest):
+    if request.terminal:
+        send_mqtt_message_to_terminal(request.terminal, "web/refresh")
 
 
 # TODO: update for square SDK data type (fetch txn from square API and store in order.apiData)
-@csrf_exempt
-def complete_square_transaction(request):
-    try:
-        token = request.headers.get("authorization").removeprefix("Bearer ")
-    except:
-        logger.warning("Invalid authorization header in square transaction request")
-        return JsonResponse(
-            {"success": False, "reason": "Invalid authorization"}, status=401
-        )
-
-    try:
-        terminal = Firebase.objects.get(token=token)
-        request.session["terminal"] = terminal.id
-    except Firebase.DoesNotExist:
-        return JsonResponse(
-            {
-                "success": False,
-                "reason": "Unknown token",
-            },
-            status=401,
-        )
-
+@require_POST
+@device_token_required()
+def complete_square_transaction(request: TerminalRequest):
     data = json.loads(request.body)
 
     reference = data.get("reference")
@@ -529,9 +505,8 @@ def complete_square_transaction(request):
     #   clientTransactionId (offline payments)
     #   serverTransactionId (online payments)
 
-    try:
-        orders = Order.objects.filter(reference=reference).prefetch_related()
-    except Order.DoesNotExist:
+    orders = list(Order.objects.filter(reference=reference).prefetch_related())
+    if not orders:
         logger.error("No order matching reference", extra={"reference": reference})
         return JsonResponse(
             {
@@ -591,7 +566,10 @@ def combine_orders(orders):
             old_order = order_item.order
             order_item.order = first_order
             if old_order and old_order.id:
-                logger.warning("Deleting old order during combine", extra={"order_id": old_order.id})
+                logger.warning(
+                    "Deleting old order during combine",
+                    extra={"order_id": old_order.id},
+                )
                 old_order.delete()
             order_item.save()
 
@@ -619,16 +597,15 @@ def drawer_status(request):
 @staff_member_required
 @permission_required("order.cash_admin")
 def no_sale(request):
-    position = get_active_terminal(request)
+    position = resolve_terminal_from_request(request)
+    if position is None:
+        return no_terminal_response()
     mqtt.send_mqtt_message(mqtt.get_topic("receipt/nosale", name=str(position.name)))
 
     return JsonResponse({"success": True})
 
 
-@staff_member_required
-@permission_required("order.cash_admin")
-def print_audit_receipt(request, audit_type, cash_ledger, cashdraw=True):
-    position = get_active_terminal(request)
+def print_audit_receipt(request, position, audit_type, cash_ledger, cashdraw=True):
     event = Event.objects.get(default=True)
     payload = {
         "v": 1,
@@ -649,7 +626,9 @@ def print_audit_receipt(request, audit_type, cash_ledger, cashdraw=True):
 def cash_audit_action(request, action):
     cashdraw = True
     amount = Decimal(request.POST.get("amount", None))
-    position = get_active_terminal(request)
+    position = resolve_terminal_from_request(request)
+    if position is None:
+        return no_terminal_response()
     if action in (Cashdrawer.DROP, Cashdrawer.PICKUP, Cashdrawer.CLOSE):
         amount = -abs(amount)
         cashdraw = False
@@ -658,7 +637,7 @@ def cash_audit_action(request, action):
     )
     cash_ledger.save()
     cash_ledger.refresh_from_db()
-    print_audit_receipt(request, action, cash_ledger, cashdraw)
+    print_audit_receipt(request, position, action, cash_ledger, cashdraw)
 
     return JsonResponse({"success": True})
 
@@ -740,55 +719,76 @@ def cash_receipt_payload(order: Order, tendered: str, total: str) -> dict:
 
 
 @require_POST
-@staff_member_required
-@permission_required("order.cash")
-def complete_cash_transaction(request):
-    reference = request.GET.get("reference", None)
-    total = request.GET.get("total", None)
-    tendered = request.GET.get("tendered", None)
+@staff_or_terminal_required(("order.cash",))
+def complete_cash_transaction(request: TerminalRequest):
+    body = load_json_body(request)
 
-    if reference is None or tendered is None or total is None:
+    badge_ids = extract_badge_ids(body.get("badge_ids"))
+    tendered = body.get("tendered", None)
+
+    if not badge_ids or tendered is None:
         return JsonResponse(
             {
                 "success": False,
-                "reason": "Reference, tendered, and total are required parameters",
+                "reason": "badge_ids and tendered are required parameters",
             },
             status=400,
         )
 
-    try:
-        orders = Order.objects.filter(reference=reference).prefetch_related()
-    except Order.DoesNotExist:
+    badges = list(Badge.objects.filter(id__in=badge_ids))
+    if not badges:
         return JsonResponse(
-            {
-                "success": False,
-                "reason": "No order matching the reference specified exists",
-            },
-            status=404,
+            {"success": False, "reason": "No matching badges exist"}, status=404
         )
 
-    combine_orders(orders)
+    data = build_result([badge.id for badge in badges])
+    total = Decimal(data["total"]).quantize(TWOPLACES)
+    try:
+        tendered = Decimal(str(tendered)).quantize(TWOPLACES)
+    except (InvalidOperation, TypeError):
+        return JsonResponse(
+            {"success": False, "reason": "Invalid tendered amount"}, status=400
+        )
+    change = tendered - total
+    if change < 0:
+        return JsonResponse(
+            {"success": False, "reason": "Tendered amount is less than the total"},
+            status=400,
+        )
 
-    order = orders[0]
-    order.billingType = Order.CASH
-    order.status = Order.COMPLETED
-    order.settledDate = timezone.now()
-    order.notes = json.dumps({"type": "cash", "tendered": tendered})
-    order.save()
+    orders = get_cart_orders(badges)
+    if not orders:
+        return JsonResponse(
+            {"success": False, "reason": "No matching orders exist"}, status=404
+        )
 
-    txn = Cashdrawer(
-        action=Cashdrawer.TRANSACTION, total=total, tendered=tendered, user=request.user
-    )
-    txn.save()
+    with transaction.atomic():
+        combine_orders(orders)
 
-    payload = cash_receipt_payload(order, tendered, total)
+        order = orders[0]
+        order.billingType = Order.CASH
+        order.status = Order.COMPLETED
+        order.settledDate = timezone.now()
+        order.notes = json.dumps({"type": "cash", "tendered": str(tendered)})
+        order.save()
 
-    terminal = get_active_terminal(request)
-    mqtt.send_mqtt_message(
-        mqtt.get_topic("receipt/print/cash", name=str(terminal.name)), payload
-    )
+        Cashdrawer(
+            action=Cashdrawer.TRANSACTION,
+            total=total,
+            tendered=tendered,
+            user=None if request.terminal_authed else request.user,
+            position=request.terminal,
+        ).save()
 
-    return JsonResponse({"success": True})
+    payload = cash_receipt_payload(order, str(tendered), str(total))
+
+    terminal = request.terminal
+    if terminal:
+        mqtt.send_mqtt_message(
+            mqtt.get_topic("receipt/print/cash", name=str(terminal.name)), payload
+        )
+
+    return JsonResponse({"success": True, "total": total, "change": change})
 
 
 def get_discount_dict(discount):
@@ -834,22 +834,32 @@ def get_line_items(attendee_options: Iterable[AttendeeOptions]):
 
 def build_result(cart):
     badges = []
-    for pk in cart:
+    for pk in list(cart):
         try:
             badge = Badge.objects.get(id=pk)
             badges.append(badge)
         except Badge.DoesNotExist:
-            cart.remove(pk)
             logger.error(
                 "ID {0} was in cart but doesn't exist in the database".format(pk)
             )
 
     order = None
-    subtotal = 0
-    total_discount = 0
+    subtotal = Decimal(0)
+    total_discount = Decimal(0)
     result = []
     orders = set()
+    included_badges = []
     for badge in badges:
+        order = badge.getOrder()
+        if order is None:
+            logger.warning(
+                "ID {0} was in cart but has no order".format(badge.id),
+            )
+            continue
+
+        included_badges.append(badge)
+        orders.add(order)
+
         oi = badge.getOrderItems()
         level = None
         level_subtotal = 0
@@ -865,9 +875,6 @@ def build_result(cart):
                 level_subtotal += level.basePrice
 
         subtotal += level_subtotal
-
-        order = badge.getOrder()
-        orders.add(order)
 
         holdType = None
         if badge.attendee.holdType:
@@ -915,8 +922,8 @@ def build_result(cart):
     total = subtotal
     paid = Decimal(0)
 
-    charityDonation = 0
-    orgDonation = 0
+    charityDonation = Decimal(0)
+    orgDonation = Decimal(0)
 
     for order in orders:
         total += order.orgDonation + order.charityDonation
@@ -933,6 +940,7 @@ def build_result(cart):
     data = {
         "success": True,
         "result": result,
+        "badge_ids": [badge.id for badge in included_badges],
         "subtotal": subtotal,
         "total": total - total_discount,
         "total_discount": total_discount,
@@ -952,65 +960,36 @@ def build_result(cart):
 
 
 @require_safe
-@staff_member_required
-def onsite_admin_cart(request):
-    # Returns dataset to render onsite cart preview
-    request.session["heartbeat"] = time.time()  # Keep session alive
-    cart = request.session.get("cart", [])
+@staff_or_terminal_required()
+def onsite_admin_cart(request: TerminalRequest):
+    badge_ids, error = parse_badge_id_params(request)
+    if error:
+        return error
 
-    data = build_result(cart)
+    data = build_result(badge_ids)
 
-    terminal_data = {
-        "badges": [
-            {
-                "id": badge["id"],
-                "firstName": badge["firstName"],
-                "lastName": badge["lastName"],
-                "badgeName": badge["badgeName"],
-                "effectiveLevel": {
-                    "name": badge["effectiveLevel"]["name"],
-                    "price": str(badge["level_subtotal"]),
-                },
-                "discountedPrice": str(badge["level_total"]),
-            }
-            for badge in data["result"]
-        ],
-        "charityDonation": str(data["charityDonation"]),
-        "organizationDonation": str(data["orgDonation"]),
-        "totalDiscount": str(data["total_discount"]),
-        "total": str(data["total"]),
-        "paid": str(data["paid"]),
-    }
-
-    send_mqtt_message_to_terminal(request, "payment/cart/update", terminal_data)
+    if request.terminal:
+        if badge_ids:
+            push_cart_to_terminal(request.terminal, data)
+        else:
+            send_mqtt_message_to_terminal(request.terminal, "payment/cart/clear")
 
     return JsonResponse(data)
 
 
-@require_POST
-@staff_member_required
-def onsite_add_to_cart(request):
-    badge_ids = request.GET.getlist("id")
-    assign = request.GET.get("assign") == "yes"
-
-    try:
-        badge_ids = [int(badge_id) for badge_id in badge_ids]
-    except ValueError:
-        return JsonResponse(
-            {"success": False, "reason": "Unexpected badge ID value"}, status=400
-        )
+@require_safe
+@staff_or_terminal_required()
+def onsite_cart_expand(request):
+    badge_ids, error = parse_badge_id_params(request)
+    if error:
+        return error
 
     badges = Badge.objects.filter(id__in=badge_ids)
-
     if len(badge_ids) > 1:
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(badge_ids)])
         badges = badges.order_by(preserved)
 
-    if assign:
-        cart = []
-    else:
-        cart = request.session.get("cart", [])
-
+    expanded: List[int] = []
     for badge in badges:
         order_item = OrderItem.objects.filter(badge=badge, order__isnull=False).first()
         if order_item:
@@ -1018,48 +997,14 @@ def onsite_add_to_cart(request):
                 order=order_item.order, badge__isnull=False
             )
             for order_item in order_items:
-                if order_item.badge_id not in cart:
-                    cart.append(order_item.badge_id)
+                if order_item.badge_id not in expanded:
+                    expanded.append(order_item.badge_id)
 
-    request.session["cart"] = cart
-
-    return JsonResponse({"success": True, "cart": cart})
+    return JsonResponse({"success": True, "badge_ids": expanded})
 
 
 @require_POST
-@staff_member_required
-def onsite_remove_from_cart(request):
-    badge_id = request.GET.get("id", None)
-    try:
-        badge_id = int(badge_id)
-    except (TypeError, ValueError):
-        return JsonResponse(
-            {"success": False, "reason": "ID parameter must be integer"}, status=400
-        )
-
-    cart = request.session.get("cart", None)
-    if cart is None:
-        return JsonResponse({"success": False, "reason": "Cart is empty"})
-
-    try:
-        cart.remove(badge_id)
-        request.session["cart"] = cart
-    except ValueError:
-        return JsonResponse({"success": False, "cart": cart, "reason": "Not in cart"})
-
-    return JsonResponse({"success": True, "cart": cart})
-
-
-@require_POST
-@staff_member_required
-def onsite_admin_clear_cart(request):
-    request.session["cart"] = []
-    send_mqtt_message_to_terminal(request, "payment/cart/clear")
-    return JsonResponse({"success": True, "cart": []})
-
-
-@require_POST
-@staff_member_required
+@staff_or_terminal_required()
 def onsite_admin_transfer_cart(request):
     terminal_id = request.GET.get("terminal_id")
     badge_ids = request.GET.getlist("badge_id")
@@ -1083,22 +1028,23 @@ def get_b32_uuid():
 
 
 @require_POST
-@staff_member_required
-@permission_required("order.discount")
-def create_discount(request):
-    discount_type = request.POST.get("type")
-    notes = request.POST.get("notes") or None
+@staff_or_terminal_required(("order.discount",))
+def create_discount(request: TerminalRequest):
+    body = load_json_body(request)
+
+    discount_type = body.get("type")
+    notes = body.get("notes") or None
     department = None
-    if department := request.POST.get("department") or None:
-        department = Department.objects.get(id=int(department))
+    if department_id := body.get("department") or None:
+        department = Department.objects.get(id=int(department_id))
 
     try:
-        value = Decimal(request.POST.get("value"))
-    except ValueError:
+        value = Decimal(str(body.get("value")))
+    except (InvalidOperation, TypeError):
         return JsonResponse({"success": False, "reason": "Unknown value provided"})
 
-    cart = request.session.get("cart", None)
-    if not cart:
+    badge_ids = extract_badge_ids(body.get("badge_ids"))
+    if not badge_ids:
         return JsonResponse(
             {"success": False, "reason": "Cart not initialized or empty"}, status=400
         )
@@ -1112,37 +1058,52 @@ def create_discount(request):
         case "Percent":
             percent_off = value
 
+    if request.terminal_authed:
+        attribution = f"terminal [{request.terminal.name}]"
+    else:
+        attribution = f"[{request.user}]"
+
     notes = "\n\n".join(
-        item for item in [notes, f"Applied by [{request.user}]"] if item is not None
+        item for item in [notes, f"Applied by {attribution}"] if item is not None
     )
 
-    discount = Discount(
-        codeName=generate_discount_code(),
-        percentOff=percent_off,
-        amountOff=amount_off,
-        startDate=timezone.now(),
-        endDate=timezone.now() + timedelta(hours=1),
-        notes=notes,
-        oneTime=True,
-        used=0,
-        reason="Onsite admin discount",
-        sponsoring_department=department,
-    )
-    discount.save()
+    orders = get_cart_orders(Badge.objects.filter(pk__in=badge_ids))
 
-    # Combine cart orders and apply discount to combined order
-    badges = Badge.objects.filter(pk__in=cart)
-    orders = [badge.getOrder() for badge in badges]
-    combine_orders(orders)
+    if not orders:
+        return JsonResponse(
+            {"success": False, "reason": "Cart has no orders"}, status=400
+        )
 
-    orders[0].discount = discount
-    orders[0].save()
+    with transaction.atomic():
+        discount = Discount(
+            codeName=generate_discount_code(),
+            percentOff=percent_off,
+            amountOff=amount_off,
+            startDate=timezone.now(),
+            endDate=timezone.now() + timedelta(hours=1),
+            notes=notes,
+            oneTime=True,
+            used=0,
+            reason="Onsite admin discount",
+            sponsoring_department=department,
+        )
+        discount.save()
+
+        combine_orders(orders)
+
+        order = orders[0]
+        order.discount = discount
+        order.save()
+
+        data = build_result(badge_ids)
+        if data["total"] <= 0 and order.billingType == Order.UNPAID:
+            complete_comp_order(order, discount)
 
     return JsonResponse({"success": True})
 
 
 @require_POST
-@staff_member_required
+@staff_or_terminal_required()
 def onsite_print_clear(request):
     id = request.GET.get("id", None)
     if id is None or id == "":
@@ -1165,18 +1126,12 @@ def onsite_print_clear(request):
 
 
 @require_POST
-@staff_member_required
-def regtoken(request):
-    terminal = get_active_terminal(request)
-    if not terminal:
-        return JsonResponse(
-            {"success": False, "reason": "No terminal attached to session"}, status=400
-        )
-
+@staff_or_terminal_required(require_terminal=True)
+def regtoken(request: RequiredTerminalRequest):
     signer = TimestampSigner()
     data = signer.sign_object(
         {
-            "terminal": terminal.name,
+            "terminal": request.terminal.name,
         }
     )
 
@@ -1184,7 +1139,7 @@ def regtoken(request):
 
 
 @require_safe
-@staff_member_required
+@staff_or_terminal_required()
 def attendee_details(request):
     id = request.GET.get("id", None)
     if id is None or id == "":
@@ -1222,16 +1177,13 @@ def attendee_details(request):
     )
 
 
-@csrf_exempt
-def terminal_square_token(request):
-    key = request.headers.get("authorization").removeprefix("Bearer ")
+def _square_oauth_cache_key(state: str) -> str:
+    return f"square_oauth_state:{state}"
 
-    try:
-        terminal = Firebase.objects.get(token=key)
-    except Firebase.DoesNotExist:
-        return JsonResponse(
-            {"success": False, "reason": "Incorrect API key"}, status=401
-        )
+
+@device_token_required(require_terminal=True)
+def terminal_square_token(request: RequiredTerminalRequest):
+    terminal = request.terminal
 
     base_url = "https://connect.squareup.com"
     if settings.SQUARE_ENVIRONMENT == "sandbox":
@@ -1239,6 +1191,8 @@ def terminal_square_token(request):
 
     scopes = ["MERCHANT_PROFILE_READ", "PAYMENTS_WRITE", "PAYMENTS_WRITE_IN_PERSON"]
     state = get_random_token(64)
+
+    cache.set(_square_oauth_cache_key(state), terminal.id, timeout=600)
 
     url = f"{base_url}/oauth2/authorize?client_id={settings.SQUARE_APPLICATION_ID}&state={state}&scope={'+'.join(scopes)}"
 
@@ -1255,28 +1209,47 @@ def terminal_square_token(request):
 
 
 @require_safe
-@staff_member_required
 def oauth_square(request):
     url_state = request.GET.get("state")
-    cookie_state = request.COOKIES.get("square_oauth_state")
 
-    if url_state != cookie_state:
+    terminal = None
+    if url_state:
+        terminal_id = cache.get(_square_oauth_cache_key(url_state))
+        if terminal_id:
+            terminal = Firebase.objects.filter(id=terminal_id).first()
+
+    if not terminal:
         return JsonResponse(
-            {"success": False, "reason": "Saved state did not match URL state"},
+            {"success": False, "reason": "Unknown or expired OAuth state"},
             status=400,
         )
 
     code = request.GET.get("code")
+    if not code:
+        reason = request.GET.get("error") or "No authorization code provided"
+        return JsonResponse({"success": False, "reason": reason}, status=400)
 
-    token = payments.client.o_auth.obtain_token(
-        client_id=settings.SQUARE_APPLICATION_ID,
-        client_secret=settings.SQUARE_APPLICATION_SECRET,
-        grant_type="authorization_code",
-        code=code,
-    )
+    try:
+        token = payments.client.o_auth.obtain_token(
+            client_id=settings.SQUARE_APPLICATION_ID,
+            client_secret=settings.SQUARE_APPLICATION_SECRET,
+            grant_type="authorization_code",
+            code=code,
+        )
+    except Exception:
+        logger.exception("Could not exchange Square authorization code")
+        return JsonResponse(
+            {
+                "success": False,
+                "reason": "Could not exchange Square authorization code",
+            },
+            status=400,
+        )
+
+    cache.delete(_square_oauth_cache_key(url_state))
 
     send_mqtt_message_to_terminal(
-        request,
+        terminal,
         "payment/update/token",
         {
             "accessToken": token.access_token,
@@ -1285,18 +1258,13 @@ def oauth_square(request):
     )
 
     resp = HttpResponseRedirect(reverse("registration:onsite_admin"))
-    resp.delete_cookie("square_oauth_state")
     return resp
 
 
 @require_POST
-@staff_member_required
-def print_receipts(request):
-    terminal = get_active_terminal(request)
-    if not terminal:
-        return JsonResponse(
-            {"success": False, "reason": "No terminal attached to session"}, status=400
-        )
+@staff_or_terminal_required(require_terminal=True)
+def print_receipts(request: RequiredTerminalRequest):
+    terminal = request.terminal
 
     references = request.GET.getlist("reference", [])
     orders = Order.objects.filter(reference__in=references).prefetch_related()
@@ -1344,8 +1312,8 @@ def print_receipts(request):
 
 
 @require_POST
-@staff_member_required
-def fulfill(request):
+@staff_or_terminal_required()
+def fulfill(request: TerminalRequest):
     attendee_option_id = request.POST.get("id")
 
     with transaction.atomic():
@@ -1377,7 +1345,7 @@ def fulfill(request):
             )
 
         attendee_option.fulfilled_at = timezone.now()
-        attendee_option.fulfilled_by = request.user
+        attendee_option.fulfilled_by = None if request.terminal_authed else request.user
         attendee_option.save()
 
     return JsonResponse({"success": True})

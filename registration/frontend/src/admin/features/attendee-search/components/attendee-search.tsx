@@ -15,7 +15,7 @@ import {
   on,
 } from "solid-js";
 
-import { searchAttendeesOptions, useAddBadgeToCart } from "@admin/api";
+import { searchAttendeesOptions, useExpandBadges } from "@admin/api";
 import { DisplayRegistrationButton } from "@admin/features/display-registration";
 import { Button } from "@components/button";
 import { IconAndLabel } from "@components/icon-and-label";
@@ -35,7 +35,7 @@ export const AttendeeSearch: Component<{
   const [selectedAttendee, setSelectedAttendee] = createSignal<number>();
 
   const attendees = useQuery(() => searchAttendeesOptions(props.searchQuery));
-  const addBadgeToCart = useAddBadgeToCart();
+  const expandBadges = useExpandBadges();
 
   createEffect(() => {
     setSearchFieldValue(props.searchQuery);
@@ -91,7 +91,7 @@ export const AttendeeSearch: Component<{
             badgeNumMatch[1] === entries[0].badgeNumber?.toString();
 
           if (hasSingleGoodResult || hasMatchingBadgeNum) {
-            addBadgeToCart.mutate(entries[0].id);
+            expandBadges.mutate(entries[0].id);
           }
         } else {
           setSelectedAttendee(undefined);
@@ -108,7 +108,7 @@ export const AttendeeSearch: Component<{
       if (selected) {
         const badge = entries[selected];
         if (badge) {
-          addBadgeToCart.mutate(badge.id);
+          expandBadges.mutate(badge.id);
           if (selected === entries.length - 1) {
             setSelectedAttendee(entries.length - 2);
           } else if (selected !== 0) {
@@ -120,7 +120,7 @@ export const AttendeeSearch: Component<{
           (badge) => !props.idsInCart.includes(badge.id),
         );
         if (next) {
-          addBadgeToCart.mutate(next.id);
+          expandBadges.mutate(next.id);
         }
       }
     }

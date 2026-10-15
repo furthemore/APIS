@@ -592,7 +592,7 @@ class Badge(models.Model):
 
     def getOrder(self):
         oi = self.getOrderItems().first()
-        return oi.order
+        return oi.order if oi else None
 
     def roll_forward(self, to_event, rolled_by, force=False):
         """Move this badge to a different event and record the history.
@@ -1010,6 +1010,11 @@ class Firebase(models.Model):
     name = models.CharField(max_length=100)
     closed = models.BooleanField(default=False)
     cashdrawer = models.BooleanField(default=False, verbose_name="Cash drawer")
+    web_access = models.BooleanField(
+        default=False,
+        verbose_name="Web access",
+        help_text="Allow this terminal's token to perform web-like actions.",
+    )
     print_via_mqtt = models.ForeignKey(
         "self",
         null=True,

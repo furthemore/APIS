@@ -3,7 +3,7 @@ import { ContextMenu } from "@kobalte/core/context-menu";
 import Fa from "solid-fa";
 import { type Component, Show, createEffect } from "solid-js";
 
-import { type BadgeResult, useAddBadgeToCart } from "@admin/api";
+import { type BadgeResult, useExpandBadges } from "@admin/api";
 import { Button } from "@components/button";
 
 export const BadgeTableRow: Component<{
@@ -13,7 +13,7 @@ export const BadgeTableRow: Component<{
   showStatus: boolean;
   searchQuery?: string;
 }> = (props) => {
-  const addBadgeToCart = useAddBadgeToCart();
+  const expandBadges = useExpandBadges();
 
   let row!: HTMLTableRowElement;
 
@@ -101,10 +101,10 @@ export const BadgeTableRow: Component<{
             <Button
               type="button"
               class="btn btn-sm btn-primary"
-              loading={addBadgeToCart.isPending}
+              loading={expandBadges.isPending}
               disabled={props.inCart}
               onClick={() => {
-                addBadgeToCart.mutate(props.badge.id);
+                expandBadges.mutate(props.badge.id);
               }}
             >
               <Fa icon={faCartShopping} fw />

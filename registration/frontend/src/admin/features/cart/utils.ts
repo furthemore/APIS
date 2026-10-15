@@ -2,21 +2,19 @@ import {
   type UndoHistoryReturn,
   createUndoHistory,
 } from "@solid-primitives/history";
-import { createWritableMemo } from "@solid-primitives/memo";
 import type { UseMutationResult } from "@tanstack/solid-query";
 import { Big } from "big.js";
-import isEqual from "lodash/isEqual";
-import { type Accessor, createEffect } from "solid-js";
+import type { Accessor } from "solid-js";
 
 import type {
-  AddBadgeParams,
   BadgeCart,
   BadgePrintResponse,
-  CartResponse,
   CashPaymentOpts,
+  CashPaymentResult,
   OnsiteAdminContext,
 } from "@admin/api";
 import type MqttClient from "@admin/mqtt";
+import type { CartStore } from "@admin/providers/cart-provider";
 
 const { format } = new Intl.NumberFormat(undefined, {
   style: "currency",
@@ -85,8 +83,12 @@ export const createAutoPrintCheck = (): ((
 };
 
 export const attemptCashPayment = async (
-  applyCashPayment: UseMutationResult<void, Error, CashPaymentOpts>,
-  reference: string,
+  applyCashPayment: UseMutationResult<
+    CashPaymentResult,
+    Error,
+    CashPaymentOpts
+  >,
+  badgeIds: number[],
   total: string,
 ) => {
   const totalAmount = new Big(total);
@@ -107,15 +109,9 @@ export const attemptCashPayment = async (
     return;
   }
 
-  const change = tenderedAmount.sub(totalAmount);
+  const result = await applyCashPayment.mutateAsync({ badgeIds, tendered });
 
-  await applyCashPayment.mutateAsync({
-    reference,
-    total,
-    tendered,
-  });
-
-  alert(`Change: ${cleanMoneyAmount(change.toString())}`);
+  alert(`Change: ${cleanMoneyAmount(result.change)}`);
 };
 
 export const printBadgesHelper = async (
@@ -154,25 +150,11 @@ export const getShirtSizeName = (
 };
 
 export const useCartHistory = (
-  cart: Accessor<CartResponse | undefined>,
-  addBadgeToCart: UseMutationResult<unknown, unknown, AddBadgeParams, unknown>,
+  cartStore: Accessor<CartStore>,
 ): UndoHistoryReturn => {
-  const cartBadgeIds = () => cart()?.result.map((badge) => badge.id) || [];
-
-  const [historyCartBadgeIds, setHistoryCartBadgeIds] = createWritableMemo(
-    cartBadgeIds,
-    [],
-    { equals: isEqual },
-  );
-
-  createEffect(() => {
-    if (!isEqual(cartBadgeIds(), historyCartBadgeIds())) {
-      addBadgeToCart.mutate({ ids: historyCartBadgeIds(), assign: true });
-    }
-  });
-
   return createUndoHistory(() => {
-    const badgeIds = historyCartBadgeIds();
-    return () => setHistoryCartBadgeIds(badgeIds);
+    const store = cartStore();
+    const badgeIds = store.badgeIds();
+    return () => store.replace(badgeIds);
   });
 };

@@ -165,6 +165,11 @@ urlpatterns = [
         name="onsite_admin_context",
     ),
     path(
+        "onsite/admin/ping",
+        registration.views.onsite_admin.onsite_admin_ping,
+        name="onsite_admin_ping",
+    ),
+    path(
         "onsite/admin/search",
         registration.views.onsite_admin.onsite_admin_search,
         name="onsite_admin_search",
@@ -175,14 +180,9 @@ urlpatterns = [
         name="onsite_admin_cart",
     ),
     path(
-        "onsite/admin/cart/add",
-        registration.views.onsite_admin.onsite_add_to_cart,
-        name="onsite_add_to_cart",
-    ),
-    path(
-        "onsite/admin/cart/remove",
-        registration.views.onsite_admin.onsite_remove_from_cart,
-        name="onsite_remove_from_cart",
+        "onsite/admin/cart/expand",
+        registration.views.onsite_admin.onsite_cart_expand,
+        name="onsite_cart_expand",
     ),
     path(
         "onsite/admin/cart/transfer",
@@ -190,19 +190,9 @@ urlpatterns = [
         name="onsite_admin_transfer_cart",
     ),
     path(
-        "onsite/admin/terminal/status",
-        registration.views.onsite_admin.set_terminal_status,
-        name="terminal_status",
-    ),
-    path(
         "onsite/admin/payment",
         registration.views.onsite_admin.enable_payment,
         name="enable_payment",
-    ),
-    path(
-        "onsite/admin/clear",
-        registration.views.onsite_admin.onsite_admin_clear_cart,
-        name="onsite_admin_clear_cart",
     ),
     path(
         "onsite/admin/badge/assign",

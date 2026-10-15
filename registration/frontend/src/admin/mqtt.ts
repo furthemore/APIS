@@ -2,7 +2,11 @@ import mitt, { type Emitter } from "mitt";
 import mqtt from "mqtt";
 import { type Accessor, type Setter, createSignal } from "solid-js";
 
-import { type AttendeeDetails, urlForOnsiteDetails } from "./api";
+import {
+  type AttendeeDetails,
+  type TerminalStatus,
+  urlForOnsiteDetails,
+} from "./api";
 
 export type ApisMqttConfig = {
   broker: string;
@@ -231,6 +235,13 @@ export default class MqttClient {
     await this.client?.publishAsync(
       this.getPrefixedTopic("payment/registration/cancel"),
       "",
+    );
+  }
+
+  public async setTerminalStatus(status: TerminalStatus) {
+    await this.client?.publishAsync(
+      this.getPrefixedTopic("payment/state"),
+      JSON.stringify(status),
     );
   }
 

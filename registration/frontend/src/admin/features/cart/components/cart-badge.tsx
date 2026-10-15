@@ -17,10 +17,10 @@ import {
   urlForOnsiteDetails,
   useClearBadgePrinted,
   useGetToken,
-  useRemoveBadgeFromCart,
 } from "@admin/api";
-import { ConfigContext } from "@admin/providers/config-provider";
+import { CartContext } from "@admin/providers/cart-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import { Button } from "@components/button";
 
 import { cleanMoneyAmount } from "../utils";
@@ -75,14 +75,12 @@ export const CartBadge: Component<{
   hoveredOrderIdSelector: (key?: number) => boolean;
   onEdit: () => void;
 }> = (props) => {
-  const config = useContext(ConfigContext)!;
   const mqtt = useContext(MqttContext)!;
+  const cartStore = useContext(CartContext)!;
+  const selectedTerminal = useContext(SelectedTerminalContext)!;
   const queryClient = useQueryClient();
 
   const clearBadgePrinted = useClearBadgePrinted();
-
-  const removeBadgeFromCart = useRemoveBadgeFromCart();
-  const isRemovingBadge = () => removeBadgeFromCart.isPending;
 
   const regToken = useGetToken();
 
@@ -203,8 +201,7 @@ export const CartBadge: Component<{
           <Button
             type="button"
             class="btn btn-outline-danger"
-            loading={isRemovingBadge()}
-            onClick={() => removeBadgeFromCart.mutate(props.badge.id)}
+            onClick={() => cartStore().remove(props.badge.id)}
           >
             <Fa icon={faTrash} fw />
           </Button>
@@ -323,7 +320,7 @@ export const CartBadge: Component<{
               New Child
             </ContextMenu.Item>
 
-            <Show when={config()?.terminals?.selected?.features.prompt}>
+            <Show when={selectedTerminal().features.prompt}>
               <ContextMenu.Item
                 as="button"
                 class="dropdown-item"
