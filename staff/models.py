@@ -79,8 +79,8 @@ class StaffPosition(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "staff position"
-        verbose_name_plural = "staff positions"
+        verbose_name = "Staff Position"
+        verbose_name_plural = "Staff Positions"
 
     def __str__(self):
         return self.title
@@ -183,6 +183,13 @@ class StaffEventRegistration(models.Model):
 
 
 class StaffPosting(models.Model):
+    token = models.CharField(
+        max_length=200,
+        unique=True,
+        editable=False,
+        default=get_registration_token,
+        help_text="Random token used in the public application URL",
+    )
     position = models.ForeignKey(
         StaffPosition,
         on_delete=models.CASCADE,
@@ -217,8 +224,8 @@ class StaffPosting(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "staff posting"
-        verbose_name_plural = "staff postings"
+        verbose_name = "Staff Posting"
+        verbose_name_plural = "Staff Postings"
         # Allow same position to be posted multiple times for different events,
         # or as a single ongoing posting with no event
         constraints = [
@@ -266,8 +273,8 @@ class StaffApplicant(Person):
     )
 
     class Meta:
-        verbose_name = "staff applicant"
-        verbose_name_plural = "staff applicants"
+        verbose_name = "Staff Applicant"
+        verbose_name_plural = "Staff Applicants"
 
     def __str__(self):
         return f"{self.first_name()} {self.last_name()} - {self.posting}"

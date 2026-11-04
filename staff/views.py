@@ -227,13 +227,13 @@ def openings(request):
     return render(request, "staff/openings.html", context)
 
 
-def apply(request, posting_id):
+def apply(request, token):
     """Application form for a specific posting."""
     posting = get_object_or_404(
         StaffPosting.objects.select_related(
             "position", "position__department", "event"
         ),
-        id=posting_id,
+        token=token,
         is_open=True,
     )
 
@@ -244,7 +244,7 @@ def apply(request, posting_id):
             applicant.posting = posting
             applicant.registration_token = get_registration_token()
             applicant.save()
-            return redirect("staff:application", applicant_id=applicant.id)
+            return redirect("staff:application", token=applicant.registration_token)
     else:
         form = StaffApplicationForm()
 
@@ -255,11 +255,11 @@ def apply(request, posting_id):
     return render(request, "staff/apply.html", context)
 
 
-def application(request, applicant_id):
+def application(request, token):
     """Confirmation page after submitting an application."""
     applicant = get_object_or_404(
         StaffApplicant.objects.select_related("posting", "posting__position"),
-        id=applicant_id,
+        registration_token=token,
     )
 
     context = {
