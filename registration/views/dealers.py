@@ -12,6 +12,7 @@ from django.http import (
 )
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.http import require_GET
 
 import registration.emails
 from registration.models import *
@@ -615,6 +616,7 @@ def addNewDealer(request):
     return JsonResponse({"success": True})
 
 
+@require_GET
 def getTableSizes(request):  # noqa: S1172, S1542 removing parameter will break django
     event = Event.objects.get(default=True)
     sizes = TableSize.objects.filter(event=event)

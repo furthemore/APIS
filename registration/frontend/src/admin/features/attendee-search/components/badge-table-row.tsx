@@ -1,4 +1,5 @@
-import { faCartShopping, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
+import { ContextMenu } from "@kobalte/core/context-menu";
 import Fa from "solid-fa";
 import { type Component, Show, createEffect } from "solid-js";
 
@@ -57,58 +58,75 @@ export const BadgeTableRow: Component<{
   const hasIdenticalBadge = () => hasSearchedId() || hasIdenticalBadgeName();
 
   return (
-    <tr ref={row} classList={{ "table-active": props.selected }}>
-      <td
-        classList={{ "table-success": hasIdenticalName() }}
-        title={hasIdenticalName() ? "Name is identical to search" : undefined}
+    <ContextMenu preventScroll={false}>
+      <ContextMenu.Trigger
+        as="tr"
+        ref={row}
+        classList={{ "table-active": props.selected }}
       >
-        <div>{fullName()}</div>
+        <td
+          classList={{ "table-success": hasIdenticalName() }}
+          title={hasIdenticalName() ? "Name is identical to search" : undefined}
+        >
+          <div>{fullName()}</div>
 
-        <Show when={hasPreferredName()}>
-          <div>
-            <span class="fst-italic me-1">Preferred:</span>
-            <span class="fw-semibold">
-              {props.badge.attendee.preferredName}
+          <Show when={hasPreferredName()}>
+            <div>
+              <span class="fst-italic me-1">Preferred:</span>
+              <span class="fw-semibold">
+                {props.badge.attendee.preferredName}
+              </span>
+            </div>
+          </Show>
+        </td>
+        <td
+          class="badge-name"
+          classList={{ "table-success": hasIdenticalBadge() }}
+          title={
+            hasIdenticalBadge() ? "Badge is identical to search" : undefined
+          }
+        >
+          <span>{props.badge.badgeName}</span>
+          <Show when={props.badge.badgeNumber}>
+            <span class="badge text-bg-info ms-1">
+              {props.badge.badgeNumber}
             </span>
+          </Show>
+        </td>
+        <Show when={props.showStatus}>
+          <td>{props.badge.abandoned}</td>
+        </Show>
+        <td class="text-end">
+          <div class="btn-group">
+            <Button
+              type="button"
+              class="btn btn-sm btn-primary"
+              loading={addBadgeToCart.isPending}
+              disabled={props.inCart}
+              onClick={() => {
+                addBadgeToCart.mutate(props.badge.id);
+              }}
+            >
+              <Fa icon={faCartShopping} fw />
+            </Button>
           </div>
-        </Show>
-      </td>
-      <td
-        class="badge-name"
-        classList={{ "table-success": hasIdenticalBadge() }}
-        title={hasIdenticalBadge() ? "Badge is identical to search" : undefined}
-      >
-        <span>{props.badge.badgeName}</span>
-        <Show when={props.badge.badgeNumber}>
-          <span class="badge text-bg-info ms-1">{props.badge.badgeNumber}</span>
-        </Show>
-      </td>
-      <Show when={props.showStatus}>
-        <td>{props.badge.abandoned}</td>
-      </Show>
-      <td class="text-end">
-        <div class="btn-group">
-          <a
-            href={props.badge.editUrl}
-            target="edit"
-            class="btn btn-sm btn-info"
-          >
-            <Fa icon={faEdit} fw />
-          </a>
+        </td>
+      </ContextMenu.Trigger>
 
-          <Button
-            type="button"
-            class="btn btn-sm btn-primary"
-            loading={addBadgeToCart.isPending}
-            disabled={props.inCart}
-            onClick={() => {
-              addBadgeToCart.mutate(props.badge.id);
-            }}
-          >
-            <Fa icon={faCartShopping} fw />
-          </Button>
-        </div>
-      </td>
-    </tr>
+      <ContextMenu.Portal>
+        <ContextMenu.Content class="dropdown is-active">
+          <div class="dropdown-menu show">
+            <ContextMenu.Item
+              as="a"
+              href={props.badge.editUrl}
+              target="edit"
+              class="dropdown-item"
+            >
+              Open in Admin
+            </ContextMenu.Item>
+          </div>
+        </ContextMenu.Content>
+      </ContextMenu.Portal>
+    </ContextMenu>
   );
 };

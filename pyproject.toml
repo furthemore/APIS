@@ -18,7 +18,7 @@ dependencies = [
     "django-mathfilters~=1.0.0",
     "django-nested-admin>=4.1.1",
     "django-nested-inline~=0.4.6",
-    "django-prometheus~=2.4.1",
+    "django-prometheus~=2.5.0",
     "django-redis~=7.0.0",
     "django-vite>=3.1.0",
     "django-widget-tweaks~=1.5.1",
@@ -33,25 +33,22 @@ dependencies = [
     "psycopg[binary,pool]>=3.3.4",
     "python-json-logger>=3.3.0",
     "pygments~=2.20.0",
-    "pyjwt~=2.13.0",
-    "pytz~=2026.2.0",
+    "pyjwt>=2.13,<2.16",
+    "pytz~=2026.3.post1",
     "qrcode~=8.2.0",
     "respx>=0.22.0",
     "sentry-sdk>=2.66.1",
-    "soupsieve>=2.9.1",
+    "soupsieve>=2.9.2",
     "squareup==44.1.0.20260520",
-    "uvicorn>=0.51.0",
+    "uvicorn>=0.52.1",
     "uvicorn-worker>=0.4.0",
 ]
-
-[tool.uv.sources]
-django-prometheus = { git = "https://github.com/django-commons/django-prometheus", rev = "ea2d559476675a688f82cc37fac22b796ec7bcba" }
 
 [dependency-groups]
 dev = [
     "coveralls>=4.1.0",
     "django-debug-toolbar~=7.0.0",
     "django-types>=0.24.0",
-    "ruff>=0.15.22",
+    "ruff>=0.16.2",
     "werkzeug>=3.1.5",
 ]

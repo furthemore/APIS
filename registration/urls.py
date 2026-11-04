@@ -219,6 +219,16 @@ urlpatterns = [
         registration.views.onsite_admin.onsite_print_clear,
         name="onsite_print_clear",
     ),
+    path(
+        "onsite/admin/badge/edit",
+        registration.views.onsite_admin.onsite_admin_badge_edit,
+        name="onsite_admin_badge_edit",
+    ),
+    path(
+        "onsite/admin/badge/history",
+        registration.views.onsite_admin.onsite_admin_badge_history,
+        name="onsite_admin_badge_history",
+    ),
     re_path(
         r"^onsite/square/complete/?$",
         registration.views.onsite_admin.complete_square_transaction,

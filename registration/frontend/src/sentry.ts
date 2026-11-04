@@ -17,6 +17,17 @@ const initSentry = () => {
       environment: getMetaContent("sentry-environment"),
       release: getMetaContent("sentry-release"),
       beforeSend(event) {
+        // Filter out browser extension errors by checking the filename
+        const frames = event.exception?.values?.[0]?.stacktrace?.frames;
+        if (frames?.some(frame => 
+          frame.filename?.includes('webkit-masked-url') ||
+          frame.filename?.includes('chrome-extension://') ||
+          frame.filename?.includes('moz-extension://') ||
+          frame.filename?.includes('safari-extension://')
+        )) {
+          return null;
+        }
+
         if (event.exception) {
           Sentry.showReportDialog({
             eventId: event.event_id,

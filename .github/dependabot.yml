@@ -39,6 +39,13 @@ updates:
       timezone: "America/Los_Angeles"
     open-pull-requests-limit: 3
     rebase-strategy: "disabled"
+    ignore:
+      # TypeScript 7 (the native "tsgo" port) is not yet supported all our tooling
+      # Stay on 6 until we see TS 7 compatible releases for:
+      #  - tanstack/eslint-plugin-query
+      #  - typescript-eslint
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     cooldown:
       default-days: 7
       semver-major-days: 14

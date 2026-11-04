@@ -5,11 +5,11 @@ ENV NODE_ENVIRONMENT=production
 WORKDIR /app/registration/frontend
 
 COPY ./registration/frontend/package.json ./registration/frontend/package-lock.json /app/registration/frontend/
-RUN npm install
+RUN npm ci --ignore-scripts
 COPY ./registration/frontend/ /app/registration/frontend/
 RUN npm run build
 
-FROM python:3.14.6-slim-trixie
+FROM python:3.15.0-slim-trixie
 
 LABEL org.opencontainers.image.source="https://github.com/furthemore/APIS"
 
@@ -36,14 +36,14 @@ USER apis
 RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project
+    uv sync --frozen --no-build --no-install-project
 
 COPY --chown=apis . /app/
 COPY --chown=apis ./fm_eventmanager/settings.py.docker /app/fm_eventmanager/settings.py
 COPY --from=assets --chown=apis /app/registration/static/ /app/registration/static/
 
 RUN --mount=type=cache,mode=0755,uid=1000,target=/app/.cache/uv \
-    uv sync --frozen
+    uv sync --frozen --no-build
 
 RUN DJANGO_SECRET_KEY=collectstatic ./manage.py collectstatic --noinput
 

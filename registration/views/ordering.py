@@ -50,7 +50,11 @@ def do_checkout(
     )
 
     if not form.is_valid():
-        return False, {"errors": [{"code": f"{k} - {v}"} for k, v in form.errors]}, None
+        return (
+            False,
+            {"errors": [{"code": f"{k} - {v}"} for k, v in form.errors.items()]},
+            None,
+        )
 
     order: Order = form.save(commit=False)
 

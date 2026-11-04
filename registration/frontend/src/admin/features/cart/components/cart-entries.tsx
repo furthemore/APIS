@@ -13,6 +13,7 @@ import type { CartResponse } from "@admin/api";
 import { UserSettingsContext } from "@admin/providers/user-settings-provider";
 
 import { cleanMoneyAmount } from "../utils";
+import { BadgeEditModal } from "./badge-edit-modal";
 import { CartBadge } from "./cart-badge";
 
 export const CartEntries: Component<{
@@ -21,7 +22,12 @@ export const CartEntries: Component<{
   const userSettings = useContext(UserSettingsContext)!;
 
   const [hoveredOrderId, setHoveredOrderId] = createSignal<number>();
+  const [editingBadgeId, setEditingBadgeId] = createSignal<number>();
+
   const hoveredOrderIdSelector = createSelector(hoveredOrderId);
+
+  const editingBadge = () =>
+    props.entries?.result.find((badge) => badge.id === editingBadgeId());
 
   return (
     <>
@@ -44,12 +50,25 @@ export const CartEntries: Component<{
                   <CartBadge
                     badge={badge}
                     hoveredOrderIdSelector={hoveredOrderIdSelector}
+                    onEdit={() => setEditingBadgeId(badge.id)}
                   />
                 </div>
               )}
             </For>
           </div>
         </div>
+      </Show>
+
+      <Show when={editingBadge()}>
+        {(badge) => (
+          <BadgeEditModal
+            badge={badge()}
+            open={() => true}
+            onOpenChange={(open) => {
+              if (!open) setEditingBadgeId(undefined);
+            }}
+          />
+        )}
       </Show>
 
       <div class="card-body pt-0">

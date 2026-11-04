@@ -150,7 +150,7 @@ export const Navbar: Component<{
                       />
                     </Show>
 
-                    <DropdownMenu.Item>
+                    <DropdownMenu.Item as="li">
                       <DropdownMenu.Separator class="dropdown-divider" />
                     </DropdownMenu.Item>
 
@@ -167,7 +167,7 @@ export const Navbar: Component<{
                       </button>
                     </DropdownMenu.Item>
 
-                    <DropdownMenu.Item>
+                    <DropdownMenu.Item as="li">
                       <DropdownMenu.Separator class="dropdown-divider" />
                     </DropdownMenu.Item>
 
