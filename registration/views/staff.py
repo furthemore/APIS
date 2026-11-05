@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 
 from registration.models import *
 from registration.services import CreateAttendeeOptions
+from staff.models import StaffInvite
 
 from .common import abort, handler
 from .ordering import get_total
@@ -81,7 +82,7 @@ def staff_from_post_data(pds, attendee, event, staff):
     shirt = ShirtSizes.objects.get(id=pds["shirtsize"])
     if not staff:
         staff = Staff(attendee=attendee, event=event)
-    staff.twitter = pds["twitter"]
+    staff.bluesky = pds["bluesky"]
     staff.telegram = pds["telegram"]
     staff.shirtsize = shirt
     staff.specialSkills = pds["specialSkills"]

@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0096_square_webhooks'),
+        ("registration", "0096_square_webhooks"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='temptoken',
-            name='ignore_time_window',
-            field=models.BooleanField(default=False, help_text='Enabling this option will allow this invite code to disregard the open and close date and time specified in the event. The Valid Until setting on this form will still apply', verbose_name='Ignore Registration Time Window'),
+            model_name="temptoken",
+            name="ignore_time_window",
+            field=models.BooleanField(
+                default=False,
+                help_text="Enabling this option will allow this invite code to disregard the open and close date and time specified in the event. The Valid Until setting on this form will still apply",
+                verbose_name="Ignore Registration Time Window",
+            ),
         ),
     ]

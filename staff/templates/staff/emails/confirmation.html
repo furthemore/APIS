@@ -1,0 +1,186 @@
+{% load site %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Confirmed - {{event.name}}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .content h2 {
+            color: #333;
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .content p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+        }
+        .info-box {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #065f46;
+            font-size: 18px;
+        }
+        .info-box p {
+            margin: 5px 0;
+            color: #065f46;
+            font-size: 14px;
+        }
+        .info-box .reference {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: bold;
+            color: #10b981;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+        }
+        .button:hover {
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.35);
+        }
+        .next-steps {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .next-steps h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 18px;
+        }
+        .next-steps ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+        }
+        .next-steps li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer p {
+            margin: 5px 0;
+            color: #999;
+            font-size: 13px;
+        }
+        .footer a {
+            color: #10b981;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>✅ Registration Confirmed!</h1>
+            <p>You're all set for {{event.name}}</p>
+        </div>
+        
+        <div class="content">
+            <h2>Thank You for Registering!</h2>
+            
+            <p>Your staff registration for {{event.name}} has been successfully completed. We're excited to have you on the team!</p>
+            
+            <div class="info-box">
+                <h3>📋 Registration Details</h3>
+                <p><strong>Event:</strong> {{event.name}}</p>
+                {% if staff_name %}<p><strong>Name:</strong> {{staff_name}}</p>{% endif %}
+                {% if reference %}
+                <p><strong>Confirmation Number:</strong></p>
+                <div class="reference">{{reference}}</div>
+                {% endif %}
+            </div>
+            
+            <div class="next-steps">
+                <h3>🎯 Next Steps</h3>
+                <ul>
+                    <li>Check your email for important updates from your department head</li>
+                    <li>Log in to the staff portal to view your schedule and assignments</li>
+                    <li>Complete any required training or onboarding tasks</li>
+                    <li>Mark your calendar for the event dates</li>
+                </ul>
+            </div>
+            
+            <center>
+                <a href="https://{% current_domain %}{% url 'staff:portal' %}" class="button">
+                    Access Staff Portal →
+                </a>
+            </center>
+            
+            <div class="divider"></div>
+            
+            <p style="font-size: 14px;">If you have any questions about your registration or need assistance, please contact your supervisor or reach out to <a href="mailto:{{ staff_email }}" style="color: #10b981; text-decoration: none;">{{ staff_email }}</a>.</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>{{event.name}}</strong></p>
+            <p>Questions? Contact us at <a href="mailto:{{ staff_email }}">{{ staff_email }}</a></p>
+            <p style="margin-top: 15px;">This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

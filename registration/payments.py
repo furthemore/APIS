@@ -107,10 +107,13 @@ def charge_payment(order: Order, cc_data: dict, request=None):
                 buyer_email_address=cc_data.get("email"),
             )
     except ApiError as e:
-        logger.exception("Payment API error", extra={
-            "order_reference": order.reference,
-            "errors": [err.code for err in (e.errors or [])],
-        })
+        logger.exception(
+            "Payment API error",
+            extra={
+                "order_reference": order.reference,
+                "errors": [err.code for err in (e.errors or [])],
+            },
+        )
         logger.debug("Transaction failed", extra={"api_errors": str(e.errors)})
         order.status = Order.FAILED
         order.apiData = e.body
@@ -135,14 +138,19 @@ def charge_payment(order: Order, cc_data: dict, request=None):
 
         logger.info(
             "Payment completed successfully",
-            extra={"order_reference": order.reference, "payment_id_prefix": api_response.payment.id[:4]},
+            extra={
+                "order_reference": order.reference,
+                "payment_id_prefix": api_response.payment.id[:4],
+            },
         )
         order.status = Order.COMPLETED
         order.notes = "Square: #" + api_response.payment.id[:4]
         order.save()
         return True, None
     else:
-        logger.debug("Payment response errors", extra={"errors": str(api_response.errors)})
+        logger.debug(
+            "Payment response errors", extra={"errors": str(api_response.errors)}
+        )
         logger.warning(
             "Payment failed after submission",
             extra={"order_reference": order.reference},
@@ -626,7 +634,9 @@ def create_square_order(terminal_name: str, data: dict) -> Optional[str]:
     if api_response.order:
         return api_response.order.id
     else:
-        logger.error("Failed to create Square order", extra={"errors": str(api_response.errors)})
+        logger.error(
+            "Failed to create Square order", extra={"errors": str(api_response.errors)}
+        )
         return None
 
 
@@ -651,7 +661,9 @@ def print_payment_receipt(
         return False
 
     if api_response.errors:
-        logger.error("Could not print receipt", extra={"errors": str(api_response.errors)})
+        logger.error(
+            "Could not print receipt", extra={"errors": str(api_response.errors)}
+        )
         return False
     else:
         return True

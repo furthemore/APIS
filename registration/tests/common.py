@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from registration.models import *
+from staff.models import Department
 
 logger = logging.getLogger(__name__)
 logging.disable(logging.NOTSET)

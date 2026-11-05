@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.mfa',
     'registration',
+    'staff',
     'debug_toolbar',
     'django_vite',
 ]
@@ -96,6 +97,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'staff.middleware.StaffLoginRedirectMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',

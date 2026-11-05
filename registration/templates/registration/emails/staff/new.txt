@@ -1,6 +1,19 @@
 {% load site %}
-Welcome to {{event.name}} Staff!
-If you have already registered as an attendee, do not use this form. Contact staff services to get a link to the correct registration form.
-Use this link to register as staff: https://{% current_domain %}{% url 'registration:new_staff' guid=registrationToken %}
+====================================
+🎉 Welcome to {{event.name}} Staff!
+====================================
 
-Signature
+You've been invited to join our amazing team!
+
+We're excited to have you join the {{event.name}} staff team! To complete your registration and access the staff portal, please use the link below.
+
+⚠️ IMPORTANT: If you have already registered as an attendee, please do not use this registration link. Contact staff services to get the correct link for your situation.
+
+REGISTRATION LINK:
+https://{% current_domain %}{% url 'staff:register' token=registrationToken %}
+
+Questions? Feel free to reach out to our staff coordinators for assistance.
+
+---
+{{event.name}}
+This is an automated message. Please do not reply to this email.

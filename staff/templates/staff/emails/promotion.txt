@@ -1,0 +1,35 @@
+{% load site %}
+====================================
+🌟 Congratulations!
+====================================
+
+You've been promoted to {{event.name}} staff
+
+WELCOME TO THE TEAM!
+
+Great news! You've been promoted from attendee to staff member for {{event.name}}. We're thrilled to have you join our team!
+
+🎯 WHAT THIS MEANS
+------------------
+As a staff member, you'll have access to exclusive benefits, the staff portal, and the opportunity to be part of making this event amazing for everyone!
+
+✨ STAFF BENEFITS
+-----------------
+• Access to the staff portal and scheduling system
+• Staff badge and credentials
+• Behind-the-scenes experience
+• Staff-only events and perks
+• Be part of an amazing community
+
+NEXT STEP
+---------
+Complete your staff registration using the link below to finalize your promotion and access all staff features.
+
+REGISTRATION LINK:
+https://{% current_domain %}{% url 'staff:register' token=registrationToken %}
+
+Questions about your promotion? Feel free to reach out to your department head or staff coordinators.
+
+---
+{{event.name}}
+This is an automated message. Please do not reply to this email.

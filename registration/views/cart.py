@@ -196,7 +196,11 @@ def add_to_cart(request):
     if check_ban_list(pda["firstName"], pda["lastName"], pda["email"]):
         logger.warning(
             "Ban list registration attempt blocked",
-            extra={"email": pda["email"], "first_name": pda["firstName"], "last_name": pda["lastName"]},
+            extra={
+                "email": pda["email"],
+                "first_name": pda["firstName"],
+                "last_name": pda["lastName"],
+            },
         )
         registrationEmail = common.get_registration_email()
         return common.abort(
@@ -241,7 +245,10 @@ def remove_from_cart(request):
 
     # New cart workflow
     cartItems = request.session.get("cart_items", [])
-    logger.debug("Checking cart_items for removal", extra={"cart_items": cartItems, "item_id": id})
+    logger.debug(
+        "Checking cart_items for removal",
+        extra={"cart_items": cartItems, "item_id": id},
+    )
     for item in cartItems:
         if str(item) == str(id):
             cart = Cart.objects.get(id=id)

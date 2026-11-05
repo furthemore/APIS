@@ -27,6 +27,7 @@ class Postgres:
     """
     Utility class for interacting with Postgres databases.
     """
+
     def __init__(self, db_path_str: str):
         self.db_path = pathlib.Path(db_path_str).absolute()
 
@@ -96,9 +97,7 @@ class Postgres:
         if not self.db_path.exists():
             self.db_path.mkdir()
 
-        init_args = [
-            self.pg_ctl, "initdb", "--pgdata", self.db_path
-        ]
+        init_args = [self.pg_ctl, "initdb", "--pgdata", self.db_path]
         result = self._run(init_args)
         output = result.stdout.strip()
         return output
@@ -108,7 +107,10 @@ class Postgres:
         Creates a new database within the Postgres instance.
         """
         create_db_args = [
-            self.createdb, "-h", self.db_path, db_name,
+            self.createdb,
+            "-h",
+            self.db_path,
+            db_name,
         ]
         result = self._run(create_db_args)
         output = result.stdout.strip()
@@ -129,7 +131,7 @@ class Postgres:
             "--pgdata",
             str(self.db_path),
             "--wait",
-            '--options',
+            "--options",
             f'-h "" -k "{self.db_path}"',
             "start",
         ]
@@ -147,9 +149,7 @@ class Postgres:
         """
         Stops the Postgres database server.
         """
-        stop_args = [
-            self.pg_ctl, "-D", self.db_path, "-m", "immediate", "stop"
-        ]
+        stop_args = [self.pg_ctl, "-D", self.db_path, "-m", "immediate", "stop"]
         result = self._run(stop_args)
 
         if result.returncode != 0:
