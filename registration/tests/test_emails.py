@@ -12,11 +12,9 @@ from registration.models import (
     DealerAsst,
     Event,
     Order,
-    Staff,
 )
 from registration.templatetags import site as site_tags
 from registration.tests.common import DEFAULT_EVENT_ARGS
-from staff.models import StaffInvite
 
 
 class TestSendEmail(TestCase):
@@ -42,7 +40,7 @@ class EmailTestCase(TestCase):
         self.event.save()
 
         self.attendee = Attendee(
-            firstName="Staffer",
+            firstName="Dealer",
             lastName="Testerson",
             address1="123 Somewhere St",
             city="Place",
@@ -58,65 +56,10 @@ class EmailTestCase(TestCase):
             attendee=self.attendee, event=self.event, badgeName="DisStaff"
         )
         self.badge.save()
-        self.token = StaffInvite(email=self.attendee.email, validUntil="2048-12-12")
         self.order = Order(
             total=60, reference="HUGBUG", billingEmail=self.attendee.email
         )
         self.order.save()
-
-
-class TestStaffEmails(EmailTestCase):
-    def setUp(self):
-        super().setUp()
-        self.staff = Staff(attendee=self.attendee, event=self.event)
-        self.staff.save()
-
-    @patch("registration.emails.send_email")
-    def test_send_new_staff_email(self, mock_send_email):
-        emails.send_new_staff_email(self.token)
-        mock_send_email.assert_called_once()
-        recipients = mock_send_email.call_args[0][1]
-        plain_text = mock_send_email.call_args[0][3]
-        html_text = mock_send_email.call_args[0][4]
-        self.assertIn(self.token.token, plain_text)
-        self.assertIn(self.token.token, html_text)
-        self.assertEqual(recipients, [self.attendee.email])
-
-        # Make sure the correct endpoint was rendered
-        expected_path = reverse("registration:new_staff", args=(self.token.token,))
-        expected_fixed_path = f"/registration/new-staff/{self.token.token}/"
-        self.assertEqual(expected_path, expected_fixed_path)
-
-        # Make sure the correct URL was rendered
-        current_domain = site_tags.current_domain()
-        expected_url = f"https://{current_domain}{expected_path}"
-        self.assertIn(expected_url, plain_text)
-
-        # Make sure the URL is correct in the HTML email
-        expected_html_link = f"<a href='{expected_url}'>{expected_url}</a>"
-        self.assertIn(expected_html_link, html_text)
-
-    @patch("registration.emails.send_email")
-    def test_send_staff_promotion_email(self, mock_send_email):
-        emails.send_staff_promotion_email(self.staff)
-        mock_send_email.assert_called_once()
-        recipients = mock_send_email.call_args[0][1]
-        plain_text = mock_send_email.call_args[0][3]
-        html_text = mock_send_email.call_args[0][4]
-        self.assertIn(self.staff.registrationToken, plain_text)
-        self.assertIn(self.staff.registrationToken, html_text)
-        self.assertEqual(recipients, [self.attendee.email])
-
-    @patch("registration.emails.send_email")
-    def test_send_staff_registration_email(self, mock_send_email):
-        emails.send_staff_registration_email(self.order.pk)
-        mock_send_email.assert_called_once()
-        recipients = mock_send_email.call_args[0][1]
-        plain_text = mock_send_email.call_args[0][3]
-        html_text = mock_send_email.call_args[0][4]
-        self.assertIn(self.order.reference, plain_text)
-        self.assertIn(self.order.reference, html_text)
-        self.assertEqual(recipients, [self.attendee.email])
 
 
 class TestDealerEmails(EmailTestCase):
