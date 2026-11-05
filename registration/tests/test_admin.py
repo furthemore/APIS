@@ -569,7 +569,9 @@ class TestOrderItemAdmin(OrdersTestCase):
         self.admin_user.save()
         self.order = Order(total="90.00", reference="FOOBAR")
         self.order.save()
-        self.badge = Badge(event=self.event)
+        attendee = Attendee(**TEST_ATTENDEE_ARGS)
+        attendee.save()
+        self.badge = Badge(event=self.event, attendee=attendee)
         self.badge.save()
         self.order_item = OrderItem(
             order=self.order, badge=self.badge, priceLevel=self.price_90
@@ -668,6 +670,13 @@ class TestAssignBadgeNumbers(OrdersTestCase):
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
 
+    def _make_attendee(self, index: int) -> Attendee:
+        args = TEST_ATTENDEE_ARGS.copy()
+        args["email"] = f"badge-attendee-{index}@mailinator.org"
+        attendee = Attendee(**args)
+        attendee.save()
+        return attendee
+
     @patch("django.contrib.messages.warning")
     def test_assignment_works(self, mock_messages_warning: Mock):
         badges: List[Badge] = []
@@ -677,25 +686,25 @@ class TestAssignBadgeNumbers(OrdersTestCase):
         other_event = Event(**args)
         other_event.save()
 
-        badge = Badge(event=self.event)
+        badge = Badge(event=self.event, attendee=self._make_attendee(0))
         badge.save()
         badges.append(badge)
 
         order = Order(total="90.00", reference="FOOBAR")
         order.save()
 
-        badge = Badge(event=other_event)
+        badge = Badge(event=other_event, attendee=self._make_attendee(1))
         badge.save()
         badges.append(badge)
 
         order_item = OrderItem(order=order, badge=badge, priceLevel=self.price_90)
         order_item.save()
 
-        for _ in range(5):
+        for i in range(5):
             order = Order(total="90.00", reference="FOOBAR")
             order.save()
 
-            badge = Badge(event=self.event)
+            badge = Badge(event=self.event, attendee=self._make_attendee(i + 2))
             badge.save()
             badges.append(badge)
 
