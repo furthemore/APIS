@@ -27,11 +27,11 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Legal Name</label>
+                            <div class="form-label text-muted">Legal Name</div>
                             <div class="fw-bold">{{ staff_profile.legal_first_name }} {{ staff_profile.legal_last_name }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Preferred Name</label>
+                            <div class="form-label text-muted">Preferred Name</div>
                             <div class="fw-bold">
                                 {% if staff_profile.preferred_first_name or staff_profile.preferred_last_name %}
                                     {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }}
@@ -45,22 +45,22 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Email</label>
+                            <div class="form-label text-muted">Email</div>
                             <div class="fw-bold">{{ staff_profile.email }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Phone</label>
+                            <div class="form-label text-muted">Phone</div>
                             <div class="fw-bold">{{ staff_profile.phone }}</div>
                         </div>
                     </div>
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Department</label>
+                            <div class="form-label text-muted">Department</div>
                             <div class="fw-bold">{{ staff_profile.department.name|default:"Not assigned" }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Title</label>
+                            <div class="form-label text-muted">Title</div>
                             <div class="fw-bold">{{ staff_profile.title|default:"—" }}</div>
                         </div>
                     </div>

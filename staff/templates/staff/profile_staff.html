@@ -18,11 +18,11 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label text-muted">Legal Name</label>
+                        <div class="form-label text-muted">Legal Name</div>
                         <div class="fw-bold">{{ staff_profile.legal_first_name }} {{ staff_profile.legal_last_name }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label text-muted">Preferred Name</label>
+                        <div class="form-label text-muted">Preferred Name</div>
                         <div class="fw-bold">
                             {% if staff_profile.preferred_first_name or staff_profile.preferred_last_name %}
                                 {{ staff_profile.preferred_first_name|default:staff_profile.legal_first_name }}
@@ -37,7 +37,7 @@
                 {% if staff_profile.fandom_name %}
                 <div class="row mb-3">
                     <div class="col-md-12">
-                        <label class="form-label text-muted">Fandom/Credit Name</label>
+                        <div class="form-label text-muted">Fandom/Credit Name</div>
                         <div class="fw-bold">{{ staff_profile.fandom_name }}</div>
                     </div>
                 </div>
@@ -45,11 +45,11 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label text-muted">Email</label>
+                        <div class="form-label text-muted">Email</div>
                         <div class="fw-bold">{{ staff_profile.email }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label text-muted">Phone</label>
+                        <div class="form-label text-muted">Phone</div>
                         <div class="fw-bold">{{ staff_profile.phone|default:"—" }}</div>
                     </div>
                 </div>
@@ -64,18 +64,18 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label text-muted">Department</label>
+                        <div class="form-label text-muted">Department</div>
                         <div class="fw-bold">{{ staff_profile.department.name|default:"Not assigned" }}</div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label text-muted">Title</label>
+                        <div class="form-label text-muted">Title</div>
                         <div class="fw-bold">{{ staff_profile.title|default:"—" }}</div>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-12">
-                        <label class="form-label text-muted">Onboarding Status</label>
+                        <div class="form-label text-muted">Onboarding Status</div>
                         <div>
                             {% if staff_profile.onboarding_complete %}
                             <span class="badge bg-success"><i class="bi bi-check-circle"></i> Complete</span>
