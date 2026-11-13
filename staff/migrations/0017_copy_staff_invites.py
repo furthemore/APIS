@@ -6,13 +6,13 @@ from django.db import migrations
 def copy_staff_invites(apps, schema_editor):
     """Copy data from registration_temp_token to staff_staffinvite"""
     # Get the old model from registration
-    OldStaffInvite = apps.get_model("registration", "StaffInvite")
+    old_staff_invite = apps.get_model("registration", "StaffInvite")
     # Get the new model from staff
-    NewStaffInvite = apps.get_model("staff", "StaffInvite")
+    new_staff_invite = apps.get_model("staff", "StaffInvite")
 
     # Copy all records
-    for old_invite in OldStaffInvite.objects.all():
-        NewStaffInvite.objects.create(
+    for old_invite in old_staff_invite.objects.all():
+        new_staff_invite.objects.create(
             token=old_invite.token,
             email=old_invite.email,
             ignore_time_window=old_invite.ignore_time_window,
@@ -25,8 +25,8 @@ def copy_staff_invites(apps, schema_editor):
 
 def reverse_copy(apps, schema_editor):
     """Clear the new staff invites if rolling back"""
-    NewStaffInvite = apps.get_model("staff", "StaffInvite")
-    NewStaffInvite.objects.all().delete()
+    new_staff_invite = apps.get_model("staff", "StaffInvite")
+    new_staff_invite.objects.all().delete()
 
 
 class Migration(migrations.Migration):

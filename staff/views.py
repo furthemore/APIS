@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_GET, require_http_methods
 
 from registration.models import (
     Badge,
@@ -21,6 +22,7 @@ from staff.models import (
 )
 
 
+@require_GET
 def index(request):
     """
     Redirect to appropriate page:
@@ -32,6 +34,80 @@ def index(request):
     return redirect("staff:openings")
 
 
+def _get_current_event():
+    """Return the default event, or None if there isn't one."""
+    return Event.objects.filter(default=True).first()
+
+
+def _get_event_registration(staff, event):
+    """Return the staff member's registration for the event, if any."""
+    if not event:
+        return None
+    return StaffEventRegistration.objects.filter(staff=staff, event=event).first()
+
+
+def _build_staff_list(department, event):
+    """
+    List direct members of a department with their registration status.
+    Registrations are fetched in a single query rather than one per member.
+    """
+    members = list(Staff.objects.filter(department=department).select_related("user"))
+    registrations = {}
+    if event:
+        registrations = {
+            reg.staff_id: reg
+            for reg in StaffEventRegistration.objects.filter(
+                staff__in=members, event=event
+            )
+        }
+
+    staff_list = []
+    for member in members:
+        registration = registrations.get(member.pk)
+        staff_list.append(
+            {
+                "staff": member,
+                "is_registered": registration is not None,
+                "checked_in": registration.checked_in if registration else False,
+            }
+        )
+    return staff_list
+
+
+def _count_registered(department, event):
+    """Count staff in the department registered for the event."""
+    if not event:
+        return 0
+    return StaffEventRegistration.objects.filter(
+        staff__department=department, event=event
+    ).count()
+
+
+def _build_sub_department_stats(department, event):
+    stats = []
+    for sub_dept in department.sub_departments.all():
+        stats.append(
+            {
+                "department": sub_dept,
+                "staff_count": Staff.objects.filter(department=sub_dept).count(),
+                "registered_count": _count_registered(sub_dept, event),
+                "staff_list": _build_staff_list(sub_dept, event),
+            }
+        )
+    return stats
+
+
+def _build_department_stats(department, event):
+    return {
+        "department": department,
+        "direct_staff_count": Staff.objects.filter(department=department).count(),
+        "total_staff": department.get_all_staff().count(),
+        "registered_count": _count_registered(department, event),
+        "staff_list": _build_staff_list(department, event),
+        "sub_departments": _build_sub_department_stats(department, event),
+    }
+
+
 @login_required
 def profile(request):
     """
@@ -39,7 +115,6 @@ def profile(request):
     - Department heads/assistant heads: Dashboard with department stats
     - Regular staff: Personal profile summary
     """
-    # Check if user has a staff profile
     if not hasattr(request.user, "staff_profile"):
         return render(
             request,
@@ -50,167 +125,31 @@ def profile(request):
         )
 
     staff_profile = request.user.staff_profile
-
-    # Get current/default event
-    try:
-        current_event = Event.objects.get(default=True)
-    except Event.DoesNotExist:
-        current_event = None
-
-    # Get registration token from staff profile
+    current_event = _get_current_event()
     registration_token = staff_profile.registration_token if current_event else None
+    event_registration = _get_event_registration(staff_profile, current_event)
 
-    # Check if user is a department head or assistant head
-    is_department_leader = (
-        Department.objects.filter(heads=staff_profile).exists()
-        or Department.objects.filter(assistant_heads=staff_profile).exists()
-    )
+    context = {
+        "staff_profile": staff_profile,
+        "current_event": current_event,
+        "registration_token": registration_token,
+        "is_registered": event_registration is not None,
+        "registration_record": event_registration,
+        "is_department_leader": False,
+    }
 
-    if is_department_leader:
-        # Get departments they lead
-        led_departments = Department.objects.filter(
-            models.Q(heads=staff_profile) | models.Q(assistant_heads=staff_profile)
-        ).distinct()
+    led_departments = Department.objects.filter(
+        models.Q(heads=staff_profile) | models.Q(assistant_heads=staff_profile)
+    ).distinct()
 
-        # Build stats for each department
-        department_stats = []
-        for dept in led_departments:
-            # Get direct staff count
-            direct_staff_count = Staff.objects.filter(department=dept).count()
-
-            # Get all staff including sub-departments
-            all_staff = dept.get_all_staff()
-            total_staff = all_staff.count()
-
-            # Count how many are registered for current event
-            registered_count = 0
-            if current_event:
-                registered_count = StaffEventRegistration.objects.filter(
-                    staff__department=dept, event=current_event
-                ).count()
-
-            # Get staff list with their registration status (direct members only)
-            staff_list = []
-            for staff_member in Staff.objects.filter(department=dept).select_related(
-                "user"
-            ):
-                # Check if they're registered for current event
-                is_registered = False
-                event_registration = None
-                if current_event:
-                    event_registration = StaffEventRegistration.objects.filter(
-                        staff=staff_member, event=current_event
-                    ).first()
-                    is_registered = event_registration is not None
-
-                staff_list.append(
-                    {
-                        "staff": staff_member,
-                        "is_registered": is_registered,
-                        "checked_in": (
-                            event_registration.checked_in
-                            if event_registration
-                            else False
-                        ),
-                    }
-                )
-
-            # Get sub-departments with their stats
-            sub_dept_stats = []
-            for sub_dept in dept.sub_departments.all():
-                sub_staff_count = Staff.objects.filter(department=sub_dept).count()
-                sub_registered_count = 0
-                if current_event:
-                    sub_registered_count = StaffEventRegistration.objects.filter(
-                        staff__department=sub_dept, event=current_event
-                    ).count()
-
-                # Get staff list for sub-department
-                sub_staff_list = []
-                for staff_member in Staff.objects.filter(
-                    department=sub_dept
-                ).select_related("user"):
-                    # Check if they're registered for current event
-                    is_registered = False
-                    event_registration = None
-                    if current_event:
-                        event_registration = StaffEventRegistration.objects.filter(
-                            staff=staff_member, event=current_event
-                        ).first()
-                        is_registered = event_registration is not None
-
-                    sub_staff_list.append(
-                        {
-                            "staff": staff_member,
-                            "is_registered": is_registered,
-                            "checked_in": (
-                                event_registration.checked_in
-                                if event_registration
-                                else False
-                            ),
-                        }
-                    )
-
-                sub_dept_stats.append(
-                    {
-                        "department": sub_dept,
-                        "staff_count": sub_staff_count,
-                        "registered_count": sub_registered_count,
-                        "staff_list": sub_staff_list,
-                    }
-                )
-
-            department_stats.append(
-                {
-                    "department": dept,
-                    "direct_staff_count": direct_staff_count,
-                    "total_staff": total_staff,
-                    "registered_count": registered_count,
-                    "staff_list": staff_list,
-                    "sub_departments": sub_dept_stats,
-                }
-            )
-
-        # Check personal registration status for leader as well
-        is_registered = False
-        event_registration = None
-        if current_event:
-            event_registration = StaffEventRegistration.objects.filter(
-                staff=staff_profile, event=current_event
-            ).first()
-            is_registered = event_registration is not None
-
-        context = {
-            "staff_profile": staff_profile,
-            "is_department_leader": True,
-            "current_event": current_event,
-            "department_stats": department_stats,
-            "registration_token": registration_token,
-            "is_registered": is_registered,
-            "registration_record": event_registration,
-        }
-        return render(request, "staff/profile_leader.html", context)
-
-    else:
-        # Regular staff member - show personal summary
-        # Check if they're registered for current event
-        is_registered = False
-        event_registration = None
-        if current_event:
-            event_registration = StaffEventRegistration.objects.filter(
-                staff=staff_profile, event=current_event
-            ).first()
-            is_registered = event_registration is not None
-
-        context = {
-            "staff_profile": staff_profile,
-            "is_department_leader": False,
-            "current_event": current_event,
-            "is_registered": is_registered,
-            "registration_record": event_registration,
-            "registration_token": registration_token,
-        }
+    if not led_departments.exists():
         return render(request, "staff/profile_staff.html", context)
+
+    context["is_department_leader"] = True
+    context["department_stats"] = [
+        _build_department_stats(dept, current_event) for dept in led_departments
+    ]
+    return render(request, "staff/profile_leader.html", context)
 
 
 def openings(request):
@@ -227,6 +166,7 @@ def openings(request):
     return render(request, "staff/openings.html", context)
 
 
+@require_http_methods(["GET", "POST"])
 def apply(request, token):
     """Application form for a specific posting."""
     posting = get_object_or_404(
@@ -268,6 +208,7 @@ def application(request, token):
     return render(request, "staff/application.html", context)
 
 
+@require_http_methods(["GET", "POST"])
 def register(request, token):
     """
     Staff registration for current event using token.
@@ -440,6 +381,7 @@ def register(request, token):
     return render(request, "staff/register.html", context)
 
 
+@require_GET
 def register_complete(request):
     """Registration completion page"""
     try:
