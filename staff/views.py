@@ -109,6 +109,7 @@ def _build_department_stats(department, event):
 
 
 @login_required
+@require_GET
 def profile(request):
     """
     Staff profile view - shows different content based on role:
@@ -152,6 +153,7 @@ def profile(request):
     return render(request, "staff/profile_leader.html", context)
 
 
+@require_GET
 def openings(request):
     """List all open staff postings."""
     postings = (
@@ -195,6 +197,7 @@ def apply(request, token):
     return render(request, "staff/apply.html", context)
 
 
+@require_GET
 def application(request, token):
     """Confirmation page after submitting an application."""
     applicant = get_object_or_404(
