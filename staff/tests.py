@@ -584,3 +584,397 @@ class BadgeStaffLinkTest(TestCase):
         )
         
         self.assertEqual(badge.abandoned, Badge.STAFF)
+
+
+def make_staff(email, department=None, user=None, **kwargs):
+    """Helper to create a Staff record with the required fields filled in"""
+    return Staff.objects.create(
+        legal_first_name=kwargs.pop("first", "Test"),
+        legal_last_name=kwargs.pop("last", "Staff"),
+        email=email,
+        birthdate="1990-01-01",
+        title="Staff",
+        department=department,
+        user=user,
+        **kwargs,
+    )
+
+
+APPLICATION_DATA = {
+    "legal_first_name": "Ann",
+    "legal_last_name": "Applicant",
+    "birthdate": "1995-04-02",
+    "email": "ann@example.com",
+    "phone": "555-1111",
+}
+
+REGISTRATION_DATA = {
+    "street_address_1": "456 New St",
+    "city": "New City",
+    "state": "NY",
+    "country": "USA",
+    "postal_code": "54321",
+    "contact_name": "Emergency",
+    "contact_phone": "555-0000",
+}
+
+
+class StaffIndexViewTest(TestCase):
+    def test_authenticated_user_without_profile_goes_to_openings(self):
+        User.objects.create_user(username="plain", password="pw12345!")
+        self.client.login(username="plain", password="pw12345!")
+        response = self.client.get(reverse("staff:index"))
+        self.assertRedirects(
+            response, reverse("staff:openings"), fetch_redirect_response=False
+        )
+
+
+class StaffProfileViewTest(TestCase):
+    """Tests for the portal (profile) view, regular and leader variants"""
+
+    def setUp(self):
+        self.password = "pw12345!"
+        self.dept = Department.objects.create(name="Ops")
+        self.user = User.objects.create_user(username="member", password=self.password)
+        self.staff = make_staff("member@example.com", self.dept, self.user)
+        self.client.login(username="member", password=self.password)
+
+    def test_regular_staff_without_event(self):
+        response = self.client.get(reverse("staff:portal"))
+        self.assertTemplateUsed(response, "staff/profile_staff.html")
+        self.assertIsNone(response.context["current_event"])
+        self.assertIsNone(response.context["registration_token"])
+        self.assertFalse(response.context["is_registered"])
+        self.assertFalse(response.context["is_department_leader"])
+
+    def test_regular_staff_registered_for_event(self):
+        event = create_test_event()
+        reg = StaffEventRegistration.objects.create(staff=self.staff, event=event)
+        response = self.client.get(reverse("staff:portal"))
+        self.assertTemplateUsed(response, "staff/profile_staff.html")
+        self.assertTrue(response.context["is_registered"])
+        self.assertEqual(response.context["registration_record"], reg)
+        self.assertEqual(
+            response.context["registration_token"], self.staff.registration_token
+        )
+
+    def test_regular_staff_not_registered_for_event(self):
+        create_test_event()
+        response = self.client.get(reverse("staff:portal"))
+        self.assertFalse(response.context["is_registered"])
+        self.assertIsNone(response.context["registration_record"])
+
+    def _stats_fixture(self):
+        """Dept with head, assistant, a registered member and a sub-department"""
+        sub = Department.objects.create(name="Sub", parent_department=self.dept)
+        sub_member = make_staff("sub@example.com", sub, first="Sub")
+        member = make_staff("other@example.com", self.dept, first="Other")
+        return sub, sub_member, member
+
+    def test_department_head_sees_leader_dashboard(self):
+        self.dept.heads.add(self.staff)
+        event = create_test_event()
+        sub, sub_member, member = self._stats_fixture()
+        StaffEventRegistration.objects.create(
+            staff=member, event=event, checked_in=True
+        )
+        StaffEventRegistration.objects.create(staff=sub_member, event=event)
+
+        response = self.client.get(reverse("staff:portal"))
+
+        self.assertTemplateUsed(response, "staff/profile_leader.html")
+        self.assertTrue(response.context["is_department_leader"])
+        stats = response.context["department_stats"]
+        self.assertEqual(len(stats), 1)
+        dept_stats = stats[0]
+        self.assertEqual(dept_stats["department"], self.dept)
+        self.assertEqual(dept_stats["direct_staff_count"], 2)
+        self.assertEqual(dept_stats["total_staff"], 3)
+        self.assertEqual(dept_stats["registered_count"], 1)
+
+        by_staff = {row["staff"]: row for row in dept_stats["staff_list"]}
+        self.assertFalse(by_staff[self.staff]["is_registered"])
+        self.assertFalse(by_staff[self.staff]["checked_in"])
+        self.assertTrue(by_staff[member]["is_registered"])
+        self.assertTrue(by_staff[member]["checked_in"])
+
+        sub_stats = dept_stats["sub_departments"]
+        self.assertEqual(len(sub_stats), 1)
+        self.assertEqual(sub_stats[0]["department"], sub)
+        self.assertEqual(sub_stats[0]["staff_count"], 1)
+        self.assertEqual(sub_stats[0]["registered_count"], 1)
+        self.assertTrue(sub_stats[0]["staff_list"][0]["is_registered"])
+
+    def test_assistant_head_sees_leader_dashboard_without_event(self):
+        self.dept.assistant_heads.add(self.staff)
+        self._stats_fixture()
+
+        response = self.client.get(reverse("staff:portal"))
+
+        self.assertTemplateUsed(response, "staff/profile_leader.html")
+        dept_stats = response.context["department_stats"][0]
+        self.assertEqual(dept_stats["registered_count"], 0)
+        self.assertEqual(dept_stats["sub_departments"][0]["registered_count"], 0)
+        for row in dept_stats["staff_list"]:
+            self.assertFalse(row["is_registered"])
+            self.assertFalse(row["checked_in"])
+
+    def test_head_and_assistant_of_same_department_listed_once(self):
+        self.dept.heads.add(self.staff)
+        self.dept.assistant_heads.add(self.staff)
+        response = self.client.get(reverse("staff:portal"))
+        self.assertEqual(len(response.context["department_stats"]), 1)
+
+    def test_portal_rejects_post(self):
+        response = self.client.post(reverse("staff:portal"))
+        self.assertEqual(response.status_code, 405)
+
+
+class StaffOpeningsViewTest(TestCase):
+    def test_closed_postings_are_hidden(self):
+        dept = Department.objects.create(name="Tech")
+        open_pos = StaffPosition.objects.create(title="Open Role", department=dept)
+        closed_pos = StaffPosition.objects.create(title="Closed Role", department=dept)
+        StaffPosting.objects.create(position=open_pos, is_open=True)
+        StaffPosting.objects.create(position=closed_pos, is_open=False)
+
+        response = self.client.get(reverse("staff:openings"))
+
+        self.assertContains(response, "Open Role")
+        self.assertNotContains(response, "Closed Role")
+        self.assertEqual(len(response.context["postings"]), 1)
+
+
+class StaffApplyViewTest(TestCase):
+    def setUp(self):
+        dept = Department.objects.create(name="Tech")
+        position = StaffPosition.objects.create(title="Dev", department=dept)
+        self.posting = StaffPosting.objects.create(position=position, is_open=True)
+        self.url = reverse("staff:apply", kwargs={"token": self.posting.token})
+
+    def test_get_shows_form(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "staff/apply.html")
+        self.assertEqual(response.context["posting"], self.posting)
+        self.assertFalse(response.context["form"].is_bound)
+
+    def test_valid_post_creates_applicant_and_redirects(self):
+        response = self.client.post(self.url, APPLICATION_DATA)
+
+        applicant = StaffApplicant.objects.get(email="ann@example.com")
+        self.assertEqual(applicant.posting, self.posting)
+        self.assertTrue(applicant.registration_token)
+        self.assertRedirects(
+            response,
+            reverse("staff:application", kwargs={"token": applicant.registration_token}),
+        )
+
+    def test_invalid_post_rerenders_form(self):
+        data = dict(APPLICATION_DATA, email="not-an-email")
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "staff/apply.html")
+        self.assertIn("email", response.context["form"].errors)
+        self.assertEqual(StaffApplicant.objects.count(), 0)
+
+    def test_closed_posting_returns_404(self):
+        self.posting.is_open = False
+        self.posting.save()
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+        self.assertEqual(self.client.post(self.url, APPLICATION_DATA).status_code, 404)
+
+    def test_unknown_token_returns_404(self):
+        url = reverse("staff:apply", kwargs={"token": "nope"})
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+
+class StaffApplicationViewTest(TestCase):
+    def test_confirmation_page(self):
+        dept = Department.objects.create(name="Tech")
+        position = StaffPosition.objects.create(title="Dev", department=dept)
+        posting = StaffPosting.objects.create(position=position, is_open=True)
+        applicant = StaffApplicant.objects.create(
+            posting=posting,
+            registration_token="APPTOKEN",
+            legal_first_name="Ann",
+            legal_last_name="Applicant",
+            birthdate="1995-04-02",
+            email="ann@example.com",
+            phone="555",
+        )
+        response = self.client.get(
+            reverse("staff:application", kwargs={"token": "APPTOKEN"})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["applicant"], applicant)
+
+    def test_unknown_token_returns_404(self):
+        response = self.client.get(
+            reverse("staff:application", kwargs={"token": "missing"})
+        )
+        self.assertEqual(response.status_code, 404)
+
+
+class StaffRegisterEdgeCaseTest(TestCase):
+    """Remaining branches of the register and register_complete views"""
+
+    def setUp(self):
+        self.staff = make_staff(
+            "reg@example.com",
+            street_address_1="123 Main St",
+            city="Town",
+        )
+        self.shirt = ShirtSizes.objects.create(name="Large")
+        self.data = dict(REGISTRATION_DATA, shirt_size=self.shirt.id)
+
+    def url(self, token):
+        return reverse("staff:register", kwargs={"token": token})
+
+    def test_no_default_event(self):
+        response = self.client.get(self.url(self.staff.registration_token))
+        self.assertTemplateUsed(response, "staff/register_error.html")
+        self.assertContains(response, "No active event found")
+
+    def test_used_invite(self):
+        create_test_event()
+        invite = StaffInvite.objects.create(
+            email=self.staff.email,
+            valid_until=timezone.now() + timedelta(days=7),
+            used=True,
+        )
+        response = self.client.get(self.url(invite.token))
+        self.assertContains(response, "already been used")
+
+    def test_invite_without_matching_staff(self):
+        create_test_event()
+        invite = StaffInvite.objects.create(
+            email="ghost@example.com",
+            valid_until=timezone.now() + timedelta(days=7),
+        )
+        response = self.client.get(self.url(invite.token))
+        self.assertContains(response, "No staff profile found")
+
+    def test_get_prefills_address_and_previous_year_data(self):
+        create_test_event()
+        old_event = create_test_event(name="Old Con", days_ahead=-400)
+        old_event.default = False
+        old_event.save()
+        StaffEventRegistration.objects.create(
+            staff=self.staff,
+            event=old_event,
+            shirt_size=self.shirt,
+            bluesky="@me.bsky.social",
+            telegram="@me",
+            contact_name="Mom",
+            contact_phone="555-9999",
+            contact_relation="Parent",
+            special_skills="First aid",
+            special_food="Vegan",
+            special_medical="None",
+        )
+
+        response = self.client.get(self.url(self.staff.registration_token))
+
+        initial = response.context["form"].initial
+        self.assertEqual(initial["street_address_1"], "123 Main St")
+        self.assertEqual(initial["city"], "Town")
+        self.assertEqual(initial["bluesky"], "@me.bsky.social")
+        self.assertEqual(initial["contact_name"], "Mom")
+        self.assertEqual(initial["special_food"], "Vegan")
+        # Shirt size is intentionally not carried over
+        self.assertNotIn("shirt_size", initial)
+
+    def test_get_without_previous_registration_has_only_address_initial(self):
+        create_test_event()
+        response = self.client.get(self.url(self.staff.registration_token))
+        self.assertNotIn("contact_name", response.context["form"].initial)
+
+    def test_invalid_post_rerenders_form(self):
+        create_test_event()
+        data = dict(self.data)
+        del data["shirt_size"]
+        response = self.client.post(self.url(self.staff.registration_token), data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "staff/register.html")
+        self.assertIn("shirt_size", response.context["form"].errors)
+        self.assertEqual(StaffEventRegistration.objects.count(), 0)
+
+    def test_post_with_invite_token_marks_invite_used(self):
+        event = create_test_event()
+        invite = StaffInvite.objects.create(
+            email=self.staff.email,
+            valid_until=timezone.now() + timedelta(days=7),
+        )
+        old_token = self.staff.registration_token
+
+        response = self.client.post(self.url(invite.token), self.data)
+
+        self.assertRedirects(
+            response, reverse("staff:register_complete"), fetch_redirect_response=False
+        )
+        invite.refresh_from_db()
+        self.assertTrue(invite.used)
+        self.assertIsNotNone(invite.used_date)
+        self.staff.refresh_from_db()
+        self.assertNotEqual(self.staff.registration_token, old_token)
+        self.assertTrue(
+            StaffEventRegistration.objects.filter(staff=self.staff, event=event).exists()
+        )
+
+    def test_post_uses_fandom_name_for_badge(self):
+        event = create_test_event()
+        self.staff.fandom_name = "Fluffy"
+        self.staff.save()
+        self.client.post(self.url(self.staff.registration_token), self.data)
+        badge = Badge.objects.get(staff=self.staff, event=event)
+        self.assertEqual(badge.badgeName, "Fluffy")
+
+    def test_post_creates_order_item_with_staff_price_level(self):
+        create_test_event()
+        level = PriceLevel.objects.create(
+            name="Staff",
+            basePrice=0,
+            startDate=timezone.now() - timedelta(days=1),
+            endDate=timezone.now() + timedelta(days=1),
+            available_to_staff=True,
+        )
+        self.client.post(self.url(self.staff.registration_token), self.data)
+        item = Badge.objects.get(staff=self.staff).orderitem_set.get()
+        self.assertEqual(item.priceLevel, level)
+        self.assertEqual(item.enteredBy, "STAFF_PORTAL")
+
+    def test_post_without_staff_price_level_skips_order_item(self):
+        create_test_event()
+        response = self.client.post(self.url(self.staff.registration_token), self.data)
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Badge.objects.get(staff=self.staff).orderitem_set.exists())
+
+    def test_post_survives_order_item_failure(self):
+        create_test_event()
+        PriceLevel.objects.create(
+            name="Staff",
+            basePrice=0,
+            startDate=timezone.now() - timedelta(days=1),
+            endDate=timezone.now() + timedelta(days=1),
+            available_to_staff=True,
+        )
+        with patch(
+            "staff.views.OrderItem.objects.create", side_effect=RuntimeError("boom")
+        ):
+            response = self.client.post(
+                self.url(self.staff.registration_token), self.data
+            )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(StaffEventRegistration.objects.filter(staff=self.staff).exists())
+
+    def test_register_complete_with_event(self):
+        event = create_test_event()
+        response = self.client.get(reverse("staff:register_complete"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["event"], event)
+
+    def test_register_complete_without_event(self):
+        response = self.client.get(reverse("staff:register_complete"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context["event"])
