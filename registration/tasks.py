@@ -66,21 +66,6 @@ def send_staff_registration_email_task(self, order_id):
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
-def send_staff_promotion_email_task(self, staff_id):
-    from registration.models import Staff
-
-    try:
-        staff = Staff.objects.get(id=staff_id)
-        emails.send_staff_promotion_email(staff)
-    except Exception as exc:
-        logger.exception(
-            "Failed to send staff promotion email",
-            extra={"staff_id": staff_id},
-        )
-        raise self.retry(exc=exc)
-
-
-@shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def send_new_staff_email_task(self, token_id):
     """
     DEPRECATED: Use staff.tasks.send_staff_invitation_email_task instead.

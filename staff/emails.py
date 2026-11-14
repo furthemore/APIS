@@ -3,9 +3,8 @@ Staff-related email functions
 """
 from django.template.loader import render_to_string
 
-from registration.emails import send_email
+from registration.emails import get_staff_email, send_email
 from registration.models import Event
-import registration.views.staff
 
 
 def send_staff_invitation_email(invite):
@@ -21,7 +20,7 @@ def send_staff_invitation_email(invite):
     
     msg_txt = render_to_string("staff/emails/invitation.txt", data)
     msg_html = render_to_string("staff/emails/invitation.html", data)
-    staff_email = registration.views.staff.get_staff_email(event)
+    staff_email = get_staff_email(event)
     
     send_email(
         staff_email,
@@ -48,7 +47,7 @@ def send_staff_promotion_email(staff_profile, token):
     
     msg_txt = render_to_string("staff/emails/promotion.txt", data)
     msg_html = render_to_string("staff/emails/promotion.html", data)
-    staff_email = registration.views.staff.get_staff_email(event)
+    staff_email = get_staff_email(event)
     
     send_email(
         staff_email,
@@ -66,7 +65,7 @@ def send_staff_registration_confirmation(staff_profile, event_registration, refe
     from registration.models import Event
     
     event = event_registration.event
-    staff_email = registration.views.staff.get_staff_email(event)
+    staff_email = get_staff_email(event)
     
     data = {
         "event": event,
