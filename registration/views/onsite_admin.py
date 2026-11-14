@@ -31,7 +31,6 @@ from registration.models import (
     AttendeeOptions,
     Badge,
     Cashdrawer,
-    Department,
     Discount,
     Event,
     Firebase,
@@ -48,6 +47,7 @@ from registration.views.ordering import (
     get_discount_total,
     get_order_item_option_total,
 )
+from staff.models import Department
 
 
 def flatten(l):
@@ -591,7 +591,10 @@ def combine_orders(orders):
             old_order = order_item.order
             order_item.order = first_order
             if old_order and old_order.id:
-                logger.warning("Deleting old order during combine", extra={"order_id": old_order.id})
+                logger.warning(
+                    "Deleting old order during combine",
+                    extra={"order_id": old_order.id},
+                )
                 old_order.delete()
             order_item.save()
 

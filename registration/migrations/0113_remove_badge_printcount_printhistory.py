@@ -7,26 +7,53 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0112_alter_reservedbadgenumbers_options_and_more'),
+        ("registration", "0112_alter_reservedbadgenumbers_options_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='badge',
-            name='printCount',
+            model_name="badge",
+            name="printCount",
         ),
         migrations.CreateModel(
-            name='PrintHistory',
+            name="PrintHistory",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('source', models.CharField(choices=[('onsite', 'Onsite'), ('admin', 'Admin')])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('badge', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='registration.badge')),
-                ('firebase', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='registration.firebase', verbose_name='Terminal')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "source",
+                    models.CharField(
+                        choices=[("onsite", "Onsite"), ("admin", "Admin")]
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "badge",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="registration.badge",
+                    ),
+                ),
+                (
+                    "firebase",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="registration.firebase",
+                        verbose_name="Terminal",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Print history',
-                'db_table': 'registration_print_history',
+                "verbose_name_plural": "Print history",
+                "db_table": "registration_print_history",
             },
         ),
     ]

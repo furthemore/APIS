@@ -44,6 +44,7 @@ jobs:
               - 'registration/tests/**'
               - 'registration/utils/**'
               - 'registration/views/**'
+              - 'staff/**'
               - 'fm_eventmanager/**'
               - 'manage.py'
               - 'pyproject.toml'
@@ -151,7 +152,7 @@ jobs:
         run: |
           cp fm_eventmanager/settings.py.ci fm_eventmanager/settings.py
           uv run --frozen --no-build --no-sync python ./manage.py collectstatic --noinput --skip-checks
-          uv run --frozen --no-build --no-sync coverage run ./manage.py test registration
+          uv run --frozen --no-build --no-sync coverage run ./manage.py test registration staff
         env:
           SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
           SQUARE_ACCESS_TOKEN: ${{ secrets.SQUARE_ACCESS_TOKEN }}

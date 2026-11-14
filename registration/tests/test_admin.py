@@ -23,7 +23,9 @@ from registration.tests.common import *
 
 class TestOrderAdmin(TestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
         self.normal_user = User.objects.create_user(
             "john", "lennon@thebeatles.com", "john"  # NOSONAR
@@ -357,7 +359,9 @@ class TestOrderAdmin(TestCase):
                 idempotency_key=str(uuid.uuid4()),
                 source_id=nonce,
                 autocomplete=autocomplete,
-                amount_money=MoneyParams(amount=10000, currency=settings.SQUARE_CURRENCY),
+                amount_money=MoneyParams(
+                    amount=10000, currency=settings.SQUARE_CURRENCY
+                ),
                 reference_id=order.reference,
                 billing_address=AddressParams(postal_code="94042"),
                 location_id=settings.SQUARE_LOCATION_ID,
@@ -534,7 +538,9 @@ class TestOrderAdmin(TestCase):
 
 class TestCashDrawerAdmin(TestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
 
     def test_save_model(self):
@@ -557,11 +563,15 @@ class TestCashDrawerAdmin(TestCase):
 class TestOrderItemAdmin(OrdersTestCase):
     def setUp(self):
         super().setUp()
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
         self.order = Order(total="90.00", reference="FOOBAR")
         self.order.save()
-        self.badge = Badge(event=self.event)
+        attendee = Attendee(**TEST_ATTENDEE_ARGS)
+        attendee.save()
+        self.badge = Badge(event=self.event, attendee=attendee)
         self.badge.save()
         self.order_item = OrderItem(
             order=self.order, badge=self.badge, priceLevel=self.price_90
@@ -653,215 +663,19 @@ class TestDealerAsstAdmin(TestDealerAdmin):
         self.assertFalse(self.asst_admin.asst_registered(self.assistant))
 
 
-class TestStaffAdmin(AdminTestCase):
-    def setUp(self):
-        super().setUp()
-        event_args = dict(DEFAULT_EVENT_ARGS)
-        event_args["name"] = "New Test Event"
-        event_args["default"] = False
-        self.new_event = Event(**event_args)
-        self.new_event.save()
-        self.staff_admin = admin.StaffAdmin(model=Staff, admin_site=self.admin_site)
-        self.attendee = Attendee(**TEST_ATTENDEE_ARGS)
-        self.attendee.save()
-        self.badge = Badge(
-            attendee=self.attendee, event=self.event, badgeName="DisStaff"
-        )
-        self.badge.save()
-        self.staff = Staff(attendee=self.attendee, event=self.event)
-        self.staff.save()
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
-        self.admin_user.save()
-
-    def test_checkin_staff(self):
-        self.assertFalse(self.staff.checkedIn)
-        admin.checkin_staff(None, None, [self.staff])
-        self.assertTrue(self.staff.checkedIn)
-
-    def test_send_staff_registration_email(self):
-        admin.send_staff_registration_email(None, None, [self.staff])
-        # Test that one message has been sent.
-        self.assertEqual(len(mail.outbox), 1)
-
-    def test_get_email(self):
-        self.assertEqual(self.staff_admin.get_email(self.staff), self.attendee.email)
-
-    def test_get_email_no_attendee(self):
-        self.assertEqual(self.staff_admin.get_email(Staff()), "--")
-
-    def test_get_badge(self):
-        self.assertEqual(self.staff_admin.get_badge(self.staff), self.badge.badgeName)
-
-    def test_get_badge_none(self):
-        self.assertEqual(self.staff_admin.get_badge(Staff()), "--")
-
-    def test_copy_to_event_form(self):
-        request = HttpRequest()
-        request.user = self.admin_user
-        staff = Staff.objects.all()
-        response = self.staff_admin.copy_to_event(request, staff)
-        self.assertEqual(response.status_code, 200)
-
-    @patch("registration.admin.StaffAdmin.message_user")
-    def test_copy_to_event(self, mock_message_user):
-        form_data = {
-            "event": self.new_event.pk,
-            "action": "copy_to_event",
-            "_selected_action": "3",
-        }
-        request = HttpRequest()
-        request.POST.update(form_data)
-
-        response = self.staff_admin.copy_to_event(request, [self.staff])
-        mock_message_user.assert_called_once()
-        self.assertEqual(
-            mock_message_user.call_args[0][1],
-            f"Successfully copied 1 staff to {self.new_event.name}.",
-        )
-        self.assertEqual(Staff.objects.filter(event=self.new_event).count(), 1)
-        Staff.objects.filter(event=self.new_event).delete()
-
-    @patch("registration.admin.StaffAdmin.message_user")
-    def test_copy_to_same_event(self, mock_message_user):
-        form_data = {
-            "event": self.event.pk,
-            "action": "copy_to_event",
-            "_selected_action": "3",
-        }
-        request = HttpRequest()
-        request.POST.update(form_data)
-
-        response = self.staff_admin.copy_to_event(request, [self.staff])
-        mock_message_user.assert_called_once()
-        self.assertEqual(
-            mock_message_user.call_args[0][1],
-            f"Successfully copied 0 staff to {self.event.name}.",
-        )
-        self.assertEqual(Staff.objects.filter(event=self.new_event).count(), 0)
-
-
-class TestStaffInvite(TestCase):
-    def setUp(self):
-        self.event = Event(**DEFAULT_EVENT_ARGS)
-        self.event.save()
-
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
-        self.admin_user.save()
-
-    @patch("registration.emails.send_email")
-    def test_staff_invite_send_email(self, mock_send_email):
-        test_email_address = "test-admin@example.net"
-
-        # Login to the admin section
-        logged_in = self.client.login(username="admin", password="admin")
-        self.assertTrue(logged_in)
-
-        # Build out the create staff invite form
-        form_data = {
-            "email": test_email_address,
-            "ignore_time_window": "on",
-            "validUntil_0": "2025-01-27",
-            "validUntil_1": "00:00:00",
-            "usedDate_0": "",
-            "usedDate_1": "",
-            "_save": "Save",
-        }
-
-        # Get the CSRF token from the form so we can POST properly
-        response = self.client.get(
-            reverse("admin:registration_staffinvite_add")
-        )
-        soup = BeautifulSoup(response.content, "html.parser")
-        form = soup.find("form", id="staffinvite_form")
-        csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
-        form_data["csrfmiddlewaretoken"] = csrfmiddlewaretoken.attrs["value"]
-
-        # Create the temp token
-        response = self.client.post(
-            reverse("admin:registration_staffinvite_add"),
-            form_data,
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        # Make sure we weren't sent back to the create form
-        form = soup.find("form", id="staffinvite_form")
-        self.assertIsNone(form)
-
-        token = StaffInvite.objects.get(email=test_email_address).token
-
-        # Get the response message
-        content = soup.find("main", attrs={"class": "content"})
-        message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
-        # Standardize quotes
-        message = message.replace('“', '"').replace('”', '"')
-        expected_message = f'The staff invite "{token}" was added successfully.'
-        self.assertEqual(message, expected_message)
-
-        # Build out the send staff token email form
-        form_data = {
-            "action": "send_staff_token_email",
-            "select_across": "0",
-            "index": "0",
-            "_selected_action": "1",
-        }
-
-        # Get the CSRF token from the form so we can POST properly
-        response = self.client.get(
-            reverse("admin:registration_staffinvite_changelist")
-        )
-        soup = BeautifulSoup(response.content, "html.parser")
-        form = soup.find("form", id="changelist-form")
-        csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
-        form_data["csrfmiddlewaretoken"] = csrfmiddlewaretoken.attrs["value"]
-
-        # Send the email
-        response = self.client.post(
-            reverse("admin:registration_staffinvite_changelist"),
-            form_data,
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-
-        soup = BeautifulSoup(response.content, "html.parser")
-        # Get the response message
-        content = soup.find("main", attrs={"class": "content"})
-        message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
-        expected_message = f"Successfully sent email to {test_email_address}"
-        self.assertEqual(message, expected_message)
-
-        # Make sure the email was sent correctly
-        mock_send_email.assert_called_once()
-        recipients = mock_send_email.call_args[0][1]
-        plain_text = mock_send_email.call_args[0][3]
-        html_text = mock_send_email.call_args[0][4]
-
-        # Make sure the recipients are correct
-        self.assertEqual(recipients, [test_email_address])
-
-        # Make sure the correct endpoint was rendered
-        expected_path = reverse("registration:new_staff", args=(token,))
-        expected_fixed_path = f"/registration/new-staff/{token}/"
-        self.assertEqual(expected_path, expected_fixed_path)
-
-        # Make sure the correct URL was rendered
-        current_domain = site_tags.current_domain()
-        expected_url = f"https://{current_domain}{expected_path}"
-        self.assertIn(expected_url, plain_text)
-
-        # Make sure the URL is correct in the HTML email
-        expected_html_link = f"<a href='{expected_url}'>{expected_url}</a>"
-        self.assertIn(expected_html_link, html_text)
-
-
 class TestAssignBadgeNumbers(OrdersTestCase):
     def setUp(self):
         super().setUp()
 
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
+
+    def _make_attendee(self, index: int) -> Attendee:
+        args = TEST_ATTENDEE_ARGS.copy()
+        args["email"] = f"badge-attendee-{index}@mailinator.org"
+        attendee = Attendee(**args)
+        attendee.save()
+        return attendee
 
     @patch("django.contrib.messages.warning")
     def test_assignment_works(self, mock_messages_warning: Mock):
@@ -872,25 +686,25 @@ class TestAssignBadgeNumbers(OrdersTestCase):
         other_event = Event(**args)
         other_event.save()
 
-        badge = Badge(event=self.event)
+        badge = Badge(event=self.event, attendee=self._make_attendee(0))
         badge.save()
         badges.append(badge)
 
         order = Order(total="90.00", reference="FOOBAR")
         order.save()
 
-        badge = Badge(event=other_event)
+        badge = Badge(event=other_event, attendee=self._make_attendee(1))
         badge.save()
         badges.append(badge)
 
         order_item = OrderItem(order=order, badge=badge, priceLevel=self.price_90)
         order_item.save()
 
-        for _ in range(5):
+        for i in range(5):
             order = Order(total="90.00", reference="FOOBAR")
             order.save()
 
-            badge = Badge(event=self.event)
+            badge = Badge(event=self.event, attendee=self._make_attendee(i + 2))
             badge.save()
             badges.append(badge)
 

@@ -41,7 +41,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE},
         )
 
         self.assertTrue(response.status_code, 200)
@@ -59,7 +59,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE},
         )
 
         self.assertTrue(response.status_code, 403)
@@ -78,7 +78,9 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             '{"foo',
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": "J8FS8Z6adAbeYmo0MXzUv92Gu6Mr+AiCfqdFHih8jKo="}
+            headers={
+                "x-square-hmacsha256-signature": "J8FS8Z6adAbeYmo0MXzUv92Gu6Mr+AiCfqdFHih8jKo="
+            },
         )
 
         self.assertTrue(response.status_code, 400)
@@ -98,7 +100,9 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             '{"foo":"bar"}',
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": "iQ2pFa3wzzKi48XdexDtLGeHxItD/Kf7tlmzrcS6a/s="}
+            headers={
+                "x-square-hmacsha256-signature": "iQ2pFa3wzzKi48XdexDtLGeHxItD/Kf7tlmzrcS6a/s="
+            },
         )
 
         self.assertTrue(response.status_code, 400)
@@ -119,7 +123,7 @@ class TestSquareRefundWebhooks(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE},
         )
 
         self.assertTrue(response.status_code, 409)
@@ -189,8 +193,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
             "version_token": "vSfY8mYPsyOVaNPqtPXomLQkZnqpkOx3yol16moTfGV6o",
         }
     }
-    WEBHOOK_BODY = json.loads(
-        """{
+    WEBHOOK_BODY = json.loads("""{
       "merchant_id": "PXRNP8VV5DSQH",
       "location_id": "MESD3N22DWR0F",
       "type": "dispute.created",
@@ -221,8 +224,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
           }
         }
       }
-    }"""
-    )
+    }""")
     SHA256_SIGNATURE = "e5AxWLsfMMNoNCrZPwdyJzZdJvPX5UKmmQ1+NfR/BDo="
     SIGNATURE_KEY = "Op83IrwJoz1do9FKFYE71g"
     NOTIFICATION_URL = "https://webhook.site/4834cace-d117-4214-af36-5e8df062133d"
@@ -261,7 +263,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE},
         )
 
         self.assertTrue(response.status_code, 200)
@@ -295,7 +297,7 @@ class TestSquareDisputeWebhookCreate(TestCase):
             reverse("registration:square_webhook"),
             self.WEBHOOK_BODY,
             content_type="application/json",
-            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE}
+            headers={"x-square-hmacsha256-signature": self.SHA256_SIGNATURE},
         )
 
         self.assertTrue(response.status_code, 200)
