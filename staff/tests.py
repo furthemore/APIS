@@ -536,12 +536,21 @@ class StaffMiddlewareTest(TestCase):
             title="Staff"
         )
 
-    def test_staff_redirected_from_admin(self):
-        """Test staff with profile redirected away from admin"""
+    def test_non_admin_staff_redirected_from_admin(self):
+        """Staff profile without is_staff is redirected to the portal"""
+        self.staff_user.is_staff = False
+        self.staff_user.save()
         self.client.login(username="staffmember", password="staff123")
         response = self.client.get('/admin/')
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.url.endswith(reverse('staff:portal')))
+
+    def test_is_staff_user_not_redirected_from_admin(self):
+        """Staff profile with is_staff=True is not redirected to the portal"""
+        self.client.login(username="staffmember", password="staff123")
+        response = self.client.get('/admin/')
+        if response.status_code == 302:
+            self.assertFalse(response.url.endswith(reverse('staff:portal')))
 
     def test_superuser_can_access_admin(self):
         """Test superuser can still access admin"""
