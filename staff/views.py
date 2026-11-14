@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db import models
+from django.db import models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods
@@ -7,10 +7,12 @@ from django.views.decorators.http import require_GET, require_http_methods
 from registration.models import (
     Badge,
     Event,
+    Order,
     OrderItem,
     PriceLevel,
     get_registration_token,
 )
+from registration.views.common import get_unique_confirmation_token
 from staff.forms import StaffApplicationForm, StaffRegistrationForm
 from staff.models import (
     Department,
@@ -212,6 +214,7 @@ def application(request, token):
 
 
 @require_http_methods(["GET", "POST"])
+@transaction.atomic
 def register(request, token):
     """
     Staff registration for current event using token.
@@ -310,22 +313,30 @@ def register(request, token):
             )
             badge.save()
 
-            # Get staff price level and create order item
-            try:
-                staff_price_level = PriceLevel.objects.filter(
-                    available_to_staff=True,
-                    startDate__lte=timezone.now(),
-                    endDate__gte=timezone.now(),
-                ).first()
-
-                if staff_price_level:
-                    order_item = OrderItem.objects.create(
-                        badge=badge,
-                        priceLevel=staff_price_level,
-                        enteredBy="STAFF_PORTAL",
-                    )
-            except Exception:
-                pass  # Continue even if order item creation fails
+            # Attach the badge to a completed comp Order so effective level and
+            # printing work. Any failure here propagates and rolls back the
+            # whole registration (see @transaction.atomic on this view).
+            staff_price_level = PriceLevel.objects.filter(
+                available_to_staff=True,
+                startDate__lte=timezone.now(),
+                endDate__gte=timezone.now(),
+            ).first()
+            if staff_price_level:
+                order = Order.objects.create(
+                    total=0,
+                    billingType=Order.COMP,
+                    status=Order.COMPLETED,
+                    reference=get_unique_confirmation_token(Order),
+                    billingName=badge_name,
+                    billingEmail=staff_profile.email,
+                    notes="Staff portal registration",
+                )
+                OrderItem.objects.create(
+                    order=order,
+                    badge=badge,
+                    priceLevel=staff_price_level,
+                    enteredBy="STAFF_PORTAL",
+                )
 
             # Rotate staff registration token for next year
             staff_profile.registration_token = get_registration_token()

@@ -9,7 +9,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 
-from registration.models import Event, ShirtSizes, Badge, PriceLevel
+from registration.models import Event, ShirtSizes, Badge, Order, PriceLevel
 from staff.models import (
     Department,
     Staff,
@@ -952,6 +952,10 @@ class StaffRegisterEdgeCaseTest(TestCase):
         item = Badge.objects.get(staff=self.staff).orderitem_set.get()
         self.assertEqual(item.priceLevel, level)
         self.assertEqual(item.enteredBy, "STAFF_PORTAL")
+        self.assertIsNotNone(item.order)
+        self.assertEqual(item.order.billingType, Order.COMP)
+        self.assertEqual(item.order.status, Order.COMPLETED)
+        self.assertEqual(item.badge.effectiveLevel(), level)
 
     def test_post_without_staff_price_level_skips_order_item(self):
         create_test_event()
@@ -959,7 +963,7 @@ class StaffRegisterEdgeCaseTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(Badge.objects.get(staff=self.staff).orderitem_set.exists())
 
-    def test_post_survives_order_item_failure(self):
+    def test_post_rolls_back_when_order_item_fails(self):
         create_test_event()
         PriceLevel.objects.create(
             name="Staff",
@@ -968,14 +972,18 @@ class StaffRegisterEdgeCaseTest(TestCase):
             endDate=timezone.now() + timedelta(days=1),
             available_to_staff=True,
         )
+        old_token = self.staff.registration_token
+        client = Client(raise_request_exception=False)
         with patch(
             "staff.views.OrderItem.objects.create", side_effect=RuntimeError("boom")
         ):
-            response = self.client.post(
-                self.url(self.staff.registration_token), self.data
-            )
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(StaffEventRegistration.objects.filter(staff=self.staff).exists())
+            response = client.post(self.url(old_token), self.data)
+        self.assertEqual(response.status_code, 500)
+        self.assertFalse(StaffEventRegistration.objects.filter(staff=self.staff).exists())
+        self.assertFalse(Badge.objects.filter(staff=self.staff).exists())
+        self.assertFalse(Order.objects.exists())
+        self.staff.refresh_from_db()
+        self.assertEqual(self.staff.registration_token, old_token)
 
     def test_register_complete_with_event(self):
         event = create_test_event()
