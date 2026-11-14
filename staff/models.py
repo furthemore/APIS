@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from registration.models import Event, Person, get_registration_token
@@ -33,6 +34,33 @@ class Department(models.Model):
         related_name="departments_assisted",
         verbose_name="Assistant Heads",
     )
+
+    def clean(self):
+        super().clean()
+        self._check_parent_acyclic()
+
+    def _check_parent_acyclic(self):
+        """Ensure the parent chain never leads back to this department."""
+        if self.pk is None:
+            return
+        seen = set()
+        ancestor = self.parent_department
+        while ancestor is not None:
+            if ancestor.pk == self.pk:
+                raise ValidationError(
+                    {
+                        "parent_department": "A department cannot be its own "
+                        "ancestor (departments must form an acyclic hierarchy)."
+                    }
+                )
+            if ancestor.pk in seen:
+                break  # pre-existing cycle not involving self
+            seen.add(ancestor.pk)
+            ancestor = ancestor.parent_department
+
+    def save(self, *args, **kwargs):
+        self._check_parent_acyclic()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         if self.parent_department:
