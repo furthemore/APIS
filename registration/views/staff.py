@@ -51,7 +51,7 @@ def find_new_staff(request):
 
         token = StaffInvite.objects.get(email__iexact=email, token=token)
 
-        if token.validUntil < timezone.now():
+        if token.valid_until < timezone.now():
             return abort(400, "Invalid Token")
         if token.used:
             return abort(400, "Token Used")
