@@ -338,6 +338,17 @@ def register(request, token):
                     enteredBy="STAFF_PORTAL",
                 )
 
+            # Persist address edits to the staff profile
+            for field in (
+                "street_address_1",
+                "street_address_2",
+                "city",
+                "state",
+                "country",
+                "postal_code",
+            ):
+                setattr(staff_profile, field, form.cleaned_data[field])
+
             # Rotate staff registration token for next year
             staff_profile.registration_token = get_registration_token()
             staff_profile.save()
