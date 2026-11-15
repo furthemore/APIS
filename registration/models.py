@@ -1,5 +1,4 @@
 import random
-import string
 import uuid
 from datetime import datetime
 from decimal import Decimal
@@ -14,6 +13,48 @@ VISUALLY_UNAMBIGUOUS_CHARS = "ACDEFGHJKLMNPQRTUVWXY3467"
 
 
 # Lookup and supporting tables.
+
+
+class Person(models.Model):
+    legal_first_name = models.CharField(max_length=200)
+    legal_last_name = models.CharField(max_length=200)
+    preferred_first_name = models.CharField(max_length=200, blank=True)
+    preferred_last_name = models.CharField(max_length=200, blank=True)
+    street_address_1 = models.CharField(max_length=200, blank=True)
+    street_address_2 = models.CharField(max_length=200, blank=True)
+    city = models.CharField(max_length=200, blank=True)
+    state = models.CharField(max_length=200, blank=True)
+    country = models.CharField(max_length=200, blank=True)
+    postal_code = models.CharField(max_length=200, blank=True)
+    phone = models.CharField(max_length=200)
+    email = models.EmailField(max_length=200)
+    birthdate = models.DateField()
+    email_ok = models.BooleanField(default=False)
+    survey_ok = models.BooleanField(default=False)
+    registration_token = models.CharField(max_length=200)
+
+    def first_name(self):
+        if not self.preferred_first_name:
+            return self.legal_first_name
+        else:
+            return self.preferred_first_name
+
+    def last_name(self):
+        if not self.preferred_last_name:
+            return self.legal_last_name
+        else:
+            return self.preferred_last_name
+
+    def __str__(self):
+        if not self.preferred_first_name:
+            return f"{self.legal_first_name} {self.legal_last_name}"
+        else:
+            return f"{self.preferred_first_name} {self.legal_last_name}"
+
+    class Meta:
+        abstract = True
+
+
 class LookupTable(models.Model):
     name = models.CharField(max_length=200)
 
@@ -54,7 +95,7 @@ class Discount(models.Model):
     used = models.IntegerField(default=0)
     reason = models.CharField(max_length=100, blank=True)
     sponsoring_department = models.ForeignKey(
-        "Department", on_delete=models.SET_NULL, null=True
+        "staff.Department", on_delete=models.SET_NULL, null=True
     )
 
     def __str__(self):
@@ -306,7 +347,7 @@ class Event(LookupTable):
     collectAddress = models.BooleanField(
         default=True,
         verbose_name="Collect Address",
-        help_text="Disable to skip collecting a mailing address for each " "attendee.",
+        help_text="Disable to skip collecting a mailing address for each attendee.",
     )
     collectBillingAddress = models.BooleanField(
         default=True,
@@ -396,14 +437,6 @@ class TableSize(LookupTable):
         if self.event is None:
             return self.name
         return f"{self.name} {self.event.name}"
-
-
-class Department(models.Model):
-    name = models.CharField(max_length=200, blank=True)
-    volunteerListOk = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.name
 
 
 # End lookup and supporting tables
@@ -511,6 +544,14 @@ class Badge(models.Model):
     attendee = models.ForeignKey(
         Attendee, null=True, blank=True, on_delete=models.CASCADE
     )
+    staff = models.ForeignKey(
+        "staff.Staff",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="badges",
+        help_text="Link to staff profile instead of attendee for staff badges",
+    )
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     registeredDate = models.DateTimeField(null=True)
     registrationToken = models.CharField(max_length=200, default=get_registration_token)
@@ -519,6 +560,17 @@ class Badge(models.Model):
     printed = models.BooleanField(default=False)
     signature_svg = models.TextField(null=True, blank=True)
     signature_bitmap = models.TextField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(attendee__isnull=False, staff__isnull=True)
+                    | models.Q(attendee__isnull=True, staff__isnull=False)
+                ),
+                name="badge_attendee_or_staff_not_both",
+            )
+        ]
 
     def __str__(self):
         if self.badgeNumber is not None or self.badgeNumber == "":
@@ -532,7 +584,13 @@ class Badge(models.Model):
         return "Badge object {0}".format(self.registrationToken)
 
     def isMinor(self):
-        birthdate = self.attendee.birthdate
+        if self.attendee:
+            birthdate = self.attendee.birthdate
+        elif self.staff:
+            birthdate = self.staff.birthdate
+        else:
+            return False
+
         eventdate = self.event.eventStart
         age_at_event = (
             eventdate.year
@@ -561,6 +619,10 @@ class Badge(models.Model):
 
     @property
     def abandoned(self):
+        # Check if badge is linked directly to staff profile (new staff system)
+        if self.staff is not None:
+            return Badge.STAFF
+        # Check old staff system (registration.Staff via attendee)
         if Staff.objects.filter(attendee=self.attendee, event=self.event).exists():
             return Badge.STAFF
         if Dealer.objects.filter(attendee=self.attendee, event=self.event).exists():
@@ -628,13 +690,13 @@ class Staff(models.Model):
     )
     registrationToken = models.CharField(max_length=200, default=get_registration_token)
     department = models.ForeignKey(
-        Department, null=True, blank=True, on_delete=models.SET_NULL
+        "staff.Department", null=True, blank=True, on_delete=models.SET_NULL
     )
     supervisor = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL
     )
     title = models.CharField(max_length=200, blank=True)
-    twitter = models.CharField(max_length=200, blank=True)
+    bluesky = models.CharField(max_length=200, blank=True)
     telegram = models.CharField(max_length=200, blank=True)
     shirtsize = models.ForeignKey(
         ShirtSizes, null=True, blank=True, on_delete=models.SET_NULL

@@ -6,38 +6,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0107_mqtt_printing_per_terminal'),
+        ("registration", "0107_mqtt_printing_per_terminal"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='pricelevel',
-            name='accompanied',
+            model_name="pricelevel",
+            name="accompanied",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='pricelevel',
-            name='min_age',
+            model_name="pricelevel",
+            name="min_age",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='pricelevel',
-            name='max_age',
-            field=models.IntegerField(blank=True, help_text='Leave blank for no limit', null=True),
+            model_name="pricelevel",
+            name="max_age",
+            field=models.IntegerField(
+                blank=True, help_text="Leave blank for no limit", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='pricelevel',
-            name='available_to_attendee',
-            field=models.BooleanField(default=False, verbose_name='Attendee'),
+            model_name="pricelevel",
+            name="available_to_attendee",
+            field=models.BooleanField(default=False, verbose_name="Attendee"),
         ),
         migrations.AddField(
-            model_name='pricelevel',
-            name='available_to_marketplace',
-            field=models.BooleanField(default=False, verbose_name='Marketplace'),
+            model_name="pricelevel",
+            name="available_to_marketplace",
+            field=models.BooleanField(default=False, verbose_name="Marketplace"),
         ),
         migrations.AddField(
-            model_name='pricelevel',
-            name='available_to_staff',
-            field=models.BooleanField(default=False, verbose_name='Staff'),
+            model_name="pricelevel",
+            name="available_to_staff",
+            field=models.BooleanField(default=False, verbose_name="Staff"),
         ),
     ]

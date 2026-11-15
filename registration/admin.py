@@ -1,4 +1,3 @@
-import copy
 import json
 import logging
 from datetime import date
@@ -7,6 +6,7 @@ from io import BytesIO
 import qrcode
 from allauth.account.decorators import secure_admin_login
 from django import forms
+from django.apps import apps
 from django.contrib import admin, auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -49,6 +49,23 @@ admin.site.register(TableSize)
 admin.site.register(Cart)
 
 
+class StaffProfileInline(admin.StackedInline):
+    model = apps.get_model("staff", "Staff")
+    can_delete = False
+    verbose_name_plural = "Staff Profile"
+    fk_name = "user"
+    extra = 0
+    fields = (
+        ("legal_first_name", "legal_last_name"),
+        ("preferred_first_name", "preferred_last_name"),
+        "fandom_name",
+        "department",
+        "title",
+        "email",
+        "phone",
+    )
+
+
 class UserProfileAdmin(auth.admin.UserAdmin):
     model = User
     list_display = (
@@ -56,11 +73,24 @@ class UserProfileAdmin(auth.admin.UserAdmin):
         "email",
         "first_name",
         "last_name",
+        "has_staff_profile",
     )
+    search_fields = ("username", "email", "first_name", "last_name")
+    inlines = [StaffProfileInline]
+
+    def has_staff_profile(self, obj):
+        return hasattr(obj, "staff_profile")
+
+    has_staff_profile.boolean = True
+    has_staff_profile.short_description = "Staff Profile"
 
 
 admin.site.unregister(User)
 admin.site.register(User, UserProfileAdmin)
+
+# Unregister Site model - needed by allauth, not used otherwise. Did not work the way
+# we thought it did when adding it way back
+admin.site.unregister(Site)
 
 
 @admin.register(Firebase)
@@ -149,36 +179,18 @@ class BanListAdmin(admin.ModelAdmin):
 
 @admin.action(description="Send New Staff registration email")
 def send_staff_token_email(modeladmin, request, queryset):
-    if queryset.count() == 0:
-        messages.error("Invalid token selected")
-        return
-
-    for token in queryset:
-        tasks.send_new_staff_email_task.delay(token.id)
-        token.sent = True
-        token.save()
-    if queryset.count() > 1:
-        messages.success(
-            request, "Successfully sent emails to %d staff members" % queryset.count()
-        )
-    else:
-        messages.success(request, "Successfully sent email to %s" % queryset[0].email)
+    """
+    DEPRECATED: Staff invites have been moved to the staff app.
+    This function is kept for backwards compatibility but redirects to staff app.
+    """
+    messages.warning(
+        request,
+        "Staff invites have been moved to the Staff app. Please use Admin → STAFF → Staff Invites instead.",
+    )
 
 
-@admin.register(StaffInvite)
-class StaffInviteAdmin(admin.ModelAdmin):
-    actions = [send_staff_token_email]
-    list_display = ["email", "token", "sent", "used"]
-    readonly_fields = ["token", "used", "usedDate"]
-    fields = [
-        "token",
-        "email",
-        "validUntil",
-        "ignore_time_window",
-        "used",
-        "usedDate",
-        "sent",
-    ]
+# StaffInvite has been moved to the staff app
+# The admin registration is now in staff/admin.py
 
 
 @admin.action(description="Send approval email and payment instructions")
@@ -581,206 +593,36 @@ class EventAdmin(admin.ModelAdmin):
 #   Staff Admin
 
 
-@admin.action(description="Check in staff")
-def checkin_staff(modeladmin, request, queryset):
-    for staff in queryset:
-        staff.checkedIn = True
-        staff.save()
+# DEPRECATED: These functions are for the old registration.Staff model
+# @admin.action(description="Check in staff")
+# def checkin_staff(modeladmin, request, queryset):
+#     for staff in queryset:
+#         staff.checkedIn = True
+#         staff.save()
+#
+#
+# @admin.action(description="Send registration instructions")
+# def send_staff_registration_email(modeladmin, request, queryset):
+#     for staff in queryset:
+#         tasks.send_staff_promotion_email_task.delay(staff.id)
+#
+#
+# class StaffResource(resources.ModelResource):
+#     badgeName = fields.Field()
+#
+#     class Meta:
+#         model = Staff
+#         ... (all fields commented out)
 
 
-@admin.action(description="Send registration instructions")
-def send_staff_registration_email(modeladmin, request, queryset):
-    for staff in queryset:
-        tasks.send_staff_promotion_email_task.delay(staff.id)
-
-
-class StaffResource(resources.ModelResource):
-    badgeName = fields.Field()
-
-    class Meta:
-        model = Staff
-        fields = (
-            "id",
-            "event__name",
-            "badgeName",
-            "attendee__preferredName",
-            "attendee__firstName",
-            "attendee__lastName",
-            "attendee__address1",
-            "attendee__address2",
-            "attendee__city",
-            "attendee__state",
-            "attendee__country",
-            "attendee__postalCode",
-            "attendee__phone",
-            "attendee__email",
-            "department__name",
-            "supervisor",
-            "title",
-            "twitter",
-            "telegram",
-            "shirtsize__name",
-            "specialSkills",
-            "specialFood",
-            "specialMedical",
-            "contactName",
-            "contactPhone",
-            "contactRelation",
-        )
-        export_order = (
-            "id",
-            "event__name",
-            "badgeName",
-            "attendee__preferredName",
-            "attendee__firstName",
-            "attendee__lastName",
-            "attendee__address1",
-            "attendee__address2",
-            "attendee__city",
-            "attendee__state",
-            "attendee__country",
-            "attendee__postalCode",
-            "attendee__phone",
-            "attendee__email",
-            "department__name",
-            "supervisor",
-            "title",
-            "twitter",
-            "telegram",
-            "shirtsize__name",
-            "specialSkills",
-            "specialFood",
-            "specialMedical",
-            "contactName",
-            "contactPhone",
-            "contactRelation",
-        )
-
-    def dehydrate_badgeName(self, obj):
-        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
-        if badge is None:
-            return "--"
-        return badge.badgeName
-
-
-@admin.register(Staff)
-class StaffAdmin(ImportExportModelAdmin):
-    save_on_top = True
-    actions = [send_staff_registration_email, checkin_staff, "copy_to_event"]
-    raw_id_fields = ("attendee",)
-    list_display = (
-        "attendee",
-        "get_badge",
-        "get_email",
-        "title",
-        "department",
-        "shirtsize",
-        "staff_total",
-        "checkedIn",
-        "event",
-    )
-    list_filter = ("event", "department")
-    list_select_related = ("attendee", "department", "shirtsize", "event")
-    search_fields = [
-        "attendee__email",
-        "attendee__lastName",
-        "attendee__firstName",
-        "attendee__preferredName",
-    ]
-    resource_class = StaffResource
-    readonly_fields = ["get_email", "get_badge", "get_badge_id", "registrationToken"]
-    fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    ("attendee", "registrationToken"),
-                    ("event", "get_email"),
-                    ("get_badge", "get_badge_id"),
-                    ("title", "department"),
-                    ("twitter", "telegram"),
-                    ("shirtsize", "checkedIn"),
-                )
-            },
-        ),
-        (
-            "Emergency Contact",
-            {"fields": ("contactName", "contactPhone", "contactRelation")},
-        ),
-        (
-            "Misc",
-            {"fields": ("specialSkills", "specialFood", "specialMedical", "notes")},
-        ),
-    )
-
-    @admin.display(description="Email")
-    def get_email(self, obj):
-        if obj.attendee:
-            return obj.attendee.email
-        return "--"
-
-    @admin.display(description="Badge Name")
-    def get_badge(self, obj):
-        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
-        if badge is None:
-            return "--"
-        return badge.badgeName
-
-    @admin.display(description="Badge Number")
-    def get_badge_id(self, obj):
-        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
-        if badge is None:
-            return "--"
-        return badge.badgeNumber
-
-    def staff_total(self, obj):
-        badge = Badge.objects.filter(attendee=obj.attendee, event=obj.event).last()
-        if badge is None:
-            return "--"
-        return badge.paidTotal()
-
-    class CopyToEvent(forms.Form):
-        _selected_action = forms.CharField(widget=forms.MultipleHiddenInput)
-        event = forms.ModelChoiceField(Event.objects)
-
-    @admin.action(description="Copy to Event...")
-    def copy_to_event(self, request, queryset):
-        form = None
-
-        if "event" in request.POST:
-            form = self.CopyToEvent(request.POST)
-
-            if form.is_valid():
-                event = form.cleaned_data["event"]
-                count = 0
-
-                for staff in queryset:
-                    if staff.event == event:
-                        continue  # Don't copy staff to the same destination event
-
-                    staff_copy = copy.copy(staff)
-                    staff_copy.id = None
-                    staff_copy.attendee = staff.attendee
-                    staff_copy.event = event
-                    staff_copy.registrationToken = get_registration_token()
-                    staff_copy.shirtsize = None
-                    staff_copy.checkedIn = False
-                    staff_copy.save()
-                    count += 1
-
-                self.message_user(
-                    request, "Successfully copied %d staff to %s." % (count, event)
-                )
-                return HttpResponseRedirect(request.get_full_path())
-
-        if not form:
-            form = self.CopyToEvent(
-                initial={"_selected_action": queryset.values_list("pk", flat=True)}
-            )
-
-        return render(
-            request, "admin/copy_event.html", {"staff": queryset, "form": form}
-        )
+# DEPRECATED: registration.Staff has been moved to staff.Staff (Staff Profiles)
+# The admin for Staff is now in staff/admin.py
+# This old event-based staff model will be phased out
+# To view/edit staff profiles, use: Admin → STAFF → Staff Profiles
+#
+# @admin.register(Staff)
+# class StaffAdmin(ImportExportModelAdmin):
+#     ... (commented out - see staff/admin.py for new Staff Profile admin)
 
 
 ########################################################
@@ -789,28 +631,58 @@ class StaffAdmin(ImportExportModelAdmin):
 
 @admin.action(description="Add to Staff")
 def make_staff(modeladmin, request, queryset):
-    event = Event.objects.get(default=True)
+    from registration.models import get_registration_token
+    from staff.models import Staff as StaffProfile
+
     skipped = 0
+    created = 0
+
     for att in queryset:
-        if Staff.objects.filter(attendee=att, event=event).exists():
+        # Check if this attendee already has a staff profile
+        # We'll match by email to avoid duplicates
+        if StaffProfile.objects.filter(email=att.email).exists():
             skipped += 1
             continue
-        staff = Staff(attendee=att, event=event)
+
+        # Create a new staff profile from the attendee data
+        staff = StaffProfile(
+            legal_first_name=att.firstName,
+            legal_last_name=att.lastName,
+            preferred_first_name=att.preferredName,
+            email=att.email,
+            phone=att.phone,
+            street_address_1=att.address1,
+            street_address_2=att.address2,
+            city=att.city,
+            state=att.state,
+            country=att.country,
+            postal_code=att.postalCode,
+            birthdate=att.birthdate,
+            email_ok=att.emailsOk,
+            survey_ok=att.surveyOk,
+            registration_token=get_registration_token(),
+            title="",  # Will need to be filled in later
+        )
         staff.save()
+        created += 1
+
     if queryset.count() > 1:
         if skipped > 0:
             messages.success(
                 request,
-                f"{queryset.count() - skipped} attendees added to staff ({skipped} ommited that were already on staff for {event})",
+                f"{created} attendees added to staff profiles ({skipped} skipped - already have staff profiles)",
             )
         else:
             messages.success(
-                request, f"{queryset.count()} attendees added to staff for {event}"
+                request, f"{queryset.count()} attendees added to staff profiles"
             )
     else:
-        messages.success(
-            request, f"Successfully added {queryset[0]} to staff for {event}"
-        )
+        if created > 0:
+            messages.success(
+                request, f"Successfully added {queryset[0]} to staff profiles"
+            )
+        else:
+            messages.warning(request, f"{queryset[0]} already has a staff profile")
 
 
 @admin.action(description="Send upgrade info email")
@@ -1054,10 +926,11 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     resource_class = BadgeResource
     save_on_top = True
     list_filter = ("event", "printed", PriceLevelFilter)
-    list_select_related = ("event", "attendee")
-    raw_id_fields = ("attendee",)
+    list_select_related = ("event", "attendee", "staff")
+    raw_id_fields = ("attendee", "staff")
     list_display = (
         "attendee",
+        "staff",
         "badgeName",
         "badgeNumber",
         "printed",
@@ -1072,6 +945,12 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
         "attendee__lastName",
         "attendee__firstName",
         "attendee__preferredName",
+        "staff__email",
+        "staff__legal_first_name",
+        "staff__legal_last_name",
+        "staff__preferred_first_name",
+        "staff__preferred_last_name",
+        "staff__fandom_name",
         "badgeName",
         "badgeNumber",
     ]
@@ -1094,6 +973,7 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
                     ("registeredDate", "event", "registrationToken"),
                     "image_signature",
                     "attendee",
+                    "staff",
                 )
             },
         ),
@@ -1105,7 +985,14 @@ class BadgeAdmin(NestedModelAdmin, ImportExportModelAdmin):
     @admin.display(description="Age Group")
     def get_age_range(self, obj):
         try:
-            born = obj.attendee.birthdate
+            # Get birthdate from attendee or staff
+            if obj.attendee:
+                born = obj.attendee.birthdate
+            elif obj.staff:
+                born = obj.staff.birthdate
+            else:
+                return "No DOB"
+
             event_start = obj.event.eventStart
             age = (
                 event_start.year
@@ -1265,7 +1152,6 @@ class OrderAdmin(ImportExportModelAdmin, NestedModelAdmin):
     def render_change_form(self, request, context, *args, **kwargs):
         obj = kwargs.get("obj")
         if obj and obj.billingType == Order.CREDIT:
-
             context["api_data"] = obj.apiData
             if not obj.apiData:
                 messages.warning(
@@ -1460,11 +1346,6 @@ class DiscountAdmin(admin.ModelAdmin):
         "status",
     )
     save_on_top = True
-
-
-@admin.register(Department)
-class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ("name", "volunteerListOk")
 
 
 @admin.register(Cashdrawer)

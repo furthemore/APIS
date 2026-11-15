@@ -1,5 +1,5 @@
-from datetime import datetime
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -9,7 +9,6 @@ from django.utils import timezone
 from influxdb import InfluxDBClient
 
 from registration.models import *
-
 
 """
 There's a few options for where these metrics could end up.  These should eventually be configurable:

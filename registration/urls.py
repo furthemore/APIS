@@ -10,7 +10,6 @@ import registration.views.onsite_admin
 import registration.views.ordering
 import registration.views.pricelevels
 import registration.views.printing
-import registration.views.staff
 import registration.views.upgrade
 import registration.views.webhooks
 
@@ -43,48 +42,6 @@ urlpatterns = [
     ),
     path("upgrade/done/", registration.views.upgrade.done_upgrade, name="done_upgrade"),
     path("upgrade/<slug:guid>/", registration.views.upgrade.upgrade, name="upgrade"),
-    path(
-        "returning-staff/done/",
-        registration.views.staff.staff_done,
-        name="returning_staff_done",
-    ),
-    path(
-        "returning-staff/lookup/",
-        registration.views.staff.find_returning_staff,
-        name="find_returning_staff",
-    ),
-    path(
-        "returning-staff/info/",
-        registration.views.staff.info_returning_staff,
-        name="info_returning_staff",
-    ),
-    path(
-        "returning-staff/add/",
-        registration.views.staff.add_returning_staff,
-        name="add_returning_staff",
-    ),
-    path(
-        "returning-staff/<slug:guid>/",
-        registration.views.staff.returning_staff,
-        name="returning_staff",
-    ),
-    path("new-staff/done/", registration.views.staff.staff_done, name="new_staff_done"),
-    path(
-        "new-staff/lookup/",
-        registration.views.staff.find_new_staff,
-        name="find_new_staff",
-    ),
-    path(
-        "new-staff/info/",
-        registration.views.staff.info_new_staff,
-        name="info_new_staff",
-    ),
-    path(
-        "new-staff/add/", registration.views.staff.add_new_staff, name="add_new_staff"
-    ),
-    path(
-        "new-staff/<slug:guid>/", registration.views.staff.new_staff, name="new_staff"
-    ),
     path("dealer/", registration.views.dealers.new_dealer, name="new_dealer"),
     path(
         "dealer/addNew/", registration.views.dealers.addNewDealer, name="addNewDealer"

@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Staff Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'staff/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'staff/css/bootstrap-icons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'staff/css/staff.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="topbar">
+        <a href="{% url 'staff:portal' %}" class="brand">
+            <i class="bi bi-people-fill"></i> Staff Portal
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            {% if user.is_authenticated %}
+                {% if user.staff_profile %}
+                <a href="{% url 'staff:portal' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-person-circle"></i> My Profile
+                </a>
+                {% endif %}
+                <span class="text-muted">{{ user.username }}</span>
+                <a href="{% url 'account_logout' %}" class="btn btn-sm btn-outline-secondary">Logout</a>
+            {% else %}
+                <a href="{% url 'account_login' %}" class="btn btn-sm btn-primary">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="container-fluid">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <script src="{% static 'staff/js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

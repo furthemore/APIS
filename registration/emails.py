@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -7,7 +8,6 @@ from django.urls import reverse
 
 import registration.views.common
 import registration.views.dealers
-import registration.views.staff
 from registration.models import *
 
 logger = logging.getLogger(__name__)
@@ -154,6 +154,19 @@ def send_upgrade_payment_email(attendee, order):
             )
 
 
+def get_staff_email(event=None):
+    """
+    Return the email address to show on staff registration messages for the
+    event. Uses the default event if none is given, and falls back to
+    APIS_DEFAULT_EMAIL when the event has no staff email.
+    """
+    if event is None:
+        event = Event.objects.get(default=True)
+    if event.staffEmail == "":
+        return settings.APIS_DEFAULT_EMAIL
+    return event.staffEmail
+
+
 def send_staff_registration_email(orderId):
     order = Order.objects.get(id=orderId)
     email = order.billingEmail
@@ -162,25 +175,11 @@ def send_staff_registration_email(orderId):
     msg_txt = render_to_string("registration/emails/staff/registration.txt", data)
     msg_html = render_to_string("registration/emails/staff/registration.html", data)
     event = Event.objects.get(default=True)
-    staff_email = registration.views.staff.get_staff_email(event)
+    staff_email = get_staff_email(event)
     send_email(
         staff_email,
         [email],
         "{0} Staff Registration".format(event.name),
-        msg_txt,
-        msg_html,
-    )
-
-
-def send_staff_promotion_email(staff):
-    data = {"registrationToken": staff.registrationToken, "event": staff.event}
-    msg_txt = render_to_string("registration/emails/staff/promotion.txt", data)
-    msg_html = render_to_string("registration/emails/staff/promotion.html", data)
-    staff_email = registration.views.staff.get_staff_email(staff.event)
-    send_email(
-        staff_email,
-        [staff.attendee.email],
-        "Welcome to {0} Staff!".format(staff.event.name),
         msg_txt,
         msg_html,
     )
@@ -191,7 +190,7 @@ def send_new_staff_email(token):
     data = {"registrationToken": token.token, "event": event}
     msg_txt = render_to_string("registration/emails/staff/new.txt", data)
     msg_html = render_to_string("registration/emails/staff/new.html", data)
-    staff_email = registration.views.staff.get_staff_email(event)
+    staff_email = get_staff_email(event)
     send_email(
         staff_email,
         [token.email],
