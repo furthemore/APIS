@@ -1,0 +1,161 @@
+name: 🧹 pre-commit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      auto_commit:
+        description: Commit pre-commit changes back to branch
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    timeout-minutes: 30
+    permissions:
+      # for pre-commit/action to push back fixes to PR branch
+      contents: write
+      # for Reviewdog PR comments and check annotations
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.0  # zizmor: ignore[artipacked]
+        with:
+          persist-credentials: false
+
+      - run: >-
+          git fetch --no-tags --prune --depth=1 origin
+          +refs/heads/*:refs/remotes/origin/*
+
+      - name: Get changed files
+        id: file_changes
+        env:
+          BASE_REF: ${{ github.base_ref || github.event.before || '' }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ -n "${BASE_REF}" ]; then
+            # Deepen the shallow clone enough to reach the base ref.
+            git fetch --deepen=100 origin "${BASE_REF}" 2>/dev/null || true
+            if [[ "${BASE_REF}" =~ ^[0-9a-f]{40}$ ]]; then
+              # Push event: BASE_REF is a commit SHA
+              DIFF=$(git diff --name-only "${BASE_REF}" "${HEAD_SHA}")
+            else
+              # PR event: BASE_REF is a branch name
+              DIFF=$(git diff --name-only "origin/${BASE_REF}" "${HEAD_SHA}")
+            fi
+          else
+            # Last resort: compare against parent commit
+            DIFF=$(git diff --name-only HEAD~1 "${HEAD_SHA}")
+          fi
+          echo "Diff between ${BASE_REF:-HEAD~1} and ${HEAD_SHA}"
+          echo "files=$(echo "$DIFF" | xargs echo)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Configure Git push authentication
+        if: >-
+          github.event_name == 'pull_request' || inputs.auto_commit
+        run: |
+          cat > "${RUNNER_TEMP}/git-askpass" <<'EOF'
+          #!/usr/bin/env sh
+          case "$1" in
+            Username*) printf '%s\n' 'x-access-token' ;;
+            Password*) printf '%s\n' "$GITHUB_TOKEN" ;;
+          esac
+          EOF
+          chmod 700 "${RUNNER_TEMP}/git-askpass"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          python-version: '3.14'
+          enable-cache: true
+
+      - name: Pre-commit cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        id: cache-pre-commit
+        with:
+          path: ~/.cache/pre-commit/
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Install pre-commit
+        # Locked versions from uv.lock, wheels only (no setup scripts run).
+        run: |
+          uv sync --frozen --no-build --only-group lint
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> "${GITHUB_PATH}"
+
+      - name: Execute pre-commit
+        id: pre-commit
+        if: "${{ hashFiles('.pre-commit-config.yaml') != '' }}"
+        continue-on-error: true
+        env:
+          SKIP: yamllint,trivy,tflint,no-commit-to-branch
+          FILES: ${{ steps.file_changes.outputs.files }}
+        run: |
+          read -r -a files <<< "$FILES"
+          pre-commit run \
+            --color=always \
+            --show-diff-on-failure \
+            --files "${files[@]}"
+
+      # Run only skipped checks
+      - name: Execute pre-commit checks that have no auto-fixes
+        if: "${{ hashFiles('.pre-commit-config.yaml') != '' }}"
+        env:
+          SKIP: >-
+            check-added-large-files,
+            check-merge-conflict,
+            check-vcs-permalinks,
+            forbid-new-submodules,
+            no-commit-to-branch,
+            end-of-file-fixer,
+            trailing-whitespace,
+            check-merge-conflict,
+            check-executables-have-shebangs,
+            check-case-conflict,mixed-line-ending,
+            detect-aws-credentials,
+            detect-private-key,
+          FILES: ${{ steps.file_changes.outputs.files }}
+        run: |
+          read -r -a files <<< "$FILES"
+          pre-commit run \
+            --color=always \
+            --show-diff-on-failure \
+            --files "${files[@]}"
+
+      - name: Autocommit fixes
+        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d  # v7.2.0
+        with:
+          commit_message: "style: apply pre-commit fixes"
+        env:
+          GIT_ASKPASS: ${{ runner.temp }}/git-askpass
+          GIT_TERMINAL_PROMPT: "0"
+          GITHUB_TOKEN: ${{ github.token }}
+        if: >-
+          steps.pre-commit.outcome != 'success' &&
+          (github.event_name == 'pull_request' || inputs.auto_commit)
+
+      - name: Verify pre-commit after fixes
+        if: steps.pre-commit.outcome != 'success'
+        env:
+          SKIP: no-commit-to-branch
+          FILES: ${{ steps.file_changes.outputs.files }}
+        run: |
+          read -r -a files <<< "$FILES"
+          pre-commit run \
+            --color=always \
+            --show-diff-on-failure \
+            --files "${files[@]}"
+          git diff --exit-code
