@@ -5,7 +5,6 @@ from django.core.management.base import BaseCommand
 
 from registration.utils.database import DatabaseStatus, Postgres
 
-
 config_block = """
 DATABASES = {{
     'default': {{
@@ -65,7 +64,7 @@ class Command(BaseCommand):
             "--silent",
             type=bool,
             default=False,
-            help="Whether to suppress configuration information, default False."
+            help="Whether to suppress configuration information, default False.",
         )
 
     def handle(self, *args, **options):

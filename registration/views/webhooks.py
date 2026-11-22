@@ -91,7 +91,10 @@ def process_webhook(notification: PaymentWebhookNotification):
     else:
         logger.warning(
             "Unhandled webhook event type",
-            extra={"event_type": notification.body.get("type"), "event_id": notification.event_id},
+            extra={
+                "event_type": notification.body.get("type"),
+                "event_id": notification.event_id,
+            },
         )
 
     notification.processed = result

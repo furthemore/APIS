@@ -31,7 +31,8 @@ class Migration(migrations.Migration):
                 (
                     "registrationToken",
                     models.CharField(
-                        default=registration.models.get_registration_token, max_length=200
+                        default=registration.models.get_registration_token,
+                        max_length=200,
                     ),
                 ),
                 ("badgeName", models.CharField(blank=True, max_length=200)),

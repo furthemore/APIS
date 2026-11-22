@@ -23,7 +23,9 @@ from registration.tests.common import *
 
 class TestOrderAdmin(TestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
         self.normal_user = User.objects.create_user(
             "john", "lennon@thebeatles.com", "john"  # NOSONAR
@@ -357,7 +359,9 @@ class TestOrderAdmin(TestCase):
                 idempotency_key=str(uuid.uuid4()),
                 source_id=nonce,
                 autocomplete=autocomplete,
-                amount_money=MoneyParams(amount=10000, currency=settings.SQUARE_CURRENCY),
+                amount_money=MoneyParams(
+                    amount=10000, currency=settings.SQUARE_CURRENCY
+                ),
                 reference_id=order.reference,
                 billing_address=AddressParams(postal_code="94042"),
                 location_id=settings.SQUARE_LOCATION_ID,
@@ -534,7 +538,9 @@ class TestOrderAdmin(TestCase):
 
 class TestCashDrawerAdmin(TestCase):
     def setUp(self):
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
 
     def test_save_model(self):
@@ -557,7 +563,9 @@ class TestCashDrawerAdmin(TestCase):
 class TestOrderItemAdmin(OrdersTestCase):
     def setUp(self):
         super().setUp()
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
         self.order = Order(total="90.00", reference="FOOBAR")
         self.order.save()
@@ -670,7 +678,9 @@ class TestStaffAdmin(AdminTestCase):
         self.badge.save()
         self.staff = Staff(attendee=self.attendee, event=self.event)
         self.staff.save()
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
 
     def test_checkin_staff(self):
@@ -745,7 +755,9 @@ class TestStaffInvite(TestCase):
         self.event = Event(**DEFAULT_EVENT_ARGS)
         self.event.save()
 
-        self.admin_user = User.objects.create_superuser("admin", "admin@host", "admin")  # NOSONAR
+        self.admin_user = User.objects.create_superuser(
+            "admin", "admin@host", "admin"
+        )  # NOSONAR
         self.admin_user.save()
 
     @patch("registration.emails.send_email")
@@ -768,9 +780,7 @@ class TestStaffInvite(TestCase):
         }
 
         # Get the CSRF token from the form so we can POST properly
-        response = self.client.get(
-            reverse("admin:registration_staffinvite_add")
-        )
+        response = self.client.get(reverse("admin:registration_staffinvite_add"))
         soup = BeautifulSoup(response.content, "html.parser")
         form = soup.find("form", id="staffinvite_form")
         csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})
@@ -796,7 +806,7 @@ class TestStaffInvite(TestCase):
         content = soup.find("main", attrs={"class": "content"})
         message = content.find("ul", attrs={"class": "messagelist"}).text.strip()
         # Standardize quotes
-        message = message.replace('“', '"').replace('”', '"')
+        message = message.replace("“", '"').replace("”", '"')
         expected_message = f'The staff invite "{token}" was added successfully.'
         self.assertEqual(message, expected_message)
 
@@ -809,9 +819,7 @@ class TestStaffInvite(TestCase):
         }
 
         # Get the CSRF token from the form so we can POST properly
-        response = self.client.get(
-            reverse("admin:registration_staffinvite_changelist")
-        )
+        response = self.client.get(reverse("admin:registration_staffinvite_changelist"))
         soup = BeautifulSoup(response.content, "html.parser")
         form = soup.find("form", id="changelist-form")
         csrfmiddlewaretoken = form.find("input", attrs={"name": "csrfmiddlewaretoken"})

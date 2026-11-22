@@ -193,10 +193,15 @@ def index(request):
         context["homeRedirect"] = reverse("registration:index")
 
     # Dealer assistants are allowed to register even outside the normal attendee window
-    if request.session.get("assistant_id") or event.attendeeRegStart <= today <= event.attendeeRegEnd:
+    if (
+        request.session.get("assistant_id")
+        or event.attendeeRegStart <= today <= event.attendeeRegEnd
+    ):
         return render(request, "registration/registration-form.html", context)
     elif event.attendeeRegStart >= today:
-        context["message"] = "is not yet open. Please stay tuned to our social media for updates!"
+        context["message"] = (
+            "is not yet open. Please stay tuned to our social media for updates!"
+        )
         return render(request, "registration/closed.html", context)
     elif event.attendeeRegEnd <= today:
         context["message"] = "has ended."

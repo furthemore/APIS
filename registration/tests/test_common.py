@@ -1,5 +1,5 @@
-from tempfile import TemporaryDirectory
 from datetime import timedelta
+from tempfile import TemporaryDirectory
 
 from django.test import TestCase
 from django.utils import timezone
@@ -15,8 +15,8 @@ from registration.models import (
     PriceLevel,
     PriceLevelOption,
 )
-from registration.views.common import getOptionsDict
 from registration.tests.common import DEFAULT_EVENT_ARGS
+from registration.views.common import getOptionsDict
 
 
 class TestGetOptionsDict(TestCase):
@@ -44,11 +44,7 @@ class TestGetOptionsDict(TestCase):
         )
         attendee.save()
 
-        badge = Badge(
-            attendee=attendee,
-            event=event,
-            badgeName="DisStaff"
-        )
+        badge = Badge(attendee=attendee, event=event, badgeName="DisStaff")
         badge.save()
 
         now = timezone.now()
@@ -104,13 +100,18 @@ class TestGetOptionsDict(TestCase):
 
         options = getOptionsDict(badge.orderitem_set.all())
         self.assertEqual(len(options), 1)
-        self.assertEqual(options, [{
-            "name": pl_option.optionName,
-            "type": pl_option.optionExtraType,
-            "value": attendee_option.optionValue,
-            "id": pl_option.id,
-            "image": None,
-        }])
+        self.assertEqual(
+            options,
+            [
+                {
+                    "name": pl_option.optionName,
+                    "type": pl_option.optionExtraType,
+                    "value": attendee_option.optionValue,
+                    "id": pl_option.id,
+                    "image": None,
+                }
+            ],
+        )
 
         # Add an image to the price level option
         image = Image.new("RGB", (200, 100), "white")
@@ -123,10 +124,15 @@ class TestGetOptionsDict(TestCase):
 
         options = getOptionsDict(badge.orderitem_set.all())
         self.assertEqual(len(options), 1)
-        self.assertEqual(options, [{
-            "name": pl_option.optionName,
-            "type": pl_option.optionExtraType,
-            "value": attendee_option.optionValue,
-            "id": pl_option.id,
-            "image": image_path,
-        }])
+        self.assertEqual(
+            options,
+            [
+                {
+                    "name": pl_option.optionName,
+                    "type": pl_option.optionExtraType,
+                    "value": attendee_option.optionValue,
+                    "id": pl_option.id,
+                    "image": image_path,
+                }
+            ],
+        )

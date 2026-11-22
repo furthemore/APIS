@@ -29,7 +29,8 @@ class Migration(migrations.Migration):
                 (
                     "token",
                     models.CharField(
-                        default=registration.models.get_registration_token, max_length=200
+                        default=registration.models.get_registration_token,
+                        max_length=200,
                     ),
                 ),
                 ("email", models.CharField(max_length=200)),
