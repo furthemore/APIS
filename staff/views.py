@@ -12,6 +12,7 @@ from registration.models import (
     PriceLevel,
     get_registration_token,
 )
+from registration.views.attendee import check_ban_list
 from registration.views.common import get_unique_confirmation_token
 from staff.forms import StaffApplicationForm, StaffRegistrationForm
 from staff.models import (
@@ -22,6 +23,7 @@ from staff.models import (
     StaffInvite,
     StaffPosting,
 )
+from staff.tasks import send_staff_registration_confirmation_task
 
 
 @require_GET
@@ -34,6 +36,16 @@ def index(request):
     if request.user.is_authenticated and hasattr(request.user, "staff_profile"):
         return redirect("staff:portal")
     return redirect("staff:openings")
+
+
+def _posting_closed_reason(posting):
+    """Return why a posting can't take applications, or None if it can."""
+    if posting.application_deadline and posting.application_deadline < timezone.now():
+        return "The application deadline for this position has passed."
+    filled = posting.applicants.filter(status="accepted").count()
+    if filled >= posting.slots:
+        return "All slots for this position have been filled."
+    return None
 
 
 def _get_current_event():
@@ -181,10 +193,25 @@ def apply(request, token):
         is_open=True,
     )
 
+    closed_reason = _posting_closed_reason(posting)
+    if closed_reason:
+        return render(
+            request, "staff/register_error.html", {"error": closed_reason}, status=403
+        )
+
     if request.method == "POST":
         form = StaffApplicationForm(request.POST)
         if form.is_valid():
             applicant = form.save(commit=False)
+            if check_ban_list(
+                applicant.legal_first_name, applicant.legal_last_name, applicant.email
+            ):
+                return render(
+                    request,
+                    "staff/register_error.html",
+                    {"error": "We are unable to accept your application."},
+                    status=403,
+                )
             applicant.posting = posting
             applicant.registration_token = get_registration_token()
             applicant.save()
@@ -269,6 +296,15 @@ def register(request, token):
                 {"error": "Invalid registration token."},
             )
 
+    # Enforce the event's staff registration window
+    now = timezone.now()
+    if not (event.staffRegStart <= now <= event.staffRegEnd):
+        return render(
+            request,
+            "staff/register_error.html",
+            {"error": "Staff registration is not currently open for this event."},
+        )
+
     # Check if already registered for this event
     existing_reg = StaffEventRegistration.objects.filter(
         staff=staff_profile, event=event
@@ -338,6 +374,8 @@ def register(request, token):
                     enteredBy="STAFF_PORTAL",
                 )
 
+            reference = order.reference if staff_price_level else None
+
             # Persist address edits to the staff profile
             for field in (
                 "street_address_1",
@@ -359,6 +397,11 @@ def register(request, token):
                 invite.used_date = timezone.now()
                 invite.save()
 
+            transaction.on_commit(
+                lambda: send_staff_registration_confirmation_task.delay(
+                    staff_profile.id, event_reg.id, reference
+                )
+            )
             return redirect("staff:register_complete")
 
     else:

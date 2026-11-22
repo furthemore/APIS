@@ -38,6 +38,17 @@ class Department(models.Model):
     def clean(self):
         super().clean()
         self._check_parent_acyclic()
+        self._check_landing_page()
+
+    def _check_landing_page(self):
+        """Landing page must be an internal path or a named URL."""
+        page = self.default_landing_page
+        if page and (
+            "//" in page or page.split(":")[0].lower() in ("http", "https", "javascript", "data")
+        ):
+            raise ValidationError(
+                {"default_landing_page": "Use an internal path or a named URL."}
+            )
 
     def _check_parent_acyclic(self):
         """Ensure the parent chain never leads back to this department."""

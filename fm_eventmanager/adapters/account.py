@@ -1,5 +1,6 @@
 from allauth.account.adapter import DefaultAccountAdapter
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 
 class RegistrationAccountAdapter(DefaultAccountAdapter):
@@ -25,7 +26,12 @@ class RegistrationAccountAdapter(DefaultAccountAdapter):
             if staff.department and staff.department.default_landing_page:
                 landing_page = staff.department.default_landing_page
                 if landing_page.startswith("/"):
-                    return landing_page
+                    # Internal paths only; never redirect off-site
+                    if url_has_allowed_host_and_scheme(
+                        landing_page, allowed_hosts=None
+                    ):
+                        return landing_page
+                    return reverse("staff:portal")
                 else:
                     try:
                         return reverse(landing_page)

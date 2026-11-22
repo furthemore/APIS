@@ -793,6 +793,40 @@ class StaffApplyViewTest(TestCase):
         self.assertEqual(self.client.get(self.url).status_code, 404)
         self.assertEqual(self.client.post(self.url, APPLICATION_DATA).status_code, 404)
 
+    def test_past_deadline_rejected(self):
+        from datetime import timedelta
+        from django.utils import timezone
+
+        self.posting.application_deadline = timezone.now() - timedelta(days=1)
+        self.posting.save()
+        self.assertEqual(self.client.post(self.url, APPLICATION_DATA).status_code, 403)
+        self.assertEqual(StaffApplicant.objects.count(), 0)
+
+    def test_full_posting_rejected(self):
+        self.posting.slots = 1
+        self.posting.save()
+        self.client.post(self.url, APPLICATION_DATA)
+        StaffApplicant.objects.update(status="accepted")
+        self.assertEqual(self.client.get(self.url).status_code, 403)
+
+    def test_banned_applicant_rejected(self):
+        from registration.models import BanList
+
+        BanList.objects.create(
+            firstName=APPLICATION_DATA["legal_first_name"],
+            lastName=APPLICATION_DATA["legal_last_name"],
+            email=APPLICATION_DATA["email"],
+        )
+        self.assertEqual(self.client.post(self.url, APPLICATION_DATA).status_code, 403)
+        self.assertEqual(StaffApplicant.objects.count(), 0)
+
+    def test_department_rejects_external_landing_page(self):
+        from django.core.exceptions import ValidationError
+
+        dept = Department(name="X", default_landing_page="https://evil.example/")
+        with self.assertRaises(ValidationError):
+            dept.clean()
+
     def test_unknown_token_returns_404(self):
         url = reverse("staff:apply", kwargs={"token": "nope"})
         self.assertEqual(self.client.get(url).status_code, 404)

@@ -27,11 +27,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="badge",
             constraint=models.CheckConstraint(
-                condition=models.Q(
-                    models.Q(("attendee__isnull", False), ("staff__isnull", True)),
-                    models.Q(("attendee__isnull", True), ("staff__isnull", False)),
-                    _connector="OR",
-                ),
+                condition=models.Q(("attendee__isnull", False), ("staff__isnull", False), _negated=True),
                 name="badge_attendee_or_staff_not_both",
             ),
         ),

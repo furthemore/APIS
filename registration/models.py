@@ -564,10 +564,7 @@ class Badge(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                condition=(
-                    models.Q(attendee__isnull=False, staff__isnull=True)
-                    | models.Q(attendee__isnull=True, staff__isnull=False)
-                ),
+                condition=~models.Q(attendee__isnull=False, staff__isnull=False),
                 name="badge_attendee_or_staff_not_both",
             )
         ]
