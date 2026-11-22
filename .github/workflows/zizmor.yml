@@ -15,22 +15,26 @@ on:
       - '.github/workflows/**'
       - '.github/dependabot.yml'
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
-  zizmor:
-    name: zizmor
+  gha-lint:
+    timeout-minutes: 30
+    name: GitHub Actions lint
     runs-on: ubuntu-latest
     permissions:
+      checks: write
       contents: read
-      actions: read
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Run zizmor 🌈
-        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd  # v0.8.1
+      - name: Run actionlint, zizmor, and ghalint
+        uses: ne-sachirou/lint-gha-reviewdog@46ec1ff5e185ed4ef4c5ad62ad533e5df22b878d  # v0.0.12
         with:
-          advanced-security: false
+          github_token: ${{ github.token }}
+          toolset: all
