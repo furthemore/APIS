@@ -77,9 +77,11 @@ jobs:
           EOF
           chmod 700 "${RUNNER_TEMP}/git-askpass"
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
         with:
           python-version: '3.14'
+          enable-cache: true
 
       - name: Pre-commit cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
@@ -89,7 +91,10 @@ jobs:
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
 
       - name: Install pre-commit
-        run: python -m pip install pre-commit
+        # Locked versions from uv.lock, wheels only (no setup scripts run).
+        run: |
+          uv sync --frozen --no-build --only-group lint
+          echo "${GITHUB_WORKSPACE}/.venv/bin" >> "${GITHUB_PATH}"
 
       - name: Execute pre-commit
         id: pre-commit

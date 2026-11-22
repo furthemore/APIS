@@ -14,6 +14,7 @@ permissions: {}
 jobs:
   build_docker:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: read
       packages: write
@@ -75,20 +76,20 @@ jobs:
       if: github.event.inputs.environment == 'stage'
       run: |
         aws ecs update-service \
-          --cluster $ECS_CLUSTER \
+          --cluster "$ECS_CLUSTER" \
           --service apis-staging \
           --desired-count 1 \
           --force-new-deployment \
           --deployment-configuration "minimumHealthyPercent=0,maximumPercent=200"
         aws ecs wait services-stable \
-          --cluster $ECS_CLUSTER \
+          --cluster "$ECS_CLUSTER" \
           --services apis-staging
 
     - name: Rollback staging on failure
       if: failure() && steps.deploy-staging.outcome == 'failure'
       run: |
         aws ecs update-service \
-          --cluster $ECS_CLUSTER \
+          --cluster "$ECS_CLUSTER" \
           --service apis-staging \
           --desired-count 0
 
@@ -96,9 +97,9 @@ jobs:
       if: github.event.inputs.environment == 'production'
       run: |
         aws ecs update-service \
-          --cluster $ECS_CLUSTER \
+          --cluster "$ECS_CLUSTER" \
           --service apis \
           --force-new-deployment
         aws ecs wait services-stable \
-          --cluster $ECS_CLUSTER \
+          --cluster "$ECS_CLUSTER" \
           --services apis
