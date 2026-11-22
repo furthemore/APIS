@@ -3,6 +3,7 @@ import logging
 
 from django.core.signing import TimestampSigner
 from django.http import JsonResponse
+from django.utils import timezone
 from idempotency_key.decorators import idempotency_key
 
 from registration import mqtt, tasks
@@ -81,6 +82,24 @@ def do_checkout(
     return False, response, order
 
 
+def complete_comp_order(order, discount=None):
+    """Complete an order by marking it as comped, setting the total as 0, and
+    attaching and consuming a discount code if one was provided."""
+    order.billingType = Order.COMP
+    order.status = Order.COMPLETED
+    order.total = 0
+    order.settledDate = timezone.now()
+    if discount is not None:
+        order.discount = discount
+    order.save()
+
+    if discount is not None:
+        discount.used += 1
+        discount.save()
+
+    return order
+
+
 def doZeroCheckout(discount, cartItems, orderItems):
     billingName = ""
     billingEmail = ""
@@ -98,11 +117,8 @@ def doZeroCheckout(discount, cartItems, orderItems):
     order = Order(
         total=0,
         reference=reference,
-        discount=discount,
         orgDonation=0,
         charityDonation=0,
-        status="Complete",
-        billingType=Order.COMP,
         billingEmail=billingEmail,
         billingName=billingName,
     )
@@ -118,9 +134,7 @@ def doZeroCheckout(discount, cartItems, orderItems):
             oitem.order = order
             oitem.save()
 
-    if discount:
-        discount.used = discount.used + 1
-        discount.save()
+    complete_comp_order(order, discount)
     return True, "", order
 
 

@@ -8,8 +8,8 @@ import {
 } from "solid-js";
 
 import { type AttendeeDetails, useGetToken } from "@admin/api";
-import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import { Button } from "@components/button";
 
 export const DisplayRegistrationButton: Component<
@@ -18,8 +18,8 @@ export const DisplayRegistrationButton: Component<
     details?: Accessor<AttendeeDetails>;
   } & JSX.IntrinsicElements["button"]
 > = (props) => {
-  const config = useContext(ConfigContext)!;
   const mqtt = useContext(MqttContext)!;
+  const selectedTerminal = useContext(SelectedTerminalContext)!;
 
   const regToken = useGetToken();
 
@@ -32,7 +32,7 @@ export const DisplayRegistrationButton: Component<
   };
 
   return (
-    <Show when={config()?.terminals.selected?.features.prompt}>
+    <Show when={selectedTerminal().features.prompt}>
       <Button
         type="button"
         loading={regToken.isPending}

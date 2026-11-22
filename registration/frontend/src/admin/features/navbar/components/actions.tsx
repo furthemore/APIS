@@ -30,15 +30,16 @@ import {
 import { For } from "solid-js";
 
 import {
+  type TerminalStatus,
   useCashAmountAction,
   useCashNoSale,
-  useSetTerminalStatus,
 } from "@admin/api";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import { IconAndLabel } from "@components/icon-and-label";
 
-import { amountRequest, mutateThenToast } from "../utils";
+import { amountRequest, mutateThenToast, runThenToast } from "../utils";
 import { ActionButton } from "./action-button";
 import { CashdrawerStatus } from "./cashdrawer-status";
 
@@ -55,10 +56,26 @@ export const Actions: Component<{
 }> = (props) => {
   const config = useContext(ConfigContext)!;
   const mqtt = useContext(MqttContext)!;
+  const selectedTerminal = useContext(SelectedTerminalContext)!;
 
   const [showCashStatus, setShowCashStatus] = createSignal(false);
 
-  const setTerminalStatus = useSetTerminalStatus();
+  const setTerminalStatus = (
+    status: TerminalStatus,
+    successMessage: string,
+    additionalSuccessAction?: () => void,
+  ) =>
+    runThenToast(
+      async () => {
+        const client = mqtt();
+        if (!client) {
+          throw new Error("Not connected to MQTT");
+        }
+        await client.setTerminalStatus(status);
+      },
+      successMessage,
+      additionalSuccessAction,
+    );
 
   const cashNoSale = useCashNoSale();
   const cashOpen = useCashAmountAction("open");
@@ -70,31 +87,27 @@ export const Actions: Component<{
   const readyForNext = () => props.setReadyForNext(true);
 
   const showCashActions = () =>
-    config()?.permissions.cashAdmin &&
-    config()?.terminals.selected?.features.cashdrawer;
+    config()?.permissions.cashAdmin && selectedTerminal().features.cashdrawer;
 
   const standardActions: Action[] = [
     {
       name: "Open Position",
       icon: faCheck,
       keyboardShortcut: "Alt+O",
-      action: () =>
-        mutateThenToast(setTerminalStatus, "open", "Marked terminal as open"),
+      action: () => setTerminalStatus("open", "Marked terminal as open"),
     },
     {
       name: "Close Position",
       icon: faWindowClose,
       keyboardShortcut: "Alt+L",
-      action: () =>
-        mutateThenToast(setTerminalStatus, "close", "Mark terminal as closed"),
+      action: () => setTerminalStatus("close", "Mark terminal as closed"),
     },
     {
       name: "Next Customer",
       icon: faForward,
       keyboardShortcut: "Alt+N",
       action: () =>
-        mutateThenToast(
-          setTerminalStatus,
+        setTerminalStatus(
           "ready",
           "Marked terminal as ready for next",
           readyForNext,
@@ -104,13 +117,13 @@ export const Actions: Component<{
       name: "Party Mode",
       icon: faRainbow,
       keyboardShortcut: "Alt+K",
-      action: () => mutateThenToast(setTerminalStatus, "gay", "🌈🏳️‍🌈🏳️‍⚧️"),
+      action: () => setTerminalStatus("gay", "🌈🏳️‍🌈🏳️‍⚧️"),
     },
     {
       name: "Blue Light Special",
       icon: faK,
       keyboardShortcut: "Alt+B",
-      action: () => mutateThenToast(setTerminalStatus, "blue-light", "🟦"),
+      action: () => setTerminalStatus("blue-light", "🟦"),
     },
   ];
 
@@ -203,7 +216,7 @@ export const Actions: Component<{
               {(action) => <ActionButton {...action} />}
             </For>
 
-            <Show when={config()?.terminals?.selected?.features.prompt}>
+            <Show when={selectedTerminal().features.prompt}>
               <DropdownMenu.Item as="li">
                 <button
                   class="dropdown-item"

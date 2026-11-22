@@ -1,5 +1,7 @@
+import base64
 from unittest.mock import patch
 
+import jwt
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -9,6 +11,14 @@ from django.urls import reverse
 from registration import mqtt
 from registration.admin import FirebaseAdmin
 from registration.models import Firebase
+
+
+def _decode_token(encoded: str) -> dict:
+    return jwt.decode(
+        encoded,
+        base64.b64decode(settings.MQTT_JWT_SECRET),
+        algorithms=[settings.MQTT_JWT_ALGORITHM],
+    )
 
 
 class TestFirebaseAdmin(TestCase):
@@ -76,6 +86,23 @@ class TestFirebaseAdmin(TestCase):
         terminal_red.refresh_from_db()
         self.assertEqual(terminal_red.name, "Red")
         mock_send_mqtt_message.assert_called_once()
+
+    def test_payment_token_web_access_grants_web_sub(self):
+        self.terminal_blue.web_access = True
+        self.terminal_blue.save()
+
+        claims = _decode_token(mqtt.get_payment_token(self.terminal_blue)["token"])
+        self.assertIn("apis/blue/payment/#", claims["subs"])
+        self.assertIn("apis/blue/web/#", claims["subs"])
+
+    def test_payment_token_without_web_access_omits_web_sub(self):
+        self.terminal_blue.web_access = False
+        self.terminal_blue.save()
+
+        claims = _decode_token(mqtt.get_payment_token(self.terminal_blue)["token"])
+        self.assertIn("apis/blue/payment/#", claims["subs"])
+        self.assertNotIn("apis/blue/web/#", claims["subs"])
+        self.assertIn("apis/blue/web/notify/payment", claims["publ"])
 
     def test_get_qrcode(self):
         qr_code = FirebaseAdmin.get_qrcode("foo")

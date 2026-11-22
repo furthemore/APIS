@@ -15,10 +15,12 @@ import {
   useContext,
 } from "solid-js";
 
-import { CSRF_TOKEN } from "@admin/index";
 import { ConfigContext } from "@admin/providers/config-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import { Container } from "@components/container";
 import { IconAndLabel } from "@components/icon-and-label";
+
+import { CSRF_TOKEN } from "../../../../common";
 
 import { Actions } from "./actions";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
@@ -92,9 +94,15 @@ export const Navbar: Component<{
                 </DropdownMenu>
               </li>
 
-              <li class="nav-item dropdown">
-                <Actions setReadyForNext={props.setReadyForNext} />
-              </li>
+              <Show when={config()?.terminals.selected}>
+                {(selectedTerminal) => (
+                  <SelectedTerminalContext.Provider value={selectedTerminal}>
+                    <li class="nav-item dropdown">
+                      <Actions setReadyForNext={props.setReadyForNext} />
+                    </li>
+                  </SelectedTerminalContext.Provider>
+                )}
+              </Show>
             </Show>
 
             <li class="nav-item dropdown">

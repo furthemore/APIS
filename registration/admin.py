@@ -68,6 +68,7 @@ class FirebaseAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "cashdrawer",
+        "web_access",
         "print_via_mqtt",
         "print_target",
         "background_color",

@@ -5,8 +5,10 @@ import { HotkeysProvider } from "@tanstack/solid-hotkeys";
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, getRouteApi } from "@tanstack/solid-router";
 import {
+  type Accessor,
   type Component,
   Match,
+  type Setter,
   Show,
   Switch,
   createEffect,
@@ -18,15 +20,20 @@ import { Portal } from "solid-js/web";
 
 import {
   type OnsiteAdminSearch,
+  type SelectedTerminal,
+  TERMINAL_SEARCH_PARAM,
   contextQueryOptions,
   terminalQueryOptions,
+  useSessionKeepalive,
 } from "@admin/api";
 import { Navbar } from "@admin/features/navbar";
 import { Onsite } from "@admin/features/onsite";
 import { TerminalSelection } from "@admin/features/terminal-selection";
 import MqttClient from "@admin/mqtt";
+import { CartContext, CartStore } from "@admin/providers/cart-provider";
 import { ConfigContext } from "@admin/providers/config-provider";
 import { MqttContext } from "@admin/providers/mqtt-provider";
+import { SelectedTerminalContext } from "@admin/providers/selected-terminal-provider";
 import {
   UserSettingsContext,
   UserSettingsManager,
@@ -44,6 +51,8 @@ const OnsiteAdmin: Component = () => {
   const context = useQuery(() => contextQueryOptions(search().terminal));
 
   const userSettings = createMemo(() => new UserSettingsManager());
+
+  useSessionKeepalive();
 
   const mqtt = createMemo(() => {
     const config = context.data?.mqtt;
@@ -102,13 +111,15 @@ const OnsiteAdmin: Component = () => {
             <Match when={search().terminal === undefined}>
               <TerminalSelection />
             </Match>
-            <Match when={context.isEnabled && context.isFetched}>
-              <MqttConnecting mqtt={mqtt()} />
-
-              <Onsite
-                readyForNext={readyForNext()}
-                setReadyForNext={setReadyForNext}
-              />
+            <Match when={context.data?.terminals.selected}>
+              {(selectedTerminal) => (
+                <TerminalWorkspace
+                  selectedTerminal={selectedTerminal}
+                  mqtt={mqtt()}
+                  readyForNext={readyForNext()}
+                  setReadyForNext={setReadyForNext}
+                />
+              )}
             </Match>
           </Switch>
         </Container>
@@ -120,6 +131,33 @@ const OnsiteAdmin: Component = () => {
         </Portal>
       </MultiProvider>
     </HotkeysProvider>
+  );
+};
+
+const TerminalWorkspace: Component<{
+  selectedTerminal: Accessor<SelectedTerminal>;
+  mqtt?: MqttClient;
+  readyForNext: boolean;
+  setReadyForNext: Setter<boolean>;
+}> = (props) => {
+  const cartStore = createMemo(
+    () => new CartStore(props.selectedTerminal().id),
+  );
+
+  return (
+    <MultiProvider
+      values={[
+        [SelectedTerminalContext, props.selectedTerminal],
+        [CartContext, cartStore],
+      ]}
+    >
+      <MqttConnecting mqtt={props.mqtt} />
+
+      <Onsite
+        readyForNext={props.readyForNext}
+        setReadyForNext={props.setReadyForNext}
+      />
+    </MultiProvider>
   );
 };
 
@@ -159,8 +197,9 @@ const MqttConnecting: Component<{ mqtt?: MqttClient }> = (props) => {
 
 export const Route = createFileRoute("/registration/onsite/admin")({
   validateSearch: (search): OnsiteAdminSearch => {
+    const raw = search[TERMINAL_SEARCH_PARAM];
     return {
-      terminal: search.terminal ? Number(search.terminal) : undefined,
+      terminal: raw ? Number(raw) : undefined,
     };
   },
   loaderDeps: ({ search: { terminal } }) => ({ terminal }),

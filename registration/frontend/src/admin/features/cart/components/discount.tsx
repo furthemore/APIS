@@ -49,6 +49,7 @@ const DEFAULT_FORM: DiscountForm = {
 export const DiscountModal: Component<{
   open: Accessor<boolean>;
   onOpenChange: (open: boolean) => void;
+  badgeIds: number[];
 }> = (props) => {
   const config = useContext(ConfigContext)!;
 
@@ -77,6 +78,7 @@ export const DiscountModal: Component<{
         department: form.department!,
         value: form.type === "Comp" ? "100" : form.value,
         notes: form.notes,
+        badgeIds: props.badgeIds,
       },
       {
         onSuccess: () => props.onOpenChange(false),

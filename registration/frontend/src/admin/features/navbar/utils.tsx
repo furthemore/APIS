@@ -38,6 +38,34 @@ export const KNOWN_SHORTCUTS: { shortcut: Hotkey; description: string }[] = [
   { shortcut: "Mod+P", description: "Print badges in cart" },
 ];
 
+const showSuccessToast = (message: string) => {
+  toaster.show((toastProps) => (
+    <ActionToast type="success" message={message} {...toastProps} />
+  ));
+};
+
+const showErrorToast = (err: unknown) => {
+  toaster.show((toastProps) => (
+    <ActionToast type="danger" message={String(err)} {...toastProps} />
+  ));
+};
+
+export const runThenToast = async (
+  action: () => Promise<unknown>,
+  successMessage: string,
+  additionalSuccessAction?: () => void,
+) => {
+  try {
+    await action();
+  } catch (err) {
+    showErrorToast(err);
+    return;
+  }
+
+  additionalSuccessAction?.();
+  showSuccessToast(successMessage);
+};
+
 export const mutateThenToast = <T,>(
   mutation: UseMutationResult<void, Error, T>,
   args: T,
@@ -47,16 +75,9 @@ export const mutateThenToast = <T,>(
   mutation.mutate(args, {
     onSuccess: () => {
       additionalSuccessAction?.();
-
-      toaster.show((toastProps) => (
-        <ActionToast type="success" message={successMessage} {...toastProps} />
-      ));
+      showSuccessToast(successMessage);
     },
-    onError: (err: Error) => {
-      toaster.show((toastProps) => (
-        <ActionToast type="danger" message={err.toString()} {...toastProps} />
-      ));
-    },
+    onError: showErrorToast,
   });
 };
 

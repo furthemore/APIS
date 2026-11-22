@@ -29,6 +29,7 @@ class FirebaseForm(ModelForm):
             "name",
             "token",
             "cashdrawer",
+            "web_access",
             "payment_type",
             "square_terminal_id",
             "print_via_mqtt",
