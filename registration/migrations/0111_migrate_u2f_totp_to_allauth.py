@@ -2,7 +2,7 @@
 import base64
 import json
 
-from django.db import migrations, connection
+from django.db import connection, migrations
 
 
 def convert_u2f_totp_entries(_apps, _schema_editor):
