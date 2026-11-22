@@ -3,9 +3,58 @@
 from django.db import migrations, models
 
 
+def copy_legacy_staff(apps, schema_editor):
+    """
+    Copy people from registration.Staff into the new staff.Staff profile.
+
+    registration.Staff has one row per person per event, so rows are collapsed
+    to one profile per email address, taking values from the most recent event.
+    Event-specific registration data is intentionally not migrated. Rows with
+    no attendee are skipped. The department link is copied in 0011, once that
+    field exists.
+    """
+    from datetime import date
+
+    OldStaff = apps.get_model("registration", "Staff")
+    NewStaff = apps.get_model("staff", "Staff")
+
+    rows = list(OldStaff.objects.filter(attendee__isnull=False).select_related("attendee", "event"))
+    rows.sort(key=lambda r: (r.event.eventStart if r.event else date.min, r.id))
+
+    latest = {}
+    for row in rows:  # ascending, so later events overwrite earlier ones
+        key = row.attendee.email.strip().lower()
+        previous = latest.get(key)
+        if previous and not row.title:
+            row.title = previous.title
+        latest[key] = row
+
+    for row in latest.values():
+        a = row.attendee
+        NewStaff.objects.create(
+            legal_first_name=a.firstName,
+            legal_last_name=a.lastName,
+            preferred_first_name=a.preferredName,
+            street_address_1=a.address1,
+            street_address_2=a.address2,
+            city=a.city,
+            state=a.state,
+            country=a.country,
+            postal_code=a.postalCode,
+            phone=a.phone,
+            email=a.email,
+            birthdate=a.birthdate,
+            email_ok=a.emailsOk,
+            survey_ok=a.surveyOk,
+            registration_token=row.registrationToken,
+            title=row.title,
+        )
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("staff", "0005_remove_staffposition_is_open"),
+        ("registration", "0118_alter_staff_department_and_more"),
     ]
 
     operations = [
@@ -43,4 +92,5 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Staff",
             },
         ),
+        migrations.RunPython(copy_legacy_staff, migrations.RunPython.noop),
     ]

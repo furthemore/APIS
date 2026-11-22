@@ -4,9 +4,31 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
+def copy_legacy_departments(apps, schema_editor):
+    """Set department on migrated profiles from the latest legacy staff row."""
+    from datetime import date
+
+    OldStaff = apps.get_model("registration", "Staff")
+    NewStaff = apps.get_model("staff", "Staff")
+
+    rows = list(
+        OldStaff.objects.filter(attendee__isnull=False, department__isnull=False)
+        .select_related("attendee", "event")
+    )
+    rows.sort(key=lambda r: (r.event.eventStart if r.event else date.min, r.id))
+    latest = {r.attendee.email.strip().lower(): r.department_id for r in rows}
+
+    for profile in NewStaff.objects.filter(department__isnull=True):
+        department_id = latest.get(profile.email.strip().lower())
+        if department_id:
+            profile.department_id = department_id
+            profile.save(update_fields=["department"])
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("staff", "0010_staff_user"),
+        ("registration", "0118_alter_staff_department_and_more"),
     ]
 
     operations = [
@@ -30,4 +52,5 @@ class Migration(migrations.Migration):
                 to="staff.department",
             ),
         ),
+        migrations.RunPython(copy_legacy_departments, migrations.RunPython.noop),
     ]
