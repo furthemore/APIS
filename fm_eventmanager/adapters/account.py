@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
 
-
 class RegistrationAccountAdapter(DefaultAccountAdapter):
     def is_open_for_signup(self, _request):
         return False

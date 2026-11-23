@@ -44,7 +44,8 @@ class Department(models.Model):
         """Landing page must be an internal path or a named URL."""
         page = self.default_landing_page
         if page and (
-            "//" in page or page.split(":")[0].lower() in ("http", "https", "javascript", "data")
+            "//" in page
+            or page.split(":")[0].lower() in ("http", "https", "javascript", "data")
         ):
             raise ValidationError(
                 {"default_landing_page": "Use an internal path or a named URL."}
@@ -145,7 +146,7 @@ class Staff(Person):
     registration_token = models.CharField(
         max_length=200,
         default=get_registration_token,
-        help_text="Unique token for event registration, rotates after each use"
+        help_text="Unique token for event registration, rotates after each use",
     )
     onboarding_complete = models.BooleanField(
         default=False,
@@ -158,7 +159,7 @@ class Staff(Person):
         permissions = [
             ("change_fandom_name", "Can change fandom/credit name"),
         ]
-    
+
     def save(self, *args, **kwargs):
         # Ensure registration_token is set on creation
         if not self.registration_token:

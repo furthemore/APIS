@@ -119,35 +119,35 @@
             <h1>🎉 Welcome to {{event.name}} Staff!</h1>
             <p>You've been invited to join our amazing team</p>
         </div>
-        
+
         <div class="content">
             <h2>Ready to Get Started?</h2>
-            
+
             <p>We're excited to have you join the {{event.name}} staff team! To complete your registration and access the staff portal, please click the button below.</p>
-            
+
             <div class="alert-box">
                 <p><strong>⚠️ Important:</strong> If you have already registered as an attendee, please do not use this registration link. Contact staff services to get the correct link for your situation.</p>
             </div>
-            
+
             <center>
                 <a href="https://{% current_domain %}{% url 'staff:register' token=registrationToken %}" class="button">
                     Complete Staff Registration →
                 </a>
             </center>
-            
+
             <div class="divider"></div>
-            
+
             <p style="font-size: 14px; color: #999;">If the button above doesn't work, you can copy and paste this link into your browser:</p>
-            
+
             <div class="link-box">
                 <a href="https://{% current_domain %}{% url 'staff:register' token=registrationToken %}">https://{% current_domain %}{% url 'staff:register' token=registrationToken %}</a>
             </div>
-            
+
             <div class="divider"></div>
-            
+
             <p style="font-size: 14px;">Questions? Feel free to reach out to our staff coordinators for assistance.</p>
         </div>
-        
+
         <div class="footer">
             <p><strong>{{event.name}}</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>

@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('registration', '0118_badge_roll_forward'),
-        ('registration', '0120_rename_twitter_to_bluesky'),
+        ("registration", "0118_badge_roll_forward"),
+        ("registration", "0120_rename_twitter_to_bluesky"),
     ]
 
-    operations = [
-    ]
+    operations = []

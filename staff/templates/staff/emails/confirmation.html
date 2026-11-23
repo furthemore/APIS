@@ -139,12 +139,12 @@
             <h1>✅ Registration Confirmed!</h1>
             <p>You're all set for {{event.name}}</p>
         </div>
-        
+
         <div class="content">
             <h2>Thank You for Registering!</h2>
-            
+
             <p>Your staff registration for {{event.name}} has been successfully completed. We're excited to have you on the team!</p>
-            
+
             <div class="info-box">
                 <h3>📋 Registration Details</h3>
                 <p><strong>Event:</strong> {{event.name}}</p>
@@ -154,7 +154,7 @@
                 <div class="reference">{{reference}}</div>
                 {% endif %}
             </div>
-            
+
             <div class="next-steps">
                 <h3>🎯 Next Steps</h3>
                 <ul>
@@ -164,18 +164,18 @@
                     <li>Mark your calendar for the event dates</li>
                 </ul>
             </div>
-            
+
             <center>
                 <a href="https://{% current_domain %}{% url 'staff:portal' %}" class="button">
                     Access Staff Portal →
                 </a>
             </center>
-            
+
             <div class="divider"></div>
-            
+
             <p style="font-size: 14px;">If you have any questions about your registration or need assistance, please contact your supervisor or reach out to <a href="mailto:{{ staff_email }}" style="color: #10b981; text-decoration: none;">{{ staff_email }}</a>.</p>
         </div>
-        
+
         <div class="footer">
             <p><strong>{{event.name}}</strong></p>
             <p>Questions? Contact us at <a href="mailto:{{ staff_email }}">{{ staff_email }}</a></p>

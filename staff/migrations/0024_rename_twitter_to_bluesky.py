@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('staff', '0023_add_registration_token_default'),
+        ("staff", "0023_add_registration_token_default"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='staffeventregistration',
-            old_name='twitter',
-            new_name='bluesky',
+            model_name="staffeventregistration",
+            old_name="twitter",
+            new_name="bluesky",
         ),
     ]

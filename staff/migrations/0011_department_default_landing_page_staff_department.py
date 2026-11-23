@@ -12,8 +12,9 @@ def copy_legacy_departments(apps, schema_editor):
     NewStaff = apps.get_model("staff", "Staff")
 
     rows = list(
-        OldStaff.objects.filter(attendee__isnull=False, department__isnull=False)
-        .select_related("attendee", "event")
+        OldStaff.objects.filter(
+            attendee__isnull=False, department__isnull=False
+        ).select_related("attendee", "event")
     )
     rows.sort(key=lambda r: (r.event.eventStart if r.event else date.min, r.id))
     latest = {r.attendee.email.strip().lower(): r.department_id for r in rows}

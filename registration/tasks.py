@@ -71,8 +71,8 @@ def send_new_staff_email_task(self, token_id):
     DEPRECATED: Use staff.tasks.send_staff_invitation_email_task instead.
     Kept for backwards compatibility.
     """
-    from staff.models import StaffInvite
     import staff.tasks
+    from staff.models import StaffInvite
 
     try:
         # Delegate to new task

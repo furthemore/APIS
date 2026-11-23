@@ -18,7 +18,11 @@ def copy_legacy_staff(apps, schema_editor):
     OldStaff = apps.get_model("registration", "Staff")
     NewStaff = apps.get_model("staff", "Staff")
 
-    rows = list(OldStaff.objects.filter(attendee__isnull=False).select_related("attendee", "event"))
+    rows = list(
+        OldStaff.objects.filter(attendee__isnull=False).select_related(
+            "attendee", "event"
+        )
+    )
     rows.sort(key=lambda r: (r.event.eventStart if r.event else date.min, r.id))
 
     latest = {}

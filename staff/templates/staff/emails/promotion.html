@@ -139,16 +139,16 @@
             <h1>🌟 Congratulations!</h1>
             <p>You've been promoted to {{event.name}} staff</p>
         </div>
-        
+
         <div class="content">
             <h2>Welcome to the Team!</h2>
-            
+
             <p>Great news! You've been promoted from attendee to staff member for {{event.name}}. We're thrilled to have you join our team!</p>
-            
+
             <div class="highlight-box">
                 <p><strong>🎯 What This Means:</strong> As a staff member, you'll have access to exclusive benefits, the staff portal, and the opportunity to be part of making this event amazing for everyone!</p>
             </div>
-            
+
             <div class="benefits">
                 <h3>✨ Staff Benefits</h3>
                 <ul>
@@ -159,28 +159,28 @@
                     <li>Be part of an amazing community</li>
                 </ul>
             </div>
-            
+
             <p><strong>Next Step:</strong> Complete your staff registration using the link below to finalize your promotion and access all staff features.</p>
-            
+
             <center>
                 <a href="https://{% current_domain %}{% url 'staff:register' token=registrationToken %}" class="button">
                     Complete Staff Registration →
                 </a>
             </center>
-            
+
             <div class="divider"></div>
-            
+
             <p style="font-size: 14px; color: #999;">If the button above doesn't work, you can copy and paste this link into your browser:</p>
-            
+
             <div class="link-box">
                 <a href="https://{% current_domain %}{% url 'staff:register' token=registrationToken %}">https://{% current_domain %}{% url 'staff:register' token=registrationToken %}</a>
             </div>
-            
+
             <div class="divider"></div>
-            
+
             <p style="font-size: 14px;">Questions about your promotion? Feel free to reach out to your department head or staff coordinators.</p>
         </div>
-        
+
         <div class="footer">
             <p><strong>{{event.name}}</strong></p>
             <p>This is an automated message. Please do not reply to this email.</p>
