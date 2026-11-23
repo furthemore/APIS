@@ -1,0 +1,33 @@
+{% load site %}
+====================================
+✅ Registration Confirmed!
+====================================
+
+You're all set for {{event.name}}
+
+Thank you for registering!
+
+Your staff registration for {{event.name}} has been successfully completed. We're excited to have you on the team!
+
+📋 REGISTRATION DETAILS
+-----------------------
+Event: {{event.name}}
+{% if staff_name %}Name: {{staff_name}}{% endif %}
+{% if reference %}Confirmation Number: {{reference}}{% endif %}
+
+🎯 NEXT STEPS
+-------------
+• Check your email for important updates from your department head
+• Log in to the staff portal to view your schedule and assignments
+• Complete any required training or onboarding tasks
+• Mark your calendar for the event dates
+
+STAFF PORTAL:
+https://{% current_domain %}{% url 'staff:portal' %}
+
+If you have any questions about your registration or need assistance, please contact your supervisor or reach out to {{ staff_email }}.
+
+---
+{{event.name}}
+Questions? Contact us at {{ staff_email }}
+This is an automated message. Please do not reply to this email.

@@ -31,7 +31,6 @@ from registration.models import (
     AttendeeOptions,
     Badge,
     Cashdrawer,
-    Department,
     Discount,
     Event,
     Firebase,
@@ -48,6 +47,7 @@ from registration.views.ordering import (
     get_discount_total,
     get_order_item_option_total,
 )
+from staff.models import Department
 
 
 def flatten(l):
