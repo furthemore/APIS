@@ -21,6 +21,7 @@ jobs:
   changes:
     name: Detect changes
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     permissions:
       contents: read
     outputs:
@@ -61,6 +62,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -87,6 +89,7 @@ jobs:
     # the Vite-built bundle. Keep them in sync.
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
     strategy:
@@ -163,13 +166,14 @@ jobs:
         run: uv run --frozen --no-build --no-sync coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: ${{ matrix.test-name }}
+          COVERALLS_FLAG_NAME: python-${{ matrix.python-version }}
           COVERALLS_PARALLEL: true
 
   coveralls:
     name: Indicate completion to coveralls.io
     needs: backend
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     container: python:3-alpine
     steps:
     - name: Install coveralls
@@ -187,6 +191,7 @@ jobs:
     needs: [changes, frontend, backend]
     if: always()
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Verify required jobs succeeded or were skipped
         env:
