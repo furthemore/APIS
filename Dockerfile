@@ -1,4 +1,4 @@
-FROM node:24 AS assets
+FROM node:26 AS assets
 
 ENV NODE_ENVIRONMENT=production
 
