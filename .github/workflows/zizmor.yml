@@ -34,7 +34,7 @@ jobs:
           persist-credentials: false
 
       - name: Run actionlint, zizmor, and ghalint
-        uses: ne-sachirou/lint-gha-reviewdog@46ec1ff5e185ed4ef4c5ad62ad533e5df22b878d  # v0.0.12
+        uses: ne-sachirou/lint-gha-reviewdog@7de88fec59e1c9530b7dccd5e9f51594f8b2278b  # v0.0.15
         with:
           github_token: ${{ github.token }}
           toolset: all
